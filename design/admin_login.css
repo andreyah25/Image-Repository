@@ -1,0 +1,261 @@
+/* Clean reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  min-height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+}
+
+/* Split-screen layout wrapper */
+.login-wrapper {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Left Sidebar: Dark Theme */
+.left-panel {
+  flex: 1.1;
+  background-color: #1f2a2d; /* Slate / Dark Teal */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10% 8%;
+}
+
+.welcome-heading {
+  color: #ffffff;
+  font-size: 56px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+
+.welcome-subtext {
+  color: #a4b0b2;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+/* Right Side: Form Container */
+.login-card-container {
+  flex: 0.5;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10% 12%;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Floating Labels Styling */
+.input-group {
+  position: relative;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 0 8px;
+  border: none;
+  border-bottom: 1px solid #b3b3b3;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  color: #222222;
+  font-family: "DM Sans", sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+.input-group input:focus {
+  border-bottom-color: #1f2a2d;
+}
+
+.input-group label {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  color: #666666;
+  font-size: 16px;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+/* Label floating animation */
+.input-group input:focus~label,
+.input-group input:not(:placeholder-shown)~label {
+  top: -12px;
+  font-size: 13px;
+  color: #777777;
+}
+
+.password-group input {
+  padding-right: 35px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0;
+  top: 12px;
+  background: none;
+  border: none;
+  color: #8c8c8c;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+  color: #222222;
+}
+
+/* Forgot Password placement matching mockup */
+.forgot-password-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -15px;
+  margin-bottom: 35px;
+}
+
+.forgot-link {
+  color: #333333;
+  font-size: 12px;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  color: #000000;
+}
+
+/* Log in button styling */
+.submit-login-btn {
+  background-color: #1f2a2d;
+  color: #ffffff;
+  border: none;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: "DM Sans", sans-serif;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-bottom: 25px;
+}
+
+.submit-login-btn:hover {
+  background-color: #12191a;
+}
+
+.submit-login-btn:active {
+  transform: scale(0.99);
+}
+
+/* Form divider lines */
+.form-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 25px;
+  color: #777777;
+  font-size: 13px;
+}
+
+.form-divider::before,
+.form-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-divider::before {
+  margin-right: 18px;
+}
+
+.form-divider::after {
+  margin-left: 18px;
+}
+
+/* Google Button */
+.google-login-btn {
+  background-color: #ffffff;
+  color: #222222;
+  border: 1px solid #cccccc;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: "DM Sans", sans-serif;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.google-login-btn:hover {
+  background-color: #fafafa;
+  border-color: #999999;
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+/* Signup link styling */
+.signup-footer-text {
+  text-align: center;
+  font-size: 12px;
+  color: #666666;
+}
+
+.signup-footer-text a {
+  color: #1f2a2d;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* Responsive scaling for mobile devices */
+@media (max-width: 900px) {
+  .login-wrapper {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    flex: none;
+    padding: 50px 30px;
+    text-align: center;
+  }
+
+  .welcome-heading {
+    font-size: 36px;
+  }
+
+  .welcome-subtext {
+    font-size: 16px;
+  }
+
+  .login-card-container {
+    flex: 1;
+    padding: 40px 20px;
+  }
+}

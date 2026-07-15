@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Signing In...</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <h2>Signing in...</h2>
+
+    <script>
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
+        async function handleGoogleLogin() {
+
+            try {
+
+                // Wait for Supabase to restore the OAuth session
+                const {
+                    data,
+                    error
+                } = await supabaseClient.auth.getSession();
+
+                if (error) {
+                    console.error(error);
+                    alert(error.message);
+                    window.location.href = "admin_login.html";
+                    return;
+                }
+
+                if (!data.session) {
+                    alert("No login session found.");
+                    window.location.href = "admin_login.html";
+                    return;
+                }
+
+                const user = data.session.user;
+
+                console.log("Google Login Success:", user);
+
+                // Save user info
+                localStorage.setItem("loggedInUserId", user.id);
+                localStorage.setItem("loggedInUserEmail", user.email);
+
+                // Check if profile already exists
+                let {
+                    data: profile,
+                    error: profileError
+                } = await supabaseClient
+                    .from("staff_profiles")
+                    .select("*")
+                    .eq("id", user.id)
+                    .maybeSingle();
+
+                if (profileError) {
+                    console.error(profileError);
+                    alert(profileError.message);
+                    return;
+                }
+
+                // First Google login
+                if (!profile) {
+
+                    const {
+                        data: newProfile,
+                        error: insertError
+                    } = await supabaseClient
+                        .from("staff_profiles")
+                        .insert({
+
+                            id: user.id,
+                            email: user.email,
+
+                            full_name:
+                                user.user_metadata.full_name ||
+                                user.user_metadata.name ||
+                                "",
+
+                            avatar_url:
+                                user.user_metadata.avatar_url ||
+                                user.user_metadata.picture ||
+                                null,
+
+                            role: "staff",
+
+                            verified: false
+
+                        })
+                        .select()
+                        .single();
+
+                    if (insertError) {
+                        console.error(insertError);
+                        alert(insertError.message);
+                        return;
+                    }
+
+                    profile = newProfile;
+                }
+
+                localStorage.setItem(
+                    "staffProfile",
+                    JSON.stringify(profile)
+                );
+
+                // Send OTP email
+                const response = await fetch(
+                    "http://localhost:3000/send-otp",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            email: user.email
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                console.log(result);
+
+                if (!response.ok) {
+
+                    alert(result.message);
+
+                    return;
+
+                }
+
+                if (!response.ok) {
+
+                    const message = await response.text();
+
+                    alert("Failed to send OTP: " + message);
+
+                    return;
+                }
+
+                // Save email for verification page
+                localStorage.setItem(
+                    "verification_email",
+                    user.email
+                );
+
+                // Go to OTP page
+                window.location.href = "verification_code.html";
+
+            } catch (err) {
+
+                console.error(err);
+
+                alert("Unexpected error: " + err.message);
+
+                window.location.href = "admin_login.html";
+
+            }
+
+        }
+
+        handleGoogleLogin();
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Code - Vanity Creation</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="/design/verification_code.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+  <div class="verify-wrapper">
+
+    <div class="top-accent-line"></div>
+
+    <h1 class="verify-heading">Verify Code</h1>
+    <p class="verify-subtext" id="status">Enter the verification code sent to your email.</p>
+
+    <div class="verify-card-container">
+
+      <form class="verify-form" id="verificationForm">
+
+        <div class="code-inputs-group">
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+
+
+        </div>
+
+        <div class="resend-wrapper">
+          <p class="resend-text">Didn’t receive it?</p>
+          <a href="#" onclick="alert('New code sent')">Resend code</a>
+        </div>
+
+        <button id="verifyBtn" type="button" class="submit-verify-btn">
+          Verify
+        </button>
+      </form>
+
+      <button id="continueBtn" style="display:none; margin-top:20px;">
+        Continue to Dashboard
+      </button>
+
+    </div>
+  </div>
+
+
+  <script>
+    const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    window.onload = async () => {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        window.location.href = "staff_login.html";
+      }
+    };
+    // OTP Input Auto Navigation
+    const otpInputs = document.querySelectorAll(".code-inputs-group input");
+
+    otpInputs.forEach((input, index) => {
+
+      // Allow only numbers
+      input.addEventListener("input", (e) => {
+
+        input.value = input.value.replace(/\D/g, "");
+
+        if (input.value.length === 1 && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+
+      });
+
+      // Backspace goes to previous box
+      input.addEventListener("keydown", (e) => {
+
+        if (e.key === "Backspace" && input.value === "" && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+
+        // Left Arrow
+        if (e.key === "ArrowLeft" && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+
+        // Right Arrow
+        if (e.key === "ArrowRight" && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+
+      });
+
+    });
+
+    otpInputs[0].addEventListener("paste", (e) => {
+
+      e.preventDefault();
+
+      const pasteData = (e.clipboardData || window.clipboardData)
+        .getData("text")
+        .replace(/\D/g, "")
+        .slice(0, 6);
+
+      pasteData.split("").forEach((digit, index) => {
+        if (otpInputs[index]) {
+          otpInputs[index].value = digit;
+        }
+      });
+
+      const lastFilled = Math.min(pasteData.length, otpInputs.length) - 1;
+
+      if (lastFilled >= 0) {
+        otpInputs[lastFilled].focus();
+      }
+
+    });
+    document.getElementById("verifyBtn").addEventListener("click", async () => {
+      try {
+
+        // BUILD OTP
+        const inputs = document.querySelectorAll(".code-inputs-group input");
+
+        let otp = "";
+        inputs.forEach(i => otp += i.value.trim());
+
+        if (otp.length !== 6) {
+          alert("Please enter the 6-digit OTP");
+          return;
+        }
+
+        // GET USER
+        const { data: userData, error: userError } =
+          await supabaseClient.auth.getUser();
+
+        if (userError || !userData?.user) {
+          alert("Session expired. Please login again.");
+          window.location.href = "staff_login.html";
+          return;
+        }
+
+        const userEmail = userData.user.email;
+
+        // GET LATEST OTP
+        const { data, error } = await supabaseClient
+          .from("otp_verifications")
+          .select("*")
+          .eq("email", userEmail)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error(error);
+          alert(error.message);
+          return;
+        }
+
+        if (!data) {
+          alert("No OTP found for this email.");
+          return;
+        }
+
+        // COMPARE OTP
+        if (data.otp !== otp) {
+          alert("Invalid OTP");
+          return;
+        }
+
+        // DELETE OTP AFTER SUCCESS
+        // OPTIONAL: Check if OTP expired (5 minutes)
+        const otpCreated = new Date(data.created_at);
+        const now = new Date();
+
+        const diffMinutes = (now - otpCreated) / 1000 / 60;
+
+        if (diffMinutes > 5) {
+          alert("OTP has expired. Please request a new one.");
+          return;
+        }
+
+        // Delete OTP after successful verification
+        const { error: deleteError } = await supabaseClient
+          .from("otp_verifications")
+          .delete()
+          .eq("id", data.id);
+
+        if (deleteError) {
+          console.warn("Failed to delete OTP:", deleteError);
+        }
+
+        // Update profile as verified
+        const { error: updateError } = await supabaseClient
+          .from("staff_profiles")
+          .update({
+            verified: true
+          })
+          .eq("id", userData.user.id);
+
+        if (updateError) {
+          console.error(updateError);
+          alert("Failed to update verification status.");
+          return;
+        }
+
+        // Save login history
+        const { error: loginHistoryError } = await supabaseClient
+          .from("login_history")
+          .insert({
+            staff_id: userData.user.id,
+            user_agent: navigator.userAgent,
+            ip_address: null
+          });
+
+        if (loginHistoryError) {
+          console.warn("Login history not saved:", loginHistoryError);
+        }
+
+        // Get the updated profile
+        const { data: profile, error: profileError } = await supabaseClient
+          .from("staff_profiles")
+          .select("*")
+          .eq("id", userData.user.id)
+          .single();
+
+        if (profileError) {
+          console.error(profileError);
+        }
+
+        // Save to localStorage
+        localStorage.setItem("loggedInUserId", userData.user.id);
+        localStorage.setItem("loggedInUserEmail", userData.user.email);
+
+        if (profile) {
+          localStorage.setItem("staffProfile", JSON.stringify(profile));
+        }
+
+        alert("Verification successful!");
+
+        window.location.href = "admin_dashboard.html";
+
+      } catch (err) {
+        console.error(err);
+        alert("Unexpected error occurred");
+      }
+    });
+  </script>
+</body>
+
+</html>
