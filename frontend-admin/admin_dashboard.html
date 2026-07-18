@@ -4,285 +4,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clients</title>
+
+    <title>Staff Dashboard</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <link rel="stylesheet" href="design/admin_dashboard.css">
+    <link rel="stylesheet" href="/design/admin_dashboard.css">
+
 </head>
 
 <body>
 
     <header class="top-navbar">
+
         <div class="logo-section">
             <div class="logo-box"></div>
             <span>VANITY CREATION</span>
         </div>
 
         <div class="navbar-right">
+
+            <button class="notification-btn" aria-label="Notifications">
+                <i class="fa-solid fa-bell"></i>
+            </button>
+
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" placeholder="Search photos by tag, email, or file name">
             </div>
             <div class="user-profile">
+
                 <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
-                <span id="userName">Loading...</span>
+
+                <span id="userName">
+                    Loading...
+                </span>
+
             </div>
         </div>
+
     </header>
+
 
     <div class="dashboard-wrapper">
 
+
         <aside class="sidebar">
+
             <nav>
-                <a href="staff_dashboard.html">
+
+                <a href="admin_dashboard.html" class="active">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Home
                 </a>
-                <a href="frontend-client/client_dashboard.html" class="active">
+
+                <a href="admin_client.html">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
-                <a href="staff_repository.html">
+
+                <a href="admin_repository.html">
                     <i class="fa-solid fa-book"></i>
                     Repository
                 </a>
-                <a href="staff_payment.html">
+
+                <a href="admin_payment.html">
                     <i class="fa-solid fa-credit-card"></i>
                     Payments
                 </a>
+
+                <a href="admin_archives.html">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+
                 <a href="#">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
+
                 <a href="#">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
+
             </nav>
 
-            <a href="landing_page.html" class="logout-btn" id="logoutBtn">
+            <a href="admin_login.html" class="logout-btn" id="logoutBtn">
+
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+
                 <span>Log out</span>
+
             </a>
+
         </aside>
-
         <main class="content">
-            
-            <div class="client-header-container">
-                <div class="page-header">
-                    <h1>Client List</h1>
-                    <p>Browse and manage your clients records.</p>
-                </div>
-                
-                <div class="client-actions-row">
-                    <div class="table-search-box">
-                        <input type="text" placeholder="Search client...">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </div>
-                    
-                    <div class="filter-dropdown-wrapper">
-                        <button class="table-filter-btn" id="filterBtn">
-                            <i class="fa-solid fa-sliders"></i>
-                            Filter
-                        </button>
-                        <div class="filter-dropdown-menu" id="filterDropdown">
-                            <div class="dropdown-section-title">Select Month</div>
-                            <div class="dropdown-scroll-area">
-                                <a href="#" data-filter="1">January</a>
-                                <a href="#" data-filter="2">February</a>
-                                <a href="#" data-filter="3">March</a>
-                                <a href="#" data-filter="4">April</a>
-                                <a href="#" data-filter="5">May</a>
-                                <a href="#" data-filter="6">June</a>
-                                <a href="#" data-filter="7">July</a>
-                                <a href="#" data-filter="8">August</a>
-                                <a href="#" data-filter="9">September</a>
-                                <a href="#" data-filter="10">October</a>
-                                <a href="#" data-filter="11">November</a>
-                                <a href="#" data-filter="12">December</a>
-                            </div>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" data-filter="all" class="clear-filter">Clear Filter</a>
-                        </div>
-                    </div>
 
-                    <button class="add-new-client-btn">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                        Add New Client
-                    </button>
-                </div>
+            <div class="page-header">
+                <h1>Welcome back!</h1>
+                <p>See the latest updates on your work.</p>
             </div>
 
-            <div class="ui-table-card-panel">
-                <table class="ui-data-grid">
-                    <thead>
-                        <tr>
-                            <th>Clients</th>
-                            <th>Email Address</th>
-                            <th>Event Type</th>
-                            <th>Expiry Date</th>
-                            <th>Payment Status</th>
-                            <th>Access Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientTableBody">
-                        </tbody>
-                </table>
+            <div class="stats-grid">
+
+                <div class="card">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Total Customers</span>
+                    <h2 id="totalCustomers">0</h2>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-folder"></i>
+                    <span>Total Folders</span>
+                    <h2 id="totalFolders">0</h2>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-image"></i>
+                    <span>Total Photos</span>
+                    <h2 id="totalPhotos">0</h2>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-circle-check green"></i>
+                    <span>Active</span>
+                    <h2 id="activeSessions">0</h2>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-circle-xmark red"></i>
+                    <span>Expired</span>
+                    <h2 id="expiredSessions">0</h2>
+                </div>
+
+            </div>
+
+            <h3 class="section-title">
+                Recent Stored Sessions
+            </h3>
+
+            <div class="sessions-panel" id="sessionsPanel">
+                <div class="empty-state">
+                    No uploaded sessions yet.
+                </div>
             </div>
 
         </main>
-    </div>
 
-    <div class="modal-overlay" id="addClientModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <i class="fa-solid fa-user-plus"></i>
-                <h2>New Client</h2>
-            </div>
-            
-            <form class="modal-form" id="newClientForm">
-                <p class="form-instruction">Enter client information.</p>
-                
-                <div class="form-field">
-                    <input type="text" id="clientName" placeholder="Client Name" required>
-                </div>
-                
-                <div class="form-field">
-                    <input type="email" id="clientEmail" placeholder="Email Address" required>
-                </div>
-                
-                <div class="form-field">
-                    <input type="text" id="eventType" placeholder="Event Type" required>
-                </div>
-                
-                <div class="form-field date-field-wrapper">
-                    <input type="date" id="expiryDate" required>
-                    <span class="date-placeholder">Set Expiry Date</span>
-                </div>
-                
-                <div class="form-field select-field-wrapper">
-                    <select id="paymentStatus" required>
-                        <option value="" disabled selected hidden>Payment Status</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Pending">Pending</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down select-arrow"></i>
-                </div>
-                
-                <div class="form-field select-field-wrapper">
-                    <select id="accessStatus" required>
-                        <option value="" disabled selected hidden>Access Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down select-arrow"></i>
-                </div>
-                
-                <button type="submit" class="save-client-btn">Save Client</button>
-            </form>
-        </div>
     </div>
-
-    <!--  
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const supabaseClient = supabase.createClient(
-            "https://rejaosaylldyhvbyhgxl.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlamFvc2F5bGxkeWh2YnloZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjE3MDUsImV4cCI6MjA5NjU5NzcwNX0.1GNinip2Qs923GaoVe6E2EGxp6ixnsJgF4bfDkH2K4A"
-        );
 
+
+
+    <script>
+       const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
         window.addEventListener("load", async () => {
+
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
+
+
+                const params = new URLSearchParams(window.location.search);
+
+                if (params.get("error")) {
+                    alert(params.get("error_description") || "Login failed");
+                    window.location.href = "staff_login.html";
+                    return;
+                }
+
+
+                const {
+                    data: { session }
+                } = await supabaseClient.auth.getSession();
+
                 if (!session) {
                     window.location.href = "staff_login.html";
                     return;
                 }
+
                 const user = session.user;
-                let { data: profile } = await supabaseClient
+
+                let { data: profile, error } = await supabaseClient
                     .from("staff_profiles")
                     .select("*")
                     .eq("id", user.id)
                     .single();
 
-                if (profile) {
-                    document.getElementById("userName").textContent = profile.full_name;
-                    if (profile.avatar_url) {
-                        document.getElementById("userAvatar").src = profile.avatar_url;
-                    }
+                if (error && error.code !== "PGRST116") {
+                    console.error(error);
                 }
+
+                if (!profile) {
+
+                    const { data: newProfile, error: insertError } =
+                        await supabaseClient
+                            .from("staff_profiles")
+                            .insert([{
+                                id: user.id,
+                                email: user.email,
+                                full_name:
+                                    user.user_metadata?.full_name ||
+                                    user.user_metadata?.name ||
+                                    "Staff User",
+                                avatar_url:
+                                    user.user_metadata?.avatar_url || "",
+                                role: "staff",
+                                verified: true
+                            }])
+                            .select()
+                            .single();
+
+                    if (insertError) {
+                        console.error(insertError);
+                        alert("Unable to create profile.");
+                        return;
+                    }
+
+                    profile = newProfile;
+                }
+
+
+                if (profile.verified === false) {
+                    alert("Waiting for admin approval");
+                    window.location.href = "verification_code.html";
+                    return;
+                }
+
+                document.getElementById("userName").textContent =
+                    profile.full_name;
+                await loadDashboardStats(user.id);
+
+                await loadRecentSessions(user.id);
+
+                if (profile.avatar_url) {
+                    document.getElementById("userAvatar").src =
+                        profile.avatar_url;
+                }
+
             } catch (err) {
                 console.error(err);
+                alert("Something went wrong.");
             }
+
         });
+        async function loadDashboardStats(userId) {
 
-        document.getElementById("logoutBtn").addEventListener("click", async (e) => {
-            e.preventDefault();
-            await supabaseClient.auth.signOut();
-            window.location.href = "landing_page.html";
-        });
+            try {
+
+                const { count: customers } =
+                    await supabaseClient
+                        .from("clients")
+                        .select("*", { count: "exact", head: true })
+                        .eq("user_id", userId);
+
+                document.getElementById("totalCustomers")
+                    .textContent = customers || 0;
 
 
+                const { count: folders } =
+                    await supabaseClient
+                        .from("folders")
+                        .select("*", { count: "exact", head: true })
+                        .eq("user_id", userId);
 
-        const filterBtn = document.getElementById('filterBtn');
-        const filterDropdown = document.getElementById('filterDropdown');
+                document.getElementById("totalFolders").textContent = folders || 0;
+                    
 
-        filterBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            filterDropdown.classList.toggle('show');
-        });
+                const { count: photos } =
+                    await supabaseClient
+                        .from("photos")
+                        .select("*", { count: "exact", head: true })
+                        .eq("user_id", userId);
 
-        filterDropdown.querySelectorAll('.dropdown-scroll-area a, .clear-filter').forEach(option => {
-            option.addEventListener('click', (e) => {
+                document.getElementById("totalPhotos")
+                    .textContent = photos || 0;
+
+
+                const { count: active } =
+                    await supabaseClient
+                        .from("clients")
+                        .select("*", { count: "exact", head: true })
+                        .eq("user_id", userId)
+                        .eq("status", "active");
+                document.getElementById("activeSessions").textContent = active || 0;
+
+
+                const { count: expired } =
+                    await supabaseClient
+                        .from("clients")
+                        .select("*", { count: "exact", head: true })
+                        .eq("user_id", userId)
+                        .eq("status", "expired");
+
+                document.getElementById("expiredSessions").textContent = expired || 0;   
+
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+        }
+        async function loadRecentSessions(userId) {
+
+            const container = document.getElementById("sessionsPanel");
+
+            try {
+
+                const { data, error } =
+                    await supabaseClient
+                        .from("photos")
+                        .select("*")
+                        .eq("user_id", userId)
+                        .order("created_at", { ascending: false })
+                        .limit(10);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+
+                    container.innerHTML = `
+                <div class="empty-state">
+                    No uploaded sessions yet.
+                </div>
+            `;
+
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                data.forEach(photo => {
+
+                    container.innerHTML += `
+                <div class="session-card">
+
+                    <img
+                        src="${photo.image_url}"
+                        alt="${photo.file_name}"
+                    >
+
+                    <div class="session-info">
+
+                        <h4>${photo.file_name}</h4>
+
+                        <p>
+                            ${new Date(
+                        photo.created_at
+                    ).toLocaleDateString()}
+                        </p>
+
+                    </div>
+
+                </div>
+            `;
+
+                });
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+        }
+        // Logout button
+        document.getElementById("logoutBtn")
+            .addEventListener("click", async (e) => {
+
                 e.preventDefault();
-                const selectedMonth = option.getAttribute('data-filter');
-                console.log("Filtering database array context month selection value:", selectedMonth);
-                // Ready for your array logic matching filtering workflows
-                filterDropdown.classList.remove('show');
+
+                await supabaseClient.auth.signOut();
+
+                window.location.href = "landing_page.html";
             });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!filterDropdown.contains(e.target) && e.target !== filterBtn) {
-                filterDropdown.classList.remove('show');
-            }
-        });
-
-
-        const addClientBtn = document.querySelector('.add-new-client-btn');
-        const clientModal = document.getElementById('addClientModal');
-        const newClientForm = document.getElementById('newClientForm');
-
-        addClientBtn.addEventListener('click', () => {
-            clientModal.classList.add('show');
-        });
-
-        clientModal.addEventListener('click', (e) => {
-            if (e.target === clientModal) {
-                clientModal.classList.remove('show');
-                newClientForm.reset();
-            }
-        });
-
-        newClientForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const clientPayload = {
-                full_name: document.getElementById('clientName').value,
-                email: document.getElementById('clientEmail').value,
-                event_type: document.getElementById('eventType').value,
-                expiry_date: document.getElementById('expiryDate').value,
-                payment_status: document.getElementById('paymentStatus').value,
-                access_status: document.getElementById('accessStatus').value
-            };
-            console.log("Assembled Form Payload Package Maps:", clientPayload);
-            clientModal.classList.remove('show');
-            newClientForm.reset();
-        });
     </script>
-    -->
 </body>
+
 </html>

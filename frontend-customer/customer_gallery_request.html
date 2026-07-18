@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Gallery - Request Access</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/design/customer_gallery_request.css?v=1.1">
+</head>
+<body>
+
+    <header class="top-navbar">
+        <div class="logo-section">
+            <img src="/images/studio logo.jpg" alt="Logo" class="logo-img">
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <div class="user-profile">
+                <i class="fa-solid fa-circle-user" style="color: white; font-size: 36px; cursor: pointer;"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+        
+        <aside class="sidebar">
+            <nav>
+                <a href="customer_booking.html">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>Book a Session</span>
+                </a>
+                <a href="customer_gallery_request.html" class="active">
+                    <i class="fa-regular fa-image"></i>
+                    <span>My Gallery</span>
+                </a>
+                <a href="customer_profile.html">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+            
+            <a href="customer_homepage.html" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content central-message-container">
+            <div class="request-access-card">
+                <p class="message-text">
+                    You don't have access to this folder yet. Click the button below to request access. Once approved, you'll receive an access link to enter on the next step.<br>
+                </p>
+                <a href="customer_enter_link.html" class="btn-request" style="text-decoration: none; display: inline-block; text-align: center;">Request Access</a>
+            </div>
+        </main>
+
+    </div>
+
+</body>
+</html>

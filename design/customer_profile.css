@@ -1,0 +1,446 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+/* --- Reset Rules --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "DM Sans", sans-serif !important;
+    background: #f6f6f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Top Header Navigation --- */
+.top-navbar {
+    height: 70px;
+    background: #1f2d2f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-size: 13px;
+}
+
+.logo-img {
+    height: 34px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* --- Main Dashboard Body Frame Layout --- */
+.dashboard-wrapper {
+    display: flex;
+    flex: 1;
+    margin-top: 70px;
+    /* Offset for the fixed header */
+    min-height: calc(100vh - 70px);
+}
+
+/* --- Sidebar (Fixed left strip layout) --- */
+.sidebar {
+    width: 230px;
+    background: white;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 25px 18px;
+    position: fixed;
+    top: 70px;
+    bottom: 0;
+    left: 0;
+    z-index: 90;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #444;
+    font-size: 14px;
+    padding: 12px 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar a:hover {
+    background: #f4f4f4;
+}
+
+.sidebar a.active {
+    background: #1f2d2f;
+    color: rgb(221, 219, 219);
+}
+
+/* --- Red Logout Button Overrides --- */
+.sidebar .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1.5px solid #dc2626 !important;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.sidebar .logout-btn,
+.sidebar .logout-btn span,
+.sidebar .logout-btn i.logout-icon {
+    color: #dc2626 !important;
+}
+
+.sidebar .logout-btn i.logout-icon {
+    font-size: 16px;
+    display: inline-block;
+    line-height: 1;
+}
+
+.sidebar .logout-btn:hover {
+    background: #fff3f3 !important;
+}
+
+/* --- Center Content Area --- */
+.content {
+    flex: 1;
+    padding: 40px;
+    margin-left: 230px;
+    /* Offset so content doesn't slip under the sidebar */
+    min-height: 100%;
+}
+
+/* ==========================================================================
+   MY GALLERY CORE LAYOUT (REQUEST ACCESS & ENTER LINK VIEWS)
+   ========================================================================= */
+
+/* Center container context */
+.central-message-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: calc(100vh - 150px);
+}
+
+/* Layout Wrapper Card */
+.request-access-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+}
+
+/* Message typography styling */
+.message-text {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: #a0a0a0;
+}
+
+/* Styled "Request Access" / "Continue" CTA Button */
+.btn-request {
+    padding: 14px 48px;
+    background-color: #1f2d2f;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    width: auto;
+}
+
+.btn-request:hover {
+    background-color: #121b1c;
+}
+
+/* ==========================================================================
+   ENTER LINK VIEW ADDITIONAL STYLES
+   ========================================================================= */
+
+.link-entry-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 440px;
+}
+
+.link-input {
+    width: 100%;
+    padding: 18px 20px;
+    font-family: inherit;
+    font-size: 16px;
+    color: #333333;
+    background-color: #ffffff;
+    border: 1px solid #a0a0a0;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.link-input::placeholder {
+    color: #b8b8b8;
+    opacity: 1;
+}
+
+.link-input:focus {
+    border-color: #1f2d2f;
+    box-shadow: 0 0 0 3px rgba(31, 45, 47, 0.08);
+}
+
+.link-entry-form .btn-request {
+    width: 100%;
+}
+
+/* ==========================================================================
+   PROFILE VIEW STYLING (MARIA SANTOS VIEW)
+   ========================================================================= */
+
+/* Main layout limits for profile items */
+.profile-content-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 40px;
+}
+
+.profile-cards-wrapper {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Base Card Styling with Soft Shadow borders */
+.profile-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    padding: 30px;
+}
+
+/* Hero Header Card Layout styling */
+.hero-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Avatar layout circle styling */
+.avatar-placeholder {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #e8e8e8;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+.avatar-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Hero Card Details Text alignment */
+.profile-hero-details h2 {
+    font-size: 26px;
+    font-weight: 500;
+    color: #333333;
+    margin-bottom: 8px;
+}
+
+.profile-email-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666666;
+}
+
+.profile-email-badge i {
+    font-size: 16px;
+    color: #444444;
+}
+
+/* Detailed Information Card Layout */
+.info-card h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333333;
+    margin-bottom: 25px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* Responsive details grid layout */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-group label {
+    font-size: 14px;
+    color: #9e9e9e;
+    font-weight: 500;
+}
+
+.info-group p {
+    font-size: 16px;
+    font-weight: 400;
+    color: #333333;
+}
+
+
+@media (max-width: 900px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+        margin-top: 70px;
+    }
+
+    /* Convert sidebar into horizontal navigation */
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+        left: 0;
+        border-right: none;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 15px 25px;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .sidebar nav {
+        flex-direction: row;
+        justify-content: space-around;
+        width: auto;
+        flex: 1;
+    }
+
+    .sidebar a {
+        padding: 10px 14px;
+    }
+
+    .sidebar .logout-btn {
+        width: auto;
+        padding: 10px 20px;
+    }
+
+    .content {
+        margin-left: 0;
+        padding: 30px 20px;
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+}
+
+/* Mobile Screens (Under 600px) */
+@media (max-width: 600px) {
+    .sidebar {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .sidebar nav {
+        width: 100%;
+        gap: 4px;
+    }
+
+    .sidebar a {
+        font-size: 13px;
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .sidebar .logout-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .message-text {
+        font-size: 19px;
+    }
+
+    .btn-request {
+        width: 100%;
+    }
+
+    .hero-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .profile-email-badge {
+        justify-content: center;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}

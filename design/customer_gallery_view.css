@@ -1,0 +1,503 @@
+/* --- Direct Google Font Import (First Priority) --- */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+/* --- Reset Rules (Matching client_enter_link.css) --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "DM Sans", sans-serif !important;
+    background: #f6f6f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Top Header Navigation (Matching client_enter_link.css) --- */
+.top-navbar {
+    height: 70px;
+    background: #1f2d2f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-size: 13px;
+}
+
+.logo-img {
+    height: 34px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* --- Main Dashboard Body Frame Layout --- */
+.dashboard-wrapper {
+    display: flex;
+    flex: 1;
+    margin-top: 70px; /* Offset for the fixed header */
+    min-height: calc(100vh - 70px);
+}
+
+/* --- Sidebar (Matching client_enter_link.css) --- */
+.sidebar {
+    width: 230px;
+    background: white;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 25px 18px;
+    position: fixed;
+    top: 70px;
+    bottom: 0;
+    left: 0;
+    z-index: 90;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #444;
+    font-size: 14px;
+    padding: 12px 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar a:hover {
+    background: #f4f4f4;
+}
+
+.sidebar a.active {
+    background: #1f2d2f;
+    color: rgb(221, 219, 219);
+}
+
+/* --- Red Logout Button Overrides (Matching client_enter_link.css) --- */
+.sidebar .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1.5px solid #dc2626 !important;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.sidebar .logout-btn,
+.sidebar .logout-btn span,
+.sidebar .logout-btn i.logout-icon {
+    color: #dc2626 !important; 
+}
+
+.sidebar .logout-btn i.logout-icon {
+    font-size: 16px;
+    display: inline-block;
+    line-height: 1;
+}
+
+.sidebar .logout-btn:hover {
+    background: #fff3f3 !important;
+}
+
+/* --- Center Content Area (Matching layout architecture) --- */
+.content {
+    flex: 1;
+    padding: 40px;
+    margin-left: 230px; /* Offset so content doesn't slip under sidebar */
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* ==========================================================================
+   GALLERY PAGE CORE LAYOUT RULES (Isolated exclusively to this view)
+   ========================================================================= */
+
+/* Gallery Top Title & Download Header Area */
+.gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.gallery-title {
+    font-size: 30px;
+    font-weight: 400;
+    color: #1f2d2f;
+    margin-bottom: 6px;
+}
+
+.gallery-subtitle {
+    font-size: 15px;
+    color: #8c8c8c;
+    font-weight: 400;
+}
+
+/* Download All Button */
+.btn-download-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: #1f2d2f;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.15s;
+}
+
+.btn-download-all:hover {
+    background-color: #121b1c;
+}
+
+/* 4x2 Grid Layout */
+.gallery-photos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    width: 100%;
+}
+
+/* Gray Wireframe Placeholder Card Boxes */
+.photo-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Retains clean squares exactly like wireframes */
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.photo-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #dedede; /* Perfect gray placeholder background */
+}
+
+/* Individual download button overlay */
+.individual-download-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #1f2d2f !important;
+    font-size: 18px;
+    text-decoration: none;
+    transition: transform 0.15s;
+}
+
+.individual-download-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Pagination Row styling */
+.gallery-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.gallery-pagination a,
+.gallery-pagination span {
+    font-size: 16px;
+    color: #8c8c8c;
+    text-decoration: none;
+    font-weight: 500;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.15s, background-color 0.15s;
+}
+
+.gallery-pagination a:hover {
+    color: #333333;
+    background-color: #f5f5f5;
+}
+
+.gallery-pagination a.active {
+    color: #333333 !important;
+    font-weight: 700;
+    background-color: transparent !important;
+}
+
+.gallery-pagination .page-arrow {
+    font-size: 14px;
+    color: #555555;
+}
+
+.gallery-pagination .page-dots {
+    cursor: default;
+    color: #8c8c8c;
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT OVERRIDES (Matching client_enter_link.css exactly)
+   ========================================================================= */
+
+/* Tablet Layout (Under 900px) */
+@media (max-width: 900px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+        margin-top: 70px;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+        left: 0;
+        border-right: none;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 15px 25px;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .sidebar nav {
+        flex-direction: row;
+        justify-content: space-around;
+        width: auto;
+        flex: 1;
+    }
+
+    .sidebar a {
+        padding: 10px 14px;
+    }
+
+    .sidebar .logout-btn {
+        width: auto;
+        padding: 10px 20px;
+    }
+
+    .content {
+        margin-left: 0; /* Reset desktop layout offset */
+        padding: 30px 20px;
+    }
+    
+    .gallery-photos-grid {
+        grid-template-columns: repeat(2, 1fr); /* Responsive adjust for grids */
+    }
+}
+
+/* Mobile Screens (Under 600px) */
+@media (max-width: 600px) {
+    .sidebar {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .sidebar nav {
+        width: 100%;
+        gap: 4px;
+    }
+
+    .sidebar a {
+        font-size: 13px;
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .sidebar .logout-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .gallery-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .btn-download-all {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .gallery-photos-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   PAYMENT REQUIRED MODAL POPUP SYSTEM (FIXED & CONSISTENT SIZES)
+   ========================================================================= */
+
+/* Dark Overlay Background */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; 
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Activated State */
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Center Dialog Card Box (Fixed size boundaries) */
+.payment-modal-card {
+    background-color: #ffffff;
+    width: calc(100% - 30px); /* Leave minor padding on ultra-small screens */
+    max-width: 390px; /* Perfectly scaled to fit both single-line buttons side-by-side */
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .payment-modal-card {
+    transform: scale(1);
+}
+
+/* Modal Dark Top Header */
+.modal-header {
+    background-color: #1f2d2f; 
+    color: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.modal-card-icon {
+    font-size: 20px;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    font-family: "DM Sans", sans-serif !important;
+}
+
+/* Modal White Body Section */
+.modal-body {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+}
+
+.modal-prompt-text {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #555555;
+    font-family: "DM Sans", sans-serif !important;
+}
+
+/* Action Buttons Row */
+.modal-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Base style for both buttons to guarantee absolute consistency */
+.btn-modal-cancel,
+.btn-modal-proceed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px; /* Enforces a rigid fixed height */
+    width: 165px; /* Locks down a completely consistent, fixed width */
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 6px;
+    text-align: center;
+    white-space: nowrap; /* Strictly prevents text wrapping or breaking into two lines */
+    font-family: "DM Sans", sans-serif !important;
+    box-sizing: border-box;
+}
+
+/* Maybe Later Button */
+.btn-modal-cancel {
+    background-color: #ffffff;
+    border: 1.5px solid #b8b8b8;
+    color: #2b3a3c;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-modal-cancel:hover {
+    background-color: #f7f9f9;
+    border-color: #1f2d2f;
+}
+
+/* Proceed to Payment Button */
+.btn-modal-proceed {
+    background-color: #1f2d2f;
+    color: #ffffff !important;
+    border: none;
+    text-decoration: none;
+    transition: background-color 0.15s;
+}
+
+.btn-modal-proceed:hover {
+    background-color: #121b1c;
+}

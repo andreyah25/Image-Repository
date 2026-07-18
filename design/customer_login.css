@@ -1,0 +1,285 @@
+/* --- CSS Reset & Configurations --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #ffffff;
+    color: #333333;
+    min-height: 100vh;
+}
+
+/* --- Split Layout Grid --- */
+.login-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Left Side Panel Banner */
+.login-banner {
+    flex: 1;
+    background-color: #1e2a2e; /* Matches the dark slate grey from homepage */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 60px 10%;
+}
+
+.login-form-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Changed from center to flex-end */
+    padding: 60px 10% 60px 40px; /* Increased right padding to 10% to keep it off the screen edge */
+}
+
+.banner-content {
+    max-width: 480px;
+}
+
+.banner-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.banner-subtitle {
+    font-size: 1.2rem;
+    font-weight: 300;
+    line-height: 1.6;
+    color: #b0bec5;
+}
+
+/* Right Side Form Panel */
+.login-form-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+}
+
+.login-form-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* --- Floating Label Form Inputs --- */
+.input-group {
+    position: relative;
+    margin-bottom: 35px;
+    border-bottom: 1.5px solid #aaaaaa;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.05rem;
+    color: #333333;
+}
+
+.input-group label {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    font-size: 1.05rem;
+    color: #666666;
+    font-weight: 400;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Floating behavior when input is focused or not empty */
+.input-group input:focus ~ label,
+.input-group input:not(:placeholder-shown) ~ label {
+    top: -16px;
+    font-size: 0.85rem;
+    color: #888888;
+}
+
+/* Hide/Show Password Icon Positioning */
+.password-group {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0;
+    top: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888888;
+    font-size: 1rem;
+    padding: 2px;
+}
+
+/* --- Form Links & Action Buttons --- */
+.forgot-password-container {
+    text-align: right;
+    margin-top: -20px;
+    margin-bottom: 35px;
+}
+
+.forgot-password-link {
+    font-size: 0.8rem;
+    color: #222222;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+}
+
+.forgot-password-link:hover {
+    opacity: 0.7;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 14px 0;
+    background-color: #242f35;
+    color: #ffffff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 25px;
+}
+
+.btn-login:hover {
+    background-color: #12181b;
+}
+
+/* --- Divider Line --- */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #888888;
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.divider::before {
+    margin-right: 20px;
+}
+
+.divider::after {
+    margin-left: 20px;
+}
+
+/* --- Google Button --- */
+.btn-google {
+    width: 100%;
+    padding: 12px 0;
+    background-color: #ffffff;
+    color: #242f35;
+    border: 1px solid #cccccc;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-google:hover {
+    background-color: #f7f9fa;
+    border-color: #aaaaaa;
+}
+
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE STYLES (Fixed Text Centering)
+   ========================================================================== */
+
+/* Tablets & Small Laptops (Widths 900px and below) */
+@media (max-width: 900px) {
+    .login-container {
+        flex-direction: column; /* Stacks the banner on top, form on bottom */
+    }
+
+    .login-banner {
+        flex: none;
+        padding: 50px 5%;
+        text-align: center;
+        display: flex;
+        justify-content: center; /* NEW: Centers the text block container horizontally */
+        align-items: center;     /* Centers it vertically */
+    }
+
+    .banner-content {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .banner-title {
+        font-size: 2.4rem;
+        margin-bottom: 12px;
+    }
+
+    .banner-subtitle {
+        font-size: 1.05rem;
+        max-width: 500px; /* Limits width slightly so it looks neat when centered */
+        margin: 0 auto;   /* Centers the paragraph block itself */
+    }
+
+    .login-form-wrapper {
+        padding: 50px 5%;
+        background-color: #ffffff;
+    }
+}
+
+/* Mobile Screens / Smartphones (Widths 480px and below) */
+@media (max-width: 480px) {
+    .login-banner {
+        padding: 40px 20px 30px 20px;
+    }
+
+    .banner-title {
+        font-size: 1.9rem;
+    }
+
+    .banner-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .login-form-wrapper {
+        padding: 40px 20px;
+    }
+
+    .input-group {
+        margin-bottom: 30px;
+    }
+
+    .forgot-password-container {
+        margin-bottom: 30px;
+    }
+
+    .btn-login {
+        padding: 12px 0;
+    }
+}

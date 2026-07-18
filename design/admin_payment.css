@@ -1,0 +1,46 @@
+.client-header-container {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    margin-bottom: 25px !important;
+    padding: 0 5px !important;
+}
+
+.page-header h1 {
+    font-size: 48px;
+    font-weight: 400;
+    color: #333;
+}
+
+.page-header p {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 16px !important;
+    color: #666666 !important;
+    margin: 8px 0 0 0 !important; 
+}
+
+.client-actions-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+/* Clickable Notification Button Styling */
+.notification-btn {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+}
+
+.notification-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}

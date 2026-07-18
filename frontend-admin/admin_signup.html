@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/design/admin_login.css">
+  <link rel="stylesheet" href="/design/admin_signup.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -21,10 +21,10 @@
 
   <div class="login-wrapper">
 
-    <div class="top-accent-line"></div>
-
-    <h1 class="welcome-heading">Get Started</h1>
-    <p class="welcome-subtext">Create your account in seconds.</p>
+    <div class="left-panel">
+      <h1 class="welcome-heading">Get Started</h1>
+      <p class="welcome-subtext">Create your account in seconds.</p>
+    </div>
 
     <div class="login-card-container">
 
@@ -54,19 +54,52 @@
         </button>
 
         <p class="signup-footer-text">
-          Already have an account? <a href="staff_login.html">Log in</a>
+          Already have an account? <a href="admin_login.html">Log in</a>
         </p>
 
       </form>
 
     </div>
 
+
   </div>
-
   <script>
+    const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+    document.getElementById("staffSignUpForm").addEventListener("submit", async (e) => {
+
+      e.preventDefault();
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const { error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      alert("Account created successfully!");
+      window.location.href = "admin_login.html";
+    });
   </script>
+
 
 </body>
 

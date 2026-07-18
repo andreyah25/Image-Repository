@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Gallery - Website Name</title>
+    
+    <!-- Direct Google Font Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Dedicated CSS for this page only -->
+    <link rel="stylesheet" href="/design/customer_gallery_view.css?v=1.2">
+</head>
+<body>
+
+    <!-- TOP NAVBAR -->
+    <header class="top-navbar">
+        <div class="logo-section">
+            <img src="/images/studio logo.jpg" alt="Logo" class="logo-img">
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <i class="fa-solid fa-circle-user" style="color: white; font-size: 32px; cursor: pointer;"></i>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <nav>
+                <a href="customer_booking.html">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>Book a Session</span>
+                </a>
+                <a href="customer_gallery_request.html" class="active">
+                    <i class="fa-regular fa-image"></i>
+                    <span>My Gallery</span>
+                </a>
+                <a href="customer_profile.html">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+            
+            <a href="customer_homepage.html" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <!-- CENTER CONTENT: UNLOCKED GALLERY VIEW -->
+        <main class="content">
+            
+            <!-- Gallery Info Header Section -->
+            <div class="gallery-header">
+                <div class="gallery-title-wrapper">
+                    <h1 class="gallery-title">Maria and John Wedding</h1>
+                    <p class="gallery-subtitle">April 1, 2026 • 2,550 Photos</p>
+                </div>
+                <!-- Added 'btn-trigger-payment' class -->
+                <button type="button" class="btn-download-all btn-trigger-payment">
+                    <i class="fa-solid fa-download"></i> Download All
+                </button>
+            </div>
+
+            <!-- 4x2 Photo Grid -->
+            <div class="gallery-photos-grid">
+                
+                <!-- Photo Card 1 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <!-- Added 'btn-trigger-payment' class -->
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+                <!-- Photo Card 2 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+                <!-- Photo Card 3 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+                <!-- Photo Card 4 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+                <!-- Photo Card 5 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+                <!-- Photo Card 6 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+                <!-- Photo Card 7 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+                <!-- Photo Card 8 -->
+                <div class="photo-card">
+                    <div class="photo-placeholder"></div>
+                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="gallery-pagination">
+                <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-left"></i></a>
+                <a href="#" class="page-num">1</a>
+                <a href="#" class="page-num">2</a>
+                <a href="#" class="page-num active">3</a>
+                <a href="#" class="page-num">4</a>
+                <a href="#" class="page-num">5</a>
+                <span class="page-dots">...</span>
+                <a href="#" class="page-num">30</a>
+                <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- PAYMENT REQUIRED POPUP MODAL (Hidden by default) -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="payment-modal-card">
+            
+            <!-- Dark Modal Header -->
+            <div class="modal-header">
+                <i class="fa-regular fa-credit-card modal-card-icon"></i>
+                <h2>Payment Required</h2>
+            </div>
+            
+            <!-- Modal Body Content -->
+            <div class="modal-body">
+                <p class="modal-prompt-text">
+                    Complete your payment to save and<br>download your images.
+                </p>
+                
+                <!-- Action Buttons -->
+                <div class="modal-actions-row">
+                    <button type="button" class="btn-modal-cancel" id="btnMaybeLater">Maybe Later</button>
+                    <!-- Routes to a checkout or payment page -->
+                    <a href="customer_checkout.html" class="btn-modal-proceed">Proceed to Payment</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LIGHTWEIGHT TRIGGER SCRIPT -->
+    <script>
+        const paymentModal = document.getElementById('paymentModal');
+        const triggerButtons = document.querySelectorAll('.btn-trigger-payment');
+        const closeButton = document.getElementById('btnMaybeLater');
+
+        // Open modal when download buttons are clicked
+        triggerButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault(); // Stop instant anchor linking
+                paymentModal.classList.add('active');
+            });
+        });
+
+        // Close modal when "Maybe Later" is clicked
+        closeButton.addEventListener('click', () => {
+            paymentModal.classList.remove('active');
+        });
+
+        // Close modal when clicking on the dark outer background overlay
+        paymentModal.addEventListener('click', (e) => {
+            if (e.target === paymentModal) {
+                paymentModal.classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+</html>

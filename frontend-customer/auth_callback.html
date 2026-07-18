@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Signing In...</title>
+</head>
+
+<body>
+
+    <p>Signing you in...</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
+        (async () => {
+
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            if (!session) {
+                window.location.href = "/frontend-customer/customer_login.html";
+                return;
+            }
+
+            const user = session.user;
+
+            // Check if customer already exists
+            const { data: existing } = await supabaseClient
+                .from("customers")
+                .select("id")
+                .eq("id", user.id)
+                .maybeSingle();
+
+            if (!existing) {
+
+                const { error: insertError } = await supabaseClient
+                    .from("customers")
+                    .insert({
+                        id: user.id,
+                        email: user.email,
+                        full_name: user.user_metadata.full_name || user.user_metadata.name,
+                        profile_image: user.user_metadata.avatar_url || user.user_metadata.picture,
+                        last_login: new Date().toISOString()
+                    });
+
+                if (insertError) {
+                    console.error(insertError);
+                    return;
+                }
+
+            } else {
+
+                await supabaseClient
+                    .from("customers")
+                    .update({
+                        last_login: new Date().toISOString(),
+                        full_name: user.user_metadata.full_name || user.user_metadata.name,
+                        profile_image: user.user_metadata.avatar_url || user.user_metadata.picture
+                    })
+                    .eq("id", user.id);
+
+            }
+
+            window.location.href = "/frontend-customer/customer_booking.html";
+
+        })();
+
+    </script>
+
+</body>
+
+</html>

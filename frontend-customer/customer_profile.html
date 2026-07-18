@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Website Name</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/design/customer_profile.css?v=1.3">
+</head>
+
+<body>
+
+    <header class="top-navbar">
+        <div class="logo-section">
+            <img src="/images/studio logo.jpg" alt="Logo" class="logo-img">
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <div class="user-profile">
+                <i class="fa-solid fa-circle-user" style="color: white; font-size: 36px; cursor: pointer;"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+
+        <aside class="sidebar">
+            <nav>
+                <a href="customer_booking.html">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>Book a Session</span>
+                </a>
+                <a href="customer_gallery_request.html">
+                    <i class="fa-regular fa-image"></i>
+                    <span>My Gallery</span>
+                </a>
+                <a href="customer_profile.html" class="active">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+
+            <a href="client_homepage.html" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content profile-content-container">
+            <div class="profile-cards-wrapper">
+
+                <div class="profile-card hero-card">
+                    <div class="avatar-placeholder">
+                        <img id="profile-avatar" src="/images/default-profile.png" alt="Profile">
+                    </div>
+                    <div class="profile-hero-details">
+                        <h2 id="profile-name">Loading...</h2>
+                        <span class="profile-email-badge">
+                            <i class="fa-regular fa-envelope"></i>
+                            <span id="profile-email">Loading...</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="profile-card info-card">
+                    <h3>Personal Information</h3>
+
+                    <div class="info-grid">
+                        <div class="info-group">
+                            <label>First Name</label>
+                            <p id="first-name">Loading...</p>
+                        </div>
+                        <div class="info-group">
+                            <label>Last Name</label>
+                            <p id="last-name">Loading...</p>
+                        </div>
+                        <div class="info-group">
+                            <label>Email Address</label>
+                            <p id="info-email">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
+        (async () => {
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (!user) {
+                window.location.href = "/frontend-customer/customer_login.html";
+                return;
+            }
+
+            // Get full name
+            const fullName =
+                user.user_metadata.full_name ||
+                user.user_metadata.name ||
+                "";
+
+            // Split into first and last name
+            const nameParts = fullName.trim().split(" ");
+
+            const firstName = nameParts[0] || "";
+            const lastName = nameParts.slice(1).join(" ");
+
+            // Profile picture
+            document.getElementById("profile-avatar").src =
+                user.user_metadata.avatar_url ||
+                user.user_metadata.picture ||
+                "/images/default-profile.png";
+
+            // Hero Card
+            document.getElementById("profile-name").textContent = fullName;
+            document.getElementById("profile-email").textContent = user.email;
+
+            // Information Card
+            document.getElementById("first-name").textContent = firstName;
+            document.getElementById("last-name").textContent = lastName;
+            document.getElementById("info-email").textContent = user.email;
+
+        })();
+    </script>
+</body>
+
+</html>

@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-y  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Staff Login - Vanity Creation</title>
 
@@ -54,7 +54,7 @@ y  <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </div>
 
         <div class="forgot-password-wrapper">
-          <a href="staff_forgot_pw.html" class="forgot-link">
+          <a href="admin_forgotpw.html" class="forgot-link">
             Forgot Password
           </a>
         </div>
@@ -207,30 +207,9 @@ y  <meta name="viewport" content="width=device-width, initial-scale=1.0">
         }
 
         let finalProfile = staff_profile;
-
-        if (!staff_profile) {
-          console.log("No profile found, creating one...");
-
-          const { data: newProfile, error: insertError } =
-            await supabaseClient.from("staff_profiles")
-              .insert({
-                id: user.id,
-                full_name: "",
-                email: user.email,
-                role: "staff",
-                verified: true,
-                avatar_url: null
-              })
-              .select()
-              .single();
-
-          if (insertError) {
-            console.error(insertError);
-            alert("Failed to create profile");
-            return;
-          }
-
-          finalProfile = newProfile;
+        if(!staff_profile) {
+          alert("Profile not found. PLease sign up first.");
+          return;
         }
 
         console.log("PROFILE:", finalProfile);

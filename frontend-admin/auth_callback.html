@@ -115,37 +115,28 @@
                 );
 
                 // Send OTP email
-                const response = await fetch(
-                    "http://localhost:3000/send-otp",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            email: user.email
-                        })
-                    }
-                );
+                // Send OTP email
+                console.log("Sending OTP to:", user.email);
+                console.log("Sending OTP request...");
+
+                const response = await fetch("http://localhost:3000/send-otp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: user.email
+                    })
+                });
+
+                console.log("Response Status:", response.status);
 
                 const result = await response.json();
 
-                console.log(result);
+                console.log("Server Response:", result);
 
                 if (!response.ok) {
-
                     alert(result.message);
-
-                    return;
-
-                }
-
-                if (!response.ok) {
-
-                    const message = await response.text();
-
-                    alert("Failed to send OTP: " + message);
-
                     return;
                 }
 

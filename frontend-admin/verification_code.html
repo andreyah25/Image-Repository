@@ -73,7 +73,7 @@
       const { data, error } = await supabaseClient.auth.getSession();
 
       if (error || !data.session) {
-        window.location.href = "staff_login.html";
+        window.location.href = "admin_login.html";
       }
     };
     // OTP Input Auto Navigation
@@ -155,7 +155,7 @@
 
         if (userError || !userData?.user) {
           alert("Session expired. Please login again.");
-          window.location.href = "staff_login.html";
+          window.location.href = "admin_login.html";
           return;
         }
 
@@ -257,7 +257,7 @@
 
         alert("Verification successful!");
 
-        window.location.href = "admin_dashboard.html";
+        window.location.href = "/frontend-admin/admin_dashboard.html";
 
       } catch (err) {
         console.error(err);

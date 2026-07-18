@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule a Session - Website Name</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/design/customer_booking.css?v=2.0">
+</head>
+
+<body>
+
+
+    <header class="top-navbar">
+        <div class="logo-section">
+            <img src="/images/studio logo.jpg" alt="Logo" class="logo-img">
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <div class="user-profile">
+                <img id="profile-image" src="/images/default-profile.png" alt="Profile" class="profile-img">
+                <span id="customer-name"></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+
+        <aside class="sidebar">
+            <nav>
+                <a href="customer_booking.html" class="active">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>Book a Session</span>
+                </a>
+                <a href="customer_gallery_request.html">
+                    <i class="fa-regular fa-image"></i>
+                    <span>My Gallery</span>
+                </a>
+                <a href="customer_profile.html">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+
+            <a href="customer_homepage.html" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content">
+            <div class="page-header">
+                <h1>Schedule a Session</h1>
+                <p>Provide your booking details so we can prepare for your session.</p>
+            </div>
+
+            <div class="sessions-panel booking-container">
+                <form id="bookingForm" class="booking-form">
+
+                    <div class="form-section">
+                        <h3 class="section-title-form">Contact Information</h3>
+                        <div class="form-grid-three">
+                            <div class="form-group">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" id="fullName" placeholder="Enter your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactNumber">Contact Number</label>
+                                <input type="tel" id="contactNumber" placeholder="09xxxxxxxxx" maxlength="11"
+                                    inputmode="numeric" autocomplete="tel" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="emailAddress">Email Address</label>
+                                <input type="email" id="emailAddress" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title-form">Select Date and Time</h3>
+                        <div class="form-grid-two">
+                            <div class="form-group icon-input">
+                                <label for="bookingDate">Date</label>
+                                <div class="field-wrapper">
+                                    <input type="text" id="bookingDate" placeholder="Select a date"
+                                        onfocus="(this.type='date')" onblur="(this.type='text')" required>
+                                    <i class="fa-regular fa-calendar"></i>
+                                </div>
+                            </div>
+                            <div class="form-group icon-input">
+                                <label for="bookingTime">Time</label>
+                                <div class="field-wrapper">
+                                    <input type="text" id="bookingTime" placeholder="Select a time"
+                                        onfocus="(this.type='time')" onblur="(this.type='text')" required>
+                                    <i class="fa-regular fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-grid-two">
+                            <div class="form-group">
+                                <label for="sessionType">Session Type</label>
+                                <select id="sessionType" required>
+                                    <option value="" disabled selected>Select a session type</option>
+                                    <option value="portrait">Portrait Session</option>
+                                    <option value="couple">Couple Portrait</option>
+                                    <option value="family">Family Portrait</option>
+                                    <option value="birthday">Birthday Party</option>
+                                    <option value="wedding">Wedding Coverage</option>
+                                    <option value="graduation">Graduation Shoot</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="notes">Notes/Request (Optional)</label>
+                                <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-confirm">Confirm Booking</button>
+                    </div>
+
+                </form>
+            </div>
+        </main>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+        (async () => {
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (!user) {
+                window.location.href = "/frontend-customer/customer_login.html";
+                return;
+            }
+
+            // Display Google profile
+            document.getElementById("customer-name").textContent =
+                user.user_metadata.full_name ||
+                user.user_metadata.name ||
+                user.email;
+
+            document.getElementById("profile-image").src =
+                user.user_metadata.avatar_url ||
+                user.user_metadata.picture ||
+                "/images/default-profile.png";
+
+            document.getElementById("fullName").value =
+                user.user_metadata.full_name || "";
+
+            document.getElementById("emailAddress").value =
+                user.email;
+
+            document.getElementById("emailAddress").readOnly = true;
+
+        })();
+        const bookingForm = document.getElementById("bookingForm");
+
+        bookingForm.addEventListener("submit", async (e) => {
+
+            e.preventDefault();
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (!user) {
+                alert("Please login first.");
+                return;
+            }
+
+            const fullName = document.getElementById("fullName").value.trim();
+            const contact = document.getElementById("contactNumber").value.trim();
+            const email = user.email;
+            const date = document.getElementById("bookingDate").value;
+            const time = document.getElementById("bookingTime").value;
+            const session = document.getElementById("sessionType").value;
+            const notes = document.getElementById("notes").value.trim();
+
+//validate contact number 
+            if (!/^09\d{9}$/.test(contact)) {
+                alert("Please enter a valid 11-digit mobile number (e.g. 09123456789).");
+                document.getElementById("contactNumber").focus();
+                return;
+            }
+            if (
+                !fullName ||
+                !contact ||
+                !email ||
+                !date ||
+                !time ||
+                !session
+            ) {
+                alert("Please complete all required fields.");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from("bookings")
+                .insert([
+                    {
+                        customer_id: user.id,
+                        full_name: fullName,
+                        contact_number: contact,
+                        email: email,
+                        booking_date: date,
+                        booking_time: time,
+                        session_type: session,
+                        notes: notes,
+                        status: "Pending"
+                    }
+                ]);
+
+            if (error) {
+                console.error(error);
+                alert(error.message);
+                return;
+            }
+
+            alert("Booking request submitted successfully!");
+
+            bookingForm.reset();
+
+            document.getElementById("fullName").value =
+                user.user_metadata.full_name || "";
+
+            document.getElementById("emailAddress").value =
+                user.email;
+        });
+        const contactInput = document.getElementById("contactNumber");
+
+        contactInput.addEventListener("input", function () {
+
+            // Remove everything except numbers
+            this.value = this.value.replace(/[^0-9]/g, "");
+
+            // Limit to 11 digits
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 11);
+            }
+
+        });
+    </script>
+</body>
+
+</html>
