@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archives</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/design/admin_dashboard.css">
+    <link rel="stylesheet" href="/design/admin_client_list.css">
+    <link rel="stylesheet" href="/design/admin_repository.css">
+    <link rel="stylesheet" href="/design/admin_archives.css?v=1.2">
+</head>
+
+<body>
+
+    <header class="top-navbar">
+        <div class="logo-section">
+            <div class="logo-box"></div>
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <button type="button" class="notification-btn" id="notificationTrigger" aria-label="Notifications">
+                <i class="fa-solid fa-bell"></i>
+            </button>
+            <div class="user-profile">
+                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
+                <span id="userName">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+
+        <aside class="sidebar">
+            <nav>
+                <a href="admin_home.html">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Home
+                </a>
+                <a href="admin_client_list.html">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+                <a href="admin_repository.html">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+                <a href="admin_payment.html">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+                <a href="admin_archives.html" class="active">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+                <a href="admin_profile.html">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+                <a href="admin_settings.html">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+            </nav>
+
+            <a href="admin_login.html" class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content">
+
+            <div class="repo-top-header-block">
+                <div class="page-header">
+                    <h1>Archives</h1>
+                    <p>Review and manage archived customers, folders, and bookings.</p>
+                </div>
+            </div>
+
+            <div class="archive-tab-navigation">
+                <button type="button" class="archive-tab-btn active" data-filter="all">All Archives</button>
+                <button type="button" class="archive-tab-btn" data-filter="customer">All Customers</button>
+                <button type="button" class="archive-tab-btn" data-filter="folder">All Folders</button>
+                <button type="button" class="archive-tab-btn" data-filter="booking">All Bookings</button>
+            </div>
+
+            <div class="archive-controls-row">
+                <div class="archive-search-wrapper">
+                    <input type="text" id="archiveSearchInput" placeholder="Search archives...">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                </div>
+                <button type="button" class="archive-filter-btn">
+                    <i class="fa-solid fa-sliders"></i>
+                    Filter
+                </button>
+            </div>
+
+            <div class="archive-table-card">
+                <table class="archive-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Item</th>
+                            <th style="width: 20%;">Type</th>
+                            <th style="width: 25%;">Archived On</th>
+                            <th style="width: 20%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archiveTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
+        // Dynamic local database storage array matching your requirements.
+        // You can easily replace this array with database tables later!
+        const archiveItems = [
+            { id: 1, title: "Maria Santos", subtext: "mariasantos@gmail.com", type: "customer", date: "June 30, 2026", time: "5:20 PM" },
+            { id: 2, title: "Summer Shoot 2026", subtext: "120 photos", type: "folder", date: "July 10, 2026", time: "2:15 PM" },
+            { id: 3, title: "Wedding Reception Booking", subtext: "ID: #BK-9021", type: "booking", date: "May 18, 2026", time: "11:30 AM" },
+            { id: 4, title: "John Doe", subtext: "johndoe@gmail.com", type: "customer", date: "Jan 12, 2026", time: "10:15 AM" },
+            { id: 5, title: "Pre-Debut Folder", subtext: "420 photos", type: "folder", date: "Feb 05, 2026", time: "4:30 PM" },
+            { id: 6, title: "Corporate Seminar Booking", subtext: "ID: #BK-1052", type: "booking", date: "Mar 22, 2026", time: "1:00 PM" }
+        ];
+
+        let currentFilter = "all";
+
+        // Function to render the table data dynamically based on active filter button
+        function renderArchiveTable() {
+            const tbody = document.getElementById("archiveTableBody");
+            tbody.innerHTML = ""; // Clear existing rows
+
+            // Filter logic
+            const filteredItems = archiveItems.filter(item => {
+                if (currentFilter === "all") return true;
+                return item.type === currentFilter;
+            });
+
+            if (filteredItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888888; padding: 30px;">No archived items found.</td></tr>`;
+                return;
+            }
+
+            filteredItems.forEach(item => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <div class="item-meta-cell">
+                            <h4>${item.title}</h4>
+                            <p>${item.subtext}</p>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge ${item.type}">${item.type}</span>
+                    </td>
+                    <td>
+                        <div class="timestamp-cell">
+                            ${item.date}
+                            <span>${item.time}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <select class="archive-actions-select" data-id="${item.id}">
+                            <option selected disabled>Select action</option>
+                            <option value="restore">Restore</option>
+                            <option value="delete">Delete Permanently</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Add Click Events to navigation buttons
+        const tabButtons = document.querySelectorAll(".archive-tab-btn");
+        tabButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                // Remove active classes from all tabs
+                tabButtons.forEach(btn => btn.classList.remove("active"));
+
+                // Add active class to clicked tab
+                button.classList.add("active");
+
+                // Set the active filter state and update UI
+                currentFilter = button.getAttribute("data-filter");
+                renderArchiveTable();
+            });
+        });
+
+        // Initialize display on load
+        let currentUser = null;
+
+        window.addEventListener("load", async () => {
+            renderArchiveTable(); // Run the dynamic renderer
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+
+                if (!session) {
+                    window.location.href = "admin_login.html";
+                    return;
+                }
+
+                currentUser = session.user;
+
+                const { data: profile } = await supabaseClient
+                    .from("staff_profiles")
+                    .select("*")
+                    .eq("id", currentUser.id)
+                    .single();
+
+                if (profile) {
+                    document.getElementById("userName").textContent = profile.full_name;
+                    if (profile.avatar_url) {
+                        document.getElementById("userAvatar").src = profile.avatar_url;
+                    }
+                }
+
+            } catch (err) {
+                console.error("Init error:", err);
+            }
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", async (e) => {
+            e.preventDefault();
+            await supabaseClient.auth.signOut();
+            window.location.href = "admin_login.html";
+        });
+    </script>
+</body>
+
+</html>

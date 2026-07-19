@@ -80,7 +80,7 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      const { error } = await supabaseClient.auth.signUp({
+      const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
         options: {
@@ -95,9 +95,44 @@
         return;
       }
 
+      const user = data.user;
+      const { data: existingProfile } = await supabaseClient
+        .from("staff_profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!existingProfile) {
+        const { error: profileError } = await supabaseClient
+          .from("staff_profiles")
+          .insert([
+            {
+              id: user.id,
+              full_name: fullName,
+              email: email,
+              avatar_url: "",
+              role: "admin",
+              verified: true
+            }
+          ]);
+
+        if (profileError) {
+          console.error(profileError);
+          alert(profileError.message);
+          return;
+        }
+      }
+
+      if (profileError) {
+        console.error(profileError);
+        alert(profileError.message);
+        return;
+      }
+
       alert("Account created successfully!");
       window.location.href = "admin_login.html";
     });
+
   </script>
 
 

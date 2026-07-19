@@ -180,7 +180,7 @@
 
                 if (params.get("error")) {
                     alert(params.get("error_description") || "Login failed");
-                    window.location.href = "staff_login.html";
+                    window.location.href = "admin_login.html";
                     return;
                 }
 
@@ -190,7 +190,7 @@
                 } = await supabaseClient.auth.getSession();
 
                 if (!session) {
-                    window.location.href = "staff_login.html";
+                    window.location.href = "admin_login.html";
                     return;
                 }
 

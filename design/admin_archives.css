@@ -1,0 +1,194 @@
+.archive-tab-navigation {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.archive-tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #666666;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.archive-tab-btn:hover {
+    color: #1f2d2f;
+}
+
+.archive-tab-btn.active {
+    color: #1f2d2f;
+    font-weight: 700;
+}
+
+.archive-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #1f2d2f;
+}
+
+.archive-controls-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* Restructured Search Component */
+.archive-search-wrapper {
+    position: relative; 
+    width: 260px;
+}
+
+.archive-search-wrapper input {
+    width: 100%; 
+    height: 36px; 
+    border: 1px solid #cccccc; 
+    border-radius: 4px; 
+    padding: 0 35px 0 12px; 
+    font-size: 13px; 
+    font-family: inherit; 
+    color: #333333; 
+    outline: none; 
+    background-color: #ffffff;
+}
+
+.archive-search-wrapper .search-icon {
+    position: absolute; 
+    right: 12px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    color: #999999; 
+    font-size: 13px; 
+    pointer-events: none;
+}
+
+.archive-filter-btn {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    height: 36px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #333333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* Archive DataTable View */
+.archive-table-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.archive-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.archive-table th {
+    background-color: #1f2d2f;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 14px 20px;
+}
+
+.archive-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #eeeeee;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #333333;
+}
+
+/* Rows Meta & Cells Layout */
+.item-meta-cell h4 {
+    margin: 0 0 2px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222222;
+}
+
+.item-meta-cell p {
+    margin: 0;
+    font-size: 12px;
+    color: #888888;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+/* Badges styling matching variables */
+.badge.customer {
+    background-color: #fff1db;
+    color: #f0a020;
+}
+
+.badge.folder {
+    background-color: #e3edff;
+    color: #4a86f7;
+}
+
+.badge.booking {
+    background-color: #e2f9e9;
+    color: #28a745;
+}
+
+.timestamp-cell {
+    font-size: 13px;
+    color: #444444;
+    line-height: 1.3;
+}
+
+.timestamp-cell span {
+    display: block;
+    font-size: 11px;
+    color: #888888;
+    margin-top: 1px;
+}
+
+/* Action Dropdown Elements */
+.archive-actions-select {
+    height: 32px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    padding: 0 24px 0 10px;
+    font-size: 12px;
+    color: #666666;
+    background-color: #ffffff;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}

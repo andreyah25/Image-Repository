@@ -19,10 +19,28 @@
         </div>
 
         <div class="navbar-right">
+
+            <div class="notification-container">
+
+                <button id="notificationBtn" class="notification-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notificationCount">0</span>
+                </button>
+
+                <div id="notificationDropdown" class="notification-dropdown">
+
+
+                    <div id="notificationList"></div>
+
+                </div>
+
+            </div>
+
             <div class="user-profile">
                 <img id="profile-image" src="/images/default-profile.png" alt="Profile" class="profile-img">
                 <span id="customer-name"></span>
             </div>
+
         </div>
     </header>
 
@@ -168,8 +186,65 @@
                 user.email;
 
             document.getElementById("emailAddress").readOnly = true;
-
+            loadNotifications();
         })();
+        async function loadNotifications() {
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            const { data, error } = await supabaseClient
+                .from("notifications")
+                .select("*")
+                .eq("customer_id", user.id)
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.log(error);
+                return;
+            }
+
+            const list = document.getElementById("notificationList");
+
+            list.innerHTML = "";
+
+            let unread = 0;
+
+            data.forEach(notification => {
+                console.log(notification.message);
+                if (!notification.is_read) {
+                    unread++;
+                }
+
+                list.innerHTML += `
+<div class="notification-item ${notification.is_read ? "" : "unread"}">
+
+    <div class="notification-icon">
+        <i class="fa-solid fa-circle-check"></i>
+    </div>
+
+    <div class="notification-content">
+        <h4>${notification.title}</h4>
+
+      <p class="notification-message">
+    ${notification.message}
+</p>
+
+        <small>
+            ${notification.created_at
+                        ? new Date(notification.created_at).toLocaleString()
+                        : ""
+                    }
+        </small>
+    </div>
+
+</div>
+`;
+
+            });
+
+            document.getElementById("notificationCount").textContent = unread;
+
+        }
         const bookingForm = document.getElementById("bookingForm");
 
         bookingForm.addEventListener("submit", async (e) => {
@@ -191,7 +266,7 @@
             const session = document.getElementById("sessionType").value;
             const notes = document.getElementById("notes").value.trim();
 
-//validate contact number 
+            //validate contact number 
             if (!/^09\d{9}$/.test(contact)) {
                 alert("Please enter a valid 11-digit mobile number (e.g. 09123456789).");
                 document.getElementById("contactNumber").focus();
@@ -251,6 +326,31 @@
             // Limit to 11 digits
             if (this.value.length > 11) {
                 this.value = this.value.slice(0, 11);
+            }
+
+        });
+        const notificationBtn = document.getElementById("notificationBtn");
+
+        notificationBtn.addEventListener("click", () => {
+
+            const dropdown = document.getElementById("notificationDropdown");
+
+            if (dropdown.style.display === "block") {
+                dropdown.style.display = "none";
+            } else {
+                dropdown.style.display = "block";
+            }
+
+        });
+        document.addEventListener("click", (e) => {
+
+            const dropdown = document.getElementById("notificationDropdown");
+
+            if (
+                !notificationBtn.contains(e.target) &&
+                !dropdown.contains(e.target)
+            ) {
+                dropdown.style.display = "none";
             }
 
         });

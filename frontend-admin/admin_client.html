@@ -20,7 +20,7 @@
     <header class="top-navbar">
         <div class="logo-section">
             <div class="logo-box"></div>
-            <span>VANITY CREATION</span>
+            <span>Website Name</span>
         </div>
 
         <div class="navbar-right">
@@ -58,36 +58,41 @@
                     <i class="fa-solid fa-box-archive"></i>
                     Archives
                 </a>
-                <a href="#">
+                <a href="admin_profile.html">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
-                <a href="#">
+                <a href="admin_settings.html">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
             </nav>
 
-            <a href="landing_page.html" class="logout-btn" id="logoutBtn">
+            <a href="admin_dashboard.html" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
             </a>
         </aside>
 
         <main class="content">
-            
+
             <div class="client-header-container">
                 <div class="page-header">
                     <h1>Client List</h1>
                     <p>Browse and manage your clients records.</p>
+
+                    <div class="client-tabs">
+                        <button class="tab-btn" id="tabBookedSessions">All Booked Sessions</button>
+                        <button class="tab-btn active" id="tabAccessRequests">All Access Requests</button>
+                    </div>
                 </div>
-                
+
                 <div class="client-actions-row">
                     <div class="table-search-box">
                         <input type="text" placeholder="Search client...">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
-                    
+
                     <div class="filter-dropdown-wrapper">
                         <button class="table-filter-btn" id="filterBtn">
                             <i class="fa-solid fa-sliders"></i>
@@ -114,7 +119,7 @@
                         </div>
                     </div>
 
-                    <button class="add-new-client-btn">
+                    <button class="add-new-client-btn" id="addNewClientBtn">
                         <i class="fa-solid fa-pen-to-square"></i>
                         Add New Client
                     </button>
@@ -123,7 +128,7 @@
 
             <div class="ui-table-card-panel">
                 <table class="ui-data-grid">
-                    <thead>
+                    <thead id="clientTableHeader">
                         <tr>
                             <th>Clients</th>
                             <th>Email Address</th>
@@ -134,11 +139,18 @@
                         </tr>
                     </thead>
                     <tbody id="clientTableBody">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
 
         </main>
+    </div>
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <div>
+            <strong id="toastTitle">Success</strong>
+            <p id="toastMessage"></p>
+        </div>
     </div>
 
     <div class="modal-overlay" id="addClientModal">
@@ -147,27 +159,27 @@
                 <i class="fa-solid fa-user-plus"></i>
                 <h2>New Client</h2>
             </div>
-            
+
             <form class="modal-form" id="newClientForm">
                 <p class="form-instruction">Enter client information.</p>
-                
+
                 <div class="form-field">
                     <input type="text" id="clientName" placeholder="Client Name" required>
                 </div>
-                
+
                 <div class="form-field">
                     <input type="email" id="clientEmail" placeholder="Email Address" required>
                 </div>
-                
+
                 <div class="form-field">
                     <input type="text" id="eventType" placeholder="Event Type" required>
                 </div>
-                
+
                 <div class="form-field date-field-wrapper">
                     <input type="date" id="expiryDate" required>
                     <span class="date-placeholder">Set Expiry Date</span>
                 </div>
-                
+
                 <div class="form-field select-field-wrapper">
                     <select id="paymentStatus" required>
                         <option value="" disabled selected hidden>Payment Status</option>
@@ -176,7 +188,7 @@
                     </select>
                     <i class="fa-solid fa-chevron-down select-arrow"></i>
                 </div>
-                
+
                 <div class="form-field select-field-wrapper">
                     <select id="accessStatus" required>
                         <option value="" disabled selected hidden>Access Status</option>
@@ -185,7 +197,7 @@
                     </select>
                     <i class="fa-solid fa-chevron-down select-arrow"></i>
                 </div>
-                
+
                 <button type="submit" class="save-client-btn">Save Client</button>
             </form>
         </div>
@@ -193,7 +205,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-       const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
@@ -201,11 +213,101 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
-        window.addEventListener("load", async () => {
+        async function loadBookedSessions() {
+            const { data, error } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .order("booking_date", { ascending: true });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const tbody = document.getElementById("clientTableBody");
+            tbody.innerHTML = "";
+
+            data.forEach(booking => {
+                tbody.innerHTML += `
+            <tr>
+                
+                <td>${booking.full_name}</td>
+                <td>${booking.contact_number}</td>
+                <td>${booking.email}</td>
+                <td>${booking.booking_date}</td>
+                <td>${booking.booking_time}</td>
+                <td>${booking.session_type}</td>
+                <td>${booking.status}</td>
+                <td>${booking.notes || "-"}</td>
+             <td>
+                 ${booking.status === "Pending" ? `
+                 <button class="confirm-btn" data-id="${booking.id}">Confirm</button>
+                 <button class="reject-btn" data-id="${booking.id}">Reject</button>` : "-"
+                    }
+                </td>
+            </tr>
+        `;
+            });
+        }
+        // UI Elements for table dynamic updates
+        const tableHeader = document.getElementById('clientTableHeader');
+        const tabs = document.querySelectorAll('.tab-btn');
+        const addNewClientBtn = document.getElementById('addNewClientBtn');
+
+        // Function to update the table headers and button visibility dynamically
+        function renderHeaders(activeTabId) {
+            if (activeTabId === 'tabBookedSessions') {
+                // Set headers for Booked Sessions
+                tableHeader.innerHTML = `
+                    <tr>
+                       <th>Full Name</th>
+                        <th>Contact Number</th>
+                        <th>Email Address</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Session Type</th>
+                        <th>Status</th>
+                        <th>Note</th>
+                        <th>Action</th>
+                    </tr>
+                `;
+                // Hide "Add New Client" button
+                addNewClientBtn.style.display = 'none';
+            } else {
+                // Set headers for Access Requests
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Clients</th>
+                        <th>Email Address</th>
+                        <th>Event Type</th>
+                        <th>Expiry Date</th>
+                        <th>Payment Status</th>
+                        <th>Access Status</th>
+                    </tr>
+                `;
+                // Show "Add New Client" button
+                addNewClientBtn.style.display = 'flex';
+            }
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+
+                tabs.forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+
+                renderHeaders(tab.id);
+
+                if (tab.id === "tabBookedSessions") {
+                    loadBookedSessions();
+                }
+            });
+
+        }); window.addEventListener("load", async () => {
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (!session) {
-                    window.location.href = "staff_login.html";
+                    window.location.href = "admin_login.html";
                     return;
                 }
                 const user = session.user;
@@ -229,7 +331,7 @@
         document.getElementById("logoutBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             await supabaseClient.auth.signOut();
-            window.location.href = "landing_page.html";
+            window.location.href = "admin_login.html";
         });
 
         const filterBtn = document.getElementById('filterBtn');
@@ -284,6 +386,110 @@
             clientModal.classList.remove('show');
             newClientForm.reset();
         });
+        function showToast(title, message) {
+
+            document.getElementById("toastTitle").textContent = title;
+            document.getElementById("toastMessage").textContent = message;
+
+            const toast = document.getElementById("toast");
+
+            toast.classList.add("show");
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 4000);
+
+        }
+        document.addEventListener("click", async (e) => {
+
+            const btn = e.target.closest(".confirm-btn");
+            if (!btn) return;
+
+            const bookingId = btn.dataset.id;
+
+            const { data, error } = await supabaseClient
+                .from("bookings")
+                .update({
+                    status: "Confirmed"
+                })
+                .eq("id", bookingId)
+                .select();
+
+            if (error) {
+                console.error(error);
+                alert(error.message);
+                return;
+            }
+
+            const { data: notifyData, error: notificationError } =
+                await supabaseClient
+                    .from("notifications")
+                    .insert([
+                        {
+                            customer_id: data[0].customer_id,
+                            booking_id: data[0].id,
+                            title: "Booking Confirmation",
+
+                            message: `Your booking request for ${data[0].session_type} on ${new Date(data[0].booking_date).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric"
+                            })} at ${data[0].booking_time} has been confirmed.
+
+We look forward to welcoming you to your scheduled session.
+
+If you need to make any changes or have questions before your appointment, please don't hesitate to contact us.
+
+See you soon, and thank you for choosing our studio!`,
+                            is_read: false
+                        }
+                    ])
+                    .select();
+
+            console.log("Notification:", notifyData);
+            console.log("Notification Error:", notificationError);
+
+            showToast(
+                "Booking Confirmed",
+                "The customer's booking has been confirmed successfully."
+            );
+            loadBookedSessions();
+
+        });
+
+
+        document.addEventListener("click", async (e) => {
+
+            const btn = e.target.closest(".reject-btn");
+            if (!btn) return;
+
+            const bookingId = btn.dataset.id;
+
+            const rejected = confirm("Are you sure you want to reject this booking?");
+            if (!rejected) return;
+
+            const { error } = await supabaseClient
+                .from("bookings")
+                .update({
+                    status: "Rejected"
+                })
+                .eq("id", bookingId);
+
+            if (error) {
+                console.error(error);
+                alert(error.message);
+                return;
+            }
+
+            showToast(
+                "Booking Rejected",
+                "The booking has been rejected."
+            );
+            loadBookedSessions();
+
+        });
+
     </script>
 </body>
+
 </html>

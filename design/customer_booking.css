@@ -15,7 +15,124 @@ body {
     display: flex;
     flex-direction: column;
 }
+.notification-container{
+    position:relative;
+    margin-right:20px;
+}
 
+.notification-btn{
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    background:#fff;
+    color:#1f2d2f;
+    cursor:pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .25s;
+    position:relative;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.notification-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 22px rgba(0,0,0,.2);
+}
+
+.notification-btn i{
+    font-size:18px;
+}
+
+#notificationCount{
+    position:absolute;
+    top:-4px;
+    right:-4px;
+    min-width:18px;
+    height:18px;
+    padding:0 5px;
+    border-radius:999px;
+    background:#ef4444;
+    color:#fff;
+    font-size:11px;
+    font-weight:600;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:2px solid white;
+}
+
+.notification-dropdown{
+    position:absolute;
+    top:55px;
+    right:0;
+    width:320px;
+    background:#fff;
+    border-radius:10px;
+    display:none;
+    box-shadow:0 5px 20px rgba(0,0,0,.2);
+    overflow:hidden;
+    max-height:350px;
+    overflow-y:auto;
+    z-index:1000;
+}
+
+.notification-dropdown h4{
+    padding:15px;
+    margin:0;
+    border-bottom:1px solid #ddd;
+}
+
+.notification-item{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    padding:15px;
+    border-bottom:1px solid #f2f2f2;
+    transition:.2s;
+}
+.notification-item:last-child{
+    border-bottom:none;
+}
+.notification-item.unread{
+    background:#f5f9ff;
+}
+
+.notification-icon{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:#dff6e8;
+    color:#1d7a4a;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-shrink:0;
+    font-size:18px;
+}
+.notification-content h4{
+    font-size:16px;
+    font-weight:700;
+    color:#222;
+    margin-bottom:8px;
+}
+
+.notification-content p{
+    white-space: pre-line;
+    line-height: 1.5;
+    margin: 8px 0;
+
+}
+
+.notification-content small{
+    color:#999;
+    font-size:12px;
+}
+
+.notification-content{
+    flex:1;
+}
 .top-navbar {
     height: 70px;
     background: #1f2d2f;
