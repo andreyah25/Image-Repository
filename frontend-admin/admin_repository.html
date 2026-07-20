@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/design/admin_dashboard.css">
+    <link rel="stylesheet" href="/design/admin_client.css">
+    <link rel="stylesheet" href="/design/admin_repository.css">
+</head>
+
+<body>
+
+    <header class="top-navbar">
+        <div class="logo-section">
+            <div class="logo-box"></div>
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <!-- Clickable notification bell icon -->
+            <button type="button" class="notification-btn" id="notificationTrigger" aria-label="Notifications">
+                <i class="fa-solid fa-bell"></i>
+            </button>
+            <div class="user-profile">
+                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
+                <span id="userName">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+
+        <aside class="sidebar">
+            <nav>
+                <a href="admin_home.html">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Home
+                </a>
+                <a href="admin_client.html">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+                <a href="admin_repository.html" class="active">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+                <a href="admin_payment.html">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+                <!-- Archives Menu Item positioned correctly below Payments -->
+                <a href="admin_archives.html">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+                <a href="admin_profile.html">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+                <a href="admin_settings.html">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+            </nav>
+
+            <a href="admin_login.html" class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content">
+
+            <div class="repo-top-header-block">
+                <div class="page-header">
+                    <h1>Repository</h1>
+                    <p>Manage and organize folders and images stored in your workspace.</p>
+                </div>
+
+                <div class="filter-dropdown-wrapper">
+                    <button class="add-new-client-btn" id="addNewDropdownTrigger">
+                        <i class="fa-solid fa-plus"></i>
+                        Add New
+                    </button>
+                    <div class="add-new-dropdown-box" id="addNewDropdownMenu">
+                        <button id="uploadPhotosActionOption">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>Upload Photos</span>
+                        </button>
+                        <button id="createFolderActionOption">
+                            <i class="fa-regular fa-folder"></i>
+                            <span>Create New Folder</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="repo-sub-actions-container">
+                <div class="repo-filter-selects-group">
+                    <div class="repo-select-wrapper">
+                        <select>
+                            <option>All tags</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                    <div class="repo-select-wrapper">
+                        <select>
+                            <option>All events</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                    <div class="repo-select-wrapper">
+                        <select>
+                            <option>Sort by:</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <div class="client-actions-row">
+                    <div class="table-search-box">
+                        <input type="text" id="repoFolderSearchInput" placeholder="Search repository...">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="repo-view-container">
+
+                <div class="repo-folders-grid-panel" id="foldersView">
+                    <div class="empty-repo-message">Loading active directories...</div>
+                </div>
+
+                <div class="repo-photos-grid-panel" id="photosView" style="display:none;">
+                    <div class="empty-repo-message">No photos yet.</div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="createFolderModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <i class="fa-solid fa-folder-plus"></i>
+                <h2>New Folder</h2>
+            </div>
+
+            <form class="modal-form" id="newFolderForm">
+                <p class="form-instruction">Enter folder information.</p>
+
+                <div class="form-field">
+                    <input type="text" id="folderNameInput" placeholder="Folder Name" required value="Untitled Folder">
+                </div>
+
+                <button type="submit" class="save-client-btn">Create Folder</button>
+            </form>
+        </div>
+    </div>
+
+    <input type="file" id="photoFilesUploader" multiple accept="image/*" style="display: none;">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+        let currentUser = null;
+        let selectedFolderId = null;
+
+        
+    </script>
+</body>
+
+</html>

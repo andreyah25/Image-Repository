@@ -24,9 +24,18 @@
         </div>
 
         <div class="navbar-right">
-            <button class="notification-btn" aria-label="Notifications">
-                <i class="fa-solid fa-bell"></i>
-            </button>
+            <div class="notification-container">
+
+                <button id="notificationBtn" class="notification-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notificationCount">0</span>
+                </button>
+
+                <div id="notificationDropdown" class="notification-dropdown">
+                    <div id="notificationList"></div>
+                </div>
+
+            </div>
             <div class="user-profile">
                 <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
                 <span id="userName">Loading...</span>
@@ -213,6 +222,56 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+        async function loadAdminNotifications() {
+
+            const { data, error } = await supabaseClient
+                .from("notifications")
+                .select("*")
+                .eq("recipient", "admin")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const list = document.getElementById("notificationList");
+            list.innerHTML = "";
+
+            let unread = 0;
+
+            data.forEach(notification => {
+
+                if (!notification.is_read)
+                    unread++;
+
+                list.innerHTML += `
+            <div class="notification-item ${notification.is_read ? "" : "unread"}">
+
+                <div class="notification-icon">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+
+                <div class="notification-content">
+                    <h4>${notification.title}</h4>
+                    <p>${notification.message}</p>
+                    <small>${new Date(notification.created_at).toLocaleString()}</small>
+                </div>
+
+            </div>
+        `;
+            });
+
+            const badge = document.getElementById("notificationCount");
+
+            if (unread > 0) {
+                badge.textContent = unread;
+                badge.style.display = "inline-flex";
+            } else {
+                badge.style.display = "none";
+            }
+
+        }
         async function loadBookedSessions() {
             const { data, error } = await supabaseClient
                 .from("bookings")
@@ -249,6 +308,37 @@
         `;
             });
         }
+        /*async function loadAccessRequests() {
+
+            const { data, error } = await supabaseClient
+                .from("clients")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const tbody = document.getElementById("clientTableBody");
+            tbody.innerHTML = "";
+
+            data.forEach(client => {
+
+                tbody.innerHTML += `
+            <tr>
+                <td>${client.full_name}</td>
+                <td>${client.email}</td>
+                <td>${client.event_type}</td>
+                <td>${client.expiry_date}</td>
+                <td>${client.payment_status}</td>
+                <td>${client.access_status}</td>
+            </tr>
+        `;
+
+            });
+
+        }*/
         // UI Elements for table dynamic updates
         const tableHeader = document.getElementById('clientTableHeader');
         const tabs = document.querySelectorAll('.tab-btn');
@@ -257,7 +347,7 @@
         // Function to update the table headers and button visibility dynamically
         function renderHeaders(activeTabId) {
             if (activeTabId === 'tabBookedSessions') {
-                // Set headers for Booked Sessions
+                loadBookedSessions();
                 tableHeader.innerHTML = `
                     <tr>
                        <th>Full Name</th>
@@ -274,19 +364,21 @@
                 // Hide "Add New Client" button
                 addNewClientBtn.style.display = 'none';
             } else {
-                // Set headers for Access Requests
                 tableHeader.innerHTML = `
-                    <tr>
-                        <th>Clients</th>
-                        <th>Email Address</th>
-                        <th>Event Type</th>
-                        <th>Expiry Date</th>
-                        <th>Payment Status</th>
-                        <th>Access Status</th>
-                    </tr>
-                `;
-                // Show "Add New Client" button
-                addNewClientBtn.style.display = 'flex';
+        <tr>
+            <th>Clients</th>
+            <th>Email Address</th>
+            <th>Event Type</th>
+            <th>Expiry Date</th>
+            <th>Payment Status</th>
+            <th>Access Status</th>
+        </tr>
+    `;
+
+                // Empty table
+                document.getElementById("clientTableBody").innerHTML = "";
+
+                addNewClientBtn.style.display = "flex";
             }
         }
 
@@ -321,12 +413,71 @@
                     document.getElementById("userName").textContent = profile.full_name;
                     if (profile.avatar_url) {
                         document.getElementById("userAvatar").src = profile.avatar_url;
+
                     }
+                    loadAdminNotifications();
+
+                    // Empty the table on initial load
+                    document.getElementById("clientTableBody").innerHTML = "";
                 }
             } catch (err) {
                 console.error(err);
             }
         });
+        const notificationBtn = document.getElementById("notificationBtn");
+
+        notificationBtn.addEventListener("click", async () => {
+
+            const dropdown = document.getElementById("notificationDropdown");
+
+            dropdown.style.display =
+                dropdown.style.display === "block"
+                    ? "none"
+                    : "block";
+
+            if (dropdown.style.display === "block") {
+
+                await supabaseClient
+                    .from("notifications")
+                    .update({ is_read: true })
+                    .eq("recipient", "admin")
+                    .eq("is_read", false);
+
+                loadAdminNotifications();
+            }
+
+        });
+        document.addEventListener("click", (e) => {
+
+            const dropdown = document.getElementById("notificationDropdown");
+
+            if (
+                !notificationBtn.contains(e.target) &&
+                !dropdown.contains(e.target)
+            ) {
+                dropdown.style.display = "none";
+            }
+
+        });
+
+        supabaseClient
+            .channel("admin_notifications")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "notifications"
+                },
+                (payload) => {
+
+                    if (payload.new.recipient === "admin") {
+                        loadAdminNotifications();
+                    }
+
+                }
+            )
+            .subscribe();
 
         document.getElementById("logoutBtn").addEventListener("click", async (e) => {
             e.preventDefault();
@@ -382,9 +533,27 @@
                 payment_status: document.getElementById('paymentStatus').value,
                 access_status: document.getElementById('accessStatus').value
             };
-            console.log("Assembled Form Payload Package Maps:", clientPayload);
-            clientModal.classList.remove('show');
+            const { error } = await supabaseClient
+                .from("clients")
+                .insert([clientPayload]);
+
+            if (error) {
+
+                console.error(error);
+                alert(error.message);
+                return;
+
+            }
+
+            showToast(
+                "Client Added",
+                "Client has been added successfully."
+            );
+
+            clientModal.classList.remove("show");
             newClientForm.reset();
+
+            loadAccessRequests();
         });
         function showToast(title, message) {
 
@@ -428,6 +597,7 @@
                         {
                             customer_id: data[0].customer_id,
                             booking_id: data[0].id,
+                            recipient: "customer",
                             title: "Booking Confirmation",
 
                             message: `Your booking request for ${data[0].session_type} on ${new Date(data[0].booking_date).toLocaleDateString("en-US", {
@@ -436,11 +606,9 @@
                                 day: "numeric"
                             })} at ${data[0].booking_time} has been confirmed.
 
-We look forward to welcoming you to your scheduled session.
-
-If you need to make any changes or have questions before your appointment, please don't hesitate to contact us.
-
-See you soon, and thank you for choosing our studio!`,
+                                We look forward to welcoming you to your scheduled session. 
+                                If you need to make any changes or have questions before your appointment, please don't hesitate to contact us.
+                                See you soon, and thank you for choosing our Captured studio!`,
                             is_read: false
                         }
                     ])

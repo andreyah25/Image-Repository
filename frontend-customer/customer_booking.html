@@ -117,6 +117,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="paymentMethod">Reservation Down Payment</label>
+                        <select id="paymentMethod" required>
+                            <option value="" disabled selected>Select payment method</option>
+                            <option value="GCash">GCash</option>
+                            <option value="Maya">Maya</option>
+                        </select>
+                    </div>
+                    <div class="payment-note">
+                        <strong>Reservation Policy</strong><br>
+                        A non-refundable reservation down payment of ₱200.00 is required to confirm your booking. This
+                        amount will be deducted from your total package price.
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reservation Fee</label>
+                        <input type="text" value="₱200.00 (Non-refundable)" readonly>
+                    </div>
 
                     <div class="form-section">
                         <div class="form-grid-two">
@@ -196,6 +214,7 @@
                 .from("notifications")
                 .select("*")
                 .eq("customer_id", user.id)
+                .eq("recipient", "customer")
                 .order("created_at", { ascending: false });
 
             if (error) {
@@ -242,8 +261,14 @@
 
             });
 
-            document.getElementById("notificationCount").textContent = unread;
+            const badge = document.getElementById("notificationCount");
 
+            if (unread > 0) {
+                badge.textContent = unread;
+                badge.style.display = "inline-flex";
+            } else {
+                badge.style.display = "none";
+            }
         }
         const bookingForm = document.getElementById("bookingForm");
 
@@ -264,6 +289,7 @@
             const date = document.getElementById("bookingDate").value;
             const time = document.getElementById("bookingTime").value;
             const session = document.getElementById("sessionType").value;
+            const paymentMethod = document.getElementById("paymentMethod").value;
             const notes = document.getElementById("notes").value.trim();
 
             //validate contact number 
@@ -278,13 +304,14 @@
                 !email ||
                 !date ||
                 !time ||
-                !session
+                !session ||
+                !paymentMethod
             ) {
                 alert("Please complete all required fields.");
                 return;
             }
 
-            const { error } = await supabaseClient
+            const { data: bookingData, error } = await supabaseClient
                 .from("bookings")
                 .insert([
                     {
@@ -296,16 +323,46 @@
                         booking_time: time,
                         session_type: session,
                         notes: notes,
+                        payment_method: paymentMethod,
+                        downpayment_amount: 200.00,
+                        payment_status: "Pending",
                         status: "Pending"
                     }
-                ]);
+                ])
+                .select()
+                .single();
 
             if (error) {
                 console.error(error);
                 alert(error.message);
                 return;
             }
+            // CUSTOMER NOTIFICATION
+            await supabaseClient
+                .from("notifications")
+                .insert({
+                    customer_id: user.id,
+                    booking_id: bookingData.id,
+                    recipient: "customer",
+                    title: "Booking Submitted",
+                    message:
+                        "Your booking request has been submitted successfully and is waiting for approval.",
+                    is_read: false
+                });
 
+            // ADMIN NOTIFICATION
+            await supabaseClient
+                .from("notifications")
+                .insert({
+                    customer_id: user.id,
+                    booking_id: bookingData.id,
+                    recipient: "admin",
+                    title: "New Booking Reservation",
+                    message:
+                        `${fullName} booked a ${session} session on ${date} at ${time}
+                         Waiting for approval.`,
+                    is_read: false
+                });
             alert("Booking request submitted successfully!");
 
             bookingForm.reset();
@@ -331,15 +388,42 @@
         });
         const notificationBtn = document.getElementById("notificationBtn");
 
-        notificationBtn.addEventListener("click", () => {
+        notificationBtn.addEventListener("click", async () => {
 
             const dropdown = document.getElementById("notificationDropdown");
 
+            // If already open, just close it
             if (dropdown.style.display === "block") {
                 dropdown.style.display = "none";
-            } else {
-                dropdown.style.display = "block";
+                return;
             }
+
+            // Open dropdown
+            dropdown.style.display = "block";
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (!user) return;
+
+            // Mark all unread notifications as read
+            const { data, error } = await supabaseClient
+                .from("notifications")
+                .update({ is_read: true })
+                .eq("customer_id", user.id)
+                .eq("recipient", "customer")
+                .eq("is_read", false)
+                .select();
+
+            console.log("Updated notifications:", data);
+
+            if (error) {
+                console.error("Update error:", error);
+                alert(error.message);
+                return;
+            }
+
+            // Reload notifications and update badge
+            await loadNotifications();
 
         });
         document.addEventListener("click", (e) => {
@@ -354,6 +438,28 @@
             }
 
         });
+        supabaseClient
+            .channel("customer_notifications")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "notifications"
+                },
+                async (payload) => {
+
+                    const { data: { user } } = await supabaseClient.auth.getUser();
+
+                    if (
+                        payload.new.recipient === "customer" &&
+                        payload.new.customer_id === user.id
+                    ) {
+                        loadNotifications();
+                    }
+                }
+            )
+            .subscribe();
     </script>
 </body>
 

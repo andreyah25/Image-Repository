@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="/design/admin_dashboard.css">
+    <link rel="stylesheet" href="/design/admin_profile.css">
+</head>
+
+<body>
+
+    <header class="top-navbar">
+        <div class="logo-section">
+            <div class="logo-box"></div>
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <div class="notification-container">
+
+                <button id="notificationBtn" class="notification-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notificationCount" style="display:none;">0</span>
+                </button>
+
+                <div id="notificationDropdown"
+                    style="display:none;position:absolute;right:0;top:55px;width:320px;background:#fff;border-radius:10px;padding:10px;box-shadow:0 10px 25px rgba(0,0,0,.15);z-index:999;max-height:350px;overflow-y:auto;">
+
+                    <div id="notificationList"></div>
+
+                </div>
+
+            </div>
+            <div class="user-profile">
+                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Avatar">
+                <span id="userName">Yve</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+
+        <aside class="sidebar">
+            <nav>
+                <a href="admin_home.html">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Home
+                </a>
+                <a href="admin_client.html">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+                <a href="admin_repository.html">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+                <a href="admin_payment.html">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+                <a href="admin_archives.html">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+                <a href="admin_profile.html" class="active">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+                <a href="admin_settings.html">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+            </nav>
+
+            <a href="admin_login.html" class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content">
+
+            <div class="profile-header-container">
+                <h1>Profile</h1>
+                <p>Access and edit your account details in one place.</p>
+            </div>
+
+            <div class="profile-summary-card">
+                <div class="profile-avatar-large">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="profile-summary-info">
+                    <h2 id="summaryFullName">Staff Name</h2>
+                    <div class="profile-email-row">
+                        <i class="fa-regular fa-envelope"></i>
+                        <span id="summaryEmail">staffname@gmail.com</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="personal-info-card">
+                <div class="card-header-row">
+                    <h3>Personal Information</h3>
+                    <button class="edit-profile-trigger-btn" id="openEditModalBtn">
+                        <i class="fa-solid fa-pen"></i>
+                        Edit
+                    </button>
+                </div>
+
+                <div class="info-details-grid">
+                    <div class="info-group">
+                        <label>First Name</label>
+                        <p id="displayFirstName">Staff First Name</p>
+                    </div>
+                    <div class="info-group">
+                        <label>Last Name</label>
+                        <p id="displayLastName">Staff Last Name</p>
+                    </div>
+                    <div class="info-group">
+                        <label>User Role</label>
+                        <p id="displayUserRole">Staff Member</p>
+                    </div>
+                    <div class="info-group">
+                        <label>Email Address</label>
+                        <p id="displayEmail">staffname@gmail.com</p>
+                    </div>
+                    <div class="info-group">
+                        <label>Status</label>
+                        <div><span class="status-badge-active" id="displayStatus">Active</span></div>
+                    </div>
+                    <div class="info-group">
+                        <label>Date Joined</label>
+                        <p id="displayDateJoined">June 1, 2025</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="editProfileModal">
+        <div class="edit-profile-modal-card">
+            <div class="edit-profile-modal-header">
+                <i class="fa-regular fa-address-card"></i>
+                <h2>Profile Information</h2>
+            </div>
+
+            <form class="edit-profile-modal-form" id="editProfileForm">
+                <p class="edit-form-instruction">Update your personal information.</p>
+
+                <div class="edit-form-field-group">
+                    <label>First Name</label>
+                    <input type="text" id="inputFirstName" required>
+                </div>
+
+                <div class="edit-form-field-group">
+                    <label>Last Name</label>
+                    <input type="text" id="inputLastName" required>
+                </div>
+
+                <div class="edit-form-field-group">
+                    <label>Email Address</label>
+                    <input type="email" id="inputEmail" required>
+                </div>
+
+                <div class="edit-form-field-group">
+                    <label>User Role</label>
+                    <div class="edit-disabled-input-wrapper">
+                        <input type="text" id="inputUserRole" value="Staff Member" readonly>
+                        <i class="fa-solid fa-lock edit-lock-icon"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="edit-save-profile-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
+        const openEditModalBtn = document.getElementById('openEditModalBtn');
+        const editProfileModal = document.getElementById('editProfileModal');
+        const editProfileForm = document.getElementById('editProfileForm');
+
+        openEditModalBtn.addEventListener('click', () => {
+            editProfileModal.classList.add('show');
+        });
+
+        editProfileModal.addEventListener('click', (e) => {
+            if (e.target === editProfileModal) {
+                editProfileModal.classList.remove('show');
+            }
+        });
+
+        editProfileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const first = document.getElementById('inputFirstName').value;
+            const last = document.getElementById('inputLastName').value;
+            const email = document.getElementById('inputEmail').value;
+
+            document.getElementById('displayFirstName').textContent = first;
+            document.getElementById('displayLastName').textContent = last;
+            document.getElementById('displayEmail').textContent = email;
+            document.getElementById('summaryEmail').textContent = email;
+            document.getElementById('summaryFullName').textContent = first + " " + last;
+
+            editProfileModal.classList.remove('show');
+        });
+
+        window.addEventListener("load", async () => {
+            try {
+                const {
+                    data: { session }
+                } = await supabaseClient.auth.getSession();
+
+                if (!session) {
+                    window.location.href = "admin_login.html";
+                    return;
+                }
+
+                const user = session.user;
+
+                const { data: profile, error } = await supabaseClient
+                    .from("staff_profiles")
+                    .select("*")
+                    .eq("id", user.id)
+                    .single();
+
+                if (error) {
+                    console.error(error);
+                    return;
+                }
+
+                // Navbar
+                document.getElementById("userName").textContent =
+                    profile.full_name || "Staff";
+
+                if (profile.avatar_url) {
+                    document.getElementById("userAvatar").src =
+                        profile.avatar_url;
+                }
+
+                // Split full name
+                const fullName = profile.full_name || "";
+                const nameParts = fullName.trim().split(" ");
+
+                const firstName = nameParts.shift() || "";
+                const lastName = nameParts.join(" ");
+
+                // Summary Card
+                document.getElementById("summaryFullName").textContent = fullName;
+                document.getElementById("summaryEmail").textContent =
+                    profile.email || user.email;
+
+                // Personal Information
+                document.getElementById("displayFirstName").textContent = firstName;
+                document.getElementById("displayLastName").textContent = lastName;
+                document.getElementById("displayEmail").textContent =
+                    profile.email || user.email;
+                document.getElementById("displayUserRole").textContent =
+                    profile.role || "Staff Member";
+                document.getElementById("displayStatus").textContent =
+                    profile.status || "Active";
+
+                if (profile.created_at) {
+                    document.getElementById("displayDateJoined").textContent =
+                        new Date(profile.created_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric"
+                        });
+                }
+
+                // Fill Edit Form
+                document.getElementById("inputFirstName").value = firstName;
+                document.getElementById("inputLastName").value = lastName;
+                document.getElementById("inputEmail").value =
+                    profile.email || user.email;
+                document.getElementById("inputUserRole").value =
+                    profile.role || "Staff Member";
+                await loadNotifications();
+            } catch (err) {
+                console.error(err);
+            }
+        });
+        async function loadNotifications() {
+
+            const { data, error } = await supabaseClient
+                .from("notifications")
+                .select("*")
+                .eq("recipient", "admin")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const list = document.getElementById("notificationList");
+            const badge = document.getElementById("notificationCount");
+
+            list.innerHTML = "";
+
+            let unread = 0;
+
+            data.forEach(notification => {
+
+                if (!notification.is_read) unread++;
+
+                list.innerHTML += `
+            <div style="padding:10px;border-bottom:1px solid #eee;">
+                <strong>${notification.title}</strong><br>
+                <small>${notification.message}</small><br>
+                <small style="color:gray">
+                    ${new Date(notification.created_at).toLocaleString()}
+                </small>
+            </div>
+        `;
+            });
+
+            if (unread > 0) {
+                badge.style.display = "inline-flex";
+                badge.textContent = unread;
+            } else {
+                badge.style.display = "none";
+            }
+        }
+        const notificationBtn = document.getElementById("notificationBtn");
+
+        notificationBtn.addEventListener("click", async () => {
+
+            const dropdown = document.getElementById("notificationDropdown");
+
+            if (dropdown.style.display === "block") {
+                dropdown.style.display = "none";
+                return;
+            }
+
+            dropdown.style.display = "block";
+
+            await supabaseClient
+                .from("notifications")
+                .update({ is_read: true })
+                .eq("recipient", "admin")
+                .eq("is_read", false);
+
+            await loadNotifications();
+
+        });
+        document.addEventListener("click", (e) => {
+
+            const dropdown = document.getElementById("notificationDropdown");
+
+            if (
+                !notificationBtn.contains(e.target) &&
+                !dropdown.contains(e.target)
+            ) {
+                dropdown.style.display = "none";
+            }
+
+        });
+        supabaseClient
+            .channel("admin_notifications")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "notifications"
+                },
+                (payload) => {
+                    console.log("Realtime:", payload);
+
+                    if (payload.new.recipient === "admin") {
+                        loadNotifications();
+                    }
+                }
+            )
+            .subscribe((status) => {
+                console.log("Status:", status);
+            });
+        document.getElementById("logoutBtn").addEventListener("click", async (e) => {
+            e.preventDefault();
+            await supabaseClient.auth.signOut();
+            window.location.href = "admin_login.html";
+        });
+    </script>
+</body>
+
+</html>

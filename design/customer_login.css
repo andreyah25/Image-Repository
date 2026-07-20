@@ -12,7 +12,23 @@ body {
     min-height: 100vh;
 }
 
-/* --- Split Layout Grid --- */
+.icon-arrow{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    border:none;
+    background:#1f2d2f;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+    transition:.3s ease;
+    box-shadow:0 8px 20px rgba(0,0,0,.2);
+}
+
+.icon-arrow:hover{
+    background:#355155;
+    transform:translateX(-5px) rotate(-5deg);
+}
 .login-container {
     display: flex;
     width: 100%;
@@ -22,7 +38,8 @@ body {
 /* Left Side Panel Banner */
 .login-banner {
     flex: 1;
-    background-color: #1e2a2e; /* Matches the dark slate grey from homepage */
+    background-color: #1e2a2e;
+    /* Matches the dark slate grey from homepage */
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -33,8 +50,10 @@ body {
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: flex-end; /* Changed from center to flex-end */
-    padding: 60px 10% 60px 40px; /* Increased right padding to 10% to keep it off the screen edge */
+    justify-content: flex-end;
+    /* Changed from center to flex-end */
+    padding: 60px 10% 60px 40px;
+    /* Increased right padding to 10% to keep it off the screen edge */
 }
 
 .banner-content {
@@ -100,8 +119,8 @@ body {
 }
 
 /* Floating behavior when input is focused or not empty */
-.input-group input:focus ~ label,
-.input-group input:not(:placeholder-shown) ~ label {
+.input-group input:focus~label,
+.input-group input:not(:placeholder-shown)~label {
     top: -16px;
     font-size: 0.85rem;
     color: #888888;
@@ -219,7 +238,8 @@ body {
 /* Tablets & Small Laptops (Widths 900px and below) */
 @media (max-width: 900px) {
     .login-container {
-        flex-direction: column; /* Stacks the banner on top, form on bottom */
+        flex-direction: column;
+        /* Stacks the banner on top, form on bottom */
     }
 
     .login-banner {
@@ -227,8 +247,10 @@ body {
         padding: 50px 5%;
         text-align: center;
         display: flex;
-        justify-content: center; /* NEW: Centers the text block container horizontally */
-        align-items: center;     /* Centers it vertically */
+        justify-content: center;
+        /* NEW: Centers the text block container horizontally */
+        align-items: center;
+        /* Centers it vertically */
     }
 
     .banner-content {
@@ -243,8 +265,10 @@ body {
 
     .banner-subtitle {
         font-size: 1.05rem;
-        max-width: 500px; /* Limits width slightly so it looks neat when centered */
-        margin: 0 auto;   /* Centers the paragraph block itself */
+        max-width: 500px;
+        /* Limits width slightly so it looks neat when centered */
+        margin: 0 auto;
+        /* Centers the paragraph block itself */
     }
 
     .login-form-wrapper {
