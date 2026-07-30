@@ -16,10 +16,17 @@ body {
     flex-direction: column;
 }
 
-/* --- Top Header Navigation (Matching client_enter_link.css) --- */
+/* --- Top Header Navigation (Exact Copied Gradient from Booking) --- */
 .top-navbar {
     height: 70px;
-    background: #1f2d2f;
+    background: linear-gradient(
+        135deg, 
+        #dbeffe 0%,   /* Light Sky Blue */
+        #fed7aa 25%,   /* Soft Peach */
+        #fef08a 50%,   /* Pastel Yellow / Cream */
+        #dcfce7 75%,   /* Pale Mint Green */
+        #f3e8ff 100%   /* Light Lavender */
+    );
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -27,23 +34,28 @@ body {
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
     width: 100%;
+    box-sizing: border-box;
     z-index: 100;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .logo-section {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: white;
-    font-size: 13px;
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .logo-img {
-    height: 34px;
+    height: 38px;
     width: auto;
     object-fit: contain;
     display: block;
+    border-radius: 4px;
 }
 
 .navbar-right {
@@ -100,8 +112,12 @@ body {
 }
 
 .sidebar a.active {
-    background: #1f2d2f;
-    color: rgb(221, 219, 219);
+    background: #639A88; /* Buttons & Active State strictly #639A88 */
+    color: #ffffff;
+}
+
+.sidebar a.active:hover {
+    background: #528373;
 }
 
 /* --- Red Logout Button Overrides (Matching client_enter_link.css) --- */
@@ -149,7 +165,7 @@ body {
 }
 
 /* ==========================================================================
-   GALLERY PAGE CORE LAYOUT RULES (Isolated exclusively to this view)
+   GALLERY PAGE CORE LAYOUT RULES
    ========================================================================= */
 
 /* Gallery Top Title & Download Header Area */
@@ -163,7 +179,7 @@ body {
 .gallery-title {
     font-size: 30px;
     font-weight: 400;
-    color: #1f2d2f;
+    color: #1f2d2f; /* Dark Text */
     margin-bottom: 6px;
 }
 
@@ -173,13 +189,13 @@ body {
     font-weight: 400;
 }
 
-/* Download All Button */
+/* Download All Button - Primary Action Button ONLY #639A88 */
 .btn-download-all {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background-color: #1f2d2f;
+    background-color: #639A88; 
     color: #ffffff;
     font-size: 15px;
     font-weight: 500;
@@ -191,7 +207,7 @@ body {
 }
 
 .btn-download-all:hover {
-    background-color: #121b1c;
+    background-color: #528373;
 }
 
 /* 4x2 Grid Layout */
@@ -206,7 +222,7 @@ body {
 .photo-card {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1; /* Retains clean squares exactly like wireframes */
+    aspect-ratio: 1 / 1;
     border-radius: 2px;
     overflow: hidden;
 }
@@ -214,7 +230,7 @@ body {
 .photo-placeholder {
     width: 100%;
     height: 100%;
-    background-color: #dedede; /* Perfect gray placeholder background */
+    background-color: #dedede;
 }
 
 /* Individual download button overlay */
@@ -278,10 +294,9 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE LAYOUT OVERRIDES (Matching client_enter_link.css exactly)
+   RESPONSIVE LAYOUT OVERRIDES
    ========================================================================= */
 
-/* Tablet Layout (Under 900px) */
 @media (max-width: 900px) {
     .dashboard-wrapper {
         flex-direction: column;
@@ -318,16 +333,15 @@ body {
     }
 
     .content {
-        margin-left: 0; /* Reset desktop layout offset */
+        margin-left: 0;
         padding: 30px 20px;
     }
     
     .gallery-photos-grid {
-        grid-template-columns: repeat(2, 1fr); /* Responsive adjust for grids */
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* Mobile Screens (Under 600px) */
 @media (max-width: 600px) {
     .sidebar {
         flex-direction: column;
@@ -367,10 +381,9 @@ body {
 }
 
 /* ==========================================================================
-   PAYMENT REQUIRED MODAL POPUP SYSTEM (FIXED & CONSISTENT SIZES)
+   PAYMENT REQUIRED MODAL POPUP SYSTEM
    ========================================================================= */
 
-/* Dark Overlay Background */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -387,17 +400,15 @@ body {
     transition: opacity 0.2s ease;
 }
 
-/* Activated State */
 .modal-overlay.active {
     opacity: 1;
     pointer-events: auto;
 }
 
-/* Center Dialog Card Box (Fixed size boundaries) */
 .payment-modal-card {
     background-color: #ffffff;
-    width: calc(100% - 30px); /* Leave minor padding on ultra-small screens */
-    max-width: 390px; /* Perfectly scaled to fit both single-line buttons side-by-side */
+    width: calc(100% - 30px);
+    max-width: 390px;
     border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -409,9 +420,9 @@ body {
     transform: scale(1);
 }
 
-/* Modal Dark Top Header */
+/* Modal Header - Set to #639A88 */
 .modal-header {
-    background-color: #1f2d2f; 
+    background-color: #639A88;
     color: #ffffff;
     padding: 16px 20px;
     display: flex;
@@ -422,16 +433,17 @@ body {
 
 .modal-card-icon {
     font-size: 20px;
+    color: #ffffff;
 }
 
 .modal-header h2 {
     font-size: 18px;
     font-weight: 500;
     letter-spacing: 0.2px;
+    color: #ffffff;
     font-family: "DM Sans", sans-serif !important;
 }
 
-/* Modal White Body Section */
 .modal-body {
     padding: 24px 20px;
     display: flex;
@@ -449,7 +461,6 @@ body {
     font-family: "DM Sans", sans-serif !important;
 }
 
-/* Action Buttons Row */
 .modal-actions-row {
     display: flex;
     align-items: center;
@@ -458,24 +469,22 @@ body {
     width: 100%;
 }
 
-/* Base style for both buttons to guarantee absolute consistency */
 .btn-modal-cancel,
 .btn-modal-proceed {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 42px; /* Enforces a rigid fixed height */
-    width: 165px; /* Locks down a completely consistent, fixed width */
+    height: 42px;
+    width: 165px;
     font-size: 13.5px;
     font-weight: 600;
     border-radius: 6px;
     text-align: center;
-    white-space: nowrap; /* Strictly prevents text wrapping or breaking into two lines */
+    white-space: nowrap;
     font-family: "DM Sans", sans-serif !important;
     box-sizing: border-box;
 }
 
-/* Maybe Later Button */
 .btn-modal-cancel {
     background-color: #ffffff;
     border: 1.5px solid #b8b8b8;
@@ -489,9 +498,9 @@ body {
     border-color: #1f2d2f;
 }
 
-/* Proceed to Payment Button */
+/* Proceed to Payment Button - Primary Action Button ONLY #639A88 */
 .btn-modal-proceed {
-    background-color: #1f2d2f;
+    background-color: #639A88;
     color: #ffffff !important;
     border: none;
     text-decoration: none;
@@ -499,5 +508,5 @@ body {
 }
 
 .btn-modal-proceed:hover {
-    background-color: #121b1c;
+    background-color: #528373;
 }

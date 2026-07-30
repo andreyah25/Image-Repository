@@ -184,7 +184,125 @@
     gap: 20px;
     width: 100%;
 }
+.add-new-dropdown-box{
+    display:none;
+}
 
+.add-new-dropdown-box.show{
+    display:block;
+}
+/* ==============================
+   FOLDER GRID UI
+============================== */
+
+.repo-folders-grid-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
+    padding: 20px 0;
+}
+
+
+/* Folder Card */
+
+.folder-card {
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    padding: 25px 20px;
+
+    height: 170px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    cursor: pointer;
+
+    border: 1px solid #885f5f;
+
+    transition: all .25s ease;
+
+    position: relative;
+
+}
+
+
+/* Hover */
+
+.folder-card:hover {
+
+    transform: translateY(-5px);
+
+    box-shadow: 
+    0 12px 30px rgba(0,0,0,0.12);
+
+    border-color: #d8c2a8;
+
+}
+
+
+/* Folder Icon */
+
+.folder-icon {
+
+    font-size: 55px;
+
+    color: #302820;
+
+    margin-bottom: 18px;
+
+}
+
+
+/* Folder Name */
+
+.folder-card h3 {
+
+    margin: 0;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 17px;
+
+    font-weight: 600;
+
+    color: #333;
+
+    text-align: center;
+
+    max-width: 180px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+/* Empty Message */
+
+.empty-repo-message {
+
+    width: 100%;
+
+    text-align: center;
+
+    padding: 50px;
+
+    color: #888;
+
+    font-size: 15px;
+
+}
 .folder-card-item {
     background: #ffffff;
     border: 1px solid #e5e5e5;

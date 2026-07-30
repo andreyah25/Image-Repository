@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
+/* --- Reset Rules --- */
 * {
     margin: 0;
     padding: 0;
@@ -12,11 +13,143 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    color: #161515;
 }
 
+/* --- Clean Notification Button --- */
+.notification-container {
+    position: relative;
+    margin-right: 15px;
+}
+
+.notification-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #353535;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    position: relative;
+    box-shadow: none;
+}
+
+.notification-btn:hover {
+    background: rgba(53, 53, 53, 0.08);
+}
+
+.notification-btn i {
+    font-size: 20px;
+}
+
+#notificationCount {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ffffff;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 10px;
+    display: none;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.notification-dropdown h4 {
+    padding: 15px;
+    margin: 0;
+    border-bottom: 1px solid #ddd;
+    color: #353535;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 15px;
+    border-bottom: 1px solid #f2f2f2;
+    transition: .2s;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item.unread {
+    background: #f5f9ff;
+}
+
+.notification-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #dff6e8;
+    color: #1d7a4a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 18px;
+}
+
+.notification-content h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #353535;
+    margin-bottom: 8px;
+}
+
+.notification-content p {
+    white-space: pre-line;
+    line-height: 1.5;
+    margin: 8px 0;
+    color: #353535;
+}
+
+.notification-content small {
+    color: #999999;
+    font-size: 12px;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+/* --- Top Navbar Header (EXACT GRADIENT MATCH TO CUSTOMER_BOOKING) --- */
 .top-navbar {
     height: 70px;
-    background: #1f2d2f;
+    background: linear-gradient(
+        135deg, 
+        #dbeffe 0%,    /* Light Sky Blue */
+        #fed7aa 25%,   /* Soft Peach */
+        #fef08a 50%,   /* Pastel Yellow / Cream */
+        #dcfce7 75%,   /* Pale Mint Green */
+        #f3e8ff 100%   /* Light Lavender */
+    );
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -24,42 +157,68 @@ body {
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
     width: 100%;
+    box-sizing: border-box;
     z-index: 100;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .logo-section {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: white;
-    font-size: 13px;
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .logo-img {
-    height: 34px;
+    height: 38px;
     width: auto;
     object-fit: contain;
     display: block;
+    border-radius: 4px;
 }
 
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#customer-name {
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .dashboard-wrapper {
     display: flex;
     flex: 1;
-    margin-top: 70px; /* Offset for the fixed header */
+    margin-top: 70px;
     min-height: calc(100vh - 70px);
 }
 
-/* --- Sidebar (Fixed left strip layout) --- */
+/* --- Sidebar --- */
 .sidebar {
     width: 230px;
-    background: white;
+    background: #ffffff;
     border-right: 1px solid #e5e5e5;
     display: flex;
     flex-direction: column;
@@ -80,13 +239,13 @@ body {
 
 .sidebar a {
     text-decoration: none;
-    color: #444;
+    color: #353535;
     font-size: 14px;
-    padding: 12px 15px;
-    border-radius: 4px;
+    padding: 12px 16px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 500;
     transition: background 0.2s, color 0.2s;
 }
@@ -96,11 +255,11 @@ body {
 }
 
 .sidebar a.active {
-    background: #1f2d2f;
-    color: rgb(221, 219, 219);
+    background: #639A88;
+    color: #ffffff;
 }
 
-/* --- Red Logout Button Overrides --- */
+/* Logout Button */
 .sidebar .logout-btn {
     display: flex;
     align-items: center;
@@ -137,7 +296,7 @@ body {
 .content {
     flex: 1;
     padding: 40px;
-    margin-left: 230px; /* Offset so content doesn't slip under the sidebar */
+    margin-left: 230px;
     min-height: 100%;
 }
 
@@ -145,41 +304,38 @@ body {
    MY GALLERY SPECIAL STATE (REQUEST ACCESS)
    ========================================================================= */
 
-/* Center container context */
 .central-message-container {
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: calc(100vh - 150px); /* Keeps it perfectly centered vertically */
+    min-height: calc(100vh - 150px);
 }
 
-/* Layout Wrapper Card */
 .request-access-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 32px; /* Layout gap */
+    gap: 32px;
     padding: 20px;
     max-width: 500px;
     width: 100%;
 }
 
-/* Message typography styling matches UI */
 .message-text {
-    font-size: 18px; /* Crisp display font size from your mockup */
+    font-size: 18px;
     font-weight: 400;
     line-height: 1.45;
-    color: #a0a0a0; /* Precise muted gray color */
+    color: #a0a0a0;
 }
 
 /* Styled "Request Access" CTA Button */
 .btn-request {
     padding: 14px 48px;
-    background-color: #1f2d2f;
-    color: #ffffff;
+    background-color: #639A88 !important;
+    color: #ffffff !important;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-family: inherit;
     font-size: 16px;
     font-weight: 500;
@@ -189,21 +345,19 @@ body {
 }
 
 .btn-request:hover {
-    background-color: #121b1c;
+    background-color: #528373 !important;
 }
 
 /* ==========================================================================
    RESPONSIVE DESIGN SYSTEM OVERRIDES
    ========================================================================= */
 
-/* Tablet Layout (Under 900px) */
-@media (max-width: 900px) {
+@media (max-width: 850px) {
     .dashboard-wrapper {
         flex-direction: column;
         margin-top: 70px;
     }
 
-    /* Convert sidebar into an inline sticky horizontal nav bar */
     .sidebar {
         width: 100%;
         position: relative;
@@ -211,7 +365,7 @@ body {
         left: 0;
         border-right: none;
         border-bottom: 1px solid #e5e5e5;
-        padding: 15px 25px;
+        padding: 15px 20px;
         flex-direction: row;
         align-items: center;
         gap: 15px;
@@ -234,12 +388,11 @@ body {
     }
 
     .content {
-        margin-left: 0; /* Reset desktop layout offset */
+        margin-left: 0;
         padding: 30px 20px;
     }
 }
 
-/* Mobile Screens (Under 600px) */
 @media (max-width: 600px) {
     .sidebar {
         flex-direction: column;
@@ -263,10 +416,10 @@ body {
     }
 
     .message-text {
-        font-size: 19px; /* Scales text size gracefully for smaller viewports */
+        font-size: 17px;
     }
     
     .btn-request {
-        width: 100%; /* Spans full width on mobile screens */
+        width: 100%;
     }
 }

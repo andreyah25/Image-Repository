@@ -15,10 +15,65 @@ body {
     flex-direction: column;
 }
 
-/* --- Top Header Navigation --- */
+/* --- Notification Bell Styling --- */
+.notification-container {
+    position: relative;
+    margin-right: 15px;
+}
+
+.notification-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #353535;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    position: relative;
+    box-shadow: none;
+}
+
+.notification-btn:hover {
+    background: rgba(53, 53, 53, 0.08);
+}
+
+.notification-btn i {
+    font-size: 20px;
+}
+
+#notificationCount {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ffffff;
+}
+
+/* --- Top Header Navigation (Iridescent Pastel Gradient Background) --- */
 .top-navbar {
     height: 70px;
-    background: #1f2d2f;
+    background: linear-gradient(
+        135deg, 
+        #dbeffe 0%,    /* Light Sky Blue */
+        #fed7aa 25%,   /* Soft Peach */
+        #fef08a 50%,   /* Pastel Yellow / Cream */
+        #dcfce7 75%,   /* Pale Mint Green */
+        #f3e8ff 100%   /* Light Lavender */
+    );
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -28,27 +83,37 @@ body {
     left: 0;
     width: 100%;
     z-index: 100;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .logo-section {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: white;
-    font-size: 13px;
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .logo-img {
-    height: 34px;
+    height: 38px;
     width: auto;
     object-fit: contain;
     display: block;
+    border-radius: 4px;
 }
 
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+}
+
+#customer-name {
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 /* --- Main Dashboard Body Frame Layout --- */
@@ -84,10 +149,10 @@ body {
 
 .sidebar a {
     text-decoration: none;
-    color: #444;
+    color: #353535;
     font-size: 14px;
     padding: 12px 15px;
-    border-radius: 4px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -100,8 +165,8 @@ body {
 }
 
 .sidebar a.active {
-    background: #1f2d2f;
-    color: rgb(221, 219, 219);
+    background: #639A88;
+    color: #ffffff;
 }
 
 /* --- Red Logout Button Overrides --- */
@@ -181,11 +246,11 @@ body {
 /* Styled "Request Access" / "Continue" CTA Button */
 .btn-request {
     padding: 14px 48px;
-    background-color: #1f2d2f;
-    color: #ffffff;
+    background-color: #639A88 !important;
+    color: #ffffff !important;
     border: none;
-    border-radius: 4px;
-    font-family: inherit;
+    border-radius: 6px;
+    font-family: "DM Sans", sans-serif !important;
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
@@ -194,7 +259,7 @@ body {
 }
 
 .btn-request:hover {
-    background-color: #121b1c;
+    background-color: #528373 !important;
 }
 
 /* ==========================================================================
@@ -213,9 +278,9 @@ body {
 .link-input {
     width: 100%;
     padding: 18px 20px;
-    font-family: inherit;
+    font-family: "DM Sans", sans-serif !important;
     font-size: 16px;
-    color: #333333;
+    color: #353535;
     background-color: #ffffff;
     border: 1px solid #a0a0a0;
     border-radius: 6px;
@@ -224,13 +289,14 @@ body {
 }
 
 .link-input::placeholder {
+    font-family: "DM Sans", sans-serif !important;
     color: #b8b8b8;
     opacity: 1;
 }
 
 .link-input:focus {
-    border-color: #1f2d2f;
-    box-shadow: 0 0 0 3px rgba(31, 45, 47, 0.08);
+    border-color: #639A88;
+    box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.15);
 }
 
 .link-entry-form .btn-request {
@@ -298,7 +364,7 @@ body {
 .profile-hero-details h2 {
     font-size: 26px;
     font-weight: 500;
-    color: #333333;
+    color: #353535;
     margin-bottom: 8px;
 }
 
@@ -312,14 +378,14 @@ body {
 
 .profile-email-badge i {
     font-size: 16px;
-    color: #444444;
+    color: #639A88;
 }
 
 /* Detailed Information Card Layout */
 .info-card h3 {
     font-size: 18px;
     font-weight: 500;
-    color: #333333;
+    color: #353535;
     margin-bottom: 25px;
     padding-bottom: 12px;
     border-bottom: 1px solid #e5e5e5;
@@ -347,7 +413,7 @@ body {
 .info-group p {
     font-size: 16px;
     font-weight: 400;
-    color: #333333;
+    color: #353535;
 }
 
 

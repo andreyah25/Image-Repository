@@ -4,43 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule a Session - Website Name</title>
+    <title>Schedule a Session - Captured Photography Studio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/design/customer_booking.css?v=2.0">
 </head>
 
 <body>
 
-
     <header class="top-navbar">
         <div class="logo-section">
-            <img src="/images/studio logo.jpg" alt="Logo" class="logo-img">
-            <span>Website Name</span>
+            <img src="/images/captured.png" alt="Logo" class="logo-img">
+            <span>CAPTURED</span>
         </div>
 
         <div class="navbar-right">
-
             <div class="notification-container">
-
                 <button id="notificationBtn" class="notification-btn">
                     <i class="fa-solid fa-bell"></i>
                     <span id="notificationCount">0</span>
                 </button>
-
                 <div id="notificationDropdown" class="notification-dropdown">
-
-
                     <div id="notificationList"></div>
-
                 </div>
-
             </div>
 
             <div class="user-profile">
                 <img id="profile-image" src="/images/default-profile.png" alt="Profile" class="profile-img">
                 <span id="customer-name"></span>
             </div>
-
         </div>
     </header>
 
@@ -77,6 +68,7 @@
             <div class="sessions-panel booking-container">
                 <form id="bookingForm" class="booking-form">
 
+                    <!-- Section 1: Contact Information -->
                     <div class="form-section">
                         <h3 class="section-title-form">Contact Information</h3>
                         <div class="form-grid-three">
@@ -85,22 +77,23 @@
                                 <input type="text" id="fullName" placeholder="Enter your name" required>
                             </div>
                             <div class="form-group">
-                                <label for="contactNumber">Contact Number</label>
-                                <input type="tel" id="contactNumber" placeholder="09xxxxxxxxx" maxlength="11"
+                                <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
+                                <input type="tel" id="contactNumber" placeholder="Enter your contact number" maxlength="11"
                                     inputmode="numeric" autocomplete="tel" required>
                             </div>
                             <div class="form-group">
                                 <label for="emailAddress">Email Address</label>
-                                <input type="email" id="emailAddress" readonly>
+                                <input type="email" id="emailAddress" placeholder="Enter your email" readonly>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-section">
-                        <h3 class="section-title-form">Select Date and Time</h3>
-                        <div class="form-grid-two">
-                            <div class="form-group icon-input">
-                                <label for="bookingDate">Date</label>
+                    <!-- Section 2: Date, Time & Session Details -->
+                    <div class="form-section form-grid-two">
+                        <div>
+                            <h3 class="section-title-form">Select Date and Time</h3>
+                            <div class="form-group icon-input" style="margin-bottom: 15px;">
+                                <label for="bookingDate">Photo Session Date <span style="color:red;">*</span></label>
                                 <div class="field-wrapper">
                                     <input type="text" id="bookingDate" placeholder="Select a date"
                                         onfocus="(this.type='date')" onblur="(this.type='text')" required>
@@ -108,7 +101,7 @@
                                 </div>
                             </div>
                             <div class="form-group icon-input">
-                                <label for="bookingTime">Time</label>
+                                <label for="bookingTime">Preferred Time <span style="color:red;">*</span></label>
                                 <div class="field-wrapper">
                                     <input type="text" id="bookingTime" placeholder="Select a time"
                                         onfocus="(this.type='time')" onblur="(this.type='text')" required>
@@ -116,49 +109,67 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="paymentMethod">Reservation Down Payment</label>
-                        <select id="paymentMethod" required>
-                            <option value="" disabled selected>Select payment method</option>
-                            <option value="GCash">GCash</option>
-                            <option value="Maya">Maya</option>
-                        </select>
-                    </div>
-                    <div class="payment-note">
-                        <strong>Reservation Policy</strong><br>
-                        A non-refundable reservation down payment of ₱200.00 is required to confirm your booking. This
-                        amount will be deducted from your total package price.
-                    </div>
 
-                    <div class="form-group">
-                        <label>Reservation Fee</label>
-                        <input type="text" value="₱200.00 (Non-refundable)" readonly>
-                    </div>
-
-                    <div class="form-section">
-                        <div class="form-grid-two">
-                            <div class="form-group">
-                                <label for="sessionType">Session Type</label>
-                                <select id="sessionType" required>
-                                    <option value="" disabled selected>Select a session type</option>
-                                    <option value="portrait">Portrait Session</option>
-                                    <option value="couple">Couple Portrait</option>
-                                    <option value="family">Family Portrait</option>
-                                    <option value="birthday">Birthday Party</option>
-                                    <option value="wedding">Wedding Coverage</option>
-                                    <option value="graduation">Graduation Shoot</option>
+                        <div>
+                            <h3 class="section-title-form">Session Details</h3>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label for="photoPackage">Photo Package</label>
+                                <select id="photoPackage">
+                                    <option value="" selected>Select a photo package</option>
+                                    <option value="basic_1">BASIC 1 (1 person) - ₱399</option>
+                                    <option value="basic_2">BASIC 2 (2 persons) - ₱599</option>
+                                    <option value="basic_3">BASIC 3 (3 persons) - ₱799</option>
+                                    <option value="group_package">GROUP PACKAGE (4-8 persons) - ₱1,999</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="notes">Notes/Request (Optional)</label>
-                                <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
+                                <label for="sessionType">Special Sessions</label>
+                                <select id="sessionType">
+                                    <option value="" selected>Select a session type</option>
+                                    <option value="kids">Kids Pre-Birthday Shoot (6 yrs old and below) - ₱1,699</option>
+                                    <option value="pre_birthday">Pre-Birthday Shoot (7 yrs old & up) - ₱999</option>
+                                    <option value="theme_holiday">Theme / Holiday (3 persons) - ₱1,699</option>
+                                    <option value="maternity">Maternity Shoot - ₱999</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="btn-confirm">Confirm Booking</button>
+                    <!-- Section 3: Reservation Down Payment -->
+                    <div class="form-section">
+                        <div class="section-header-flex">
+                            <h3 class="section-title-form">Reservation Down Payment</h3>
+                        </div>
+                        <div class="form-grid-two">
+                            <div class="form-group">
+                                <label for="paymentMethod">Payment Method <span style="color:red;">*</span></label>
+                                <select id="paymentMethod" required>
+                                    <option value="" disabled selected>Select payment method</option>
+                                    <option value="GCash">GCash</option>
+                                    <option value="Maya">Maya</option>
+                                    <option value="Credit/Debit Card">Credit/Debit Card</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label><em><strong>Note:</strong> The amount below will be deducted from your total.</em></label>
+                                <input type="text" value="₱200.00 (Non-refundable)" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Notes / Special Requests -->
+                    <div class="form-section">
+                        <h3 class="section-title-form">Notes/Request (Optional)</h3>
+                        <div class="form-group">
+                            <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="form-actions" style="justify-content: stretch;">
+                        <button type="submit" class="btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa-solid fa-calendar-check"></i> Confirm Booking
+                        </button>
                     </div>
 
                 </form>
@@ -166,8 +177,8 @@
         </main>
 
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
@@ -177,6 +188,7 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+
         (async () => {
 
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -206,6 +218,7 @@
             document.getElementById("emailAddress").readOnly = true;
             loadNotifications();
         })();
+
         async function loadNotifications() {
 
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -244,9 +257,9 @@
     <div class="notification-content">
         <h4>${notification.title}</h4>
 
-      <p class="notification-message">
-    ${notification.message}
-</p>
+        <p class="notification-message">
+            ${notification.message}
+        </p>
 
         <small>
             ${notification.created_at
@@ -270,6 +283,7 @@
                 badge.style.display = "none";
             }
         }
+
         const bookingForm = document.getElementById("bookingForm");
 
         bookingForm.addEventListener("submit", async (e) => {
@@ -288,23 +302,24 @@
             const email = user.email;
             const date = document.getElementById("bookingDate").value;
             const time = document.getElementById("bookingTime").value;
+            const photoPackage = document.getElementById("photoPackage").value;
             const session = document.getElementById("sessionType").value;
             const paymentMethod = document.getElementById("paymentMethod").value;
             const notes = document.getElementById("notes").value.trim();
 
-            //validate contact number 
+            // Validate contact number 
             if (!/^09\d{9}$/.test(contact)) {
                 alert("Please enter a valid 11-digit mobile number (e.g. 09123456789).");
                 document.getElementById("contactNumber").focus();
                 return;
             }
+
             if (
                 !fullName ||
                 !contact ||
                 !email ||
                 !date ||
                 !time ||
-                !session ||
                 !paymentMethod
             ) {
                 alert("Please complete all required fields.");
@@ -321,7 +336,8 @@
                         email: email,
                         booking_date: date,
                         booking_time: time,
-                        session_type: session,
+                        photo_package: photoPackage || null,
+                        session_type: session || null,
                         notes: notes,
                         payment_method: paymentMethod,
                         downpayment_amount: 200.00,
@@ -337,6 +353,7 @@
                 alert(error.message);
                 return;
             }
+
             // CUSTOMER NOTIFICATION
             await supabaseClient
                 .from("notifications")
@@ -359,10 +376,10 @@
                     recipient: "admin",
                     title: "New Booking Reservation",
                     message:
-                        `${fullName} booked a ${session} session on ${date} at ${time}
-                         Waiting for approval.`,
+                        `${fullName} booked a session on ${date} at ${time}\nWaiting for approval.`,
                     is_read: false
                 });
+
             alert("Booking request submitted successfully!");
 
             bookingForm.reset();
@@ -373,6 +390,7 @@
             document.getElementById("emailAddress").value =
                 user.email;
         });
+
         const contactInput = document.getElementById("contactNumber");
 
         contactInput.addEventListener("input", function () {
@@ -386,6 +404,7 @@
             }
 
         });
+
         const notificationBtn = document.getElementById("notificationBtn");
 
         notificationBtn.addEventListener("click", async () => {
@@ -426,6 +445,7 @@
             await loadNotifications();
 
         });
+
         document.addEventListener("click", (e) => {
 
             const dropdown = document.getElementById("notificationDropdown");
@@ -438,6 +458,7 @@
             }
 
         });
+
         supabaseClient
             .channel("customer_notifications")
             .on(

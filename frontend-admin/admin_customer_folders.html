@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Repository</title>
+    <title>Customer Folders</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,8 +80,11 @@
 
             <div class="repo-top-header-block">
                 <div class="page-header">
-                    <h1>Repository</h1>
-                    <p>Manage and organize folders and images stored in your workspace.</p>
+                    <h1 id="eventTitle">Customer Folders</h1>
+
+                    <p>
+                        Select a customer folder to manage photos.
+                    </p>
                 </div>
 
                 <div class="filter-dropdown-wrapper">
@@ -96,7 +99,7 @@
                         </button>
                         <button id="createFolderActionOption">
                             <i class="fa-regular fa-folder"></i>
-                            <span>Create New Events</span>
+                            <span>Create Customer Folder</span>
                         </button>
                     </div>
                 </div>
@@ -154,17 +157,17 @@
                 <h2>Create Folder</h2>
             </div>
 
-            <form id="newEventForm" class="modal-form">
+            <form id="newCustomerFolderForm" class="modal-form">
 
                 <div class="form-field">
 
-                    <input type="text" id="eventNameInput" placeholder="Event Name" required>
+                    <input type="text" id="customerNameInput" placeholder="Customer Name" required>
 
                 </div>
 
-                <button class="save-client-btn" type="submit">
+                <button class="save-client-btn">
 
-                    Create Event
+                    Create Folder
 
                 </button>
 
@@ -176,6 +179,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+        const params = new URLSearchParams(window.location.search);
+
+        const eventId = params.get("event");
         const createFolderModal =
             document.getElementById("createFolderModal");
 
@@ -259,21 +265,21 @@
                 }
             }
 
-            loadEvents();
+            loadCustomerFolders();
         });
 
         //LOAD FOLDERS
-        async function loadEvents() {
+        async function loadCustomerFolders() {
 
             const { data, error } = await supabaseClient
 
-                .from("event_folders")
+                .from("customer_folders")
 
                 .select("*")
 
-                .eq("user_id", currentUser.id)
+                .eq("event_id", eventId)
 
-                .order("event_name");
+                .order("customer_name");
 
             if (error) {
 
@@ -283,9 +289,7 @@
 
             }
 
-            allFolders = data;
-
-            renderEvents(data);
+            renderCustomerFolders(data);
 
         }
 
@@ -316,41 +320,6 @@
             renderPhotos(data);
 
         }
-        function renderPhotos(photos) {
-
-            const view =
-                document.getElementById("photosView");
-
-
-            view.innerHTML = "";
-
-
-            if (photos.length === 0) {
-
-                view.innerHTML = `
-        <div class="empty-repo-message">
-            No photos yet.
-        </div>`;
-
-                return;
-            }
-
-
-            photos.forEach(photo => {
-
-                view.innerHTML += `
-
-        <div class="photo-card">
-
-            <img src="${photo.image_url}">
-
-        </div>
-
-        `;
-
-            });
-
-        }
         document
 
             .getElementById("uploadPhotosActionOption")
@@ -373,173 +342,83 @@
             .getElementById("photoFilesUploader")
 
             .addEventListener("change", uploadPhotos);
-        function renderEvents(events) {
 
-            const view =
-                document.getElementById("foldersView");
+        function renderCustomerFolders(folders) {
 
-            view.innerHTML = "";
-
-            if (events.length === 0) {
-
-                view.innerHTML = `
-
-            <div class="empty-repo-message">
-
-                No events yet.
-
-            </div>
-
-        `;
-
-                return;
-
-            }
-
-           
-            events.forEach(event => {
-
-                view.innerHTML += `
-
-        <div class="folder-card"
-        data-id="${event.id}">
-            <i class="fa-solid fa-folder folder-icon"></i>
-            <h3>${event.event_name}</h3>
-        </div>
-
-    `;
-
-            });
-
-
-            document.querySelectorAll(".folder-card").forEach(card => {
-
-                card.onclick = () => {
-
-                    const eventId = card.dataset.id;
-
-                    location.href =
-                        `admin_customer_folders.html?event=${eventId}`;
-
-                };
-
-            });
-
-
-        }
-        async function uploadPhotos(e) {
-
-            const files = e.target.files;
-
-            if (!files.length) return;
-
-
-            for (const file of files) {
-
-                const filePath =
-                    `${currentUser.id}/${selectedFolderId}/${Date.now()}_${file.name}`;
-
-
-                const { error: uploadError } =
-                    await supabaseClient.storage
-                        .from("repository-photos")
-                        .upload(filePath, file);
-
-
-                if (uploadError) {
-
-                    console.log(uploadError);
-                    continue;
-
-                }
-
-
-                const { data: urlData } =
-                    supabaseClient.storage
-                        .from("repository-photos")
-                        .getPublicUrl(filePath);
-
-
-
-                await supabaseClient
-                    .from("photos")
-                    .insert([{
-
-                        folder_id: selectedFolderId,
-
-                        image_url: urlData.publicUrl,
-
-                        file_name: file.name
-
-                    }]);
-
-            }
-
-
-            alert("Photos uploaded successfully.");
-
-            loadPhotos(selectedFolderId);
-
-        }
-        function renderFolders(folders) {
             const view = document.getElementById("foldersView");
 
             view.innerHTML = "";
 
             if (folders.length === 0) {
+
                 view.innerHTML = `
+
             <div class="empty-repo-message">
-                No events found.
+
+                No customer folders yet.
+
             </div>
+
         `;
+
                 return;
+
             }
 
-            folders.forEach(event => {
+            folders.forEach(folder => {
 
                 view.innerHTML += `
-            <div class="folder-card" data-id="${event.id}">
-                <i class="fa-solid fa-folder folder-icon"></i>
-                <h3>${event.event_name}</h3>
-            </div>
+
+        <div class="folder-card"
+
+            data-id="${folder.id}">
+
+            <i class="fa-solid fa-folder folder-icon"></i>
+
+            <h3>${folder.customer_name}</h3>
+
+        </div>
+
         `;
 
             });
 
-
-            document.querySelectorAll(".folder-card").forEach(card => {
-
-                card.onclick = () => {
-
-                    const eventId = card.dataset.id;
-
-                    selectedFolderId = eventId;
-
-                    location.href =
-                        `admin_customer_folders.html?event=${eventId}`;
-                };
-
-            });
         }
+        document.querySelectorAll(".folder-card").forEach(card => {
+
+            card.onclick = () => {
+
+                const eventId = card.dataset.id;
+
+                location.href =
+                    `admin_customer_folders.html?event=${eventId}`;
+
+            };
+
+        });
 
         document
-            .getElementById("newEventForm")
+
+            .getElementById("newCustomerFolderForm")
+
             .addEventListener("submit", async (e) => {
 
                 e.preventDefault();
 
-                const eventName =
-                    document.getElementById("eventNameInput").value.trim();
+                const customerName =
+                    document.getElementById("customerNameInput").value;
 
                 const { error } = await supabaseClient
 
-                    .from("event_folders")
+                    .from("customer_folders")
 
                     .insert([{
 
+                        event_id: eventId,
+
                         user_id: currentUser.id,
 
-                        event_name: eventName
+                        customer_name: customerName
 
                     }]);
 
@@ -555,7 +434,7 @@
 
                 e.target.reset();
 
-                loadEvents();
+                loadCustomerFolders();
 
             });
         //SEARCH FUNCTIONALITY

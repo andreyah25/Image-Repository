@@ -32,7 +32,13 @@
                 </button>
 
                 <div id="notificationDropdown" class="notification-dropdown">
+
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+                    </div>
+
                     <div id="notificationList"></div>
+
                 </div>
 
             </div>
@@ -91,8 +97,8 @@
                     <p>Browse and manage your clients records.</p>
 
                     <div class="client-tabs">
-                        <button class="tab-btn" id="tabBookedSessions">All Booked Sessions</button>
-                        <button class="tab-btn active" id="tabAccessRequests">All Access Requests</button>
+                        <button class="tab-btn active" id="tabBookedSessions">All Booked Sessions</button>
+                        <button class="tab-btn" id="tabAccessRequests">All Access Requests</button>
                     </div>
                 </div>
 
@@ -273,11 +279,15 @@
 
         }
         async function loadBookedSessions() {
-            const { data, error } = await supabaseClient
+            console.log("Loading Bookings...");
+            const { data, error, count } = await supabaseClient
                 .from("bookings")
-                .select("*")
-                .order("booking_date", { ascending: true });
+                .select("*", { count: "exact" })
+                .order("created_at", { ascending: false });
 
+            console.log("Returned rows:", data.length);
+            console.log("Total rows:", count);
+            console.log(data);
             if (error) {
                 console.error(error);
                 return;
@@ -408,7 +418,8 @@
                     .select("*")
                     .eq("id", user.id)
                     .single();
-
+                console.log("Logged in user:", session.user.id);
+                console.log("Logged in email:", session.user.email);
                 if (profile) {
                     document.getElementById("userName").textContent = profile.full_name;
                     if (profile.avatar_url) {
@@ -429,23 +440,24 @@
         notificationBtn.addEventListener("click", async () => {
 
             const dropdown = document.getElementById("notificationDropdown");
+            const opening = dropdown.style.display !== "block";
+            dropdown.style.display = opening ?  "block" : "none";
 
-            dropdown.style.display =
-                dropdown.style.display === "block"
-                    ? "none"
-                    : "block";
-
-            if (dropdown.style.display === "block") {
-
-                await supabaseClient
+            if(opening){
+                const {error } = await supabaseClient
                     .from("notifications")
                     .update({ is_read: true })
                     .eq("recipient", "admin")
-                    .eq("is_read", false);
+                    .eq("is_read", true);
 
-                loadAdminNotifications();
+                if (error) {
+                    console.error("Update notification error:", error);
+                    return;
+                
             }
-
+            
+            await loadAdminNotifications();
+        }
         });
         document.addEventListener("click", (e) => {
 
@@ -473,6 +485,29 @@
 
                     if (payload.new.recipient === "admin") {
                         loadAdminNotifications();
+                    }
+
+                }
+            )
+            .subscribe();
+        supabaseClient
+            .channel("admin_bookings")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "bookings"
+                },
+                (payload) => {
+
+                    console.log("New Booking:", payload.new);
+
+                    const bookedTab =
+                        document.getElementById("tabBookedSessions");
+
+                    if (bookedTab.classList.contains("active")) {
+                        loadBookedSessions();
                     }
 
                 }
@@ -622,6 +657,7 @@
                 "The customer's booking has been confirmed successfully."
             );
             loadBookedSessions();
+            loadBookingCalendar();
 
         });
 

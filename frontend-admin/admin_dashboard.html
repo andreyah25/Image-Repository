@@ -9,6 +9,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
 
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 
@@ -17,6 +18,7 @@
     <link rel="stylesheet" href="/design/admin_dashboard.css">
 
 </head>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 
 <body>
 
@@ -146,13 +148,112 @@
             </div>
 
             <h3 class="section-title">
-                Recent Stored Sessions
+                Booking Calendar
             </h3>
 
-            <div class="sessions-panel" id="sessionsPanel">
-                <div class="empty-state">
-                    Analytics
+            <div id="calendar"></div>
+            <div id="bookingModal" class="booking-modal">
+
+                <div class="booking-card">
+
+                    <div class="booking-header">
+
+                        <div class="booking-header-left">
+                            <div class="booking-icon">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+
+                            <div>
+                                <h2 id="modalClient">Client Name</h2>
+                                <span id="modalStatus" class="booking-status">
+                                    Confirmed
+                                </span>
+                            </div>
+                        </div>
+
+                        <button class="close-booking-modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="booking-body">
+
+                        <div class="booking-info">
+
+                            <div class="info-card">
+                                <i class="fa-solid fa-envelope"></i>
+
+                                <div>
+                                    <label>Email</label>
+                                    <span id="modalEmail"></span>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <i class="fa-solid fa-phone"></i>
+
+                                <div>
+                                    <label>Contact Number</label>
+                                    <span id="modalContact"></span>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <i class="fa-solid fa-box"></i>
+
+                                <div>
+                                    <label>Package</label>
+                                    <span id="modalPackage"></span>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <i class="fa-solid fa-camera"></i>
+
+                                <div>
+                                    <label>Session Type</label>
+                                    <span id="modalSession"></span>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <i class="fa-solid fa-calendar-days"></i>
+
+                                <div>
+                                    <label>Booking Date</label>
+                                    <span id="modalDate"></span>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <i class="fa-solid fa-clock"></i>
+
+                                <div>
+                                    <label>Booking Time</label>
+                                    <span id="modalTime"></span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="notes-section">
+
+                            <h3>
+                                <i class="fa-solid fa-note-sticky"></i>
+                                Client Notes
+                            </h3>
+
+                            <div id="modalNotes" class="notes-box">
+                                No notes.
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
+
             </div>
 
         </main>
@@ -163,7 +264,7 @@
 
 
     <script>
-       const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
@@ -246,8 +347,7 @@
                     profile.full_name;
                 await loadDashboardStats(user.id);
 
-                await loadRecentSessions(user.id);
-
+                await loadBookingCalendar();
                 if (profile.avatar_url) {
                     document.getElementById("userAvatar").src =
                         profile.avatar_url;
@@ -280,7 +380,7 @@
                         .eq("user_id", userId);
 
                 document.getElementById("totalFolders").textContent = folders || 0;
-                    
+
 
                 const { count: photos } =
                     await supabaseClient
@@ -308,7 +408,7 @@
                         .eq("user_id", userId)
                         .eq("status", "expired");
 
-                document.getElementById("expiredSessions").textContent = expired || 0;   
+                document.getElementById("expiredSessions").textContent = expired || 0;
 
 
             } catch (error) {
@@ -317,67 +417,124 @@
 
             }
         }
-        async function loadRecentSessions(userId) {
+        async function loadBookingCalendar() {
 
-            const container = document.getElementById("sessionsPanel");
+            const { data, error } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .eq("status", "Confirmed");
 
-            try {
+            if (error) {
+                console.error(error);
+                return;
+            }
 
-                const { data, error } =
-                    await supabaseClient
-                        .from("photos")
-                        .select("*")
-                        .eq("user_id", userId)
-                        .order("created_at", { ascending: false })
-                        .limit(10);
+            const events = data.map(booking => ({
 
-                if (error) throw error;
+                title: booking.full_name,
 
-                if (!data || data.length === 0) {
+                start: booking.booking_date + "T" + booking.booking_time,
 
-                    container.innerHTML = `
-                <div class="empty-state">
-                    No uploaded sessions yet.
-                </div>
-            `;
+                extendedProps: {
 
-                    return;
+                    email: booking.email,
+
+                    contact: booking.contact_number,
+
+                    package: booking.package,
+
+                    session: booking.session_type,
+
+                    notes: booking.notes,
+
+                    bookingDate: booking.booking_date,
+
+                    bookingTime: booking.booking_time
+
                 }
 
-                container.innerHTML = "";
+            }));
 
-                data.forEach(photo => {
+            const calendar = new FullCalendar.Calendar(
+                document.getElementById("calendar"),
+                {
 
-                    container.innerHTML += `
-                <div class="session-card">
+                    initialView: "dayGridMonth",
 
-                    <img
-                        src="${photo.image_url}"
-                        alt="${photo.file_name}"
-                    >
+                    height: 700,
 
-                    <div class="session-info">
+                    events: events,
 
-                        <h4>${photo.file_name}</h4>
+                    headerToolbar: {
 
-                        <p>
-                            ${new Date(
-                        photo.created_at
-                    ).toLocaleDateString()}
-                        </p>
+                        left: "prev,next today",
 
-                    </div>
+                        center: "title",
 
-                </div>
-            `;
+                        right: "dayGridMonth,timeGridWeek,timeGridDay"
+
+                    },
+
+                    eventColor: "#5C3BFE",
+
+                    eventClick(info) {
+
+                        document.getElementById("modalClient").textContent =
+                            info.event.title;
+
+                        document.getElementById("modalEmail").textContent =
+                            info.event.extendedProps.email;
+
+                        document.getElementById("modalContact").textContent =
+                            info.event.extendedProps.contact;
+
+                        document.getElementById("modalPackage").textContent =
+                            info.event.extendedProps.package;
+
+                        document.getElementById("modalSession").textContent =
+                            info.event.extendedProps.session;
+
+                        document.getElementById("modalDate").textContent =
+                            info.event.extendedProps.bookingDate;
+
+                        document.getElementById("modalTime").textContent =
+                            info.event.extendedProps.bookingTime;
+
+                        document.getElementById("modalNotes").textContent =
+                            info.event.extendedProps.notes || "No notes provided.";
+
+                        document
+                            .getElementById("bookingModal")
+                            .classList.add("show");
+
+                    }
+
 
                 });
+            document
+                .querySelector(".close-booking-modal")
+                .onclick = function () {
 
-            } catch (error) {
+                    document
+                        .getElementById("bookingModal")
+                        .classList.remove("show");
 
-                console.error(error);
+                };
 
-            }
+            window.onclick = function (e) {
+
+                if (e.target.id === "bookingModal") {
+
+                    document
+                        .getElementById("bookingModal")
+                        .classList.remove("show");
+
+                }
+
+            };
+
+            calendar.render();
+
         }
         // Logout button
         document.getElementById("logoutBtn")

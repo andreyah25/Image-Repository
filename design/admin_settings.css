@@ -1,0 +1,331 @@
+/* --- Settings Panel Layout System Grid --- */
+.settings-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 30px;
+    align-items: start;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.settings-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Section Header Typography Spacing Layout */
+.settings-header-block {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.settings-header-block h2 {
+    font-size: 48px;
+    font-weight: 400;
+    color: #222222;
+    margin-bottom: 4px;
+}
+
+.settings-header-block p {
+    font-size: 16px;
+    color: #888888;
+    font-weight: 400;
+}
+
+/* Unified Card Component Framework */
+.settings-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.shadow-box {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.card-inner-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #222222;
+    margin-bottom: 20px;
+}
+
+/* Custom Profile Image Replacement Box Layout */
+.avatar-placeholder {
+    width: 42px;
+    height: 42px;
+    background-color: #a0aec0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+/* Forms input visual architecture styles */
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-input-row label {
+    font-size: 13px;
+    color: #333333;
+    font-weight: 500;
+}
+
+.password-field-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-field-container input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    padding: 0 40px 0 12px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.password-field-container input:focus {
+    border-color: #1f2a2d;
+}
+
+.password-field-container i {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888888;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+/* Form Submission Actions buttons rules */
+.primary-settings-action-btn {
+    background-color: #1f2a2d;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    height: 40px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background-color 0.15s ease;
+}
+
+.primary-settings-action-btn:hover {
+    background-color: #2b3d40;
+}
+
+/* Simple Inline Row Card variations layout rules */
+.simple-row-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+}
+
+.text-info-group h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: #222222;
+    margin-bottom: 4px;
+}
+
+.text-info-group p {
+    font-size: 13px;
+    color: #888888;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* Standard Account Action Items lists container rules */
+.spacing-controlled-card {
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.action-row-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+}
+
+.action-row-item:not(:last-child) {
+    border-bottom: 1px solid #edf2f7;
+}
+
+/* Buttons variations configuration */
+.action-outline-dark-btn {
+    background: transparent;
+    color: #1f2a2d;
+    border: 1px solid #1f2a2d;
+    border-radius: 4px;
+    height: 34px;
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.action-outline-dark-btn:hover {
+    background-color: rgba(31, 42, 45, 0.05);
+}
+
+.action-danger-solid-btn {
+    background-color: #c53030;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    height: 34px;
+    padding: 0 22px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.action-danger-solid-btn:hover {
+    background-color: #9b2c2c;
+}
+
+/* Toggle Switches Sliders Module Rules */
+.switch-toggle-widget {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch-toggle-widget input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider-round-element {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e0;
+    transition: .2s ease;
+    border-radius: 24px;
+}
+
+.slider-round-element:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .2s ease;
+    border-radius: 50%;
+}
+
+.switch-toggle-widget input:checked + .slider-round-element {
+    background-color: #a0aec0;
+}
+
+.switch-toggle-widget input:checked + .slider-round-element:before {
+    transform: translateX(20px);
+}
+
+/* Notification list formatting */
+.list-rows-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0 24px;
+}
+
+.toggle-list-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    gap: 30px;
+}
+
+.toggle-list-item-row:not(:last-child) {
+    border-bottom: 1px solid #edf2f7;
+}
+
+/* --- Storage Metric Graph Card Blocks --- */
+.storage-card-wrapper {
+    padding: 24px !important;
+}
+
+.storage-metrics-title-row h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: #222222;
+}
+
+.metric-percentage-readout {
+    font-size: 44px;
+    font-weight: 700;
+    color: #222222;
+    margin-top: 15px;
+    margin-bottom: 2px;
+}
+
+.metric-bytes-fraction-legend {
+    font-size: 13px;
+    color: #a0aec0;
+    margin-bottom: 15px;
+}
+
+.progress-bar-track-layout {
+    width: 100%;
+    height: 8px;
+    background-color: #edf2f7;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+.progress-bar-fill-indicator {
+    height: 100%;
+    background-color: #1f2a2d;
+    border-radius: 4px;
+}
+
+.border-top-divider {
+    border-top: 1px solid #edf2f7;
+}
+
+/* Responsive Structural Breakpoints Media Fallbacks Rules */
+@media (max-width: 1024px) {
+    .settings-grid-container {
+        grid-template-columns: 1fr;
+    }
+}

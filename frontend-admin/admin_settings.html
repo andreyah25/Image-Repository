@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="/design/admin_dashboard.css">
+    <link rel="stylesheet" href="/design/admin_settings.css">
+</head>
+
+<body>
+
+    <header class="top-navbar">
+        <div class="logo-section">
+            <div class="logo-box"></div>
+            <span>Website Name</span>
+        </div>
+
+        <div class="navbar-right">
+            <button class="notification-btn" aria-label="Notifications">
+                <i class="fa-solid fa-bell"></i>
+            </button>
+            <div class="user-profile">
+                <div class="avatar-placeholder">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+
+        <aside class="sidebar">
+            <nav>
+                <a href="admin_dashboard.html">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Home
+                </a>
+                <a href="admin_client.html">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+                <a href="admin_repository.html">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+                <a href="admin_payment.html">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+                <a href="admin_archives.html">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+                <a href="admin_profile.html">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+                <a href="admin_settings.html" class="active">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+            </nav>
+
+            <a href="admin_login.html" class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content">
+            <div class="settings-grid-container">
+                
+                <div class="settings-column">
+                    
+                    <div class="settings-header-block">
+                        <h2>Account Security</h2>
+                        <p>Update your password and security preferences.</p>
+                    </div>
+
+                    <div class="settings-card shadow-box">
+                        <h3 class="card-inner-title">Change Password</h3>
+                        <form id="changePasswordForm" class="settings-form">
+                            <div class="form-input-row">
+                                <label>Current Password</label>
+                                <div class="password-field-container">
+                                    <input type="password" placeholder="Enter your current password" required>
+                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
+                                </div>
+                            </div>
+                            <div class="form-input-row">
+                                <label>New Password</label>
+                                <div class="password-field-container">
+                                    <input type="password" placeholder="Enter your new password" required>
+                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
+                                </div>
+                            </div>
+                            <div class="form-input-row">
+                                <label>Confirm New Password</label>
+                                <div class="password-field-container">
+                                    <input type="password" placeholder="Confirm your new password" required>
+                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
+                                </div>
+                            </div>
+                            <button type="submit" class="primary-settings-action-btn">Update Password</button>
+                        </form>
+                    </div>
+
+                    <div class="settings-card shadow-box simple-row-card">
+                        <div class="text-info-group">
+                            <h3>Two-Factor Authentication</h3>
+                            <p>Enable additional account protection.</p>
+                        </div>
+                        <label class="switch-toggle-widget">
+                            <input type="checkbox">
+                            <span class="slider-round-element"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-header-block">
+                        <h2>Account Actions</h2>
+                        <p>Manage important actions related to your account.</p>
+                    </div>
+
+                    <div class="settings-card shadow-box spacing-controlled-card">
+                        <div class="action-row-item">
+                            <div class="text-info-group">
+                                <h3>Sign Out of All Devices</h3>
+                                <p>End all active sessions across your devices.</p>
+                            </div>
+                            <button class="action-outline-dark-btn">Sign Out</button>
+                        </div>
+                        <div class="action-row-item">
+                            <div class="text-info-group">
+                                <h3>Sign Out of All Devices</h3>
+                                <p>End all active sessions across your devices.</p>
+                            </div>
+                            <button class="action-danger-solid-btn">Delete</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="settings-column">
+                    
+                    <div class="settings-header-block">
+                        <h2>Notifications</h2>
+                        <p>Choose your preferred updates and alerts.</p>
+                    </div>
+
+                    <div class="settings-card shadow-box list-rows-card">
+                        <div class="toggle-list-item-row">
+                            <div class="text-info-group">
+                                <h3>Email Notifications</h3>
+                                <p>Stay informed with important system updates and announcements via email.</p>
+                            </div>
+                            <label class="switch-toggle-widget">
+                                <input type="checkbox" checked>
+                                <span class="slider-round-element"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-list-item-row">
+                            <div class="text-info-group">
+                                <h3>Access Requests</h3>
+                                <p>Be notified by email of new access requests and customer inquiries.</p>
+                            </div>
+                            <label class="switch-toggle-widget">
+                                <input type="checkbox" checked>
+                                <span class="slider-round-element"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-list-item-row">
+                            <div class="text-info-group">
+                                <h3>Payment Alerts</h3>
+                                <p>Stay informed of completed, pending, and failed transactions.</p>
+                            </div>
+                            <label class="switch-toggle-widget">
+                                <input type="checkbox" checked>
+                                <span class="slider-round-element"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-header-block">
+                        <h2>Storage</h2>
+                        <p>Check storage capacity and available space.</p>
+                    </div>
+
+                    <div class="settings-card shadow-box list-rows-card storage-card-wrapper">
+                        <div class="storage-metrics-title-row">
+                            <h3>Storage Usage</h3>
+                        </div>
+                        <div class="metric-percentage-readout">67%</div>
+                        <div class="metric-bytes-fraction-legend">60 GB / 100 GB</div>
+                        
+                        <div class="progress-bar-track-layout">
+                            <div class="progress-bar-fill-indicator" style="width: 67%;"></div>
+                        </div>
+
+                        <div class="toggle-list-item-row border-top-divider">
+                            <div class="text-info-group">
+                                <h3>Auto Cleanup</h3>
+                                <p>Automatically remove temporary files and unused data to optimize storage.</p>
+                            </div>
+                            <label class="switch-toggle-widget">
+                                <input type="checkbox" checked>
+                                <span class="slider-round-element"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-list-item-row">
+                            <div class="text-info-group">
+                                <h3>Storage Alerts</h3>
+                                <p>Receive notifications when storage space is running low.</p>
+                            </div>
+                            <label class="switch-toggle-widget">
+                                <input type="checkbox" checked>
+                                <span class="slider-round-element"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.querySelectorAll('.toggle-password-visibility').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const targetInputField = this.previousElementSibling;
+                if (targetInputField.type === 'password') {
+                    targetInputField.type = 'text';
+                    this.classList.replace('fa-eye-slash', 'fa-eye');
+                } else {
+                    targetInputField.type = 'password';
+                    this.classList.replace('fa-eye', 'fa-eye-slash');
+                }
+            });
+        });
+
+        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Password update workflow initialized smoothly.');
+        });
+    </script>
+</body>
+</html>
