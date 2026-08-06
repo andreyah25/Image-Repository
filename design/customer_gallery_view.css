@@ -168,46 +168,71 @@ body {
    GALLERY PAGE CORE LAYOUT RULES
    ========================================================================= */
 
-/* Gallery Top Title & Download Header Area */
+/* ==========================
+   GALLERY HEADER
+========================== */
+
 .gallery-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    width: 100%;
-}
-
-.gallery-title {
-    font-size: 30px;
-    font-weight: 400;
-    color: #1f2d2f; /* Dark Text */
-    margin-bottom: 6px;
-}
-
-.gallery-subtitle {
-    font-size: 15px;
-    color: #8c8c8c;
-    font-weight: 400;
-}
-
-/* Download All Button - Primary Action Button ONLY #639A88 */
-.btn-download-all {
-    display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background-color: #639A88; 
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 500;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background-color 0.15s;
+    margin-bottom: 28px;
+    gap: 20px;
 }
 
-.btn-download-all:hover {
-    background-color: #528373;
+.gallery-title-wrapper{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.gallery-title{
+    font-size:30px;
+    font-weight:700;
+    color:#222;
+}
+
+.gallery-subtitle{
+    color:#888;
+    font-size:15px;
+}
+
+.gallery-title:empty::before{
+    content:"Gallery";
+    color:#c7c7c7;
+}
+
+.gallery-subtitle:empty::before{
+    content:"Waiting for gallery details...";
+    color:#c7c7c7;
+}
+
+.btn-download-all{
+
+    padding:13px 24px;
+
+    border-radius:10px;
+
+    background:#639A88;
+
+    color:white;
+
+    border:none;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.btn-download-all:hover{
+
+    background:#527f71;
+
 }
 
 /* 4x2 Grid Layout */
@@ -219,35 +244,77 @@ body {
 }
 
 /* Gray Wireframe Placeholder Card Boxes */
-.photo-card {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 2px;
-    overflow: hidden;
+/* ==========================
+   PHOTO CARD
+========================== */
+
+.photo-card{
+    position:relative;
+    overflow:hidden;
+    border-radius:14px;
+    background:#f3f3f3;
+    aspect-ratio:1;
+    cursor:pointer;
+    box-shadow:0 8px 22px rgba(0,0,0,.08);
+    transition:.35s;
 }
 
-.photo-placeholder {
-    width: 100%;
-    height: 100%;
-    background-color: #dedede;
+.photo-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 18px 35px rgba(0,0,0,.12);
 }
 
-/* Individual download button overlay */
-.individual-download-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    color: #1f2d2f !important;
-    font-size: 18px;
-    text-decoration: none;
-    transition: transform 0.15s;
+.photo-card img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    transition:.45s;
 }
 
-.individual-download-btn:hover {
-    transform: scale(1.1);
+.individual-download-btn{
+
+    position:absolute;
+
+    right:15px;
+
+    top:15px;
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:white;
+
+    color:#639A88;
+
+    z-index:5;
+
+    text-decoration:none;
+
+    box-shadow:0 8px 18px rgba(0,0,0,.15);
+
+    transition:.25s;
+
 }
 
+.individual-download-btn:hover{
+
+    transform:scale(1.1);
+
+    background:#639A88;
+
+    color:white;
+
+}
 /* Pagination Row styling */
 .gallery-pagination {
     display: flex;
@@ -271,7 +338,80 @@ body {
     border-radius: 4px;
     transition: color 0.15s, background-color 0.15s;
 }
+/* ==========================
+   LOCKED GALLERY
+========================== */
 
+.photo-card.locked img{
+    filter: blur(10px) brightness(.75);
+    transform: scale(1.15);
+    pointer-events:none;
+    user-select:none;
+    transition:.4s;
+}
+.photo-card:hover img{
+    transform:scale(1.08);
+}
+
+.photo-card.locked:hover img{
+    transform:scale(1.18);
+}
+.photo-card.locked::after{
+
+    content:"Preview Only";
+
+    position:absolute;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    background:rgba(0,0,0,.65);
+
+    color:white;
+
+    padding:10px 18px;
+
+    border-radius:30px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    letter-spacing:.5px;
+
+}
+.photo-card.unlocked img{
+
+    filter:none;
+
+    transform:none;
+
+}
+.photo-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:linear-gradient(
+        transparent,
+        rgba(0,0,0,.25)
+    );
+
+    z-index:2;
+
+}
+
+.photo-card.unlocked::before{
+
+    display:none;
+
+}
 .gallery-pagination a:hover {
     color: #333333;
     background-color: #f5f5f5;
@@ -383,7 +523,31 @@ body {
 /* ==========================================================================
    PAYMENT REQUIRED MODAL POPUP SYSTEM
    ========================================================================= */
+.payment-required{
 
+    position:absolute;
+
+    bottom:15px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:#639A88;
+
+    color:white;
+
+    padding:8px 16px;
+
+    border-radius:25px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    z-index:4;
+
+}
 .modal-overlay {
     position: fixed;
     top: 0;

@@ -3,9 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Staff Login - Vanity Creation</title>
+  <title>Staff Login - Captured</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,15 +20,24 @@
 </head>
 
 <body>
-
-  <div class="login-wrapper">
-
-    <div class="left-panel">
-      <h1 class="welcome-heading">Welcome back!</h1>
-      <p class="welcome-subtext">Sign in to continue.</p>
-    </div>
+<div class="login-wrapper">
 
     <div class="login-card-container">
+
+        <div class="logo-box"></div>
+
+        <h1 class="brand-heading">Captured Studio</h1>
+
+        <p class="brand-subtext">
+            Manage your studio, all from one place.
+        </p>
+
+        <div class="form-header">
+            <h2 class="welcome-heading">Welcome back, Admin!</h2>
+            <p class="welcome-subtext">
+                Sign in to continue.
+            </p>
+        </div>
 
       <form class="login-form" id="staffLoginForm">
 
@@ -213,6 +222,7 @@
         }
 
         console.log("PROFILE:", finalProfile);
+        console.log("Verified:", finalProfile.verified);
 
         if (finalProfile?.verified === false) {
           alert("Account not verified.");

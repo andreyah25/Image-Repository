@@ -736,6 +736,38 @@
     color:#222;
 }
 
+/* Status Badge */
+.status-badge{
+    display:inline-block;
+    padding:8px 16px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.3px;
+    text-align:center;
+    min-width:110px;
+}
+
+/* Pending */
+.status-badge.pending{
+    background:#fff3cd;
+    color:#b7791f;
+    border:1px solid #f6d365;
+}
+
+/* Confirmed */
+.status-badge.confirmed{
+    background:#d1fae5;
+    color:#065f46;
+    border:1px solid #6ee7b7;
+}
+
+/* Rejected */
+.status-badge.rejected{
+    background:#fee2e2;
+    color:#b91c1c;
+    border:1px solid #fca5a5;
+}
 @keyframes notifFade {
 
     from {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,17 +9,18 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <link rel="stylesheet" href="/design/admin_client.css">
     <link rel="stylesheet" href="/design/admin_dashboard.css">
     <link rel="stylesheet" href="/design/admin_payment.css">
 </head>
+
 <body>
 
     <header class="top-navbar">
         <div class="logo-section">
-            <div class="logo-box"></div>
-            <span>VANITY CREATION</span>
+            <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
+            <span>Captured Studio</span>
         </div>
         <div class="navbar-right">
             <button class="notification-btn" aria-label="Notifications">
@@ -54,7 +56,7 @@
                     <h1>Payments</h1>
                     <p>Track and manage transaction records.</p>
                 </div>
-                
+
                 <div class="client-actions-row">
                     <div class="filter-dropdown-wrapper">
                         <button class="table-filter-btn" id="statusFilterBtn">
@@ -108,6 +110,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+
         function setupDropdown(btnId, dropdownId) {
             const btn = document.getElementById(btnId);
             const menu = document.getElementById(dropdownId);
@@ -119,6 +122,16 @@
         }
         setupDropdown('statusFilterBtn', 'statusDropdown');
         setupDropdown('methodFilterBtn', 'methodDropdown');
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
     </script>
 </body>
+
 </html>

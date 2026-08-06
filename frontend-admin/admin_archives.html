@@ -20,8 +20,8 @@
 
     <header class="top-navbar">
         <div class="logo-section">
-            <div class="logo-box"></div>
-            <span>Website Name</span>
+            <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
+            <span>Captured Studio</span>
         </div>
 
         <div class="navbar-right">
@@ -109,7 +109,7 @@
                             <th style="width: 35%;">Item</th>
                             <th style="width: 20%;">Type</th>
                             <th style="width: 25%;">Archived On</th>
-                            <th style="width: 20%;">Actions</th>
+                            <th style="width: 25%; text-align:right;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="archiveTableBody">
@@ -133,14 +133,7 @@
 
         // Dynamic local database storage array matching your requirements.
         // You can easily replace this array with database tables later!
-        const archiveItems = [
-            { id: 1, title: "Maria Santos", subtext: "mariasantos@gmail.com", type: "customer", date: "June 30, 2026", time: "5:20 PM" },
-            { id: 2, title: "Summer Shoot 2026", subtext: "120 photos", type: "folder", date: "July 10, 2026", time: "2:15 PM" },
-            { id: 3, title: "Wedding Reception Booking", subtext: "ID: #BK-9021", type: "booking", date: "May 18, 2026", time: "11:30 AM" },
-            { id: 4, title: "John Doe", subtext: "johndoe@gmail.com", type: "customer", date: "Jan 12, 2026", time: "10:15 AM" },
-            { id: 5, title: "Pre-Debut Folder", subtext: "420 photos", type: "folder", date: "Feb 05, 2026", time: "4:30 PM" },
-            { id: 6, title: "Corporate Seminar Booking", subtext: "ID: #BK-1052", type: "booking", date: "Mar 22, 2026", time: "1:00 PM" }
-        ];
+        let archiveItems = [];
 
         let currentFilter = "all";
 
@@ -178,15 +171,37 @@
                             <span>${item.time}</span>
                         </div>
                     </td>
-                    <td>
+                   <td class="actions-cell">
                         <select class="archive-actions-select" data-id="${item.id}">
-                            <option selected disabled>Select action</option>
-                            <option value="restore">Restore</option>
-                            <option value="delete">Delete Permanently</option>
-                        </select>
-                    </td>
+                      <option selected disabled>Select Action</option>
+                    <option value="restore">Restore</option>
+         <option value="delete">Delete Permanently</option>
+    </select>
+</td>
                 `;
                 tbody.appendChild(tr);
+                tr.querySelector(".archive-actions-select")
+                    .addEventListener("change", async function () {
+
+                        if (this.value !== "delete") return;
+
+                        if (!confirm("Delete permanently?")) return;
+
+                        const { error } = await supabaseClient
+                            .from("bookings")
+                            .delete()
+                            .eq("id", item.id);
+
+                        if (error) {
+                            alert(error.message);
+                            return;
+                        }
+
+                        archiveItems = archiveItems.filter(b => b.id !== item.id);
+
+                        renderArchiveTable();
+
+                    });
             });
         }
 
@@ -210,7 +225,9 @@
         let currentUser = null;
 
         window.addEventListener("load", async () => {
-            renderArchiveTable(); // Run the dynamic renderer
+
+            await archiveCompletedBookings();
+            await loadArchivedBookings();
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -238,6 +255,66 @@
                 console.error("Init error:", err);
             }
         });
+        async function archiveCompletedBookings() {
+
+            const today = new Date().toISOString().split("T")[0];
+
+            // Archive all completed bookings
+            const { error: completedError } = await supabaseClient
+                .from("bookings")
+                .update({
+                    is_archived: true,
+                    archived_at: new Date().toISOString()
+                })
+                .eq("status", "Completed")
+                .eq("is_archived", false);
+
+            if (completedError) {
+                console.error(completedError);
+            }
+
+            // Archive all outdated bookings
+            const { error: outdatedError } = await supabaseClient
+                .from("bookings")
+                .update({
+                    is_archived: true,
+                    archived_at: new Date().toISOString()
+                })
+                .lt("booking_date", today)
+                .eq("is_archived", false);
+
+            if (outdatedError) {
+                console.error(outdatedError);
+            }
+        }
+        async function loadArchivedBookings() {
+
+            const { data, error } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .eq("is_archived", true)
+                .order("archived_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            archiveItems = data.map(item => ({
+                id: item.id,
+                title: item.full_name,
+                subtext: `${item.email} • ${item.session_type}`,
+                type: "booking",
+                date: item.archived_at
+                    ? new Date(item.archived_at).toLocaleDateString()
+                    : "-",
+                time: item.archived_at
+                    ? new Date(item.archived_at).toLocaleTimeString()
+                    : "-"
+            }));
+
+            renderArchiveTable();
+        }
 
         document.getElementById("logoutBtn").addEventListener("click", async (e) => {
             e.preventDefault();

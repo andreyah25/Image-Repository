@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Get Started - Vanity Creation</title>
+  <title>Get Started - Captured</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,12 +21,20 @@
 
   <div class="login-wrapper">
 
+    <!-- Left Panel with Gradient Background & Workspace Branding (Identical to Login) -->
     <div class="left-panel">
-      <h1 class="welcome-heading">Get Started</h1>
-      <p class="welcome-subtext">Create your account in seconds.</p>
+      <div class="logo-box"></div>
+      <h1 class="brand-heading">Captured Workspace</h1>
+      <p class="brand-subtext">Manage your studio, all from one place.</p>
     </div>
 
+    <!-- Right Panel with Signup Form Container -->
     <div class="login-card-container">
+
+      <div class="form-header">
+        <h2 class="welcome-heading">Get Started</h2>
+        <p class="welcome-subtext">Create your account in seconds.</p>
+      </div>
 
       <form class="login-form" id="staffSignUpForm">
 
@@ -61,8 +69,8 @@
 
     </div>
 
-
   </div>
+
   <script>
     const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
@@ -72,6 +80,17 @@
       SUPABASE_URL,
       SUPABASE_ANON_KEY
     );
+
+    const passwordToggle = document.getElementById("passwordToggle");
+    const passwordInput = document.getElementById("password");
+    const toggleIcon = passwordToggle.querySelector("i");
+
+    passwordToggle.addEventListener("click", () => {
+      const hidden = passwordInput.type === "password";
+      passwordInput.type = hidden ? "text" : "password";
+      toggleIcon.className = hidden ? "fa-regular fa-eye" : "fa-regular fa-eye-slash";
+    });
+
     document.getElementById("staffSignUpForm").addEventListener("submit", async (e) => {
 
       e.preventDefault();
@@ -80,61 +99,127 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
-      });
+      try {
 
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      const user = data.user;
-      const { data: existingProfile } = await supabaseClient
-        .from("staff_profiles")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!existingProfile) {
-        const { error: profileError } = await supabaseClient
-          .from("staff_profiles")
-          .insert([
-            {
-              id: user.id,
-              full_name: fullName,
-              email: email,
-              avatar_url: "",
-              role: "admin",
-              verified: true
+        // ==========================
+        // CREATE AUTH ACCOUNT
+        // ==========================
+        const { data: signUpData, error: signUpError } =
+          await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: fullName
+              }
             }
-          ]);
+          });
+
+        if (signUpError) {
+          alert(signUpError.message);
+          return;
+        }
+
+        if (!signUpData.user) {
+          alert("Unable to create account.");
+          return;
+        }
+
+        // ==========================
+        // CREATE PROFILE
+        // ==========================
+        const profile = {
+          id: signUpData.user.id,
+          full_name: fullName,
+          email: email,
+          avatar_url: "",
+          role: "co-admin",
+          verified: true
+        };
+        // Check if profile already exists
+        const { data: existingProfile } = await supabaseClient
+          .from("staff_profiles")
+          .select("id")
+          .eq("id", signUpData.user.id)
+          .maybeSingle();
+
+        if (!existingProfile) {
+
+          const { error: insertError } = await supabaseClient
+            .from("staff_profiles")
+            .insert([profile]);
+
+          if (insertError) {
+            alert(insertError.message);
+            return;
+          }
+
+        }
+        // ==========================
+        // LOGIN AUTOMATICALLY
+        // ==========================
+        const { data: loginData, error: loginError } =
+          await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+          });
+
+        if (loginError) {
+          alert(loginError.message);
+          return;
+        }
+
+        // ==========================
+        // GET PROFILE
+        // ==========================
+        const { data: finalProfile, error: profileError } =
+          await supabaseClient
+            .from("staff_profiles")
+            .select("*")
+            .eq("id", loginData.user.id)
+            .single();
 
         if (profileError) {
-          console.error(profileError);
           alert(profileError.message);
           return;
         }
+
+        // ==========================
+        // SAVE SESSION
+        // ==========================
+        localStorage.setItem(
+          "loggedInUserId",
+          loginData.user.id
+        );
+
+        localStorage.setItem(
+          "loggedInUserEmail",
+          loginData.user.email
+        );
+
+        localStorage.setItem(
+          "staffProfile",
+          JSON.stringify(finalProfile)
+        );
+
+        alert("Account created successfully!");
+
+        // ==========================
+        // REDIRECT TO DASHBOARD
+        // ==========================
+        window.location.href = "/frontend-admin/admin_dashboard.html";
+
+      } catch (err) {
+
+        console.error(err);
+        alert("Something went wrong.");
+
       }
 
-      if (profileError) {
-        console.error(profileError);
-        alert(profileError.message);
-        return;
-      }
-
-      alert("Account created successfully!");
-      window.location.href = "admin_login.html";
     });
 
-  </script>
 
+  </script>
 
 </body>
 

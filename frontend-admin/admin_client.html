@@ -19,8 +19,8 @@
 
     <header class="top-navbar">
         <div class="logo-section">
-            <div class="logo-box"></div>
-            <span>Website Name</span>
+            <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
+            <span>Captured Studio</span>
         </div>
 
         <div class="navbar-right">
@@ -283,6 +283,7 @@
             const { data, error, count } = await supabaseClient
                 .from("bookings")
                 .select("*", { count: "exact" })
+                .eq("is_archived", false)
                 .order("created_at", { ascending: false });
 
             console.log("Returned rows:", data.length);
@@ -306,12 +307,24 @@
                 <td>${booking.booking_date}</td>
                 <td>${booking.booking_time}</td>
                 <td>${booking.session_type}</td>
-                <td>${booking.status}</td>
-                <td>${booking.notes || "-"}</td>
+                <td>
+                <span class="status-badge ${booking.status.toLowerCase()}">
+                     ${booking.status}
+                     </span>
+                </td>                <td>${booking.notes || "-"}</td>
              <td>
-                 ${booking.status === "Pending" ? `
-                 <button class="confirm-btn" data-id="${booking.id}">Confirm</button>
-                 <button class="reject-btn" data-id="${booking.id}">Reject</button>` : "-"
+                 ${booking.status === "Pending"
+                        ? `
+        <button class="confirm-btn" data-id="${booking.id}">Confirm</button>
+            <button class="reject-btn" data-id="${booking.id}">Reject</button>
+                    `
+                        : booking.status === "Confirmed"
+                            ? `
+                <button class="complete-btn" data-id="${booking.id}">
+            Complete
+            </button>
+                        `
+                            : "-"
                     }
                 </td>
             </tr>
@@ -427,6 +440,8 @@
 
                     }
                     loadAdminNotifications();
+                    renderHeaders("tabBookedSessions");
+                    loadBookedSessions();
 
                     // Empty the table on initial load
                     document.getElementById("clientTableBody").innerHTML = "";
@@ -441,10 +456,10 @@
 
             const dropdown = document.getElementById("notificationDropdown");
             const opening = dropdown.style.display !== "block";
-            dropdown.style.display = opening ?  "block" : "none";
+            dropdown.style.display = opening ? "block" : "none";
 
-            if(opening){
-                const {error } = await supabaseClient
+            if (opening) {
+                const { error } = await supabaseClient
                     .from("notifications")
                     .update({ is_read: true })
                     .eq("recipient", "admin")
@@ -453,11 +468,11 @@
                 if (error) {
                     console.error("Update notification error:", error);
                     return;
-                
+
+                }
+
+                await loadAdminNotifications();
             }
-            
-            await loadAdminNotifications();
-        }
         });
         document.addEventListener("click", (e) => {
 
@@ -484,6 +499,7 @@
                 (payload) => {
 
                     if (payload.new.recipient === "admin") {
+                        loadArchivedBookings();
                         loadAdminNotifications();
                     }
 
@@ -689,6 +705,39 @@
                 "Booking Rejected",
                 "The booking has been rejected."
             );
+            loadBookedSessions();
+
+        }); document.addEventListener("click", async (e) => {
+
+            const btn = e.target.closest(".complete-btn");
+            if (!btn) return;
+
+            const bookingId = btn.dataset.id;
+
+            const { error } = await supabaseClient
+                .from("bookings")
+                .update({
+                    status: "Completed"
+                })
+                .eq("id", bookingId);
+            await supabaseClient
+                .from("bookings")
+                .update({
+                    is_archived: true,
+                    archived_at: new Date().toISOString()
+                })
+                .eq("id", bookingId);
+
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            showToast(
+                "Booking Completed",
+                "Booking has been marked as completed."
+            );
+
             loadBookedSessions();
 
         });

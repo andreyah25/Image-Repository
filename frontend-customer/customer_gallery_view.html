@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Gallery - Website Name</title>
-    
+
     <!-- Direct Google Font Import -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+        rel="stylesheet">
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Dedicated CSS for this page only -->
     <link rel="stylesheet" href="/design/customer_gallery_view.css?v=1.2">
 </head>
+
 <body>
 
     <!-- TOP NAVBAR -->
@@ -31,7 +35,7 @@
     </header>
 
     <div class="dashboard-wrapper">
-        
+
         <!-- SIDEBAR -->
         <aside class="sidebar">
             <nav>
@@ -48,110 +52,45 @@
                     <span>Profile</span>
                 </a>
             </nav>
-            
+
             <a href="customer_homepage.html" class="logout-btn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
             </a>
         </aside>
 
-        <!-- CENTER CONTENT: UNLOCKED GALLERY VIEW -->
-        <main class="content">
-            
-            <!-- Gallery Info Header Section -->
-            <div class="gallery-header">
-                <div class="gallery-title-wrapper">
-                    <h1 class="gallery-title">Maria and John Wedding</h1>
-                    <p class="gallery-subtitle">April 1, 2026 • 2,550 Photos</p>
-                </div>
-                <!-- Added 'btn-trigger-payment' class -->
-                <button type="button" class="btn-download-all btn-trigger-payment">
-                    <i class="fa-solid fa-download"></i> Download All
-                </button>
-            </div>
+        <div class="gallery-header">
 
-            <!-- 4x2 Photo Grid -->
-            <div class="gallery-photos-grid">
-                
-                <!-- Photo Card 1 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <!-- Added 'btn-trigger-payment' class -->
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
+            <div>
 
-                <!-- Photo Card 2 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
+                <h1 id="galleryTitle">Loading...</h1>
 
-                <!-- Photo Card 3 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
-
-                <!-- Photo Card 4 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
-
-                <!-- Photo Card 5 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
-
-                <!-- Photo Card 6 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
-
-                <!-- Photo Card 7 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
-
-                <!-- Photo Card 8 -->
-                <div class="photo-card">
-                    <div class="photo-placeholder"></div>
-                    <a href="#" class="individual-download-btn btn-trigger-payment" title="Download Image">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
-                </div>
+                <p id="gallerySubtitle">Loading...</p>
 
             </div>
 
-            <!-- Pagination Bar -->
-            <div class="gallery-pagination">
-                <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-left"></i></a>
-                <a href="#" class="page-num">1</a>
-                <a href="#" class="page-num">2</a>
-                <a href="#" class="page-num active">3</a>
-                <a href="#" class="page-num">4</a>
-                <a href="#" class="page-num">5</a>
-                <span class="page-dots">...</span>
-                <a href="#" class="page-num">30</a>
-                <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-right"></i></a>
-            </div>
+            <button id="downloadAllBtn" class="btn-download-all">
+
+                <i class="fa-solid fa-download"></i>
+
+                Download All
+
+            </button>
+
+        </div>
+
+        <!-- Pagination Bar -->
+        <div class="gallery-pagination">
+            <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-left"></i></a>
+            <a href="#" class="page-num">1</a>
+            <a href="#" class="page-num">2</a>
+            <a href="#" class="page-num active">3</a>
+            <a href="#" class="page-num">4</a>
+            <a href="#" class="page-num">5</a>
+            <span class="page-dots">...</span>
+            <a href="#" class="page-num">30</a>
+            <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-right"></i></a>
+        </div>
 
         </main>
 
@@ -160,19 +99,19 @@
     <!-- PAYMENT REQUIRED POPUP MODAL (Hidden by default) -->
     <div class="modal-overlay" id="paymentModal">
         <div class="payment-modal-card">
-            
+
             <!-- Dark Modal Header -->
             <div class="modal-header">
                 <i class="fa-regular fa-credit-card modal-card-icon"></i>
                 <h2>Payment Required</h2>
             </div>
-            
+
             <!-- Modal Body Content -->
             <div class="modal-body">
                 <p class="modal-prompt-text">
                     Complete your payment to save and<br>download your images.
                 </p>
-                
+
                 <!-- Action Buttons -->
                 <div class="modal-actions-row">
                     <button type="button" class="btn-modal-cancel" id="btnMaybeLater">Maybe Later</button>
@@ -184,8 +123,120 @@
         </div>
     </div>
 
-    <!-- LIGHTWEIGHT TRIGGER SCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+        (async () => {
+
+            const {
+                data: { user }
+            } = await supabaseClient.auth.getUser();
+
+            if (!user) {
+                window.location.href = "customer_login.html";
+                return;
+            }
+
+            loadGallery(user);
+
+        })();
+
+        async function loadGallery(user) {
+
+            const { data: folder, error } = await supabaseClient
+                .from("folders")
+                .select("*")
+                .eq("customer_id", user.id)
+                .single();
+
+            if (error || !folder) {
+
+                document.getElementById("galleryTitle").textContent =
+                    "No Gallery Available";
+
+                document.getElementById("gallerySubtitle").textContent =
+                    "Your gallery has not been assigned yet.";
+
+                return;
+            }
+
+            document.getElementById("galleryTitle").textContent =
+                folder.folder_name;
+
+            document.getElementById("gallerySubtitle").textContent =
+                `${new Date(folder.event_date).toLocaleDateString()}`;
+
+            loadPhotos(folder);
+
+        }
+        async function loadPhotos(folder) {
+
+            const { data: photos } = await supabaseClient
+                .from("photos")
+                .select("*")
+                .eq("folder_id", folder.id);
+
+            const grid =
+                document.getElementById("galleryGrid");
+
+            grid.innerHTML = "";
+
+            photos.forEach(photo => {
+
+                const image =
+                    folder.download_access
+                        ? photo.image_url
+                        : photo.preview_url;
+
+                grid.innerHTML += `
+
+        <div class="photo-card ${folder.download_access ? "" : "unlocked"}">
+
+            <img src="${image}">
+
+            <button
+                class="individual-download-btn"
+                onclick="downloadPhoto('${photo.image_url}',${folder.download_access})">
+
+                <i class="fa-solid fa-download"></i>
+
+            </button>
+
+        </div>
+
+        `;
+
+            });
+
+        }
+        function downloadPhoto(url, paid) {
+
+            if (!paid) {
+
+                paymentModal.classList.add("active");
+
+                return;
+
+            }
+
+            window.open(url, "_blank");
+
+        }
+        document
+            .getElementById("downloadAllBtn")
+            .addEventListener("click", () => {
+
+                paymentModal.classList.add("active");
+
+            });
         const paymentModal = document.getElementById('paymentModal');
         const triggerButtons = document.querySelectorAll('.btn-trigger-payment');
         const closeButton = document.getElementById('btnMaybeLater');
@@ -209,7 +260,9 @@
                 paymentModal.classList.remove('active');
             }
         });
+
     </script>
 
 </body>
+
 </html>

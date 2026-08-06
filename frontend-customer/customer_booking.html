@@ -78,8 +78,8 @@
                             </div>
                             <div class="form-group">
                                 <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
-                                <input type="tel" id="contactNumber" placeholder="Enter your contact number" maxlength="11"
-                                    inputmode="numeric" autocomplete="tel" required>
+                                <input type="tel" id="contactNumber" placeholder="Enter your contact number"
+                                    maxlength="11" inputmode="numeric" autocomplete="tel" required>
                             </div>
                             <div class="form-group">
                                 <label for="emailAddress">Email Address</label>
@@ -136,25 +136,75 @@
                     </div>
 
                     <!-- Section 3: Reservation Down Payment -->
+                    <!-- Section 3: Reservation Down Payment -->
                     <div class="form-section">
+
                         <div class="section-header-flex">
-                            <h3 class="section-title-form">Reservation Down Payment</h3>
+                            <h3 class="section-title-form">
+                                Reservation Down Payment
+                            </h3>
                         </div>
+
                         <div class="form-grid-two">
-                            <div class="form-group">
-                                <label for="paymentMethod">Payment Method <span style="color:red;">*</span></label>
-                                <select id="paymentMethod" required>
-                                    <option value="" disabled selected>Select payment method</option>
-                                    <option value="GCash">GCash</option>
-                                    <option value="Maya">Maya</option>
-                                    <option value="Credit/Debit Card">Credit/Debit Card</option>
-                                </select>
+
+                            <div>
+
+                                <div class="form-group">
+                                    <label for="paymentMethod">
+                                        Payment Method
+                                        <span style="color:red">*</span>
+                                    </label>
+
+                                    <select id="paymentMethod" required>
+                                        <option value="" selected disabled>
+                                            Select payment method
+                                        </option>
+
+                                        <option value="GCash">
+                                            GCash
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <strong>Down Payment</strong>
+                                    </label>
+
+                                    <input type="text" value="₱200.00 (Non-refundable)" readonly>
+                                </div>
+
                             </div>
-                            <div class="form-group">
-                                <label><em><strong>Note:</strong> The amount below will be deducted from your total.</em></label>
-                                <input type="text" value="₱200.00 (Non-refundable)" readonly>
+
+
+                            <div id="gcashPaymentBox" style="display:none;">
+
+                                <h4 style="margin-bottom:15px;">
+                                    Scan to Pay via GCash
+                                </h4>
+
+                                <img src="/images/gcash_qr.jpg" alt="GCash QR" style="
+                    width:230px;
+                    border-radius:12px;
+                    border:1px solid #ddd;
+                    margin-bottom:20px;
+                ">
+
+                                <div class="form-group">
+
+                                    <label>
+                                        Upload Proof of Payment
+                                    </label>
+
+                                    <input type="file" id="paymentProof" accept="image/png,image/jpeg,image/jpg"
+                                        required>
+
+                                </div>
+
                             </div>
+
                         </div>
+
                     </div>
 
                     <!-- Section 4: Notes / Special Requests -->
@@ -167,7 +217,8 @@
 
                     <!-- Action Button -->
                     <div class="form-actions" style="justify-content: stretch;">
-                        <button type="submit" class="btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <button type="submit" class="btn-confirm"
+                            style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <i class="fa-solid fa-calendar-check"></i> Confirm Booking
                         </button>
                     </div>
@@ -188,6 +239,25 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+        const paymentMethod =
+            document.getElementById("paymentMethod");
+
+        const gcashBox =
+            document.getElementById("gcashPaymentBox");
+
+        paymentMethod.addEventListener("change", () => {
+
+            if (paymentMethod.value === "GCash") {
+
+                gcashBox.style.display = "block";
+
+            } else {
+
+                gcashBox.style.display = "none";
+
+            }
+
+        });
 
         (async () => {
 
@@ -325,7 +395,30 @@
                 alert("Please complete all required fields.");
                 return;
             }
+            const paymentFile = document.getElementById("paymentProof").files[0];
 
+            if (!paymentFile) {
+                alert("Please upload your GCash payment proof.");
+                return;
+            }
+
+            const fileName = `${user.id}/${Date.now()}-${paymentFile.name}`;
+
+            const { error: uploadError } = await supabaseClient.storage
+                .from("payment-proofs")
+                .upload(fileName, paymentFile);
+
+            if (uploadError) {
+                console.error(uploadError);
+                alert("Failed to upload payment proof.");
+                return;
+            }
+
+            const { data: publicUrlData } = supabaseClient.storage
+                .from("payment-proofs")
+                .getPublicUrl(fileName);
+
+            const paymentProofURL = publicUrlData.publicUrl;
             const { data: bookingData, error } = await supabaseClient
                 .from("bookings")
                 .insert([
@@ -340,8 +433,9 @@
                         session_type: session || null,
                         notes: notes,
                         payment_method: paymentMethod,
+                        payment_proof_url: paymentProofURL,
                         downpayment_amount: 200.00,
-                        payment_status: "Pending",
+                        payment_status: "Pending Verificaation",
                         status: "Pending"
                     }
                 ])
@@ -363,7 +457,7 @@
                     recipient: "customer",
                     title: "Booking Submitted",
                     message:
-                        "Your booking request has been submitted successfully and is waiting for approval.",
+                        "Your booking request has been submitted successfully.. Please wait while the administrator verifies your payment.",
                     is_read: false
                 });
 

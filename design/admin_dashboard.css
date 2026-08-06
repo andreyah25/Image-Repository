@@ -28,13 +28,14 @@ body {
     color: white;
     font-size: 13px;
 }
-
 .logo-box {
-    width: 34px;
-    height: 34px;
+    width: 50px;
+    height: 44px;
+    object-fit: contain;
     background: white;
+    border-radius: 6px;
+    padding: 3px;
 }
-
 .navbar-right {
     display: flex;
     align-items: center;
@@ -108,45 +109,158 @@ body {
 
 
 .dashboard-wrapper {
-    display: flex;
-    height: calc(100vh - 70px);
+    display:flex;
+    height:calc(100vh - 70px);
 }
 
+
+/* SIDEBAR */
 
 .sidebar {
-    width: 230px;
-    background: white;
-    border-right: 1px solid #e5e5e5;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 25px 18px;
+
+    width:230px;
+
+    background:white;
+
+    border-right:1px solid #e5e5e5;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-between;
+
+    padding:25px 18px;
+
+    transition:0.3s ease;
+
+    overflow:hidden;
+
 }
+
+
+/* COLLAPSED */
+
+.sidebar.collapsed {
+
+    width:0;
+
+    padding-left:0;
+
+    padding-right:0;
+
+}
+
+
+
+/* hide sidebar content */
+
+.sidebar.collapsed nav,
+.sidebar.collapsed .logout-btn {
+
+    display:none;
+
+}
+
+
+
+/* NAV LINKS */
 
 .sidebar nav {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
 }
+
 
 .sidebar a {
-    text-decoration: none;
-    color: #444;
-    font-size: 14px;
-    padding: 12px 15px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+
+    text-decoration:none;
+
+    color:#444;
+
+    font-size:14px;
+
+    padding:12px 15px;
+
+    border-radius:4px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
 }
+
+
+.sidebar a i {
+
+    width:18px;
+
+}
+
+
 
 .sidebar a:hover {
-    background: #f4f4f4;
+
+    background:#f4f4f4;
+
 }
 
+
 .sidebar a.active {
-    background: #1f2d2f;
-    color: rgb(221, 219, 219);
+
+    background:#1f2d2f;
+
+    color:white;
+
+}
+
+.sidebar-toggle {
+
+    position:fixed;
+
+    top:80px;
+
+    left:245px;
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#1f2d2f;
+
+    color:white;
+
+    cursor:pointer;
+
+    z-index:9999;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    transition:.3s ease;
+
+}
+
+
+
+.sidebar-toggle.closed {
+
+    left:20px;
+
 }
 .booking-modal{
     display:none;
@@ -244,7 +358,7 @@ body {
 
 .booking-header{
 
-    background:linear-gradient(135deg,#5a475f,#8A7BFF);
+    background:linear-gradient(135deg,#252453,#181435);
 
     color:white;
 
@@ -357,7 +471,7 @@ body {
 
     border-radius:12px;
 
-    background:#a07a9d;
+    background:#103c75;
 
     color:white;
 
