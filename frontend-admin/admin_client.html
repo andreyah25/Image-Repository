@@ -55,7 +55,7 @@
             <nav>
                 <a href="admin_dashboard.html">
                     <i class="fa-solid fa-table-cells-large"></i>
-                    Home
+                    Dashboard
                 </a>
                 <a href="admin_client.html" class="active">
                     <i class="fa-solid fa-users"></i>
@@ -104,7 +104,7 @@
 
                 <div class="client-actions-row">
                     <div class="table-search-box">
-                        <input type="text" placeholder="Search client...">
+                        <input type="text" id="clientSearchInput" placeholder="Search" autocomplete="off">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
 
@@ -228,6 +228,8 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+        let allBookedSessions = [];
+        let selectedMonth = "all";
         async function loadAdminNotifications() {
 
             const { data, error } = await supabaseClient
@@ -279,58 +281,230 @@
 
         }
         async function loadBookedSessions() {
+
             console.log("Loading Bookings...");
+
             const { data, error, count } = await supabaseClient
                 .from("bookings")
                 .select("*", { count: "exact" })
                 .eq("is_archived", false)
                 .order("created_at", { ascending: false });
 
-            console.log("Returned rows:", data.length);
-            console.log("Total rows:", count);
-            console.log(data);
             if (error) {
-                console.error(error);
+                console.error("Error loading bookings:", error);
                 return;
             }
 
+            console.log("Returned rows:", data?.length || 0);
+            console.log("Total rows:", count);
+
+            // Store the complete dataset
+            allBookedSessions = data || [];
+
+            renderBookedSessions();
+        }
+        function renderBookedSessions() {
+
             const tbody = document.getElementById("clientTableBody");
+
             tbody.innerHTML = "";
 
-            data.forEach(booking => {
+            const searchInput = document.getElementById("clientSearchInput");
+
+            const searchTerm = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            const filteredBookings = allBookedSessions.filter(booking => {
+
+                // -----------------------------------------
+                // SEARCH
+                // -----------------------------------------
+
+                if (searchTerm) {
+
+                    const searchableText = [
+                        booking.full_name,
+                        booking.contact_number,
+                        booking.email,
+                        booking.booking_date,
+                        booking.booking_time,
+                        booking.session_type,
+                        booking.status,
+                        booking.notes
+                    ]
+                        .filter(value =>
+                            value !== null &&
+                            value !== undefined
+                        )
+                        .join(" ")
+                        .toLowerCase();
+
+                    if (!searchableText.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+
+                // -----------------------------------------
+                // MONTH FILTER
+                // -----------------------------------------
+
+                if (selectedMonth !== "all" && booking.booking_date) {
+
+                    const bookingDate = new Date(
+                        booking.booking_date + "T00:00:00"
+                    );
+
+                    const bookingMonth =
+                        bookingDate.getMonth() + 1;
+
+                    if (bookingMonth !== Number(selectedMonth)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // -----------------------------------------
+            // NO RESULTS
+            // -----------------------------------------
+
+            if (filteredBookings.length === 0) {
+
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="
+                    text-align: center;
+                    padding: 30px;
+                    color: #888;
+                ">
+                    No clients found.
+                </td>
+            </tr>
+        `;
+
+                return;
+            }
+
+            // -----------------------------------------
+            // DISPLAY BOOKINGS
+            // -----------------------------------------
+
+            filteredBookings.forEach(booking => {
+
                 tbody.innerHTML += `
             <tr>
-                
-                <td>${booking.full_name}</td>
-                <td>${booking.contact_number}</td>
-                <td>${booking.email}</td>
-                <td>${booking.booking_date}</td>
-                <td>${booking.booking_time}</td>
-                <td>${booking.session_type}</td>
+
                 <td>
-                <span class="status-badge ${booking.status.toLowerCase()}">
-                     ${booking.status}
-                     </span>
-                </td>                <td>${booking.notes || "-"}</td>
-             <td>
-                 ${booking.status === "Pending"
+                    ${escapeHtml(booking.full_name || "-")}
+                </td>
+
+                <td>
+                    ${escapeHtml(booking.contact_number || "-")}
+                </td>
+
+                <td>
+                    ${escapeHtml(booking.email || "-")}
+                </td>
+
+                <td>
+                    ${formatBookingDate(booking.booking_date)}
+                </td>
+
+                <td>
+                    ${escapeHtml(booking.booking_time || "-")}
+                </td>
+
+                <td>
+                    ${escapeHtml(booking.session_type || "-")}
+                </td>
+
+                <td>
+                    <span class="status-badge ${(booking.status || "")
+                        .toLowerCase()
+                    }">
+                        ${escapeHtml(booking.status || "-")}
+                    </span>
+                </td>
+
+                <td>
+                    ${escapeHtml(booking.notes || "-")}
+                </td>
+
+                <td>
+
+                    ${booking.status === "Pending"
                         ? `
-        <button class="confirm-btn" data-id="${booking.id}">Confirm</button>
-            <button class="reject-btn" data-id="${booking.id}">Reject</button>
-                    `
+                                <button
+                                    class="confirm-btn"
+                                    data-id="${booking.id}">
+                                    Confirm
+                                </button>
+
+                                <button
+                                    class="reject-btn"
+                                    data-id="${booking.id}">
+                                    Reject
+                                </button>
+                            `
                         : booking.status === "Confirmed"
                             ? `
-                <button class="complete-btn" data-id="${booking.id}">
-            Complete
-            </button>
-                        `
+                                    <button
+                                        class="complete-btn"
+                                        data-id="${booking.id}">
+                                        Complete
+                                    </button>
+                                `
                             : "-"
                     }
+
                 </td>
+
             </tr>
         `;
             });
         }
+        function escapeHtml(value) {
+
+            if (value === null || value === undefined) {
+                return "";
+            }
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+
+        function formatBookingDate(dateString) {
+
+            if (!dateString) {
+                return "-";
+            }
+
+            const date = new Date(dateString + "T00:00:00");
+
+            if (isNaN(date.getTime())) {
+                return dateString;
+            }
+
+            return date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            });
+        }
+        document
+            .getElementById("clientSearchInput")
+            .addEventListener("input", function () {
+
+                renderBookedSessions();
+
+            });
         /*async function loadAccessRequests() {
 
             const { data, error } = await supabaseClient

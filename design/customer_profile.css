@@ -1,107 +1,95 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
-/* --- Reset Rules --- */
+
+/* =========================================================
+   RESET
+========================================================= */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+
+/* =========================================================
+   BODY
+========================================================= */
+
 body {
-    font-family: "DM Sans", sans-serif !important;
+    font-family: "DM Sans", sans-serif;
     background: #f6f6f6;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* --- Notification Bell Styling --- */
-.notification-container {
-    position: relative;
-    margin-right: 15px;
-}
-
-.notification-btn {
-    width: 38px;
-    height: 38px;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
     color: #353535;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease;
-    position: relative;
-    box-shadow: none;
 }
 
-.notification-btn:hover {
-    background: rgba(53, 53, 53, 0.08);
-}
 
-.notification-btn i {
-    font-size: 20px;
-}
+/* =========================================================
+   TOP NAVBAR
+========================================================= */
 
-#notificationCount {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    min-width: 17px;
-    height: 17px;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: #ef4444;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 600;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid #ffffff;
-}
-
-/* --- Top Header Navigation (Iridescent Pastel Gradient Background) --- */
 .top-navbar {
     height: 70px;
+
     background: linear-gradient(
-        135deg, 
-        #dbeffe 0%,    /* Light Sky Blue */
-        #fed7aa 25%,   /* Soft Peach */
-        #fef08a 50%,   /* Pastel Yellow / Cream */
-        #dcfce7 75%,   /* Pale Mint Green */
-        #f3e8ff 100%   /* Light Lavender */
+        135deg,
+        #dbeffe 0%,
+        #fed7aa 25%,
+        #fef08a 50%,
+        #dcfce7 75%,
+        #f3e8ff 100%
     );
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     padding: 0 25px;
+
     position: fixed;
+
     top: 0;
     left: 0;
+
     width: 100%;
+
     z-index: 100;
+
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
+
+
+/* =========================================================
+   LOGO
+========================================================= */
 
 .logo-section {
     display: flex;
     align-items: center;
     gap: 12px;
+
     color: #353535;
+
     font-size: 14px;
     font-weight: 500;
 }
 
+
 .logo-img {
     height: 38px;
     width: auto;
+
     object-fit: contain;
+
     display: block;
+
     border-radius: 4px;
 }
+
+
+/* =========================================================
+   NAVBAR RIGHT
+========================================================= */
 
 .navbar-right {
     display: flex;
@@ -109,37 +97,67 @@ body {
     gap: 15px;
 }
 
-#customer-name {
-    color: #353535;
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* --- Main Dashboard Body Frame Layout --- */
+
+.navbar-avatar {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    border: 2px solid rgba(255, 255, 255, 0.9);
+
+    background: #e8e8e8;
+}
+
+
+/* =========================================================
+   DASHBOARD WRAPPER
+========================================================= */
+
 .dashboard-wrapper {
     display: flex;
-    flex: 1;
+
     margin-top: 70px;
-    /* Offset for the fixed header */
+
     min-height: calc(100vh - 70px);
 }
 
-/* --- Sidebar (Fixed left strip layout) --- */
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
 .sidebar {
     width: 230px;
-    background: white;
+
+    background: #ffffff;
+
     border-right: 1px solid #e5e5e5;
+
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
     padding: 25px 18px;
+
     position: fixed;
+
     top: 70px;
     bottom: 0;
     left: 0;
+
     z-index: 90;
 }
+
 
 .sidebar nav {
     display: flex;
@@ -147,366 +165,981 @@ body {
     gap: 8px;
 }
 
+
 .sidebar a {
     text-decoration: none;
+
     color: #353535;
+
     font-size: 14px;
+
     padding: 12px 15px;
+
     border-radius: 6px;
+
     display: flex;
     align-items: center;
+
     gap: 10px;
+
     font-weight: 500;
-    transition: background 0.2s, color 0.2s;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
+
 
 .sidebar a:hover {
     background: #f4f4f4;
 }
+
 
 .sidebar a.active {
     background: #639A88;
     color: #ffffff;
 }
 
-/* --- Red Logout Button Overrides --- */
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
 .sidebar .logout-btn {
     display: flex;
     align-items: center;
     justify-content: center;
+
     gap: 8px;
+
     width: 100%;
+
     padding: 10px;
+
     background-color: #ffffff;
-    border: 1.5px solid #dc2626 !important;
+
+    border: 1.5px solid #dc2626;
+
     border-radius: 6px;
+
     text-decoration: none;
+
     font-size: 14px;
+
     font-weight: 500;
-    transition: background 0.2s;
+
+    transition: background 0.2s ease;
 }
+
 
 .sidebar .logout-btn,
 .sidebar .logout-btn span,
-.sidebar .logout-btn i.logout-icon {
-    color: #dc2626 !important;
+.sidebar .logout-btn i {
+    color: #dc2626;
 }
 
-.sidebar .logout-btn i.logout-icon {
+
+.sidebar .logout-btn i {
     font-size: 16px;
-    display: inline-block;
-    line-height: 1;
 }
+
 
 .sidebar .logout-btn:hover {
-    background: #fff3f3 !important;
+    background: #fff3f3;
 }
 
-/* --- Center Content Area --- */
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
 .content {
     flex: 1;
-    padding: 40px;
+
     margin-left: 230px;
-    /* Offset so content doesn't slip under the sidebar */
-    min-height: 100%;
-}
 
-/* ==========================================================================
-   MY GALLERY CORE LAYOUT (REQUEST ACCESS & ENTER LINK VIEWS)
-   ========================================================================= */
-
-/* Center container context */
-.central-message-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: calc(100vh - 150px);
-}
-
-/* Layout Wrapper Card */
-.request-access-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 32px;
-    padding: 20px;
-    max-width: 500px;
-    width: 100%;
-}
-
-/* Message typography styling */
-.message-text {
-    font-size: 24px;
-    font-weight: 400;
-    line-height: 1.45;
-    color: #a0a0a0;
-}
-
-/* Styled "Request Access" / "Continue" CTA Button */
-.btn-request {
-    padding: 14px 48px;
-    background-color: #639A88 !important;
-    color: #ffffff !important;
-    border: none;
-    border-radius: 6px;
-    font-family: "DM Sans", sans-serif !important;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    width: auto;
-}
-
-.btn-request:hover {
-    background-color: #528373 !important;
-}
-
-/* ==========================================================================
-   ENTER LINK VIEW ADDITIONAL STYLES
-   ========================================================================= */
-
-.link-entry-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    width: 100%;
-    max-width: 440px;
-}
-
-.link-input {
-    width: 100%;
-    padding: 18px 20px;
-    font-family: "DM Sans", sans-serif !important;
-    font-size: 16px;
-    color: #353535;
-    background-color: #ffffff;
-    border: 1px solid #a0a0a0;
-    border-radius: 6px;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.link-input::placeholder {
-    font-family: "DM Sans", sans-serif !important;
-    color: #b8b8b8;
-    opacity: 1;
-}
-
-.link-input:focus {
-    border-color: #639A88;
-    box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.15);
-}
-
-.link-entry-form .btn-request {
-    width: 100%;
-}
-
-/* ==========================================================================
-   PROFILE VIEW STYLING (MARIA SANTOS VIEW)
-   ========================================================================= */
-
-/* Main layout limits for profile items */
-.profile-content-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
     padding: 40px;
+
+    min-height: calc(100vh - 70px);
 }
+
+
+/* =========================================================
+   PROFILE HEADER
+========================================================= */
+
+.profile-page-header {
+    width: 100%;
+
+    max-width: 1000px;
+
+    margin-bottom: 30px;
+}
+
+
+.profile-page-header h1 {
+    font-size: 36px;
+
+    font-weight: 400;
+
+    color: #353535;
+
+    margin-bottom: 5px;
+}
+
+
+.profile-page-header p {
+    font-size: 15px;
+
+    color: #777777;
+}
+
+
+/* =========================================================
+   PROFILE CARDS
+========================================================= */
 
 .profile-cards-wrapper {
     width: 100%;
+
     max-width: 1000px;
+
     display: flex;
+
     flex-direction: column;
-    gap: 30px;
+
+    gap: 25px;
 }
 
-/* Base Card Styling with Soft Shadow borders */
+
 .profile-card {
     background: #ffffff;
+
     border: 1px solid #e5e5e5;
+
     border-radius: 6px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.04);
+
     padding: 30px;
 }
 
-/* Hero Header Card Layout styling */
+
+/* =========================================================
+   HERO CARD
+========================================================= */
+
 .hero-card {
     display: flex;
+
     align-items: center;
+
     gap: 24px;
 }
 
-/* Avatar layout circle styling */
+
+/* =========================================================
+   PROFILE AVATAR
+========================================================= */
+
 .avatar-placeholder {
     width: 90px;
     height: 90px;
+
     border-radius: 50%;
+
     overflow: hidden;
+
     background-color: #e8e8e8;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     flex-shrink: 0;
 }
 
+
 .avatar-placeholder img {
     width: 100%;
     height: 100%;
+
     object-fit: cover;
+
+    display: block;
 }
 
-/* Hero Card Details Text alignment */
+
+/* =========================================================
+   HERO DETAILS
+========================================================= */
+
 .profile-hero-details h2 {
     font-size: 26px;
+
     font-weight: 500;
+
     color: #353535;
+
     margin-bottom: 8px;
 }
 
+
 .profile-email-badge {
     display: flex;
+
     align-items: center;
+
     gap: 8px;
+
     font-size: 14px;
+
     color: #666666;
 }
 
+
 .profile-email-badge i {
     font-size: 16px;
+
     color: #639A88;
 }
 
-/* Detailed Information Card Layout */
-.info-card h3 {
-    font-size: 18px;
-    font-weight: 500;
-    color: #353535;
-    margin-bottom: 25px;
-    padding-bottom: 12px;
+
+/* =========================================================
+   INFORMATION CARD
+========================================================= */
+
+.info-card-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
     border-bottom: 1px solid #e5e5e5;
+
+    padding-bottom: 15px;
+
+    margin-bottom: 25px;
 }
 
-/* Responsive details grid layout */
+
+.info-card h3 {
+    font-size: 18px;
+
+    font-weight: 500;
+
+    color: #353535;
+}
+
+
+/* =========================================================
+   EDIT BUTTON
+========================================================= */
+
+.edit-profile-btn {
+    border: none;
+
+    background: #26383a;
+
+    color: #ffffff;
+
+    padding: 10px 18px;
+
+    border-radius: 6px;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease;
+}
+
+
+.edit-profile-btn:hover {
+    background: #1c2b2d;
+}
+
+
+.edit-profile-btn:active {
+    transform: scale(0.98);
+}
+
+
+/* =========================================================
+   INFORMATION GRID
+========================================================= */
+
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
     gap: 40px;
 }
 
+
 .info-group {
     display: flex;
+
     flex-direction: column;
+
     gap: 8px;
 }
 
+
 .info-group label {
     font-size: 14px;
+
     color: #9e9e9e;
+
     font-weight: 500;
 }
 
+
 .info-group p {
     font-size: 16px;
+
     font-weight: 400;
+
     color: #353535;
+
+    word-break: break-word;
 }
 
+
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
+
+.modal-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(20, 30, 30, 0.45);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    z-index: 999;
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
+}
+
+
+.modal-overlay.show {
+    opacity: 1;
+
+    visibility: visible;
+}
+
+
+/* =========================================================
+   EDIT PROFILE MODAL
+========================================================= */
+
+.edit-profile-modal {
+    width: 100%;
+
+    max-width: 520px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.2);
+
+    padding: 30px;
+
+    transform: translateY(15px);
+
+    transition: transform 0.2s ease;
+}
+
+
+.modal-overlay.show .edit-profile-modal {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   MODAL HEADER
+========================================================= */
+
+.modal-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid #e5e5e5;
+
+    margin-bottom: 25px;
+}
+
+
+.modal-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.modal-title > i {
+    font-size: 24px;
+
+    color: #639A88;
+}
+
+
+.modal-title h2 {
+    font-size: 21px;
+
+    font-weight: 500;
+
+    color: #353535;
+
+    margin-bottom: 3px;
+}
+
+
+.modal-title p {
+    font-size: 13px;
+
+    color: #888888;
+}
+
+
+.modal-close-btn {
+    width: 34px;
+
+    height: 34px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #f4f4f4;
+
+    color: #555555;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transition: background 0.2s ease;
+}
+
+
+.modal-close-btn:hover {
+    background: #e9e9e9;
+}
+
+
+/* =========================================================
+   EDIT PROFILE PICTURE
+========================================================= */
+
+.edit-picture-section {
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    margin-bottom: 25px;
+}
+
+
+.edit-avatar-wrapper {
+    width: 90px;
+
+    height: 90px;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+
+    background: #eeeeee;
+
+    flex-shrink: 0;
+}
+
+
+.edit-avatar-wrapper img {
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+.edit-picture-actions {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+.change-photo-btn {
+    width: fit-content;
+
+    padding: 9px 14px;
+
+    border-radius: 6px;
+
+    background: #639A88;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    transition: background 0.2s ease;
+}
+
+
+.change-photo-btn:hover {
+    background: #528373;
+}
+
+
+.edit-picture-actions small {
+    color: #999999;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.form-group {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    margin-bottom: 18px;
+}
+
+
+.form-group label {
+    font-size: 13px;
+
+    font-weight: 500;
+
+    color: #555555;
+}
+
+
+.form-group input {
+    width: 100%;
+
+    height: 44px;
+
+    padding: 0 13px;
+
+    border: 1px solid #d7d7d7;
+
+    border-radius: 6px;
+
+    outline: none;
+
+    background: #ffffff;
+
+    color: #353535;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 14px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.form-group input:focus {
+    border-color: #639A88;
+
+    box-shadow:
+        0 0 0 3px rgba(
+            99,
+            154,
+            136,
+            0.12
+        );
+}
+
+
+.form-group input[readonly] {
+    background: #f5f5f5;
+
+    color: #777777;
+
+    cursor: not-allowed;
+}
+
+
+.field-note {
+    font-size: 11px;
+
+    color: #999999;
+}
+
+
+/* =========================================================
+   MODAL BUTTONS
+========================================================= */
+
+.modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 25px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #eeeeee;
+}
+
+
+.cancel-btn {
+    padding: 10px 18px;
+
+    border: 1px solid #d5d5d5;
+
+    background: #ffffff;
+
+    color: #555555;
+
+    border-radius: 6px;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+
+.cancel-btn:hover {
+    background: #f5f5f5;
+}
+
+
+.save-profile-btn {
+    padding: 10px 18px;
+
+    border: none;
+
+    background: #639A88;
+
+    color: #ffffff;
+
+    border-radius: 6px;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    transition:
+        background 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+.save-profile-btn:hover {
+    background: #528373;
+}
+
+
+.save-profile-btn:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
 
 @media (max-width: 900px) {
-    .dashboard-wrapper {
-        flex-direction: column;
-        margin-top: 70px;
-    }
 
-    /* Convert sidebar into horizontal navigation */
     .sidebar {
-        width: 100%;
-        position: relative;
-        top: 0;
-        left: 0;
-        border-right: none;
-        border-bottom: 1px solid #e5e5e5;
-        padding: 15px 25px;
-        flex-direction: row;
-        align-items: center;
-        gap: 15px;
+        width: 200px;
     }
 
-    .sidebar nav {
-        flex-direction: row;
-        justify-content: space-around;
-        width: auto;
-        flex: 1;
-    }
-
-    .sidebar a {
-        padding: 10px 14px;
-    }
-
-    .sidebar .logout-btn {
-        width: auto;
-        padding: 10px 20px;
-    }
 
     .content {
-        margin-left: 0;
-        padding: 30px 20px;
+        margin-left: 200px;
+
+        padding: 30px;
     }
+
 
     .info-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+            repeat(2, 1fr);
+
         gap: 30px;
     }
+
 }
 
-/* Mobile Screens (Under 600px) */
-@media (max-width: 600px) {
-    .sidebar {
-        flex-direction: column;
-        padding: 15px;
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .top-navbar {
+        padding: 0 15px;
     }
+
+
+    .logo-section span {
+        font-size: 12px;
+    }
+
+
+    .logo-img {
+        height: 34px;
+    }
+
+
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+
+
+    .sidebar {
+        position: relative;
+
+        top: auto;
+        left: auto;
+        bottom: auto;
+
+        width: 100%;
+
+        padding: 12px 15px;
+
+        border-right: none;
+
+        border-bottom: 1px solid #e5e5e5;
+    }
+
 
     .sidebar nav {
         width: 100%;
-        gap: 4px;
+
+        flex-direction: row;
+
+        justify-content: space-between;
+
+        gap: 5px;
     }
 
-    .sidebar a {
-        font-size: 13px;
-        padding: 8px 10px;
-        gap: 6px;
+
+    .sidebar nav a {
+        flex: 1;
+
+        justify-content: center;
+
+        padding: 10px 7px;
+
+        font-size: 12px;
     }
+
+
+    .sidebar nav a span {
+        display: none;
+    }
+
 
     .sidebar .logout-btn {
-        width: 100%;
         margin-top: 10px;
     }
 
-    .message-text {
-        font-size: 19px;
+
+    .content {
+        margin-left: 0;
+
+        padding: 25px 15px;
     }
 
-    .btn-request {
-        width: 100%;
+
+    .profile-page-header h1 {
+        font-size: 30px;
     }
+
+
+    .profile-card {
+        padding: 22px;
+    }
+
 
     .hero-card {
         flex-direction: column;
+
         text-align: center;
-        gap: 16px;
+
+        gap: 15px;
     }
+
 
     .profile-email-badge {
         justify-content: center;
     }
 
+
+    .info-card-header {
+        align-items: flex-start;
+
+        gap: 15px;
+    }
+
+
     .info-grid {
         grid-template-columns: 1fr;
+
         gap: 20px;
     }
+
+
+    .edit-profile-modal {
+        padding: 22px;
+
+        max-height: 92vh;
+    }
+
+
+    .edit-picture-section {
+        flex-direction: column;
+
+        text-align: center;
+    }
+
+
+    .edit-picture-actions {
+        align-items: center;
+    }
+
+
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+
+    .cancel-btn,
+    .save-profile-btn {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+
+    .profile-page-header h1 {
+        font-size: 27px;
+    }
+
+
+    .profile-card {
+        padding: 18px;
+    }
+
+
+    .avatar-placeholder {
+        width: 75px;
+
+        height: 75px;
+    }
+
+
+    .profile-hero-details h2 {
+        font-size: 22px;
+    }
+
 }

@@ -4,138 +4,1345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Profile - Captured Photography Studio</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/design/customer_profile.css?v=1.3">
+
+    <!-- Your CSS -->
+    <link rel="stylesheet" href="/design/customer_profile.css">
 </head>
 
 <body>
 
+    <!-- =========================================================
+         TOP NAVBAR
+    ========================================================== -->
+
     <header class="top-navbar">
+
         <div class="logo-section">
-            <img src="/images/captured.png" alt="Logo" class="logo-img">
+
+            <img src="/images/captured.png" alt="Captured Photography Studio Logo" class="logo-img">
+
             <span>Captured Photography Studio</span>
+
         </div>
 
+
         <div class="navbar-right">
+
             <div class="user-profile">
-                <i class="fa-solid fa-circle-user" style="color: white; font-size: 36px; cursor: pointer;"></i>
+
+                <img id="navbar-profile-avatar" src="/images/default-profile.png" alt="Profile" class="navbar-avatar">
+
             </div>
+
         </div>
+
     </header>
+
+
+    <!-- =========================================================
+         DASHBOARD
+    ========================================================== -->
 
     <div class="dashboard-wrapper">
 
+
+        <!-- =====================================================
+             SIDEBAR
+        ====================================================== -->
+
         <aside class="sidebar">
+
             <nav>
+
                 <a href="customer_booking.html">
+
                     <i class="fa-regular fa-calendar-check"></i>
-                    <span>Book a Session</span>
+
+                    <span>
+                        Book a Session
+                    </span>
+
                 </a>
+
+
                 <a href="customer_gallery_request.html">
+
                     <i class="fa-regular fa-image"></i>
-                    <span>My Gallery</span>
+
+                    <span>
+                        My Gallery
+                    </span>
+
                 </a>
+
+
                 <a href="customer_profile.html" class="active">
+
                     <i class="fa-regular fa-user"></i>
-                    <span>Profile</span>
+
+                    <span>
+                        Profile
+                    </span>
+
                 </a>
+
             </nav>
 
-            <a href="client_homepage.html" class="logout-btn">
+
+            <a href="#" class="logout-btn" id="logoutBtn">
+
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
-                <span>Log out</span>
+
+                <span>
+                    Log out
+                </span>
+
             </a>
+
         </aside>
 
+
+
+        <!-- =====================================================
+             MAIN CONTENT
+        ====================================================== -->
+
         <main class="content profile-content-container">
+
+
+            <div class="profile-page-header">
+
+                <h1>
+                    Profile
+                </h1>
+
+                <p>
+                    Manage your account information.
+                </p>
+
+            </div>
+
+
+
             <div class="profile-cards-wrapper">
 
+
+                <!-- =================================================
+                     PROFILE HERO CARD
+                ================================================== -->
+
                 <div class="profile-card hero-card">
+
                     <div class="avatar-placeholder">
-                        <img id="profile-avatar" src="/images/default-profile.png" alt="Profile">
+
+                        <img id="profile-avatar" src="/images/default-profile.png" alt="Profile Picture">
+
                     </div>
+
+
                     <div class="profile-hero-details">
-                        <h2 id="profile-name">Loading...</h2>
+
+                        <h2 id="profile-name">
+                            Loading...
+                        </h2>
+
+
                         <span class="profile-email-badge">
+
                             <i class="fa-regular fa-envelope"></i>
-                            <span id="profile-email">Loading...</span>
+
+                            <span id="profile-email">
+                                Loading...
+                            </span>
+
                         </span>
+
                     </div>
+
                 </div>
 
+
+
+                <!-- =================================================
+                     PERSONAL INFORMATION CARD
+                ================================================== -->
+
                 <div class="profile-card info-card">
-                    <h3>Personal Information</h3>
+
+                    <div class="info-card-header">
+
+                        <h3>
+                            Personal Information
+                        </h3>
+
+
+                        <button type="button" class="edit-profile-btn" id="openEditModalBtn">
+
+                            <i class="fa-solid fa-pen"></i>
+
+                            Edit
+
+                        </button>
+
+                    </div>
+
 
                     <div class="info-grid">
+
+
                         <div class="info-group">
-                            <label>First Name</label>
-                            <p id="first-name">Loading...</p>
+
+                            <label>
+                                First Name
+                            </label>
+
+                            <p id="first-name">
+                                Loading...
+                            </p>
+
                         </div>
+
+
                         <div class="info-group">
-                            <label>Last Name</label>
-                            <p id="last-name">Loading...</p>
+
+                            <label>
+                                Last Name
+                            </label>
+
+                            <p id="last-name">
+                                Loading...
+                            </p>
+
                         </div>
+
+
                         <div class="info-group">
-                            <label>Email Address</label>
-                            <p id="info-email">Loading...</p>
+
+                            <label>
+                                Email Address
+                            </label>
+
+                            <p id="info-email">
+                                Loading...
+                            </p>
+
                         </div>
+
                     </div>
+
                 </div>
 
             </div>
+
         </main>
 
     </div>
+
+
+
+    <!-- =========================================================
+         EDIT PROFILE MODAL
+    ========================================================== -->
+
+    <div class="modal-overlay" id="editProfileModal">
+
+
+        <div class="edit-profile-modal">
+
+
+            <!-- Modal Header -->
+
+            <div class="modal-header">
+
+                <div class="modal-title">
+
+                    <i class="fa-regular fa-address-card"></i>
+
+                    <div>
+
+                        <h2>
+                            Edit Profile
+                        </h2>
+
+                        <p>
+                            Update your personal information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <button type="button" class="modal-close-btn" id="closeEditModalBtn">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+
+
+            <!-- Edit Form -->
+
+            <form id="editProfileForm">
+
+
+                <!-- Profile Picture -->
+
+                <div class="edit-picture-section">
+
+                    <div class="edit-avatar-wrapper">
+
+                        <img id="edit-profile-avatar" src="/images/default-profile.png" alt="Profile Picture">
+
+                    </div>
+
+
+                    <div class="edit-picture-actions">
+
+                        <label for="profileImageInput" class="change-photo-btn">
+
+                            <i class="fa-solid fa-camera"></i>
+
+                            Change Photo
+
+                        </label>
+
+
+                        <input type="file" id="profileImageInput" accept="image/png,image/jpeg,image/jpg,image/webp"
+                            hidden>
+
+
+                        <small>
+                            JPG, PNG or WEBP.
+                            Recommended: square image.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- First Name -->
+
+                <div class="form-group">
+
+                    <label for="inputFirstName">
+                        First Name
+                    </label>
+
+                    <input type="text" id="inputFirstName" placeholder="Enter your first name" required>
+
+                </div>
+
+
+
+                <!-- Last Name -->
+
+                <div class="form-group">
+
+                    <label for="inputLastName">
+                        Last Name
+                    </label>
+
+                    <input type="text" id="inputLastName" placeholder="Enter your last name" required>
+
+                </div>
+
+
+
+                <!-- Email -->
+
+                <div class="form-group">
+
+                    <label for="inputEmail">
+                        Email Address
+                    </label>
+
+                    <input type="email" id="inputEmail" readonly>
+
+                    <small class="field-note">
+                        Your login email cannot be changed here.
+                    </small>
+
+                </div>
+
+
+
+                <!-- Buttons -->
+
+                <div class="modal-actions">
+
+                    <button type="button" class="cancel-btn" id="cancelEditBtn">
+
+                        Cancel
+
+                    </button>
+
+
+                    <button type="submit" class="save-profile-btn" id="saveProfileBtn">
+
+                        <i class="fa-solid fa-check"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         SUPABASE
+    ========================================================== -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+        /* =========================================================
+           SUPABASE
+        ========================================================= */
 
-        const supabaseClient = supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_ANON_KEY
-        );
+        const SUPABASE_URL =
+            "https://rprcbeabdvxdenmngxxc.supabase.co";
 
-        (async () => {
+        const SUPABASE_ANON_KEY =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
-            const { data: { user } } = await supabaseClient.auth.getUser();
+        const supabaseClient =
+            supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
 
-            if (!user) {
-                window.location.href = "/frontend-customer/customer_login.html";
+
+        /* =========================================================
+           ELEMENTS
+        ========================================================= */
+
+        const profileAvatar =
+            document.getElementById("profile-avatar");
+
+        const navbarAvatar =
+            document.getElementById("navbar-profile-avatar");
+
+        const editProfileAvatar =
+            document.getElementById("edit-profile-avatar");
+
+        const profileImageInput =
+            document.getElementById("profileImageInput");
+
+        const editModal =
+            document.getElementById("editProfileModal");
+
+        const editForm =
+            document.getElementById("editProfileForm");
+
+        const saveButton =
+            document.getElementById("saveProfileBtn");
+
+
+        /* =========================================================
+           DEFAULT IMAGE
+        ========================================================= */
+
+        const DEFAULT_AVATAR =
+            "/images/default-profile.png";
+
+
+        /* =========================================================
+           GET CUSTOMER PROFILE
+        ========================================================= */
+
+        async function getCustomerProfile(userId) {
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("customers")
+                .select("*")
+                .eq("id", userId)
+                .maybeSingle();
+
+            if (error) {
+
+                console.error(
+                    "Customer profile query error:",
+                    error
+                );
+
+                throw error;
+            }
+
+            return data;
+        }
+
+
+        /* =========================================================
+           CREATE MISSING CUSTOMER PROFILE
+           Useful for old accounts created before trigger
+        ========================================================= */
+
+        async function ensureCustomerProfile(user) {
+
+            let customer =
+                await getCustomerProfile(user.id);
+
+
+            if (customer) {
+
+                return customer;
+
+            }
+
+
+            console.log(
+                "Customer profile does not exist. Creating..."
+            );
+
+
+            const fullName =
+                user.user_metadata?.full_name ||
+                user.user_metadata?.name ||
+                "";
+
+
+            const avatar =
+                user.user_metadata?.avatar_url ||
+                user.user_metadata?.picture ||
+                null;
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("customers")
+                .insert({
+                    id: user.id,
+                    email: user.email,
+                    full_name: fullName,
+                    profile_image: avatar,
+                    phone: "",
+                    last_login: null
+                })
+                .select()
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "Failed to create customer profile:",
+                    error
+                );
+
+                throw error;
+
+            }
+
+
+            return data;
+
+        }
+
+
+        /* =========================================================
+           LOAD PROFILE
+        ========================================================= */
+
+        async function loadProfile() {
+
+            console.log("Loading customer profile...");
+
+
+            const {
+                data: {
+                    user
+                },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+
+            if (userError) {
+
+                console.error(
+                    "Get user error:",
+                    userError
+                );
+
                 return;
             }
 
-            // Get full name
+
+            if (!user) {
+
+                window.location.href =
+                    "/frontend-customer/customer_login.html";
+
+                return;
+            }
+
+
+            console.log(
+                "Logged in user:",
+                user.id
+            );
+
+
+            /*
+             * GET CUSTOMER PROFILE
+             */
+
+            let customer;
+
+            try {
+                customer = await ensureCustomerProfile(user);
+            } catch (error) {
+                console.error("Customer profile error:", error);
+
+                alert("Unable to load customer profile.");
+                return;
+            }
+
+            console.log(
+                "Customer profile:",
+                customer
+            );
+
             const fullName =
-                user.user_metadata.full_name ||
-                user.user_metadata.name ||
-                "";
+                customer.full_name ||
+                "Customer";
 
-            // Split into first and last name
-            const nameParts = fullName.trim().split(" ");
 
-            const firstName = nameParts[0] || "";
-            const lastName = nameParts.slice(1).join(" ");
+            const nameParts =
+                fullName
+                    .trim()
+                    .split(/\s+/);
 
-            // Profile picture
-            document.getElementById("profile-avatar").src =
-                user.user_metadata.avatar_url ||
-                user.user_metadata.picture ||
-                "/images/default-profile.png";
 
-            // Hero Card
-            document.getElementById("profile-name").textContent = fullName;
-            document.getElementById("profile-email").textContent = user.email;
+            const firstName =
+                nameParts.shift() || "";
 
-            // Information Card
-            document.getElementById("first-name").textContent = firstName;
-            document.getElementById("last-name").textContent = lastName;
-            document.getElementById("info-email").textContent = user.email;
 
-        })();
+            const lastName =
+                nameParts.join(" ");
+
+
+            /*
+             * PROFILE IMAGE
+             */
+
+            const avatar =
+                customer.profile_image ||
+                DEFAULT_AVATAR;
+
+
+            profileAvatar.src =
+                avatar;
+
+
+            navbarAvatar.src =
+                avatar;
+
+
+            editProfileAvatar.src =
+                avatar;
+
+
+            /*
+             * HERO
+             */
+
+            document.getElementById(
+                "profile-name"
+            ).textContent =
+                fullName;
+
+
+            document.getElementById(
+                "profile-email"
+            ).textContent =
+                customer.email || "";
+
+
+            /*
+             * PERSONAL INFORMATION
+             */
+
+            document.getElementById(
+                "first-name"
+            ).textContent =
+                firstName || "Not provided";
+
+
+            document.getElementById(
+                "last-name"
+            ).textContent =
+                lastName || "Not provided";
+
+
+            document.getElementById(
+                "info-email"
+            ).textContent =
+                customer.email || "";
+
+
+            /*
+             * EDIT FORM
+             */
+
+            document.getElementById(
+                "inputFirstName"
+            ).value =
+                firstName;
+
+
+            document.getElementById(
+                "inputLastName"
+            ).value =
+                lastName;
+
+
+            document.getElementById(
+                "inputEmail"
+            ).value =
+                customer.email || "";
+
+        }
+
+
+
+        /* =========================================================
+           OPEN EDIT MODAL
+        ========================================================= */
+
+        document
+            .getElementById("openEditModalBtn")
+            .addEventListener(
+                "click",
+                () => {
+
+                    editModal.classList.add("show");
+
+                }
+            );
+
+
+        /* =========================================================
+           CLOSE EDIT MODAL
+        ========================================================= */
+
+        function closeEditModal() {
+
+            editModal.classList.remove("show");
+
+            profileImageInput.value = "";
+
+        }
+
+
+        document
+            .getElementById("closeEditModalBtn")
+            .addEventListener(
+                "click",
+                closeEditModal
+            );
+
+
+        document
+            .getElementById("cancelEditBtn")
+            .addEventListener(
+                "click",
+                closeEditModal
+            );
+
+
+        editModal.addEventListener(
+            "click",
+            (event) => {
+
+                if (
+                    event.target === editModal
+                ) {
+
+                    closeEditModal();
+
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           IMAGE PREVIEW
+        ========================================================= */
+
+        profileImageInput.addEventListener(
+            "change",
+            (event) => {
+
+                const file =
+                    event.target.files[0];
+
+
+                if (!file) {
+
+                    return;
+
+                }
+
+
+                if (
+                    !file.type.startsWith("image/")
+                ) {
+
+                    alert(
+                        "Please select a valid image."
+                    );
+
+                    profileImageInput.value = "";
+
+                    return;
+
+                }
+
+
+                if (
+                    file.size >
+                    5 * 1024 * 1024
+                ) {
+
+                    alert(
+                        "Profile picture must be smaller than 5MB."
+                    );
+
+                    profileImageInput.value = "";
+
+                    return;
+
+                }
+
+
+                const imageURL =
+                    URL.createObjectURL(file);
+
+
+                editProfileAvatar.src =
+                    imageURL;
+
+            }
+        );
+
+
+        /* =========================================================
+           SAVE PROFILE
+        ========================================================= */
+
+        /* =========================================================
+    SAVE PROFILE
+ ========================================================= */
+
+        editForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+                const firstName =
+                    document
+                        .getElementById("inputFirstName")
+                        .value
+                        .trim();
+
+                const lastName =
+                    document
+                        .getElementById("inputLastName")
+                        .value
+                        .trim();
+
+
+                /* =================================================
+                   VALIDATE NAME
+                ================================================= */
+
+                if (!firstName || !lastName) {
+
+                    alert(
+                        "Please enter your first and last name."
+                    );
+
+                    return;
+                }
+
+
+                /* =================================================
+                   CREATE FULL NAME
+                ================================================= */
+
+                const fullName =
+                    `${firstName} ${lastName}`.trim();
+
+
+                console.log(
+                    "Full name:",
+                    fullName
+                );
+
+
+                /* =================================================
+                   DISABLE SAVE BUTTON
+                ================================================= */
+
+                saveButton.disabled = true;
+
+                saveButton.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+
+                try {
+
+                    /* =================================================
+                       GET AUTH USER
+                    ================================================= */
+
+                    const {
+                        data: {
+                            user
+                        },
+                        error: userError
+                    } =
+                        await supabaseClient
+                            .auth
+                            .getUser();
+
+
+                    if (userError) {
+
+                        throw userError;
+
+                    }
+
+
+                    if (!user) {
+
+                        window.location.href =
+                            "/frontend-customer/customer_login.html";
+
+                        return;
+
+                    }
+
+
+                    console.log(
+                        "Logged in user:",
+                        user.id
+                    );
+
+
+                    /* =================================================
+                       GET CURRENT CUSTOMER
+                    ================================================= */
+
+                    const customer =
+                        await getCustomerProfile(
+                            user.id
+                        );
+
+
+                    if (!customer) {
+
+                        throw new Error(
+                            "Customer profile was not found."
+                        );
+
+                    }
+
+
+                    console.log(
+                        "Current customer:",
+                        customer
+                    );
+
+
+                    /* =================================================
+                       KEEP CURRENT PROFILE IMAGE
+                    ================================================= */
+
+                    let profileImage =
+                        customer.profile_image || null;
+
+
+                    /* =================================================
+                       CHECK FOR NEW IMAGE
+                    ================================================= */
+
+                    const imageFile =
+                        profileImageInput.files[0];
+
+
+                    if (imageFile) {
+
+                        console.log("==============================");
+                        console.log("IMAGE UPLOAD START");
+                        console.log("==============================");
+
+                        console.log(
+                            "User ID:",
+                            user.id
+                        );
+
+                        console.log(
+                            "User email:",
+                            user.email
+                        );
+
+                        console.log(
+                            "File name:",
+                            imageFile.name
+                        );
+
+                        console.log(
+                            "File type:",
+                            imageFile.type
+                        );
+
+                        console.log(
+                            "File size:",
+                            imageFile.size
+                        );
+
+
+                        /* ---------------------------------------------
+                           GET EXTENSION
+                        --------------------------------------------- */
+
+                        const extension =
+                            imageFile.name
+                                .split(".")
+                                .pop()
+                                .toLowerCase();
+
+
+                        /* ---------------------------------------------
+                           STORAGE PATH
+                        --------------------------------------------- */
+
+                        const filePath =
+                            `${user.id}/profile.${extension}`;
+
+
+                        console.log(
+                            "Upload path:",
+                            filePath
+                        );
+
+
+                        /* ---------------------------------------------
+                           UPLOAD IMAGE
+                        --------------------------------------------- */
+
+                        const {
+                            data: uploadData,
+                            error: uploadError
+                        } =
+                            await supabaseClient
+                                .storage
+                                .from("profile-images")
+                                .upload(
+                                    filePath,
+                                    imageFile,
+                                    {
+                                        upsert: true,
+                                        cacheControl: "3600",
+                                        contentType:
+                                            imageFile.type
+                                    }
+                                );
+
+
+                        console.log(
+                            "Upload data:",
+                            uploadData
+                        );
+
+
+                        if (uploadError) {
+
+                            console.error(
+                                "Upload error:",
+                                uploadError
+                            );
+
+                            throw uploadError;
+
+                        }
+
+
+                        console.log(
+                            "Image uploaded successfully!"
+                        );
+
+
+                        /* ---------------------------------------------
+                           GET PUBLIC URL
+                        --------------------------------------------- */
+
+                        const {
+                            data: publicUrlData
+                        } =
+                            supabaseClient
+                                .storage
+                                .from("profile-images")
+                                .getPublicUrl(
+                                    filePath
+                                );
+
+
+                        profileImage =
+                            publicUrlData.publicUrl;
+
+
+                        console.log(
+                            "New profile image:",
+                            profileImage
+                        );
+
+                    }
+
+
+                    /* =================================================
+                       UPDATE CUSTOMERS TABLE
+                    ================================================= */
+
+                    console.log(
+                        "Updating customer..."
+                    );
+
+                    console.log(
+                        "full_name:",
+                        fullName
+                    );
+
+                    console.log(
+                        "profile_image:",
+                        profileImage
+                    );
+
+
+                    const {
+                        data: updatedCustomer,
+                        error: updateError
+                    } =
+                        await supabaseClient
+                            .from("customers")
+                            .update({
+
+                                full_name:
+                                    fullName,
+
+                                profile_image:
+                                    profileImage
+
+                            })
+                            .eq(
+                                "id",
+                                user.id
+                            )
+                            .select()
+                            .single();
+
+
+                    if (updateError) {
+
+                        console.error(
+                            "Customer update error:",
+                            updateError
+                        );
+
+                        throw updateError;
+
+                    }
+
+
+                    console.log(
+                        "Updated customer:",
+                        updatedCustomer
+                    );
+
+
+                    /* =================================================
+                       UPDATE PAGE
+                    ================================================= */
+
+                    document.getElementById(
+                        "profile-name"
+                    ).textContent =
+                        updatedCustomer.full_name;
+
+
+                    document.getElementById(
+                        "first-name"
+                    ).textContent =
+                        firstName;
+
+
+                    document.getElementById(
+                        "last-name"
+                    ).textContent =
+                        lastName;
+
+
+                    document.getElementById(
+                        "profile-email"
+                    ).textContent =
+                        updatedCustomer.email || "";
+
+
+                    document.getElementById(
+                        "info-email"
+                    ).textContent =
+                        updatedCustomer.email || "";
+
+
+                    /* =================================================
+                       UPDATE AVATARS
+                    ================================================= */
+
+                    const finalAvatar =
+                        updatedCustomer.profile_image ||
+                        DEFAULT_AVATAR;
+
+
+                    profileAvatar.src =
+                        finalAvatar;
+
+
+                    navbarAvatar.src =
+                        finalAvatar;
+
+
+                    editProfileAvatar.src =
+                        finalAvatar;
+
+
+                    /* =================================================
+                       CLOSE MODAL
+                    ================================================= */
+
+                    closeEditModal();
+
+
+                    alert(
+                        "Profile updated successfully!"
+                    );
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "Profile update error:",
+                        error
+                    );
+
+
+                    alert(
+                        "Failed to update profile.\n\n" +
+                        error.message
+                    );
+
+                }
+                finally {
+
+                    saveButton.disabled =
+                        false;
+
+
+                    saveButton.innerHTML =
+                        '<i class="fa-solid fa-check"></i> Save Changes';
+
+                }
+
+            }
+        );
+        /* =========================================================
+           LOGOUT
+        ========================================================= */
+
+        document
+            .getElementById("logoutBtn")
+            .addEventListener(
+                "click",
+                async (event) => {
+
+                    event.preventDefault();
+
+
+                    const {
+                        error
+                    } =
+                        await supabaseClient
+                            .auth
+                            .signOut();
+
+
+                    if (error) {
+
+                        console.error(
+                            "Logout error:",
+                            error
+                        );
+
+                        return;
+
+                    }
+
+
+                    window.location.href =
+                        "/frontend-customer/customer_login.html";
+
+                }
+            );
+
+
+        /* =========================================================
+           INITIAL LOAD
+        ========================================================= */
+
+        window.addEventListener(
+            "load",
+            async () => {
+
+                await loadProfile();
+
+            }
+        );
+
     </script>
+
 </body>
 
 </html>

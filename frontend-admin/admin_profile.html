@@ -18,7 +18,7 @@
 <body>
 
     <header class="top-navbar">
-       <div class="logo-section">
+        <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
             <span>Captured Studio</span>
         </div>
@@ -51,7 +51,7 @@
             <nav>
                 <a href="admin_dashboard.html">
                     <i class="fa-solid fa-table-cells-large"></i>
-                    Home
+                    Dashboard
                 </a>
                 <a href="admin_client.html">
                     <i class="fa-solid fa-users"></i>
@@ -92,95 +92,272 @@
                 <p>Access and edit your account details in one place.</p>
             </div>
 
+
+            <!-- PROFILE SUMMARY -->
+
             <div class="profile-summary-card">
+
                 <div class="profile-avatar-large">
-                    <i class="fa-solid fa-user"></i>
+                    <img id="profileAvatarLarge" src="https://via.placeholder.com/120" alt="Profile Picture">
                 </div>
+
                 <div class="profile-summary-info">
-                    <h2 id="summaryFullName">Staff Name</h2>
+
+                    <h2 id="summaryFullName">
+                        Staff Name
+                    </h2>
+
                     <div class="profile-email-row">
+
                         <i class="fa-regular fa-envelope"></i>
-                        <span id="summaryEmail">staffname@gmail.com</span>
+
+                        <span id="summaryEmail">
+                            staffname@gmail.com
+                        </span>
+
                     </div>
+
                 </div>
+
             </div>
 
+
+            <!-- PERSONAL INFORMATION -->
+
             <div class="personal-info-card">
+
                 <div class="card-header-row">
-                    <h3>Personal Information</h3>
-                    <button class="edit-profile-trigger-btn" id="openEditModalBtn">
+
+                    <h3>
+                        Personal Information
+                    </h3>
+
+                    <button type="button" class="edit-profile-trigger-btn" id="openEditModalBtn">
+
                         <i class="fa-solid fa-pen"></i>
+
                         Edit
+
                     </button>
+
                 </div>
 
+
                 <div class="info-details-grid">
+
                     <div class="info-group">
-                        <label>First Name</label>
-                        <p id="displayFirstName">Staff First Name</p>
+
+                        <label>
+                            First Name
+                        </label>
+
+                        <p id="displayFirstName">
+                            Staff First Name
+                        </p>
+
                     </div>
+
+
                     <div class="info-group">
-                        <label>Last Name</label>
-                        <p id="displayLastName">Staff Last Name</p>
+
+                        <label>
+                            Last Name
+                        </label>
+
+                        <p id="displayLastName">
+                            Staff Last Name
+                        </p>
+
                     </div>
+
+
                     <div class="info-group">
-                        <label>User Role</label>
-                        <p id="displayUserRole">Staff Member</p>
+
+                        <label>
+                            User Role
+                        </label>
+
+                        <p id="displayUserRole">
+                            Staff Member
+                        </p>
+
                     </div>
+
+
                     <div class="info-group">
-                        <label>Email Address</label>
-                        <p id="displayEmail">staffname@gmail.com</p>
+
+                        <label>
+                            Email Address
+                        </label>
+
+                        <p id="displayEmail">
+                            staffname@gmail.com
+                        </p>
+
                     </div>
+
+
                     <div class="info-group">
-                        <label>Status</label>
-                        <div><span class="status-badge-active" id="displayStatus">Active</span></div>
+
+                        <label>
+                            Status
+                        </label>
+
+                        <div>
+
+                            <span class="status-badge-active" id="displayStatus">
+                                Active
+                            </span>
+
+                        </div>
+
                     </div>
+
+
                     <div class="info-group">
-                        <label>Date Joined</label>
-                        <p id="displayDateJoined">June 1, 2025</p>
+
+                        <label>
+                            Date Joined
+                        </label>
+
+                        <p id="displayDateJoined">
+                            June 1, 2025
+                        </p>
+
                     </div>
+
                 </div>
+
             </div>
 
         </main>
     </div>
 
     <div class="modal-overlay" id="editProfileModal">
+
         <div class="edit-profile-modal-card">
+
             <div class="edit-profile-modal-header">
+
                 <i class="fa-regular fa-address-card"></i>
-                <h2>Profile Information</h2>
+
+                <h2>
+                    Profile Information
+                </h2>
+
             </div>
 
+
             <form class="edit-profile-modal-form" id="editProfileForm">
-                <p class="edit-form-instruction">Update your personal information.</p>
 
-                <div class="edit-form-field-group">
-                    <label>First Name</label>
-                    <input type="text" id="inputFirstName" required>
-                </div>
+                <p class="edit-form-instruction">
+                    Update your personal information.
+                </p>
 
-                <div class="edit-form-field-group">
-                    <label>Last Name</label>
-                    <input type="text" id="inputLastName" required>
-                </div>
 
-                <div class="edit-form-field-group">
-                    <label>Email Address</label>
-                    <input type="email" id="inputEmail" required>
-                </div>
+                <!-- PROFILE PICTURE -->
 
-                <div class="edit-form-field-group">
-                    <label>User Role</label>
-                    <div class="edit-disabled-input-wrapper">
-                        <input type="text" id="inputUserRole" value="Staff Member" readonly>
-                        <i class="fa-solid fa-lock edit-lock-icon"></i>
+                <div class="profile-picture-editor">
+
+                    <div class="profile-picture-preview">
+
+                        <img id="editProfileAvatar" src="https://via.placeholder.com/100" alt="Profile Picture">
+
                     </div>
+
+
+                    <div class="profile-picture-actions">
+
+                        <label for="profileImageInput" class="change-photo-btn">
+
+                            <i class="fa-solid fa-camera"></i>
+
+                            Change Photo
+
+                        </label>
+
+
+                        <input type="file" id="profileImageInput" accept="image/png,image/jpeg,image/jpg,image/webp"
+                            hidden>
+
+
+                        <small>
+                            JPG, PNG or WEBP. Recommended: square image.
+                        </small>
+
+                    </div>
+
                 </div>
 
-                <button type="submit" class="edit-save-profile-btn">Save Changes</button>
+
+                <!-- FIRST NAME -->
+
+                <div class="edit-form-field-group">
+
+                    <label for="inputFirstName">
+                        First Name
+                    </label>
+
+                    <input type="text" id="inputFirstName" required>
+
+                </div>
+
+
+                <!-- LAST NAME -->
+
+                <div class="edit-form-field-group">
+
+                    <label for="inputLastName">
+                        Last Name
+                    </label>
+
+                    <input type="text" id="inputLastName" required>
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="edit-form-field-group">
+
+                    <label for="inputEmail">
+                        Email Address
+                    </label>
+
+                    <input type="email" id="inputEmail" required>
+
+                </div>
+
+
+                <!-- ROLE -->
+
+                <div class="edit-form-field-group">
+
+                    <label for="inputUserRole">
+                        User Role
+                    </label>
+
+                    <div class="edit-disabled-input-wrapper">
+
+                        <input type="text" id="inputUserRole" value="Staff Member" readonly>
+
+                        <i class="fa-solid fa-lock edit-lock-icon"></i>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SAVE -->
+
+                <button type="submit" class="edit-save-profile-btn" id="saveProfileBtn">
+                    Save Changes
+                </button>
+
             </form>
+
         </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -194,112 +371,498 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+        /* =========================================================
+           PROFILE ELEMENTS
+        ========================================================= */
 
-        const openEditModalBtn = document.getElementById('openEditModalBtn');
-        const editProfileModal = document.getElementById('editProfileModal');
-        const editProfileForm = document.getElementById('editProfileForm');
+        const openEditModalBtn =
+            document.getElementById("openEditModalBtn");
 
-        openEditModalBtn.addEventListener('click', () => {
-            editProfileModal.classList.add('show');
+        const editProfileModal =
+            document.getElementById("editProfileModal");
+
+        const editProfileForm =
+            document.getElementById("editProfileForm");
+
+        const profileImageInput =
+            document.getElementById("profileImageInput");
+
+        const profileAvatarLarge =
+            document.getElementById("profileAvatarLarge");
+
+        const editProfileAvatar =
+            document.getElementById("editProfileAvatar");
+
+        const userAvatar =
+            document.getElementById("userAvatar");
+
+
+        openEditModalBtn.addEventListener("click", () => {
+
+            editProfileModal.classList.add("show");
+
         });
 
-        editProfileModal.addEventListener('click', (e) => {
+
+        editProfileModal.addEventListener("click", (e) => {
+
             if (e.target === editProfileModal) {
-                editProfileModal.classList.remove('show');
+
+                editProfileModal.classList.remove("show");
+
             }
+
         });
 
-        editProfileForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        async function loadProfile() {
 
-            const first = document.getElementById('inputFirstName').value;
-            const last = document.getElementById('inputLastName').value;
-            const email = document.getElementById('inputEmail').value;
-
-            document.getElementById('displayFirstName').textContent = first;
-            document.getElementById('displayLastName').textContent = last;
-            document.getElementById('displayEmail').textContent = email;
-            document.getElementById('summaryEmail').textContent = email;
-            document.getElementById('summaryFullName').textContent = first + " " + last;
-
-            editProfileModal.classList.remove('show');
-        });
-
-        window.addEventListener("load", async () => {
             try {
+
+                console.log("========== LOAD PROFILE ==========");
+
                 const {
-                    data: { session }
+                    data: { session },
+                    error: sessionError
                 } = await supabaseClient.auth.getSession();
 
+                if (sessionError) {
+                    console.error("Session error:", sessionError);
+                    return;
+                }
+
                 if (!session) {
+                    console.log("No active session.");
                     window.location.href = "admin_login.html";
                     return;
                 }
 
                 const user = session.user;
 
-                const { data: profile, error } = await supabaseClient
+                console.log("Logged-in User ID:", user.id);
+                console.log("Logged-in Email:", user.email);
+
+                const {
+                    data: profile,
+                    error: profileError
+                } = await supabaseClient
                     .from("staff_profiles")
                     .select("*")
                     .eq("id", user.id)
                     .single();
 
-                if (error) {
-                    console.error(error);
+                if (profileError) {
+
+                    console.error(
+                        "Could not load staff profile:",
+                        profileError
+                    );
+
                     return;
                 }
 
-                // Navbar
+                console.log("STAFF PROFILE:", profile);
+
+                const fullName =
+                    profile.full_name ||
+                    user.user_metadata?.full_name ||
+                    "Staff";
+
+                const nameParts =
+                    fullName.trim().split(/\s+/);
+
+                const firstName =
+                    nameParts.shift() || "";
+
+                const lastName =
+                    nameParts.join(" ");
+
+                const email =
+                    profile.email ||
+                    user.email ||
+                    "";
+
+
+
                 document.getElementById("userName").textContent =
-                    profile.full_name || "Staff";
+                    fullName;
 
-                if (profile.avatar_url) {
-                    document.getElementById("userAvatar").src =
-                        profile.avatar_url;
-                }
+                document.getElementById("summaryFullName").textContent =
+                    fullName;
 
-                // Split full name
-                const fullName = profile.full_name || "";
-                const nameParts = fullName.trim().split(" ");
-
-                const firstName = nameParts.shift() || "";
-                const lastName = nameParts.join(" ");
-
-                // Summary Card
-                document.getElementById("summaryFullName").textContent = fullName;
                 document.getElementById("summaryEmail").textContent =
-                    profile.email || user.email;
+                    email;
 
-                // Personal Information
-                document.getElementById("displayFirstName").textContent = firstName;
-                document.getElementById("displayLastName").textContent = lastName;
+                document.getElementById("displayFirstName").textContent =
+                    firstName;
+
+                document.getElementById("displayLastName").textContent =
+                    lastName;
+
                 document.getElementById("displayEmail").textContent =
-                    profile.email || user.email;
+                    email;
+
                 document.getElementById("displayUserRole").textContent =
                     profile.role || "Staff Member";
+
                 document.getElementById("displayStatus").textContent =
                     profile.status || "Active";
 
                 if (profile.created_at) {
+
                     document.getElementById("displayDateJoined").textContent =
-                        new Date(profile.created_at).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric"
-                        });
+                        new Date(profile.created_at).toLocaleDateString(
+                            "en-US",
+                            {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric"
+                            }
+                        );
+
                 }
 
-                // Fill Edit Form
-                document.getElementById("inputFirstName").value = firstName;
-                document.getElementById("inputLastName").value = lastName;
+                document.getElementById("inputFirstName").value =
+                    firstName;
+
+                document.getElementById("inputLastName").value =
+                    lastName;
+
                 document.getElementById("inputEmail").value =
-                    profile.email || user.email;
+                    email;
+
                 document.getElementById("inputUserRole").value =
                     profile.role || "Staff Member";
-                await loadNotifications();
-            } catch (err) {
-                console.error(err);
+
+
+                console.log("Avatar URL:", profile.avatar_url);
+
+                if (profile.avatar_url) {
+
+                    console.log(
+                        "Loading profile image:",
+                        profile.avatar_url
+                    );
+
+                    profileAvatarLarge.src =
+                        profile.avatar_url;
+
+                    editProfileAvatar.src =
+                        profile.avatar_url;
+
+                    userAvatar.src =
+                        profile.avatar_url;
+
+                } else {
+
+                    console.warn(
+                        "No avatar_url found in staff_profiles."
+                    );
+
+                }
+
             }
+            catch (error) {
+
+                console.error(
+                    "Profile loading error:",
+                    error
+                );
+
+            }
+
+        }
+        
+
+        async function uploadProfileImage(userId, file) {
+
+            if (!file) {
+                return null;
+            }
+
+            const fileExtension = file.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+            const filePath = `${userId}/avatar.${fileExtension}`;
+
+            console.log("========== UPLOAD AVATAR ==========");
+            console.log("Bucket:", "staff-avatars");
+            console.log("Path:", filePath);
+            console.log("User ID:", userId);
+
+            const {
+                data: uploadData,
+                error: uploadError
+            } = await supabaseClient.storage
+                .from("staff-avatars")
+                .upload(
+                    filePath,
+                    file,
+                    {
+                        cacheControl: "3600",
+                        upsert: true,
+                        contentType: file.type
+                    }
+                );
+
+            if (uploadError) {
+
+                console.error(
+                    "Avatar upload error:",
+                    uploadError
+                );
+
+                throw new Error(
+                    "Avatar upload failed: " +
+                    uploadError.message
+                );
+            }
+
+            console.log(
+                "Avatar uploaded:",
+                uploadData
+            );
+
+            const {
+                data: publicUrlData
+            } = supabaseClient.storage
+                .from("staff-avatars")
+                .getPublicUrl(filePath);
+
+            const publicUrl =
+                publicUrlData.publicUrl;
+
+            console.log(
+                "Avatar public URL:",
+                publicUrl
+            );
+
+            return publicUrl;
+        }
+        /* =========================================================
+           SAVE PROFILE
+        ========================================================= */
+
+        editProfileForm.addEventListener(
+            "submit",
+            async (e) => {
+
+                e.preventDefault();
+
+
+                const first =
+                    document
+                        .getElementById(
+                            "inputFirstName"
+                        )
+                        .value
+                        .trim();
+
+
+                const last =
+                    document
+                        .getElementById(
+                            "inputLastName"
+                        )
+                        .value
+                        .trim();
+
+
+                const email =
+                    document
+                        .getElementById(
+                            "inputEmail"
+                        )
+                        .value
+                        .trim();
+
+
+                const fullName =
+                    `${first} ${last}`.trim();
+
+
+                if (
+                    !first ||
+                    !last ||
+                    !email
+                ) {
+
+                    alert(
+                        "Please complete all required fields."
+                    );
+
+                    return;
+
+                }
+
+
+                const {
+                    data: {
+                        session
+                    }
+                } =
+                    await supabaseClient
+                        .auth
+                        .getSession();
+
+
+                if (!session) {
+
+                    window.location.href =
+                        "admin_login.html";
+
+                    return;
+
+                }
+
+
+                const user =
+                    session.user;
+
+
+                const saveButton =
+                    document.getElementById(
+                        "saveProfileBtn"
+                    );
+
+
+                saveButton.disabled = true;
+
+                saveButton.textContent =
+                    "Saving...";
+
+
+                try {
+
+                    /* =================================================
+                       CHECK SELECTED IMAGE
+                    ================================================= */
+
+                    const imageFile =
+                        profileImageInput.files[0];
+
+
+                    let avatarURL = null;
+
+
+                    /* =================================================
+                       UPLOAD IMAGE IF SELECTED
+                    ================================================= */
+
+                    if (imageFile) {
+
+                        avatarURL =
+                            await uploadProfileImage(
+                                user.id,
+                                imageFile
+                            );
+
+                    }
+
+
+                    /* =================================================
+                       UPDATE DATABASE
+                    ================================================= */
+
+                    const updateData = {
+
+                        full_name: fullName,
+
+                        email: email,
+
+                        updated_at:
+                            new Date().toISOString()
+
+                    };
+
+
+                    if (avatarURL) {
+
+                        updateData.avatar_url =
+                            avatarURL;
+
+                    }
+
+
+                    const {
+                        data: updatedProfile,
+                        error: updateError
+                    } = await supabaseClient
+                        .from("staff_profiles")
+                        .update(updateData)
+                        .eq("id", user.id)
+                        .select()
+                        .single();
+
+                    if (updateError) {
+                        console.error("Profile update error:", updateError);
+                        throw updateError;
+                    }
+
+                    console.log("Updated profile:", updatedProfile);
+
+                    /* =================================================
+                       RELOAD PROFILE FROM DATABASE
+                    ================================================= */
+
+                    await loadProfile();
+
+
+                    /* =================================================
+                       CLEAR IMAGE INPUT
+                    ================================================= */
+
+                    profileImageInput.value = "";
+
+
+                    /* =================================================
+                       CLOSE MODAL
+                    ================================================= */
+
+                    editProfileModal.classList.remove(
+                        "show"
+                    );
+
+
+                    alert(
+                        "Profile updated successfully!"
+                    );
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "Save profile error:",
+                        error
+                    );
+
+
+                    alert(
+                        "Failed to update profile.\n\n" +
+                        error.message
+                    );
+
+                }
+                finally {
+
+                    saveButton.disabled =
+                        false;
+
+                    saveButton.textContent =
+                        "Save Changes";
+
+                }
+
+            }
+        );
+
+        window.addEventListener("load", async () => {
+
+            await loadProfile();
+
+            await loadNotifications();
+
         });
         async function loadNotifications() {
 

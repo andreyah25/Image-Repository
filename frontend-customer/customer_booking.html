@@ -196,8 +196,7 @@
                                         Upload Proof of Payment
                                     </label>
 
-                                    <input type="file" id="paymentProof" accept="image/png,image/jpeg,image/jpg"
-                                        required>
+                                    <input type="file" id="paymentProof" accept="image/png,image/jpeg,image/jpg">
 
                                 </div>
 
@@ -261,32 +260,162 @@
 
         (async () => {
 
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            console.log("Loading customer information...");
 
-            if (!user) {
-                window.location.href = "/frontend-customer/customer_login.html";
+            /* =========================================================
+               GET LOGGED-IN USER
+            ========================================================= */
+
+            const {
+                data: { user },
+                error: authError
+            } = await supabaseClient.auth.getUser();
+
+
+            if (authError) {
+
+                console.error(
+                    "Authentication error:",
+                    authError
+                );
+
                 return;
             }
 
-            // Display Google profile
-            document.getElementById("customer-name").textContent =
-                user.user_metadata.full_name ||
-                user.user_metadata.name ||
+
+            if (!user) {
+
+                window.location.href =
+                    "/frontend-customer/customer_login.html";
+
+                return;
+            }
+
+
+            console.log("Logged-in user:", user.id);
+            console.log("User email:", user.email);
+
+
+            /* =========================================================
+               GET CUSTOMER PROFILE FROM CUSTOMERS TABLE
+            ========================================================= */
+
+            const {
+                data: customer,
+                error: customerError
+            } = await supabaseClient
+                .from("customers")
+                .select("id, email, full_name, profile_image, phone")
+                .eq("id", user.id)
+                .maybeSingle();
+
+
+            if (customerError) {
+
+                console.error(
+                    "Customer profile error:",
+                    customerError
+                );
+
+            }
+
+
+            console.log(
+                "Customer profile:",
+                customer
+            );
+
+
+            /* =========================================================
+               CUSTOMER NAME
+            ========================================================= */
+
+            const customerName =
+                customer?.full_name ||
+                user.user_metadata?.full_name ||
+                user.user_metadata?.name ||
                 user.email;
 
-            document.getElementById("profile-image").src =
-                user.user_metadata.avatar_url ||
-                user.user_metadata.picture ||
+
+            document.getElementById(
+                "customer-name"
+            ).textContent =
+                customerName;
+
+
+            /* =========================================================
+               CUSTOMER PROFILE IMAGE
+            ========================================================= */
+
+            const profileImage =
+                customer?.profile_image ||
+                user.user_metadata?.avatar_url ||
+                user.user_metadata?.picture ||
                 "/images/default-profile.png";
 
-            document.getElementById("fullName").value =
-                user.user_metadata.full_name || "";
 
-            document.getElementById("emailAddress").value =
+            console.log(
+                "Profile image:",
+                profileImage
+            );
+
+
+            const profileImageElement =
+                document.getElementById("profile-image");
+
+
+            profileImageElement.src =
+                profileImage;
+
+
+            /* =========================================================
+               FALLBACK IF IMAGE FAILS
+            ========================================================= */
+
+            profileImageElement.onerror = function () {
+
+                console.warn(
+                    "Profile image failed to load:",
+                    this.src
+                );
+
+                this.src =
+                    "/images/default-profile.png";
+
+            };
+
+
+            /* =========================================================
+               BOOKING FORM
+            ========================================================= */
+
+            document.getElementById(
+                "fullName"
+            ).value =
+                customer?.full_name ||
+                user.user_metadata?.full_name ||
+                user.user_metadata?.name ||
+                "";
+
+
+            document.getElementById(
+                "emailAddress"
+            ).value =
                 user.email;
 
-            document.getElementById("emailAddress").readOnly = true;
+
+            document.getElementById(
+                "emailAddress"
+            ).readOnly =
+                true;
+
+
+            /* =========================================================
+               LOAD NOTIFICATIONS
+            ========================================================= */
+
             loadNotifications();
+
         })();
 
         async function loadNotifications() {
@@ -372,8 +501,14 @@
             const email = user.email;
             const date = document.getElementById("bookingDate").value;
             const time = document.getElementById("bookingTime").value;
-            const photoPackage = document.getElementById("photoPackage").value;
-            const session = document.getElementById("sessionType").value;
+            const photoPackage =
+                document.getElementById("photoPackage").value.trim();
+
+            const session =
+                document.getElementById("sessionType").value.trim();
+
+            // Customer can choose either one
+            const selectedType = session || photoPackage;
             const paymentMethod = document.getElementById("paymentMethod").value;
             const notes = document.getElementById("notes").value.trim();
 
@@ -395,7 +530,7 @@
                 alert("Please complete all required fields.");
                 return;
             }
-            const paymentFile = document.getElementById("paymentProof").files[0];
+            /*const paymentFile = document.getElementById("paymentProof").files[0];
 
             if (!paymentFile) {
                 alert("Please upload your GCash payment proof.");
@@ -418,24 +553,47 @@
                 .from("payment-proofs")
                 .getPublicUrl(fileName);
 
-            const paymentProofURL = publicUrlData.publicUrl;
+            const paymentProofURL = publicUrlData.publicUrl; */
+            // ---------------------------------------------
+            // PAYMENT PROOF
+            // TEMPORARILY OPTIONAL
+            // ---------------------------------------------
+
+            const paymentFile =
+                document.getElementById("paymentProof").files[0];
+
+            let paymentProofURL = null;
+
+            // If the customer uploads a proof, we simply ignore
+            // the upload for now and allow the booking to continue.
+            //
+            // Later, the actual Supabase Storage upload can be
+            // enabled here once the payment-proof bucket is ready.
+            if (paymentFile) {
+                console.log(
+                    "Payment proof selected:",
+                    paymentFile.name
+                );
+            }
             const { data: bookingData, error } = await supabaseClient
                 .from("bookings")
                 .insert([
                     {
+
                         customer_id: user.id,
                         full_name: fullName,
                         contact_number: contact,
                         email: email,
                         booking_date: date,
                         booking_time: time,
-                        photo_package: photoPackage || null,
-                        session_type: session || null,
+
+                        // Either Special Session OR Photo Package
+                        session_type: selectedType,
+
                         notes: notes,
                         payment_method: paymentMethod,
-                        payment_proof_url: paymentProofURL,
                         downpayment_amount: 200.00,
-                        payment_status: "Pending Verificaation",
+                        payment_status: "Pending Verification",
                         status: "Pending"
                     }
                 ])
@@ -443,7 +601,7 @@
                 .single();
 
             if (error) {
-                console.error(error);
+                console.error("Booking error:", error);
                 alert(error.message);
                 return;
             }

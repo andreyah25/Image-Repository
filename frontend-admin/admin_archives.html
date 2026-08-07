@@ -41,7 +41,7 @@
             <nav>
                 <a href="admin_dashboard.html">
                     <i class="fa-solid fa-table-cells-large"></i>
-                    Home
+                    Dashboard
                 </a>
                 <a href="admin_client.html">
                     <i class="fa-solid fa-users"></i>
@@ -93,13 +93,11 @@
 
             <div class="archive-controls-row">
                 <div class="archive-search-wrapper">
-                    <input type="text" id="archiveSearchInput" placeholder="Search archives...">
+                    <input type="text" id="archiveSearchInput" placeholder="Search" autocomplete="off">
+
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                 </div>
-                <button type="button" class="archive-filter-btn">
-                    <i class="fa-solid fa-sliders"></i>
-                    Filter
-                </button>
+
             </div>
 
             <div class="archive-table-card">
@@ -136,75 +134,201 @@
         let archiveItems = [];
 
         let currentFilter = "all";
+        function escapeHtml(value) {
+            if (value === null || value === undefined) {
+                return "";
+            }
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
         // Function to render the table data dynamically based on active filter button
         function renderArchiveTable() {
             const tbody = document.getElementById("archiveTableBody");
-            tbody.innerHTML = ""; // Clear existing rows
+            tbody.innerHTML = "";
 
-            // Filter logic
+            const searchInput = document.getElementById("archiveSearchInput");
+            const packageFilter = document.getElementById("packageFilter");
+
+            const searchTerm = searchInput
+                ? searchInput.value.trim().toLowerCase()
+                : "";
+
+            const selectedPackage = packageFilter
+                ? packageFilter.value.toLowerCase()
+                : "all";
+
             const filteredItems = archiveItems.filter(item => {
-                if (currentFilter === "all") return true;
-                return item.type === currentFilter;
+
+                // -----------------------------------------
+                // 1. ARCHIVE CATEGORY FILTER
+                // -----------------------------------------
+                if (currentFilter !== "all" && item.category !== currentFilter) {
+                    return false;
+                }
+
+                // -----------------------------------------
+                // 2. PACKAGE / SESSION TYPE FILTER
+                // -----------------------------------------
+                if (
+                    selectedPackage !== "all" &&
+                    item.sessionType.toLowerCase() !== selectedPackage
+                ) {
+                    return false;
+                }
+
+                // -----------------------------------------
+                // 3. SEARCH FILTER
+                // -----------------------------------------
+                if (searchTerm) {
+
+                    const searchableText = [
+                        item.title,
+                        item.subtext,
+                        item.email,
+                        item.sessionType,
+                        item.bookingDate,
+                        item.archivedDate,
+                        item.date,
+                        item.time
+                    ]
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase();
+
+                    if (!searchableText.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+
+                return true;
             });
 
+            // -----------------------------------------
+            // NO RESULTS
+            // -----------------------------------------
             if (filteredItems.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888888; padding: 30px;">No archived items found.</td></tr>`;
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="4" style="
+                    text-align: center;
+                    color: #888888;
+                    padding: 30px;
+                ">
+                    No archived items found.
+                </td>
+            </tr>
+        `;
                 return;
             }
 
+            // -----------------------------------------
+            // DISPLAY RESULTS
+            // -----------------------------------------
             filteredItems.forEach(item => {
+
                 const tr = document.createElement("tr");
+
                 tr.innerHTML = `
-                    <td>
-                        <div class="item-meta-cell">
-                            <h4>${item.title}</h4>
-                            <p>${item.subtext}</p>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge ${item.type}">${item.type}</span>
-                    </td>
-                    <td>
-                        <div class="timestamp-cell">
-                            ${item.date}
-                            <span>${item.time}</span>
-                        </div>
-                    </td>
-                   <td class="actions-cell">
-                        <select class="archive-actions-select" data-id="${item.id}">
-                      <option selected disabled>Select Action</option>
+            <td>
+                <div class="item-meta-cell">
+                    <h4>${escapeHtml(item.title)}</h4>
+                    <p>${escapeHtml(item.subtext)}</p>
+                </div>
+            </td>
+
+            <td>
+                <span class="badge booking-type">
+                    ${escapeHtml(item.sessionType)}
+                </span>
+            </td>
+
+            <td>
+                <div class="timestamp-cell">
+                    ${escapeHtml(item.date)}
+                    <span>${escapeHtml(item.time)}</span>
+                </div>
+            </td>
+
+            <td class="actions-cell">
+                <select 
+                    class="archive-actions-select" 
+                    data-id="${item.id}"
+                >
+                    <option selected disabled>Select Action</option>
                     <option value="restore">Restore</option>
-         <option value="delete">Delete Permanently</option>
-    </select>
-</td>
-                `;
+                    <option value="delete">Delete Permanently</option>
+                </select>
+            </td>
+        `;
+
                 tbody.appendChild(tr);
+
+                // -----------------------------------------
+                // ACTION HANDLER
+                // -----------------------------------------
                 tr.querySelector(".archive-actions-select")
                     .addEventListener("change", async function () {
 
-                        if (this.value !== "delete") return;
+                        if (this.value === "restore") {
 
-                        if (!confirm("Delete permanently?")) return;
+                            const { error } = await supabaseClient
+                                .from("bookings")
+                                .update({
+                                    is_archived: false,
+                                    archived_at: null
+                                })
+                                .eq("id", item.id);
 
-                        const { error } = await supabaseClient
-                            .from("bookings")
-                            .delete()
-                            .eq("id", item.id);
+                            if (error) {
+                                alert(error.message);
+                                return;
+                            }
 
-                        if (error) {
-                            alert(error.message);
+                            archiveItems = archiveItems.filter(
+                                b => b.id !== item.id
+                            );
+
+                            populatePackageFilter();
+                            renderArchiveTable();
+
                             return;
                         }
 
-                        archiveItems = archiveItems.filter(b => b.id !== item.id);
+                        if (this.value === "delete") {
 
-                        renderArchiveTable();
+                            if (!confirm(
+                                `Delete the archived booking for "${item.title}" permanently?`
+                            )) {
+                                this.value = "";
+                                return;
+                            }
 
+                            const { error } = await supabaseClient
+                                .from("bookings")
+                                .delete()
+                                .eq("id", item.id);
+
+                            if (error) {
+                                alert(error.message);
+                                return;
+                            }
+
+                            archiveItems = archiveItems.filter(
+                                b => b.id !== item.id
+                            );
+
+                            populatePackageFilter();
+                            renderArchiveTable();
+                        }
                     });
             });
         }
-
         // Add Click Events to navigation buttons
         const tabButtons = document.querySelectorAll(".archive-tab-btn");
         tabButtons.forEach(button => {
@@ -293,29 +417,113 @@
                 .from("bookings")
                 .select("*")
                 .eq("is_archived", true)
-                .order("archived_at", { ascending: false });
+                .order("archived_at", {
+                    ascending: false
+                });
 
             if (error) {
-                console.error(error);
+                console.error("Error loading archived bookings:", error);
                 return;
             }
 
-            archiveItems = data.map(item => ({
-                id: item.id,
-                title: item.full_name,
-                subtext: `${item.email} • ${item.session_type}`,
-                type: "booking",
-                date: item.archived_at
-                    ? new Date(item.archived_at).toLocaleDateString()
-                    : "-",
-                time: item.archived_at
-                    ? new Date(item.archived_at).toLocaleTimeString()
-                    : "-"
-            }));
+            archiveItems = (data || []).map(item => {
 
+                const archivedDate = item.archived_at
+                    ? new Date(item.archived_at)
+                    : null;
+
+                const bookingDate = item.booking_date
+                    ? new Date(item.booking_date)
+                    : null;
+
+                return {
+
+                    // Database ID
+                    id: item.id,
+
+                    // Used for the archive tabs
+                    category: "booking",
+
+                    // Client name
+                    title: item.full_name || "Unknown Client",
+
+                    // Email
+                    email: item.email || "",
+
+                    // Actual package / booking type
+                    // Example: Graduation, Birthday, Prenup
+                    sessionType: item.session_type || "Unspecified",
+
+                    // Text underneath client name
+                    subtext: [
+                        item.email,
+                        item.session_type
+                    ]
+                        .filter(Boolean)
+                        .join(" • "),
+
+                    // Actual booking date
+                    bookingDate: bookingDate
+                        ? bookingDate.toLocaleDateString()
+                        : "",
+
+                    // Archived date
+                    archivedDate: archivedDate
+                        ? archivedDate.toLocaleDateString()
+                        : "",
+
+                    // Table date
+                    date: archivedDate
+                        ? archivedDate.toLocaleDateString()
+                        : "-",
+
+                    // Table time
+                    time: archivedDate
+                        ? archivedDate.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        })
+                        : "-"
+                };
+            });
+
+            populatePackageFilter();
             renderArchiveTable();
         }
+        function populatePackageFilter() {
 
+            const packageFilter = document.getElementById("packageFilter");
+
+            if (!packageFilter) return;
+
+            // Get unique booking types
+            const packageTypes = [
+                ...new Set(
+                    archiveItems
+                        .map(item => item.sessionType)
+                        .filter(type => type && type.trim() !== "")
+                )
+            ].sort();
+
+            packageFilter.innerHTML = `
+        <option value="all">All Packages</option>
+    `;
+
+            packageTypes.forEach(type => {
+
+                const option = document.createElement("option");
+
+                option.value = type.toLowerCase();
+                option.textContent = type;
+
+                packageFilter.appendChild(option);
+            });
+        }
+        document
+            .getElementById("archiveSearchInput")
+            .addEventListener("input", function () {
+                renderArchiveTable();
+            });
         document.getElementById("logoutBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             await supabaseClient.auth.signOut();

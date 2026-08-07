@@ -202,49 +202,192 @@
 
             e.preventDefault();
 
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
+            const email =
+                document.getElementById("email").value.trim();
+
+            const password =
+                document.getElementById("password").value;
+
 
             try {
 
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                const {
+                    data,
+                    error
+                } = await supabaseClient.auth.signInWithPassword({
+
                     email,
                     password
+
                 });
 
+
                 if (error) {
+
                     alert(error.message);
+
                     return;
                 }
+
 
                 const user = data.user;
 
-                const { data: customer, error: customerError } =
-                    await supabaseClient
-                        .from("customers")
-                        .select("*")
-                        .eq("id", user.id)
-                        .single();
 
-                if (customerError) {
-                    alert("Customer account not found.");
+                if (!user) {
+
+                    alert("Unable to log in.");
+
                     return;
                 }
 
-                await supabaseClient
+
+                /*
+                 * Get customer profile
+                 */
+
+                const {
+                    data: customer,
+                    error: customerError
+                } = await supabaseClient
+
                     .from("customers")
-                    .update({
-                        last_login: new Date().toISOString()
-                    })
-                    .eq("id", user.id);
 
-                localStorage.setItem("customer", JSON.stringify(customer));
+                    .select("*")
 
-                window.location.href = "/frontend-customer/customer_booking.html";
+                    .eq("id", user.id)
 
-            } catch (err) {
-                console.error(err);
-                alert("Login failed.");
+                    .maybeSingle();
+
+
+                if (customerError) {
+
+                    console.error(
+                        "Customer profile error:",
+                        customerError
+                    );
+
+                    alert(
+                        "Unable to load your customer profile."
+                    );
+
+                    return;
+                }
+
+
+                /*
+                 * If the account somehow doesn't have
+                 * a customer row, create it.
+                 *
+                 * This is only a fallback.
+                 */
+
+                if (!customer) {
+
+                    const fullName =
+                        user.user_metadata?.full_name ||
+                        user.user_metadata?.name ||
+                        "";
+
+
+                    const {
+                        data: createdCustomer,
+                        error: createError
+                    } = await supabaseClient
+
+                        .from("customers")
+
+                        .insert({
+
+                            id: user.id,
+
+                            email:
+                                user.email || email,
+
+                            full_name:
+                                fullName,
+
+                            profile_image:
+                                user.user_metadata?.avatar_url ||
+                                user.user_metadata?.picture ||
+                                "",
+
+                            phone: ""
+
+                        })
+
+                        .select()
+
+                        .single();
+
+
+                    if (createError) {
+
+                        console.error(
+                            "Create customer error:",
+                            createError
+                        );
+
+                        alert(
+                            "Customer profile could not be created."
+                        );
+
+                        return;
+                    }
+
+
+                    localStorage.setItem(
+                        "customer",
+                        JSON.stringify(createdCustomer)
+                    );
+
+                }
+
+                else {
+
+                    /*
+                     * Update last login
+                     */
+
+                    await supabaseClient
+
+                        .from("customers")
+
+                        .update({
+                            last_login:
+                                new Date().toISOString()
+                        })
+
+                        .eq("id", user.id);
+
+
+                    customer.last_login =
+                        new Date().toISOString();
+
+
+                    localStorage.setItem(
+                        "customer",
+                        JSON.stringify(customer)
+                    );
+
+                }
+
+
+                window.location.href =
+                    "/frontend-customer/customer_booking.html";
+
+
+            }
+            catch (err) {
+
+                console.error(
+                    "Login error:",
+                    err
+                );
+
+                alert(
+                    "Login failed."
+                );
+
             }
 
         });
@@ -252,68 +395,92 @@
 
             e.preventDefault();
 
-            const fullName = document.getElementById("signup-fullname").value.trim();
-            const email = document.getElementById("signup-email").value.trim();
-            const password = document.getElementById("signup-password").value;
-            const confirmPassword = document.getElementById("signup-confirm-password").value;
+            const fullName =
+                document.getElementById("signup-fullname").value.trim();
+
+            const email =
+                document.getElementById("signup-email").value.trim();
+
+            const password =
+                document.getElementById("signup-password").value;
+
+            const confirmPassword =
+                document.getElementById("signup-confirm-password").value;
+
 
             if (password !== confirmPassword) {
                 alert("Passwords do not match!");
                 return;
             }
 
+
             try {
 
-                // Create Auth Account
-                const { data, error } = await supabaseClient.auth.signUp({
+                const {
+                    data,
+                    error
+                } = await supabaseClient.auth.signUp({
+
                     email,
                     password,
+
                     options: {
                         data: {
-                            full_name: fullName
+                            full_name: fullName,
+                            name: fullName
                         }
                     }
+
                 });
 
+
                 if (error) {
+
+                    console.error("Signup error:", error);
+
                     alert(error.message);
+
                     return;
                 }
+
 
                 if (!data.user) {
+
                     alert("Unable to create account.");
+
                     return;
                 }
 
-                // Save customer profile
-                const { error: insertError } = await supabaseClient
-                    .from("customers")
-                    .insert([
-                        {
-                            id: data.user.id,
-                            email: email,
-                            full_name: fullName,
-                            profile_image: "",
-                            phone: "",
-                            created_at: new Date().toISOString(),
-                            last_login: null
-                        }
-                    ]);
 
-                if (insertError) {
-                    alert(insertError.message);
-                    return;
-                }
+                /*
+                 * The customers row is automatically
+                 * created by the database trigger.
+                 */
 
-                alert("Account created successfully!");
+                alert(
+                    "Account created successfully!"
+                );
+
 
                 signupModal.classList.remove("active");
 
-                document.getElementById("signup-form").reset();
+                document
+                    .getElementById("signup-form")
+                    .reset();
 
-            } catch (err) {
-                console.error(err);
-                alert("Something went wrong.");
+
+            }
+            catch (err) {
+
+                console.error(
+                    "Signup error:",
+                    err
+                );
+
+                alert(
+                    "Something went wrong while creating your account."
+                );
+
             }
 
         });
