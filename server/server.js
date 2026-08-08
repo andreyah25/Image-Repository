@@ -9,7 +9,12 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
+app.get("/", (req, res) => {
+    res.json({
+        success: true,
+        message: "OTP server is running"
+    });
+});
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabase = createClient(
@@ -123,7 +128,7 @@ app.post("/send-otp", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(3000, () => {
+app.listen(PORT, () => {
 
     console.log("====================================");
 
