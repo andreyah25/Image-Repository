@@ -1,5 +1,5 @@
 require("dotenv").config();
-console.log(process.env.RESEND_API_KEY);
+//console.log(process.env.RESEND_API_KEY);
 const express = require("express");
 const cors = require("cors");
 const { Resend } = require("resend");
@@ -71,7 +71,7 @@ app.post("/send-otp", async (req, res) => {
             subject: "Your Verification Code",
 
             html: `
-                <h2>Vanity Creation</h2>
+                <h2>Captured Photo Studio</h2>
 
                 <p>Your verification code is:</p>
 
@@ -122,13 +122,14 @@ app.post("/send-otp", async (req, res) => {
 
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(3000, () => {
 
     console.log("====================================");
 
     console.log("OTP SERVER RUNNING");
 
-    console.log("http://localhost:3000");
+    console.log(`Server is running on port ${PORT}`);
 
     console.log("====================================");
 
