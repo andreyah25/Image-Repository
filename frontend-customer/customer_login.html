@@ -51,9 +51,9 @@
                     </div>
 
                     <div class="forgot-password-container">
-                        <a href="customer_forgot_pw.html" class="forgot-password-btn">
-                            Forgot Password
-                        </a>
+                        <button type="button" class="forgot-password-btn" id="open-forgot-modal">
+                            Forgot Password?
+                        </button>   
                     </div>
 
                     <button type="submit" class="btn-login">Log in</button>
@@ -128,13 +128,138 @@
             </div>
         </div>
     </div>
+    <!-- Forgot Password Modal -->
+    <div class="forgot-modal-overlay" id="forgot-modal">
+        <div class="forgot-modal-card">
+
+            <button type="button" class="forgot-modal-close" id="close-forgot-modal" aria-label="Close">
+                &times;
+            </button>
+
+            <div class="forgot-modal-header">
+                <i class="fa-solid fa-lock"></i>
+                <h2>Forgot Password?</h2>
+            </div>
+
+            <div class="forgot-modal-body">
+
+                <p class="forgot-subtitle">
+                    Enter your email address and we'll send you a link to reset your password.
+                </p>
+
+                <form id="forgot-password-form">
+
+                    <div class="modal-input-group">
+                        <label for="forgot-email">Email Address</label>
+                        <input type="email" id="forgot-email" required placeholder="Enter your email address">
+                    </div>
+
+                    <button type="submit" class="btn-forgot-submit" id="forgot-submit-btn">
+                        Send Reset Link
+                    </button>
+
+                </form>
+
+                <p id="forgot-message" class="forgot-message"></p>
+
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const signupModal = document.getElementById("signup-modal");
         const openSignupModal = document.getElementById("open-signup-modal");
         const closeSignupModal = document.getElementById("close-signup-modal");
+        // =========================
+        // FORGOT PASSWORD MODAL
+        // =========================
 
+        const forgotModal = document.getElementById("forgot-modal");
+        const openForgotModal = document.getElementById("open-forgot-modal");
+        const closeForgotModal = document.getElementById("close-forgot-modal");
+        const forgotPasswordForm = document.getElementById("forgot-password-form");
+        const forgotMessage = document.getElementById("forgot-message");
+        const forgotSubmitBtn = document.getElementById("forgot-submit-btn");
+
+
+        // Open modal
+        openForgotModal.addEventListener("click", () => {
+            forgotModal.classList.add("active");
+
+            forgotMessage.style.display = "none";
+            forgotMessage.textContent = "";
+        });
+
+
+        // Close modal
+        closeForgotModal.addEventListener("click", () => {
+            forgotModal.classList.remove("active");
+        });
+
+
+        // Close when clicking outside the modal
+        forgotModal.addEventListener("click", (e) => {
+            if (e.target === forgotModal) {
+                forgotModal.classList.remove("active");
+            }
+        });
+
+
+        // Submit forgot password form
+        forgotPasswordForm.addEventListener("submit", async (e) => {
+
+            e.preventDefault();
+
+            const email = document
+                .getElementById("forgot-email")
+                .value
+                .trim();
+
+            if (!email) {
+                return;
+            }
+
+            forgotSubmitBtn.disabled = true;
+            forgotSubmitBtn.textContent = "Sending...";
+
+            forgotMessage.style.display = "none";
+
+            try {
+
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(
+                    email,
+                    {
+                        redirectTo:
+                            "http://localhost:5500/frontend-customer/customer_reset_password.html"
+                    }
+                );
+
+                if (error) {
+                    throw error;
+                }
+
+                forgotMessage.style.display = "block";
+                forgotMessage.textContent =
+                    "Password reset link sent! Please check your email.";
+
+                forgotPasswordForm.reset();
+
+            } catch (error) {
+
+                console.error("Password reset error:", error);
+
+                forgotMessage.style.display = "block";
+                forgotMessage.textContent =
+                    error.message || "Unable to send password reset email.";
+
+            } finally {
+
+                forgotSubmitBtn.disabled = false;
+                forgotSubmitBtn.textContent = "Send Reset Link";
+
+            }
+        });
         openSignupModal.addEventListener("click", (e) => {
             e.preventDefault();
             signupModal.classList.add("active");
