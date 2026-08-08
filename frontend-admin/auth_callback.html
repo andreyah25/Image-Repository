@@ -119,7 +119,7 @@
                 console.log("Sending OTP to:", user.email);
                 console.log("Sending OTP request...");
 
-                const response = await fetch("http://localhost:3000/send-otp", {
+                const response = await fetch("https://image-repository-0rgr.onrender.com/send-otp", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
