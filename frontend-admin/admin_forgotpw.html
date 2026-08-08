@@ -1,77 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - Vanity Creation</title>
+    <title>Forgot Password - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/design/admin_forgotpw.css">
 </head>
+
 <body>
 
     <div class="login-wrapper">
 
+        <!-- Left Panel with Back Arrow, Gradient Background & Workspace Branding -->
         <div class="left-panel">
-            <h1 class="welcome-heading">Forgot Password</h1>
-            <p class="welcome-subtext">Create a new password for your account.</p>
+            <a href="admin_login.html" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="logo-box"></div>
+            <h1 class="brand-heading">Captured Workspace</h1>
+            <p class="brand-subtext">Manage your studio, all from one place.</p>
         </div>
-
         <div class="login-card-container">
 
-            <form class="login-form" id="forgotPasswordForm" onsubmit="event.preventDefault();">
+            <div class="login-card">
 
-                <div class="input-group">
-                    <input type="email" id="email" autocomplete="email" required placeholder=" ">
-                    <label for="email">Email Address</label>
+                <div class="form-header">
+                    <h2 class="welcome-heading">Forgot Password</h2>
+                    <p class="welcome-subtext">
+                        Create a new password for your account.
+                    </p>
                 </div>
 
-                <div class="input-group password-group">
-                    <input type="password" id="newPassword" required placeholder=" ">
-                    <label for="newPassword">New Password</label>
-                    <button type="button" class="toggle-password">
-                        <i class="fa-regular fa-eye-slash"></i>
+                <form class="login-form" id="forgotPasswordForm">
+
+                    <div class="input-group">
+                        <input type="email" id="email" autocomplete="email" required placeholder=" ">
+                        <label for="email">Email Address</label>
+                    </div>
+
+                    <button type="submit" class="submit-login-btn">
+                        Reset Password
                     </button>
-                </div>
 
-                <div class="input-group password-group">
-                    <input type="password" id="confirmPassword" required placeholder=" ">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <button type="button" class="toggle-password">
-                        <i class="fa-regular fa-eye-slash"></i>
-                    </button>
-                </div>
-
-                <button type="submit" class="submit-login-btn">
-                    Reset Password
-                </button>
-
-            </form>
+                </form>
+            </div>
 
         </div>
+        ```
+
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        document.querySelectorAll('.toggle-password').forEach(button => {
-            button.addEventListener('click', () => {
-                const inputField = button.parentElement.querySelector('input');
-                const toggleIcon = button.querySelector('i');
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
-                if (inputField.type === 'password') {
-                    inputField.type = 'text';
-                    toggleIcon.className = 'fa-regular fa-eye';
-                } else {
-                    inputField.type = 'password';
-                    toggleIcon.className = 'fa-regular fa-eye-slash';
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+        const forgotPasswordForm =
+            document.getElementById("forgotPasswordForm");
+
+        forgotPasswordForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const email =
+                document.getElementById("email").value.trim();
+
+            const button =
+                document.querySelector(".submit-login-btn");
+
+            if (!email) {
+                alert("Please enter your email address.");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Sending...";
+
+            try {
+
+                const { error } =
+                    await supabaseClient.auth.resetPasswordForEmail(email, {
+                        redirectTo:
+                            "http://127.0.0.1:5500/frontend-admin/admin_updatepw.html"
+                    });
+
+                if (error) {
+                    console.error(error);
+                    alert(error.message);
+
+                    button.disabled = false;
+                    button.textContent = "Reset Password";
+
+                    return;
                 }
-            });
+
+                alert(
+                    "Password reset email sent! Please check your email."
+                );
+
+                button.textContent = "Email Sent";
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Something went wrong. Please try again."
+                );
+
+                button.disabled = false;
+                button.textContent = "Reset Password";
+            }
         });
+
     </script>
 
 </body>
+
 </html>

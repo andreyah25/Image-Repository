@@ -1,176 +1,529 @@
-/* Clean reset */
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
+
+:root {
+    --gradient-bg: linear-gradient(
+        135deg,
+        #dbeffe 0%,
+        #fed7aa 25%,
+        #fef08a 50%,
+        #dcfce7 75%,
+        #f3e8ff 100%
+    );
+
+    --dark: #353535;
+    --muted: #777;
+    --green: #639a88;
+    --green-hover: #528373;
+}
+
+/* =========================================================
+   BODY
+========================================================= */
 
 body {
-  font-family: "DM Sans", sans-serif;
-  min-height: 100vh;
-  background-color: #ffffff;
-  display: flex;
+    font-family: "DM Sans", sans-serif;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #f7f8f7;
 }
 
-/* Split-screen layout wrapper */
+/* =========================================================
+   MAIN WRAPPER
+========================================================= */
+
 .login-wrapper {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
 }
 
-/* Left Sidebar: Dark Theme (Identical sizing to Login/Signup Pages) */
+/* =========================================================
+   LEFT PANEL
+========================================================= */
+
 .left-panel {
-  flex: 1.1;
-  background-color: #1f2a2d; /* Uniform slate color across modules */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 10% 8%;
+    flex: 1.1;
+
+    background: var(--gradient-bg);
+
+    display: flex;
+    flex-direction: column;
+
+    /* CENTER LOGO + TEXT */
+    justify-content: center;
+    transform: translateY(-20px);
+    align-items: center;
+
+    text-align: center;
+
+    padding: 40px;
+
+    position: relative;
+}
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.back-link {
+    position: absolute;
+
+    top: 35px;
+    left: 35px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--dark);
+
+    text-decoration: none;
+
+    background: rgba(255, 255, 255, 0.35);
+
+    border: 1px solid rgba(255, 255, 255, 0.5);
+
+    border-radius: 50%;
+
+    font-size: 16px;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.65);
+    transform: translateX(-3px);
+}
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.logo-box {
+    width: 110px;
+    height: 110px;
+
+    margin: 0 auto 25px auto;
+
+    background-image: url("/images/captured.png");
+
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* =========================================================
+   BRAND TEXT
+========================================================= */
+
+.brand-heading {
+    color: var(--dark);
+
+    font-size: 45px;
+    font-weight: 600;
+
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+
+    margin: 0 0 12px 0;
+
+    text-align: center;
+}
+
+.brand-subtext {
+    color: var(--dark);
+
+    font-size: 18px;
+    font-weight: 300;
+
+    line-height: 1.4;
+
+    max-width: 400px;
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+/* =========================================================
+   RIGHT PANEL
+========================================================= */
+
+.login-card-container {
+    flex: 0.9;
+
+    background: #f7f8f7;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+}
+
+/* =========================================================
+   FLOATING RESET PASSWORD CARD
+========================================================= */
+
+.login-card {
+    width: 100%;
+    max-width: 450px;
+
+    background: #ffffff;
+
+    padding: 40px;
+
+    border-radius: 22px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.08),
+        0 5px 15px rgba(0, 0, 0, 0.04);
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.form-header {
+    width: 100%;
+
+    margin-bottom: 32px;
+
+    text-align: center;
 }
 
 .welcome-heading {
-  color: #ffffff;
-  font-size: 56px;
-  font-weight: 500;
-  letter-spacing: -0.5px;
-  margin-bottom: 16px;
-  line-height: 1.1;
+    color: #222;
+
+    font-size: 30px;
+    font-weight: 600;
+
+    letter-spacing: -0.4px;
+
+    line-height: 1.2;
+
+    margin-bottom: 8px;
+
+    text-align: center;
 }
 
 .welcome-subtext {
-  color: #a4b0b2;
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 1.4;
+    color: #777;
+
+    font-size: 14px;
+    font-weight: 300;
+
+    line-height: 1.5;
+
+    text-align: center;
 }
 
-/* Right Side: Form Container */
-.login-card-container {
-  flex: 0.9;
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 10% 12%;
-}
+/* =========================================================
+   FORM
+========================================================= */
 
 .login-form {
-  width: 100%;
-  max-width: 440px;
-  display: flex;
-  flex-direction: column;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
 }
 
-/* Floating Labels Styling */
+/* =========================================================
+   INPUT GROUP
+========================================================= */
+
 .input-group {
-  position: relative;
-  margin-bottom: 30px;
-  width: 100%;
+    position: relative;
+
+    width: 100%;
+
+    margin-bottom: 24px;
 }
+
+/* =========================================================
+   INPUT
+========================================================= */
 
 .input-group input {
-  width: 100%;
-  padding: 12px 0 8px;
-  border: none;
-  border-bottom: 1px solid #b3b3b3;
-  background: transparent;
-  outline: none;
-  font-size: 16px;
-  color: #222222;
-  font-family: "DM Sans", sans-serif;
-  transition: border-color 0.2s ease;
+    width: 100%;
+    height: 50px;
+
+    padding: 0 15px;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    outline: none;
+
+    font-size: 14px;
+
+    color: #222;
+
+    font-family: "DM Sans", sans-serif;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.input-group input:hover {
+    border-color: #c8c8c8;
 }
 
 .input-group input:focus {
-  border-bottom-color: #1f2a2d;
+    border-color: var(--green);
+
+    box-shadow:
+        0 0 0 3px rgba(99, 154, 136, 0.10);
 }
+
+/* =========================================================
+   FLOATING LABEL
+========================================================= */
 
 .input-group label {
-  position: absolute;
-  top: 12px;
-  left: 0;
-  color: #666666;
-  font-size: 16px;
-  pointer-events: none;
-  transition: all 0.2s ease;
+    position: absolute;
+
+    left: 15px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    padding: 0 5px;
+
+    color: #999;
+
+    background: #ffffff;
+
+    font-size: 14px;
+
+    pointer-events: none;
+
+    transition:
+        top 0.2s ease,
+        font-size 0.2s ease,
+        color 0.2s ease;
 }
 
-/* Labels move UP when input is focused or contains text */
 .input-group input:focus ~ label,
 .input-group input:not(:placeholder-shown) ~ label {
-  top: -12px;
-  font-size: 13px;
-  color: #777777;
+    top: 0;
+
+    font-size: 11px;
+
+    color: var(--green);
 }
+
+/* =========================================================
+   PASSWORD INPUT
+========================================================= */
 
 .password-group input {
-  padding-right: 35px;
+    padding-right: 45px;
 }
 
-/* Visibility Password Toggles */
+/* =========================================================
+   PASSWORD TOGGLE
+========================================================= */
+
 .toggle-password {
-  position: absolute;
-  right: 0;
-  top: 12px;
-  background: none;
-  border: none;
-  color: #8c8c8c;
-  cursor: pointer;
-  font-size: 16px;
-  transition: color 0.2s ease;
+    position: absolute;
+
+    right: 13px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: transparent;
+
+    border: none;
+
+    border-radius: 6px;
+
+    color: #aaa;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
 .toggle-password:hover {
-  color: #222222;
+    background: #f3f3f3;
+
+    color: var(--dark);
 }
 
-/* Primary Submit Call-To-Action Button */
+/* =========================================================
+   RESET PASSWORD BUTTON
+========================================================= */
+
 .submit-login-btn {
-  background-color: #1f2a2d;
-  color: #ffffff;
-  border: none;
-  padding: 16px;
-  font-size: 15px;
-  font-weight: 500;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: "DM Sans", sans-serif;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  margin-top: 10px;
+    width: 100%;
+    height: 48px;
+
+    margin-top: 4px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: var(--green);
+
+    color: #ffffff;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .submit-login-btn:hover {
-  background-color: #12191a;
+    background: var(--green-hover);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 15px rgba(82, 131, 115, 0.20);
 }
 
 .submit-login-btn:active {
-  transform: scale(0.99);
+    transform: scale(0.98);
+
+    box-shadow: none;
 }
 
-/* Responsive Breakpoints */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
 @media (max-width: 900px) {
-  .login-wrapper {
-    flex-direction: column;
-  }
 
-  .left-panel {
-    flex: none;
-    padding: 50px 30px;
-    text-align: center;
-  }
+    body {
+        overflow: auto;
+    }
 
-  .welcome-heading {
-    font-size: 36px;
-  }
+    .login-wrapper {
+        flex-direction: column;
 
-  .welcome-subtext {
-    font-size: 16px;
-  }
+        min-height: 100vh;
+        height: auto;
+    }
 
-  .login-card-container {
-    flex: 1;
-    padding: 40px 20px;
-  }
+    .left-panel {
+        flex: none;
+
+        min-height: 42vh;
+
+        padding: 80px 30px 40px;
+    }
+
+    .back-link {
+        top: 25px;
+        left: 25px;
+    }
+
+    .logo-box {
+        width: 80px;
+        height: 80px;
+
+        margin-bottom: 18px;
+    }
+
+    .brand-heading {
+        font-size: 32px;
+    }
+
+    .brand-subtext {
+        font-size: 15px;
+    }
+
+    .login-card-container {
+        flex: none;
+
+        min-height: 58vh;
+
+        padding: 40px 20px;
+    }
+
+    .login-card {
+        max-width: 420px;
+
+        padding: 32px;
+    }
 }
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 500px) {
+
+    .left-panel {
+        min-height: 35vh;
+    }
+
+    .brand-heading {
+        font-size: 27px;
+    }
+
+    .brand-subtext {
+        font-size: 14px;
+    }
+
+    .login-card-container {
+        padding: 25px 15px;
+    }
+
+    .login-card {
+        padding: 28px 22px;
+
+        border-radius: 16px;
+    }
+
+    .welcome-heading {
+        font-size: 26px;
+    }
+}
+

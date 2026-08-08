@@ -178,166 +178,135 @@
     min-height: 520px !important;
 }
 
-.repo-folders-grid-panel {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    width: 100%;
-}
-.add-new-dropdown-box{
-    display:none;
-}
-
-.add-new-dropdown-box.show{
-    display:block;
-}
-/* ==============================
-   FOLDER GRID UI
-============================== */
 
 .repo-folders-grid-panel {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 24px;
+    gap: 20px;
+    width: 100%;
     padding: 20px 0;
 }
 
 
-/* Folder Card */
+/* ==============================
+   BASIC FOLDER CARD
+============================== */
 
 .folder-card {
-
     background: #ffffff;
-
-    border-radius: 18px;
-
-    padding: 25px 20px;
-
-    height: 170px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 24px 20px;
+    height: 160px;
 
     display: flex;
-
     flex-direction: column;
-
-    justify-content: center;
-
     align-items: center;
+    justify-content: center;
 
     cursor: pointer;
 
-    border: 1px solid #885f5f;
+    /* NO ANIMATION */
+    transition: none;
+    transform: none;
 
-    transition: all .25s ease;
-
-    position: relative;
-
+    box-sizing: border-box;
 }
 
 
-/* Hover */
+/* ==============================
+   FOLDER HOVER
+   No movement / no animation
+============================== */
 
 .folder-card:hover {
+    background: #fafafa;
+    border-color: #d5d5d5;
 
-    transform: translateY(-5px);
+    /* NO MOVEMENT */
+    transform: none;
 
-    box-shadow: 
-    0 12px 30px rgba(0,0,0,0.12);
-
-    border-color: #d8c2a8;
-
+    /* Simple shadow only */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 
-/* Folder Icon */
+/* ==============================
+   FOLDER ICON
+============================== */
 
 .folder-icon {
-
-    font-size: 55px;
-
-    color: #302820;
-
-    margin-bottom: 18px;
-
+    font-size: 48px;
+    color: #1f2d2f;
+    margin-bottom: 14px;
 }
 
 
-/* Folder Name */
+/* ==============================
+   FOLDER NAME
+============================== */
 
 .folder-card h3 {
-
     margin: 0;
 
     font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
 
-    font-size: 17px;
-
-    font-weight: 600;
-
-    color: #333;
+    color: #333333;
 
     text-align: center;
 
     max-width: 180px;
 
     overflow: hidden;
-
     text-overflow: ellipsis;
-
     white-space: nowrap;
-
 }
 
 
-/* Empty Message */
+/* ==============================
+   EMPTY REPOSITORY
+============================== */
 
 .empty-repo-message {
-
     width: 100%;
+
+    grid-column: 1 / -1;
 
     text-align: center;
 
-    padding: 50px;
+    padding: 60px 0;
 
-    color: #888;
+    color: #888888;
 
-    font-size: 15px;
-
+    font-size: 14px;
 }
+
+
+/* ==============================
+   REMOVE OLD FOLDER STYLES
+============================== */
+
 .folder-card-item {
     background: #ffffff;
     border: 1px solid #e5e5e5;
     border-radius: 6px;
     padding: 20px;
+
     display: flex;
     align-items: center;
     gap: 16px;
+
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    transition: none;
+    transform: none;
 }
 
 .folder-card-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.folder-icon-circle {
-    width: 44px;
-    height: 44px;
-    background-color: #1f2d2f;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    font-size: 18px;
-    flex-shrink: 0;
-}
-
-.folder-meta-details h3 {
-    font-size: 16px;
-    font-weight: 500;
-    color: #333333;
-    margin: 0;
+    transform: none;
+    box-shadow: none;
 }
 
 .empty-repo-message {
@@ -346,6 +315,321 @@
     font-size: 14px;
     padding: 60px 0;
     grid-column: 1 / -1;
+}
+/* =========================================================
+   NOTIFICATION
+========================================================= */
+
+.notification-wrapper {
+    position: relative;
+}
+
+
+/* Bell */
+
+.notification-btn {
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    background: none;
+    border: none;
+
+    padding: 0;
+
+    color: #666666;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+}
+
+
+/* Simple hover */
+
+.notification-btn:hover {
+    background-color: #f5f5f5;
+    color: #1f2d2f;
+}
+
+
+/* Notification number */
+
+.notification-badge {
+    position: absolute;
+
+    top: 1px;
+    right: 0px;
+
+    min-width: 17px;
+    height: 17px;
+
+    padding: 0 4px;
+
+    background-color: #c94b4b;
+    color: #ffffff;
+
+    border-radius: 20px;
+
+    font-family: "DM Sans", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   NOTIFICATION DROPDOWN
+========================================================= */
+
+.notification-dropdown {
+    position: absolute;
+
+    top: calc(100% + 10px);
+    right: 0;
+
+    width: 360px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.10);
+
+    z-index: 2000;
+
+    display: none;
+}
+
+
+/* Open */
+
+.notification-dropdown.show {
+    display: block;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.notification-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 16px 18px;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+
+.notification-header h3 {
+    margin: 0 0 3px 0;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    color: #333333;
+}
+
+
+.notification-header span {
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 12px;
+
+    color: #888888;
+}
+
+
+.notification-header button {
+    background: none;
+    border: none;
+
+    padding: 0;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 11px;
+
+    color: #1f2d2f;
+
+    cursor: pointer;
+}
+
+
+.notification-header button:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   NOTIFICATION LIST
+========================================================= */
+
+.notification-list {
+    max-height: 360px;
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   NOTIFICATION ITEM
+========================================================= */
+
+.notification-item {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 12px;
+
+    padding: 14px 18px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    cursor: pointer;
+
+    background-color: #ffffff;
+}
+
+
+.notification-item:hover {
+    background-color: #fafafa;
+}
+
+
+/* Icon */
+
+.notification-item-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #f2f4f4;
+
+    border-radius: 50%;
+
+    color: #1f2d2f;
+
+    font-size: 14px;
+}
+
+
+/* Content */
+
+.notification-item-content {
+    flex: 1;
+}
+
+
+.notification-item-title {
+    margin: 0 0 4px 0;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    color: #333333;
+}
+
+
+.notification-item-message {
+    margin: 0;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+
+    color: #777777;
+}
+
+
+.notification-item-time {
+    display: block;
+
+    margin-top: 5px;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 10px;
+
+    color: #999999;
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.notification-empty {
+    padding: 40px 20px;
+
+    text-align: center;
+
+    color: #999999;
+}
+
+
+.notification-empty i {
+    font-size: 28px;
+
+    margin-bottom: 10px;
+
+    color: #cccccc;
+}
+
+
+.notification-empty p {
+    margin: 0;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 500px) {
+
+    .notification-dropdown {
+        position: fixed;
+
+        top: 65px;
+        left: 15px;
+        right: 15px;
+
+        width: auto;
+    }
+
 }
 
 /* Added Styles for Notification Icon Button */
@@ -367,17 +651,19 @@
     background-color: #f5f5f5;
     color: #1f2d2f;
 }
+@media (max-width: 768px) {
 
-@media(max-width: 768px) {
-    .repo-top-header-block, .repo-sub-actions-container {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
+    .repo-folders-grid-panel {
+        grid-template-columns: repeat(
+            auto-fill,
+            minmax(180px, 1fr)
+        );
+
+        gap: 15px;
     }
-    .repo-filter-selects-group {
-        flex-direction: column;
+
+    .folder-card {
+        height: 145px;
     }
-    .repo-select-wrapper, .repo-select-wrapper select, .repo-sub-actions-container .table-search-box {
-        width: 100%;
-    }
+
 }

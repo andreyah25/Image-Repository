@@ -31,9 +31,32 @@
 
         <div class="navbar-right">
 
-            <button class="notification-btn" aria-label="Notifications">
-                <i class="fa-solid fa-bell"></i>
-            </button>
+            <div class="notification-wrapper">
+
+                <button type="button" class="notification-btn" id="notificationTrigger" aria-label="Notifications">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notificationBadge" class="notification-badge">0</span>
+                </button>
+
+                <div class="notification-panel" id="notificationPanel">
+
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+
+                        <button type="button" id="markNotificationsRead">
+                            Mark all read
+                        </button>
+                    </div>
+
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-empty">
+                            No notifications
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
 
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -257,10 +280,138 @@
                 </div>
 
             </div>
+            <!-- NOTIFICATION BOOKING MODAL -->
+            <div id="notificationBookingModal" class="notification-booking-modal">
+
+                <div class="notification-booking-card">
+
+                    <div class="notification-booking-header">
+
+                        <div class="notification-booking-title">
+                            <div class="notification-booking-icon">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+
+                            <div>
+                                <h2 id="notificationBookingClient">
+                                    Customer Booking
+                                </h2>
+
+                                <span class="notification-booking-status">
+                                    Confirmed
+                                </span>
+                            </div>
+                        </div>
+
+                        <button type="button" id="closeNotificationBookingModal" class="notification-booking-close">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                    </div>
+
+
+                    <div class="notification-booking-body">
+
+                        <div class="notification-booking-grid">
+
+                            <div class="notification-info-card">
+                                <i class="fa-solid fa-envelope"></i>
+
+                                <div>
+                                    <label>Email</label>
+                                    <span id="notificationBookingEmail"></span>
+                                </div>
+                            </div>
+
+
+                            <div class="notification-info-card">
+                                <i class="fa-solid fa-phone"></i>
+
+                                <div>
+                                    <label>Contact Number</label>
+                                    <span id="notificationBookingContact"></span>
+                                </div>
+                            </div>
+
+
+                            <div class="notification-info-card">
+                                <i class="fa-solid fa-box"></i>
+
+                                <div>
+                                    <label>Package</label>
+                                    <span id="notificationBookingPackage"></span>
+                                </div>
+                            </div>
+
+
+                            <div class="notification-info-card">
+                                <i class="fa-solid fa-camera"></i>
+
+                                <div>
+                                    <label>Session Type</label>
+                                    <span id="notificationBookingSession"></span>
+                                </div>
+                            </div>
+
+
+                            <div class="notification-info-card">
+                                <i class="fa-solid fa-calendar-days"></i>
+
+                                <div>
+                                    <label>Booking Date</label>
+                                    <span id="notificationBookingDate"></span>
+                                </div>
+                            </div>
+
+
+                            <div class="notification-info-card">
+                                <i class="fa-solid fa-clock"></i>
+
+                                <div>
+                                    <label>Booking Time</label>
+                                    <span id="notificationBookingTime"></span>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="notification-booking-notes">
+
+                            <h3>
+                                <i class="fa-solid fa-note-sticky"></i>
+                                Client Notes
+                            </h3>
+
+                            <div id="notificationBookingNotes">
+                                No notes provided.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="notification-booking-footer">
+
+                        <button type="button" id="notificationBookingProcess" class="process-booking-btn">
+                            <i class="fa-solid fa-arrow-right"></i>
+                            Process Booking
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
 
         </main>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
@@ -274,6 +425,7 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+        let currentUser = null;
         window.addEventListener("load", async () => {
 
             try {
@@ -298,6 +450,7 @@
                 }
 
                 const user = session.user;
+                currentUser = user;
 
                 let { data: profile, error } = await supabaseClient
                     .from("staff_profiles")
@@ -347,9 +500,13 @@
 
                 document.getElementById("userName").textContent =
                     profile.full_name;
+
                 await loadDashboardStats(user.id);
 
                 await loadBookingCalendar();
+
+                await loadNotifications();
+                setupNotificationRealtime();
                 if (profile.avatar_url) {
                     document.getElementById("userAvatar").src =
                         profile.avatar_url;
@@ -496,6 +653,7 @@
             });
 
         }
+        let calendarInstance = null;
         async function loadBookingCalendar() {
 
             const { data, error } = await supabaseClient
@@ -533,8 +691,7 @@
                 }
 
             }));
-
-            const calendar = new FullCalendar.Calendar(
+            calendarInstance = new FullCalendar.Calendar(
                 document.getElementById("calendar"),
                 {
 
@@ -612,7 +769,75 @@
 
             };
 
-            calendar.render();
+            calendarInstance.render();
+
+        }
+        async function refreshBookingCalendar() {
+
+            if (!calendarInstance) {
+                return;
+            }
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .eq("status", "Confirmed");
+
+            if (error) {
+
+                console.error(
+                    "Calendar refresh error:",
+                    error
+                );
+
+                return;
+            }
+
+            const events = data.map(booking => ({
+
+                id: String(booking.id),
+
+                title:
+                    booking.full_name,
+
+                start:
+                    booking.booking_date +
+                    "T" +
+                    booking.booking_time,
+
+                extendedProps: {
+
+                    email:
+                        booking.email,
+
+                    contact:
+                        booking.contact_number,
+
+                    package:
+                        booking.package,
+
+                    session:
+                        booking.session_type,
+
+                    notes:
+                        booking.notes,
+
+                    bookingDate:
+                        booking.booking_date,
+
+                    bookingTime:
+                        booking.booking_time
+
+                }
+
+            }));
+
+            calendarInstance.removeAllEvents();
+
+            calendarInstance.addEventSource(events);
 
         }
         const sidebar = document.querySelector(".sidebar");
@@ -636,6 +861,1176 @@
             }
 
         });
+
+        /* =========================================================
+           NOTIFICATION SYSTEM
+        ========================================================= */
+
+        const notificationTrigger =
+            document.getElementById("notificationTrigger");
+
+        const notificationPanel =
+            document.getElementById("notificationPanel");
+
+        const notificationList =
+            document.getElementById("notificationList");
+
+        const notificationBadge =
+            document.getElementById("notificationBadge");
+
+        const markNotificationsRead =
+            document.getElementById("markNotificationsRead");
+
+
+        /* =========================================================
+           BOOKING NOTIFICATION MODAL
+        ========================================================= */
+
+        const notificationBookingModal =
+            document.getElementById("notificationBookingModal");
+
+        const closeNotificationBookingModal =
+            document.getElementById("closeNotificationBookingModal");
+
+        const notificationBookingProcess =
+            document.getElementById("notificationBookingProcess");
+
+
+        let selectedNotificationBooking = null;
+
+        let notifications = [];
+
+        let readNotificationIds = new Set();
+
+        let notificationChannel = null;
+
+
+        /* =========================================================
+           OPEN / CLOSE NOTIFICATION PANEL
+        ========================================================= */
+
+        notificationTrigger.addEventListener("click", function (e) {
+
+            e.stopPropagation();
+
+            notificationPanel.classList.toggle("show");
+
+        });
+
+
+        notificationPanel.addEventListener("click", function (e) {
+
+            e.stopPropagation();
+
+        });
+
+
+        document.addEventListener("click", function () {
+
+            notificationPanel.classList.remove("show");
+
+        });
+
+
+        /* =========================================================
+           LOAD SAVED READ NOTIFICATIONS
+        ========================================================= */
+
+        function loadSavedReadNotifications() {
+
+            if (!currentUser) {
+                return;
+            }
+
+            const storageKey =
+                "readBookingNotifications_" + currentUser.id;
+
+            try {
+
+                const saved =
+                    JSON.parse(
+                        localStorage.getItem(storageKey) || "[]"
+                    );
+
+                readNotificationIds =
+                    new Set(saved);
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading read notifications:",
+                    error
+                );
+
+                readNotificationIds =
+                    new Set();
+
+            }
+
+        }
+
+
+        /* =========================================================
+           SAVE READ NOTIFICATIONS
+        ========================================================= */
+
+        function saveReadNotifications() {
+
+            if (!currentUser) {
+                return;
+            }
+
+            const storageKey =
+                "readBookingNotifications_" + currentUser.id;
+
+            localStorage.setItem(
+                storageKey,
+                JSON.stringify(
+                    Array.from(readNotificationIds)
+                )
+            );
+
+        }
+
+
+        /* =========================================================
+           CREATE NOTIFICATION OBJECT
+        ========================================================= */
+
+        function createBookingNotification(booking) {
+
+            if (!booking || !booking.id) {
+                return null;
+            }
+
+            const notificationId =
+                "booking-" + String(booking.id);
+
+            return {
+
+                id: notificationId,
+
+                type: "booking",
+
+                title: "New Customer Booking",
+
+                message:
+                    `${booking.full_name || "A customer"} has a confirmed booking.`,
+
+                date:
+                    booking.created_at ||
+                    new Date().toISOString(),
+
+                unread:
+                    !readNotificationIds.has(notificationId),
+
+                booking: booking
+
+            };
+
+        }
+
+
+        /* =========================================================
+           LOAD EXISTING BOOKING NOTIFICATIONS
+        ========================================================= */
+
+        async function loadNotifications() {
+
+            if (!currentUser) {
+                console.warn(
+                    "Cannot load notifications: no current user."
+                );
+                return;
+            }
+
+            loadSavedReadNotifications();
+
+            try {
+
+                const {
+                    data: bookings,
+                    error
+                } = await supabaseClient
+
+                    .from("bookings")
+
+                    .select("*")
+
+                    .eq("status", "Confirmed")
+
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    )
+
+                    .limit(15);
+
+
+                if (error) {
+
+                    console.error(
+                        "LOAD NOTIFICATIONS ERROR:",
+                        error
+                    );
+
+                    return;
+                }
+
+
+                notifications = [];
+
+
+                if (bookings && bookings.length > 0) {
+
+                    bookings.forEach(function (booking) {
+
+                        const notification =
+                            createBookingNotification(
+                                booking
+                            );
+
+                        if (notification) {
+
+                            notifications.push(
+                                notification
+                            );
+
+                        }
+
+                    });
+
+                }
+
+
+                renderNotifications();
+
+
+                console.log(
+                    "Notifications loaded:",
+                    notifications
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Notification loading failed:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           OPEN BOOKING MODAL
+        ========================================================= */
+
+        async function openNotificationBooking(notification) {
+
+            console.log(
+                "Opening booking notification:",
+                notification
+            );
+
+
+            if (
+                !notification ||
+                !notification.booking ||
+                !notification.booking.id
+            ) {
+
+                console.error(
+                    "Notification does not contain booking ID:",
+                    notification
+                );
+
+                return;
+
+            }
+
+
+            const bookingId =
+                notification.booking.id;
+
+
+            console.log(
+                "Loading booking ID:",
+                bookingId
+            );
+
+
+            /* Get latest booking information */
+
+            const {
+                data: booking,
+                error
+            } = await supabaseClient
+
+                .from("bookings")
+
+                .select("*")
+
+                .eq("id", bookingId)
+
+                .single();
+
+
+            if (error) {
+
+                console.error(
+                    "BOOKING MODAL LOAD ERROR:",
+                    error
+                );
+
+                alert(
+                    "Unable to load booking details."
+                );
+
+                return;
+
+            }
+
+
+            if (!booking) {
+
+                console.error(
+                    "Booking not found:",
+                    bookingId
+                );
+
+                alert(
+                    "Booking could not be found."
+                );
+
+                return;
+
+            }
+
+
+            /* Save selected booking */
+
+            selectedNotificationBooking =
+                booking;
+
+
+            /* =====================================================
+               PUT BOOKING INFORMATION INTO MODAL
+            ===================================================== */
+
+            document.getElementById(
+                "notificationBookingClient"
+            ).textContent =
+                booking.full_name ||
+                "Customer";
+
+
+            document.getElementById(
+                "notificationBookingEmail"
+            ).textContent =
+                booking.email ||
+                "Not provided";
+
+
+            document.getElementById(
+                "notificationBookingContact"
+            ).textContent =
+                booking.contact_number ||
+                "Not provided";
+
+
+            document.getElementById(
+                "notificationBookingPackage"
+            ).textContent =
+                booking.package ||
+                "Not specified";
+
+
+            document.getElementById(
+                "notificationBookingSession"
+            ).textContent =
+                booking.session_type ||
+                "Not specified";
+
+
+            document.getElementById(
+                "notificationBookingDate"
+            ).textContent =
+                booking.booking_date ||
+                "Not specified";
+
+
+            document.getElementById(
+                "notificationBookingTime"
+            ).textContent =
+                booking.booking_time ||
+                "Not specified";
+
+
+            document.getElementById(
+                "notificationBookingNotes"
+            ).textContent =
+                booking.notes ||
+                "No notes provided.";
+
+
+            /* =====================================================
+               SHOW MODAL
+            ===================================================== */
+
+            notificationBookingModal.classList.add("show");
+
+
+            console.log(
+                "Booking notification modal opened successfully."
+            );
+
+        }
+
+
+        /* =========================================================
+           CLICK NOTIFICATION
+        ========================================================= */
+
+        function handleNotificationClick(
+            notification,
+            item
+        ) {
+
+            console.log(
+                "Notification clicked:",
+                notification
+            );
+
+
+            /* Mark as read */
+
+            notification.unread =
+                false;
+
+
+            readNotificationIds.add(
+                notification.id
+            );
+
+
+            saveReadNotifications();
+
+
+            item.classList.remove(
+                "unread"
+            );
+
+
+            updateNotificationBadge();
+
+
+            /* Close notification panel */
+
+            notificationPanel.classList.remove(
+                "show"
+            );
+
+
+            /* Open booking modal */
+
+            if (
+                notification.type === "booking" &&
+                notification.booking &&
+                notification.booking.id
+            ) {
+
+                openNotificationBooking(
+                    notification
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           RENDER NOTIFICATIONS
+        ========================================================= */
+
+        function renderNotifications() {
+
+            notificationList.innerHTML = "";
+
+
+            if (
+                !notifications ||
+                notifications.length === 0
+            ) {
+
+                notificationList.innerHTML = `
+
+            <div class="notification-empty">
+                No notifications
+            </div>
+
+        `;
+
+                updateNotificationBadge();
+
+                return;
+
+            }
+
+
+            notifications.forEach(
+                function (notification) {
+
+                    const item =
+                        document.createElement("div");
+
+
+                    item.className =
+                        "notification-item";
+
+
+                    if (notification.unread) {
+
+                        item.classList.add(
+                            "unread"
+                        );
+
+                    }
+
+
+                    let icon =
+                        "fa-bell";
+
+
+                    if (
+                        notification.type ===
+                        "booking"
+                    ) {
+
+                        icon =
+                            "fa-calendar-check";
+
+                    }
+
+
+                    item.innerHTML = `
+
+                <div class="notification-icon">
+
+                    <i class="fa-solid ${icon}"></i>
+
+                </div>
+
+
+                <div class="notification-content">
+
+                    <p class="notification-title">
+                        ${escapeNotificationHTML(
+                        notification.title
+                    )}
+                    </p>
+
+
+                    <p class="notification-message">
+                        ${escapeNotificationHTML(
+                        notification.message
+                    )}
+                    </p>
+
+
+                    <div class="notification-time">
+                        ${formatNotificationDate(
+                        notification.date
+                    )}
+                    </div>
+
+                </div>
+
+            `;
+
+
+                    item.addEventListener(
+                        "click",
+                        function () {
+
+                            handleNotificationClick(
+                                notification,
+                                item
+                            );
+
+                        }
+                    );
+
+
+                    notificationList.appendChild(
+                        item
+                    );
+
+                }
+            );
+
+
+            updateNotificationBadge();
+
+        }
+
+
+        /* =========================================================
+           UPDATE BADGE
+        ========================================================= */
+
+        function updateNotificationBadge() {
+
+            const unreadCount =
+                notifications.filter(
+                    function (notification) {
+
+                        return notification.unread;
+
+                    }
+                ).length;
+
+
+            if (unreadCount <= 0) {
+
+                notificationBadge.classList.add(
+                    "hidden"
+                );
+
+                notificationBadge.textContent =
+                    "0";
+
+                return;
+
+            }
+
+
+            notificationBadge.classList.remove(
+                "hidden"
+            );
+
+
+            notificationBadge.textContent =
+                unreadCount > 99
+                    ? "99+"
+                    : String(unreadCount);
+
+        }
+
+
+        /* =========================================================
+           MARK ALL READ
+        ========================================================= */
+
+        markNotificationsRead.addEventListener(
+            "click",
+            function (e) {
+
+                e.stopPropagation();
+
+
+                notifications.forEach(
+                    function (notification) {
+
+                        notification.unread =
+                            false;
+
+
+                        readNotificationIds.add(
+                            notification.id
+                        );
+
+                    }
+                );
+
+
+                saveReadNotifications();
+
+
+                renderNotifications();
+
+            }
+        );
+
+
+        /* =========================================================
+           CLOSE BOOKING MODAL
+        ========================================================= */
+
+        closeNotificationBookingModal.addEventListener(
+            "click",
+            function () {
+
+                notificationBookingModal.classList.remove(
+                    "show"
+                );
+
+                selectedNotificationBooking =
+                    null;
+
+            }
+        );
+
+
+        /* =========================================================
+           CLICK OUTSIDE BOOKING MODAL
+        ========================================================= */
+
+        notificationBookingModal.addEventListener(
+            "click",
+            function (e) {
+
+                if (
+                    e.target ===
+                    notificationBookingModal
+                ) {
+
+                    notificationBookingModal.classList.remove(
+                        "show"
+                    );
+
+                    selectedNotificationBooking =
+                        null;
+
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           PROCESS BOOKING
+        ========================================================= */
+
+        notificationBookingProcess.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    !selectedNotificationBooking ||
+                    !selectedNotificationBooking.id
+                ) {
+
+                    console.error(
+                        "No booking selected for processing."
+                    );
+
+                    return;
+
+                }
+
+
+                const bookingId =
+                    selectedNotificationBooking.id;
+
+
+                console.log(
+                    "Processing booking:",
+                    bookingId
+                );
+
+
+                window.location.href =
+                    "admin_client.html?booking_id=" +
+                    encodeURIComponent(
+                        String(bookingId)
+                    );
+
+            }
+        );
+
+
+        /* =========================================================
+           REALTIME BOOKING NOTIFICATIONS
+        ========================================================= */
+
+        function setupNotificationRealtime() {
+
+            console.log(
+                "Starting booking realtime listener..."
+            );
+
+
+            /* Prevent duplicate channels */
+
+            if (notificationChannel) {
+
+                console.log(
+                    "Realtime channel already exists."
+                );
+
+                return;
+
+            }
+
+
+            notificationChannel =
+                supabaseClient.channel(
+                    "staff-booking-notifications-" +
+                    currentUser.id
+                );
+
+
+            notificationChannel
+
+                .on(
+
+                    "postgres_changes",
+
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "bookings"
+                    },
+
+                    async function (payload) {
+
+                        console.log(
+                            "REALTIME INSERT RECEIVED:",
+                            payload
+                        );
+
+
+                        const booking =
+                            payload.new;
+
+
+                        if (
+                            !booking ||
+                            !booking.id
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        /*
+                         * Only notify for confirmed bookings.
+                         */
+
+                        if (
+                            booking.status !==
+                            "Confirmed"
+                        ) {
+
+                            console.log(
+                                "Inserted booking is not confirmed."
+                            );
+
+                            return;
+
+                        }
+
+
+                        addRealtimeBookingNotification(
+                            booking
+                        );
+
+
+                        await refreshBookingCalendar();
+
+                        await loadDashboardStats();
+
+                    }
+
+                )
+
+                .on(
+
+                    "postgres_changes",
+
+                    {
+                        event: "UPDATE",
+                        schema: "public",
+                        table: "bookings"
+                    },
+
+                    async function (payload) {
+
+                        console.log(
+                            "REALTIME UPDATE RECEIVED:",
+                            payload
+                        );
+
+
+                        const booking =
+                            payload.new;
+
+
+                        if (
+                            !booking ||
+                            !booking.id
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        /*
+                         * If booking became confirmed,
+                         * create notification.
+                         */
+
+                        const oldBooking =
+                            payload.old || {};
+
+
+                        const becameConfirmed =
+                            booking.status ===
+                            "Confirmed" &&
+                            oldBooking.status !==
+                            "Confirmed";
+
+
+                        if (becameConfirmed) {
+
+                            addRealtimeBookingNotification(
+                                booking
+                            );
+
+                        }
+
+
+                        await refreshBookingCalendar();
+
+                        await loadDashboardStats();
+
+                    }
+
+                )
+
+                .subscribe(
+                    function (status) {
+
+                        console.log(
+                            "SUPABASE REALTIME STATUS:",
+                            status
+                        );
+
+
+                        if (
+                            status ===
+                            "SUBSCRIBED"
+                        ) {
+
+                            console.log(
+                                "✅ BOOKING REALTIME CONNECTED"
+                            );
+
+                        }
+
+
+                        if (
+                            status ===
+                            "CHANNEL_ERROR"
+                        ) {
+
+                            console.error(
+                                "❌ SUPABASE REALTIME CHANNEL ERROR"
+                            );
+
+                        }
+
+
+                        if (
+                            status ===
+                            "TIMED_OUT"
+                        ) {
+
+                            console.error(
+                                "❌ SUPABASE REALTIME TIMED OUT"
+                            );
+
+                        }
+
+                    }
+                );
+
+        }
+
+
+        /* =========================================================
+           ADD REALTIME BOOKING NOTIFICATION
+        ========================================================= */
+
+        function addRealtimeBookingNotification(
+            booking
+        ) {
+
+            if (
+                !booking ||
+                !booking.id
+            ) {
+
+                return;
+
+            }
+
+
+            const notificationId =
+                "booking-" +
+                String(booking.id);
+
+
+            /* Prevent duplicates */
+
+            const alreadyExists =
+                notifications.some(
+                    function (notification) {
+
+                        return (
+                            notification.id ===
+                            notificationId
+                        );
+
+                    }
+                );
+
+
+            if (alreadyExists) {
+
+                console.log(
+                    "Notification already exists:",
+                    notificationId
+                );
+
+                return;
+
+            }
+
+
+            const notification = {
+
+                id:
+                    notificationId,
+
+                type:
+                    "booking",
+
+                title:
+                    "New Customer Booking",
+
+                message:
+                    `${booking.full_name || "A customer"} has a confirmed booking.`,
+
+                date:
+                    booking.created_at ||
+                    new Date().toISOString(),
+
+                unread:
+                    true,
+
+                booking:
+                    booking
+
+            };
+
+
+            notifications.unshift(
+                notification
+            );
+
+
+            notifications =
+                notifications.slice(
+                    0,
+                    15
+                );
+
+
+            renderNotifications();
+
+
+            console.log(
+                "✅ NEW BOOKING NOTIFICATION ADDED:",
+                notification
+            );
+
+        }
+
+
+        /* =========================================================
+           FORMAT DATE
+        ========================================================= */
+
+        function formatNotificationDate(date) {
+
+            if (!date) {
+
+                return "";
+
+            }
+
+
+            const notificationDate =
+                new Date(date);
+
+
+            if (
+                Number.isNaN(
+                    notificationDate.getTime()
+                )
+            ) {
+
+                return "";
+
+            }
+
+
+            return notificationDate.toLocaleString(
+                "en-US",
+                {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           ESCAPE HTML
+        ========================================================= */
+
+        function escapeNotificationHTML(value) {
+
+            return String(
+                value || ""
+            )
+
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
         // Logout button
         document.getElementById("logoutBtn")
             .addEventListener("click", async (e) => {
@@ -644,7 +2039,7 @@
 
                 await supabaseClient.auth.signOut();
 
-                window.location.href = "landing_page.html";
+                window.location.href = "/frontend-admin/admin_login.html";
             });
     </script>
 </body>
