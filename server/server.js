@@ -5,6 +5,7 @@ const cors = require("cors");
 const { Resend } = require("resend");
 const { createClient } = require("@supabase/supabase-js");
 
+
 const app = express();
 
 app.use(cors());
@@ -21,6 +22,11 @@ const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+const MAYA_PUBLIC_KEY = process.env.MAYA_PUBLIC_KEY;
+const MAYA_SECRET_KEY = process.env.MAYA_SECRET_KEY;
+
+const MAYA_CHECKOUT_URL =
+    "https://pg-sandbox.paymaya.com/checkout/v1/checkouts";
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -126,7 +132,132 @@ app.post("/send-otp", async (req, res) => {
     }
 
 });
+app.post("/api/maya/create-checkout", async (req, res) => {
 
+    try {
+
+        const {
+            bookingId,
+            amount,
+            fullName,
+            email,
+            description
+        } = req.body;
+
+        if (!bookingId || !amount || !email) {
+            return res.status(400).json({
+                success: false,
+                message: "bookingId, amount, and email are required."
+            });
+        }
+
+        if (!MAYA_PUBLIC_KEY) {
+            return res.status(500).json({
+                success: false,
+                message: "MAYA_PUBLIC_KEY is not configured."
+            });
+        }
+
+        const requestReferenceNumber =
+            `CAPTURED-${bookingId}-${Date.now()}`.slice(0, 36);
+
+        const checkoutData = {
+
+            totalAmount: {
+                value: Number(amount).toFixed(2),
+                currency: "PHP"
+            },
+
+            buyer: {
+                firstName: fullName || "Customer",
+                email: email
+            },
+
+            items: [
+                {
+                    name: description || "Photography Session Reservation",
+                    quantity: "1",
+                    amount: {
+                        value: Number(amount).toFixed(2),
+                        currency: "PHP"
+                    },
+                    totalAmount: {
+                        value: Number(amount).toFixed(2),
+                        currency: "PHP"
+                    }
+                }
+            ],
+
+            redirectUrl: {
+
+                success:
+                    "https://captured-photo-studio.onrender.com/frontend-customer/payment_successful.html",
+
+                failure:
+                    "https://captured-photo-studio.onrender.com/frontend-customer/payment_failed.html",
+
+                cancel:
+                    "https://captured-photo-studio.onrender.com/frontend-customer/payment_cancelled.html"
+            },
+
+            requestReferenceNumber,
+
+            metadata: {
+                bookingId: bookingId
+            }
+        };
+
+        const auth = Buffer
+            .from(`${MAYA_PUBLIC_KEY}:`)
+            .toString("base64");
+
+        const mayaResponse = await fetch(
+            MAYA_CHECKOUT_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Authorization": `Basic ${auth}`,
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(checkoutData)
+            }
+        );
+
+        const mayaData = await mayaResponse.json();
+
+        console.log("Maya response:", mayaData);
+
+        if (!mayaResponse.ok) {
+
+            return res.status(mayaResponse.status).json({
+                success: false,
+                message: "Maya Checkout creation failed.",
+                maya: mayaData
+            });
+
+        }
+
+        res.json({
+            success: true,
+            checkoutId: mayaData.checkoutId,
+            redirectUrl: mayaData.redirectUrl,
+            requestReferenceNumber
+        });
+
+    } catch (error) {
+
+        console.error("Maya Checkout Error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 

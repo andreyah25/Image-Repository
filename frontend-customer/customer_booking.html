@@ -135,8 +135,6 @@
                         </div>
                     </div>
 
-                    <!-- Section 3: Reservation Down Payment -->
-                    <!-- Section 3: Reservation Down Payment -->
                     <div class="form-section">
 
                         <div class="section-header-flex">
@@ -150,53 +148,60 @@
                             <div>
 
                                 <div class="form-group">
+
                                     <label for="paymentMethod">
                                         Payment Method
                                         <span style="color:red">*</span>
                                     </label>
 
                                     <select id="paymentMethod" required>
+
                                         <option value="" selected disabled>
                                             Select payment method
                                         </option>
 
-                                        <option value="GCash">
-                                            GCash
+                                        <option value="Maya">
+                                            Maya Checkout
                                         </option>
+
                                     </select>
+
                                 </div>
 
                                 <div class="form-group">
+
                                     <label>
                                         <strong>Down Payment</strong>
                                     </label>
 
-                                    <input type="text" value="₱200.00 (Non-refundable)" readonly>
+                                    <input type="text" value="₱0.25 (Non-refundable)" readonly>
+
                                 </div>
 
                             </div>
 
+                            <div>
 
-                            <div id="gcashPaymentBox" style="display:none;">
+                                <div style="
+                padding:20px;
+                border:1px solid #ddd;
+                border-radius:12px;
+                background:#fafafa;
+            ">
 
-                                <h4 style="margin-bottom:15px;">
-                                    Scan to Pay via GCash
-                                </h4>
+                                    <h4 style="margin-bottom:10px;">
+                                        Secure Online Payment
+                                    </h4>
 
-                                <img src="/images/gcash_qr.jpg" alt="GCash QR" style="
-                    width:230px;
-                    border-radius:12px;
-                    border:1px solid #ddd;
-                    margin-bottom:20px;
+                                    <p style="
+                    font-size:14px;
+                    line-height:1.5;
+                    color:#666;
                 ">
-
-                                <div class="form-group">
-
-                                    <label>
-                                        Upload Proof of Payment
-                                    </label>
-
-                                    <input type="file" id="paymentProof" accept="image/png,image/jpeg,image/jpg">
+                                        After submitting your booking, you will be
+                                        redirected to Maya's secure checkout page to
+                                        pay the ₱0.25 reservation down payment.
+                                    </p>
 
                                 </div>
 
@@ -205,7 +210,6 @@
                         </div>
 
                     </div>
-
                     <!-- Section 4: Notes / Special Requests -->
                     <div class="form-section">
                         <h3 class="section-title-form">Notes/Request (Optional)</h3>
@@ -238,25 +242,7 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
-        const paymentMethod =
-            document.getElementById("paymentMethod");
 
-        const gcashBox =
-            document.getElementById("gcashPaymentBox");
-
-        paymentMethod.addEventListener("change", () => {
-
-            if (paymentMethod.value === "GCash") {
-
-                gcashBox.style.display = "block";
-
-            } else {
-
-                gcashBox.style.display = "none";
-
-            }
-
-        });
 
         (async () => {
 
@@ -558,23 +544,6 @@
             // PAYMENT PROOF
             // TEMPORARILY OPTIONAL
             // ---------------------------------------------
-
-            const paymentFile =
-                document.getElementById("paymentProof").files[0];
-
-            let paymentProofURL = null;
-
-            // If the customer uploads a proof, we simply ignore
-            // the upload for now and allow the booking to continue.
-            //
-            // Later, the actual Supabase Storage upload can be
-            // enabled here once the payment-proof bucket is ready.
-            if (paymentFile) {
-                console.log(
-                    "Payment proof selected:",
-                    paymentFile.name
-                );
-            }
             const { data: bookingData, error } = await supabaseClient
                 .from("bookings")
                 .insert([
@@ -592,7 +561,7 @@
 
                         notes: notes,
                         payment_method: paymentMethod,
-                        downpayment_amount: 200.00,
+                        downpayment_amount: 0.25,
                         payment_status: "Pending Verification",
                         status: "Pending"
                     }
@@ -632,10 +601,62 @@
                     is_read: false
                 });
 
-            alert("Booking request submitted successfully!");
+            try {
 
-            bookingForm.reset();
+                const mayaResponse = await fetch(
+                    "http://localhost:3000/api/maya/create-checkout",
+                    {
+                        method: "POST",
 
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            bookingId: bookingData.id,
+
+                            amount: 0.25,
+
+                            fullName: fullName,
+
+                            email: email,
+
+                            description:
+                                `Captured Photography Studio Reservation - ${selectedType || "Photo Session"}`
+
+                        })
+                    }
+                );
+
+                const mayaData = await mayaResponse.json();
+
+                console.log("Maya Checkout:", mayaData);
+
+                if (!mayaResponse.ok || !mayaData.success) {
+
+                    console.error("Maya error:", mayaData);
+
+                    alert(
+                        mayaData.message ||
+                        "Unable to create Maya payment checkout."
+                    );
+
+                    return;
+                }
+
+                // Redirect customer to Maya
+                window.location.href = mayaData.redirectUrl;
+
+            } catch (error) {
+
+                console.error("Maya connection error:", error);
+
+                alert(
+                    "Unable to connect to the payment system. Please try again."
+                );
+
+            }
             document.getElementById("fullName").value =
                 user.user_metadata.full_name || "";
 
