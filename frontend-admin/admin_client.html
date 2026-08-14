@@ -219,252 +219,37 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+    <script>
+
+        /* =========================================================
+           SUPABASE
+        ========================================================= */
+
+        const SUPABASE_URL =
+            "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
         const supabaseClient = supabase.createClient(
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+
+
+        /* =========================================================
+           GLOBAL VARIABLES
+        ========================================================= */
+
         let allBookedSessions = [];
         let selectedMonth = "all";
-        async function loadAdminNotifications() {
 
-            const { data, error } = await supabaseClient
-                .from("notifications")
-                .select("*")
-                .eq("recipient", "admin")
-                .order("created_at", { ascending: false });
 
-            if (error) {
-                console.error(error);
-                return;
-            }
+        /* =========================================================
+           HELPER
+        ========================================================= */
 
-            const list = document.getElementById("notificationList");
-            list.innerHTML = "";
-
-            let unread = 0;
-
-            data.forEach(notification => {
-
-                if (!notification.is_read)
-                    unread++;
-
-                list.innerHTML += `
-            <div class="notification-item ${notification.is_read ? "" : "unread"}">
-
-                <div class="notification-icon">
-                    <i class="fa-solid fa-bell"></i>
-                </div>
-
-                <div class="notification-content">
-                    <h4>${notification.title}</h4>
-                    <p>${notification.message}</p>
-                    <small>${new Date(notification.created_at).toLocaleString()}</small>
-                </div>
-
-            </div>
-        `;
-            });
-
-            const badge = document.getElementById("notificationCount");
-
-            if (unread > 0) {
-                badge.textContent = unread;
-                badge.style.display = "inline-flex";
-            } else {
-                badge.style.display = "none";
-            }
-
-        }
-        async function loadBookedSessions() {
-
-            console.log("Loading Bookings...");
-
-            const { data, error, count } = await supabaseClient
-                .from("bookings")
-                .select("*", { count: "exact" })
-                .eq("is_archived", false)
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.error("Error loading bookings:", error);
-                return;
-            }
-
-            console.log("Returned rows:", data?.length || 0);
-            console.log("Total rows:", count);
-
-            // Store the complete dataset
-            allBookedSessions = data || [];
-
-            renderBookedSessions();
-        }
-        function renderBookedSessions() {
-
-            const tbody = document.getElementById("clientTableBody");
-
-            tbody.innerHTML = "";
-
-            const searchInput = document.getElementById("clientSearchInput");
-
-            const searchTerm = searchInput
-                ? searchInput.value.trim().toLowerCase()
-                : "";
-
-            const filteredBookings = allBookedSessions.filter(booking => {
-
-                // -----------------------------------------
-                // SEARCH
-                // -----------------------------------------
-
-                if (searchTerm) {
-
-                    const searchableText = [
-                        booking.full_name,
-                        booking.contact_number,
-                        booking.email,
-                        booking.booking_date,
-                        booking.booking_time,
-                        booking.session_type,
-                        booking.status,
-                        booking.notes
-                    ]
-                        .filter(value =>
-                            value !== null &&
-                            value !== undefined
-                        )
-                        .join(" ")
-                        .toLowerCase();
-
-                    if (!searchableText.includes(searchTerm)) {
-                        return false;
-                    }
-                }
-
-                // -----------------------------------------
-                // MONTH FILTER
-                // -----------------------------------------
-
-                if (selectedMonth !== "all" && booking.booking_date) {
-
-                    const bookingDate = new Date(
-                        booking.booking_date + "T00:00:00"
-                    );
-
-                    const bookingMonth =
-                        bookingDate.getMonth() + 1;
-
-                    if (bookingMonth !== Number(selectedMonth)) {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-            // -----------------------------------------
-            // NO RESULTS
-            // -----------------------------------------
-
-            if (filteredBookings.length === 0) {
-
-                tbody.innerHTML = `
-            <tr>
-                <td colspan="9" style="
-                    text-align: center;
-                    padding: 30px;
-                    color: #888;
-                ">
-                    No clients found.
-                </td>
-            </tr>
-        `;
-
-                return;
-            }
-
-            // -----------------------------------------
-            // DISPLAY BOOKINGS
-            // -----------------------------------------
-
-            filteredBookings.forEach(booking => {
-
-                tbody.innerHTML += `
-            <tr>
-
-                <td>
-                    ${escapeHtml(booking.full_name || "-")}
-                </td>
-
-                <td>
-                    ${escapeHtml(booking.contact_number || "-")}
-                </td>
-
-                <td>
-                    ${escapeHtml(booking.email || "-")}
-                </td>
-
-                <td>
-                    ${formatBookingDate(booking.booking_date)}
-                </td>
-
-                <td>
-                    ${escapeHtml(booking.booking_time || "-")}
-                </td>
-
-                <td>
-                    ${escapeHtml(booking.session_type || "-")}
-                </td>
-
-                <td>
-                    <span class="status-badge ${(booking.status || "")
-                        .toLowerCase()
-                    }">
-                        ${escapeHtml(booking.status || "-")}
-                    </span>
-                </td>
-
-                <td>
-                    ${escapeHtml(booking.notes || "-")}
-                </td>
-
-                <td>
-
-                    ${booking.status === "Pending"
-                        ? `
-                                <button
-                                    class="confirm-btn"
-                                    data-id="${booking.id}">
-                                    Confirm
-                                </button>
-
-                                <button
-                                    class="reject-btn"
-                                    data-id="${booking.id}">
-                                    Reject
-                                </button>
-                            `
-                        : booking.status === "Confirmed"
-                            ? `
-                                    <button
-                                        class="complete-btn"
-                                        data-id="${booking.id}">
-                                        Complete
-                                    </button>
-                                `
-                            : "-"
-                    }
-
-                </td>
-
-            </tr>
-        `;
-            });
-        }
         function escapeHtml(value) {
 
             if (value === null || value === undefined) {
@@ -486,435 +271,1711 @@
                 return "-";
             }
 
-            const date = new Date(dateString + "T00:00:00");
+            const date = new Date(
+                dateString + "T00:00:00"
+            );
 
             if (isNaN(date.getTime())) {
                 return dateString;
             }
 
-            return date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric"
-            });
-        }
-        document
-            .getElementById("clientSearchInput")
-            .addEventListener("input", function () {
-
-                renderBookedSessions();
-
-            });
-        /*async function loadAccessRequests() {
-
-            const { data, error } = await supabaseClient
-                .from("clients")
-                .select("*")
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.error(error);
-                return;
-            }
-
-            const tbody = document.getElementById("clientTableBody");
-            tbody.innerHTML = "";
-
-            data.forEach(client => {
-
-                tbody.innerHTML += `
-            <tr>
-                <td>${client.full_name}</td>
-                <td>${client.email}</td>
-                <td>${client.event_type}</td>
-                <td>${client.expiry_date}</td>
-                <td>${client.payment_status}</td>
-                <td>${client.access_status}</td>
-            </tr>
-        `;
-
-            });
-
-        }*/
-        // UI Elements for table dynamic updates
-        const tableHeader = document.getElementById('clientTableHeader');
-        const tabs = document.querySelectorAll('.tab-btn');
-        const addNewClientBtn = document.getElementById('addNewClientBtn');
-
-        // Function to update the table headers and button visibility dynamically
-        function renderHeaders(activeTabId) {
-            if (activeTabId === 'tabBookedSessions') {
-                loadBookedSessions();
-                tableHeader.innerHTML = `
-                    <tr>
-                       <th>Full Name</th>
-                        <th>Contact Number</th>
-                        <th>Email Address</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Session Type</th>
-                        <th>Status</th>
-                        <th>Note</th>
-                        <th>Action</th>
-                    </tr>
-                `;
-                // Hide "Add New Client" button
-                addNewClientBtn.style.display = 'none';
-            } else {
-                tableHeader.innerHTML = `
-        <tr>
-            <th>Clients</th>
-            <th>Email Address</th>
-            <th>Event Type</th>
-            <th>Expiry Date</th>
-            <th>Payment Status</th>
-            <th>Access Status</th>
-        </tr>
-    `;
-
-                // Empty table
-                document.getElementById("clientTableBody").innerHTML = "";
-
-                addNewClientBtn.style.display = "flex";
-            }
-        }
-
-        tabs.forEach(tab => {
-            tab.addEventListener("click", () => {
-
-                tabs.forEach(t => t.classList.remove("active"));
-                tab.classList.add("active");
-
-                renderHeaders(tab.id);
-
-                if (tab.id === "tabBookedSessions") {
-                    loadBookedSessions();
-                }
-            });
-
-        }); window.addEventListener("load", async () => {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!session) {
-                    window.location.href = "admin_login.html";
-                    return;
-                }
-                const user = session.user;
-                let { data: profile } = await supabaseClient
-                    .from("staff_profiles")
-                    .select("*")
-                    .eq("id", user.id)
-                    .single();
-                console.log("Logged in user:", session.user.id);
-                console.log("Logged in email:", session.user.email);
-                if (profile) {
-                    document.getElementById("userName").textContent = profile.full_name;
-                    if (profile.avatar_url) {
-                        document.getElementById("userAvatar").src = profile.avatar_url;
-
-                    }
-                    loadAdminNotifications();
-                    renderHeaders("tabBookedSessions");
-                    loadBookedSessions();
-
-                    // Empty the table on initial load
-                    document.getElementById("clientTableBody").innerHTML = "";
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        });
-        const notificationBtn = document.getElementById("notificationBtn");
-
-        notificationBtn.addEventListener("click", async () => {
-
-            const dropdown = document.getElementById("notificationDropdown");
-            const opening = dropdown.style.display !== "block";
-            dropdown.style.display = opening ? "block" : "none";
-
-            if (opening) {
-                const { error } = await supabaseClient
-                    .from("notifications")
-                    .update({ is_read: true })
-                    .eq("recipient", "admin")
-                    .eq("is_read", true);
-
-                if (error) {
-                    console.error("Update notification error:", error);
-                    return;
-
-                }
-
-                await loadAdminNotifications();
-            }
-        });
-        document.addEventListener("click", (e) => {
-
-            const dropdown = document.getElementById("notificationDropdown");
-
-            if (
-                !notificationBtn.contains(e.target) &&
-                !dropdown.contains(e.target)
-            ) {
-                dropdown.style.display = "none";
-            }
-
-        });
-
-        supabaseClient
-            .channel("admin_notifications")
-            .on(
-                "postgres_changes",
+            return date.toLocaleDateString(
+                "en-US",
                 {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "notifications"
-                },
-                (payload) => {
-
-                    if (payload.new.recipient === "admin") {
-                        loadArchivedBookings();
-                        loadAdminNotifications();
-                    }
-
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
                 }
-            )
-            .subscribe();
-        supabaseClient
-            .channel("admin_bookings")
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "bookings"
-                },
-                (payload) => {
-
-                    console.log("New Booking:", payload.new);
-
-                    const bookedTab =
-                        document.getElementById("tabBookedSessions");
-
-                    if (bookedTab.classList.contains("active")) {
-                        loadBookedSessions();
-                    }
-
-                }
-            )
-            .subscribe();
-
-        document.getElementById("logoutBtn").addEventListener("click", async (e) => {
-            e.preventDefault();
-            await supabaseClient.auth.signOut();
-            window.location.href = "admin_login.html";
-        });
-
-        const filterBtn = document.getElementById('filterBtn');
-        const filterDropdown = document.getElementById('filterDropdown');
-
-        filterBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            filterDropdown.classList.toggle('show');
-        });
-
-        filterDropdown.querySelectorAll('.dropdown-scroll-area a, .clear-filter').forEach(option => {
-            option.addEventListener('click', (e) => {
-                e.preventDefault();
-                const selectedMonth = option.getAttribute('data-filter');
-                console.log("Filtering database array context month selection value:", selectedMonth);
-                filterDropdown.classList.remove('show');
-            });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!filterDropdown.contains(e.target) && e.target !== filterBtn) {
-                filterDropdown.classList.remove('show');
-            }
-        });
-
-        const addClientBtn = document.querySelector('.add-new-client-btn');
-        const clientModal = document.getElementById('addClientModal');
-        const newClientForm = document.getElementById('newClientForm');
-
-        addClientBtn.addEventListener('click', () => {
-            clientModal.classList.add('show');
-        });
-
-        clientModal.addEventListener('click', (e) => {
-            if (e.target === clientModal) {
-                clientModal.classList.remove('show');
-                newClientForm.reset();
-            }
-        });
-
-        newClientForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const clientPayload = {
-                full_name: document.getElementById('clientName').value,
-                email: document.getElementById('clientEmail').value,
-                event_type: document.getElementById('eventType').value,
-                expiry_date: document.getElementById('expiryDate').value,
-                payment_status: document.getElementById('paymentStatus').value,
-                access_status: document.getElementById('accessStatus').value
-            };
-            const { error } = await supabaseClient
-                .from("clients")
-                .insert([clientPayload]);
-
-            if (error) {
-
-                console.error(error);
-                alert(error.message);
-                return;
-
-            }
-
-            showToast(
-                "Client Added",
-                "Client has been added successfully."
             );
+        }
 
-            clientModal.classList.remove("show");
-            newClientForm.reset();
 
-            loadAccessRequests();
-        });
+        /* =========================================================
+           TOAST
+        ========================================================= */
+
         function showToast(title, message) {
 
-            document.getElementById("toastTitle").textContent = title;
-            document.getElementById("toastMessage").textContent = message;
+            const titleElement =
+                document.getElementById("toastTitle");
 
-            const toast = document.getElementById("toast");
+            const messageElement =
+                document.getElementById("toastMessage");
 
-            toast.classList.add("show");
+            const toast =
+                document.getElementById("toast");
 
-            setTimeout(() => {
-                toast.classList.remove("show");
-            }, 4000);
+            if (titleElement) {
+                titleElement.textContent = title;
+            }
 
+            if (messageElement) {
+                messageElement.textContent = message;
+            }
+
+            if (toast) {
+
+                toast.classList.add("show");
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 4000);
+            }
         }
-        document.addEventListener("click", async (e) => {
 
-            const btn = e.target.closest(".confirm-btn");
-            if (!btn) return;
 
-            const bookingId = btn.dataset.id;
+        /* =========================================================
+           NOTIFICATIONS
+        ========================================================= */
 
-            const { data, error } = await supabaseClient
-                .from("bookings")
-                .update({
-                    status: "Confirmed"
-                })
-                .eq("id", bookingId)
-                .select();
+        async function loadAdminNotifications() {
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("notifications")
+                .select("*")
+                .eq("recipient", "admin")
+                .order("created_at", {
+                    ascending: false
+                });
 
             if (error) {
-                console.error(error);
-                alert(error.message);
+
+                console.error(
+                    "Notification loading error:",
+                    error
+                );
+
                 return;
             }
 
-            const { data: notifyData, error: notificationError } =
-                await supabaseClient
-                    .from("notifications")
-                    .insert([
-                        {
-                            customer_id: data[0].customer_id,
-                            booking_id: data[0].id,
-                            recipient: "customer",
-                            title: "Booking Confirmation",
+            const list =
+                document.getElementById(
+                    "notificationList"
+                );
 
-                            message: `Your booking request for ${data[0].session_type} on ${new Date(data[0].booking_date).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric"
-                            })} at ${data[0].booking_time} has been confirmed.
+            if (!list) {
+                return;
+            }
 
-                                We look forward to welcoming you to your scheduled session. 
-                                If you need to make any changes or have questions before your appointment, please don't hesitate to contact us.
-                                See you soon, and thank you for choosing our Captured studio!`,
-                            is_read: false
+            list.innerHTML = "";
+
+            let unread = 0;
+
+            (data || []).forEach(notification => {
+
+                if (!notification.is_read) {
+                    unread++;
+                }
+
+                list.innerHTML += `
+                <div class="notification-item ${notification.is_read
+                        ? ""
+                        : "unread"
+                    }">
+
+                    <div class="notification-icon">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+
+                    <div class="notification-content">
+
+                        <h4>
+                            ${escapeHtml(
+                        notification.title
+                    )}
+                        </h4>
+
+                        <p>
+                            ${escapeHtml(
+                        notification.message
+                    )}
+                        </p>
+
+                        <small>
+                            ${new Date(
+                        notification.created_at
+                    ).toLocaleString()}
+                        </small>
+
+                    </div>
+
+                </div>
+            `;
+            });
+
+            const badge =
+                document.getElementById(
+                    "notificationCount"
+                );
+
+            if (!badge) {
+                return;
+            }
+
+            if (unread > 0) {
+
+                badge.textContent = unread;
+
+                badge.style.display =
+                    "inline-flex";
+
+            } else {
+
+                badge.style.display =
+                    "none";
+            }
+        }
+
+
+        /* =========================================================
+           LOAD BOOKINGS
+        ========================================================= */
+
+        async function loadBookedSessions() {
+
+            console.log(
+                "Loading bookings..."
+            );
+
+            const {
+                data,
+                error,
+                count
+            } = await supabaseClient
+                .from("bookings")
+                .select("*", { count: "exact" })
+                .eq("is_archived", false)
+                .order("created_at", {
+                    ascending: false
+                });
+
+            if (error) {
+
+                console.error(
+                    "Error loading bookings:",
+                    error
+                );
+
+                return;
+            }
+
+            console.log(
+                "Returned rows:",
+                data?.length || 0
+            );
+
+            console.log(
+                "Total rows:",
+                count
+            );
+
+            allBookedSessions =
+                data || [];
+
+            renderBookedSessions();
+        }
+
+
+        /* =========================================================
+           RENDER BOOKINGS
+        ========================================================= */
+
+        function renderBookedSessions() {
+
+            const tbody =
+                document.getElementById(
+                    "clientTableBody"
+                );
+
+            if (!tbody) {
+                return;
+            }
+
+            tbody.innerHTML = "";
+
+            const searchInput =
+                document.getElementById(
+                    "clientSearchInput"
+                );
+
+            const searchTerm =
+                searchInput
+                    ? searchInput.value
+                        .trim()
+                        .toLowerCase()
+                    : "";
+
+
+            const filteredBookings =
+                allBookedSessions.filter(
+                    booking => {
+
+                        /* SEARCH */
+
+                        if (searchTerm) {
+
+                            const searchableText = [
+
+                                booking.full_name,
+
+                                booking.contact_number,
+
+                                booking.email,
+
+                                booking.booking_date,
+
+                                booking.booking_time,
+
+                                booking.session_type,
+
+                                booking.status,
+
+                                booking.notes
+
+                            ]
+                                .filter(
+                                    value =>
+                                        value !== null &&
+                                        value !== undefined
+                                )
+                                .join(" ")
+                                .toLowerCase();
+
+
+                            if (
+                                !searchableText.includes(
+                                    searchTerm
+                                )
+                            ) {
+                                return false;
+                            }
                         }
-                    ])
-                    .select();
-
-            console.log("Notification:", notifyData);
-            console.log("Notification Error:", notificationError);
-
-            showToast(
-                "Booking Confirmed",
-                "The customer's booking has been confirmed successfully."
-            );
-            loadBookedSessions();
-            loadBookingCalendar();
-
-        });
 
 
-        document.addEventListener("click", async (e) => {
+                        /* MONTH FILTER */
 
-            const btn = e.target.closest(".reject-btn");
-            if (!btn) return;
+                        if (
+                            selectedMonth !== "all" &&
+                            booking.booking_date
+                        ) {
 
-            const bookingId = btn.dataset.id;
+                            const bookingDate =
+                                new Date(
+                                    booking.booking_date +
+                                    "T00:00:00"
+                                );
 
-            const rejected = confirm("Are you sure you want to reject this booking?");
-            if (!rejected) return;
+                            const bookingMonth =
+                                bookingDate.getMonth() +
+                                1;
 
-            const { error } = await supabaseClient
-                .from("bookings")
-                .update({
-                    status: "Rejected"
-                })
-                .eq("id", bookingId);
+                            if (
+                                bookingMonth !==
+                                Number(selectedMonth)
+                            ) {
+                                return false;
+                            }
+                        }
 
-            if (error) {
-                console.error(error);
-                alert(error.message);
+
+                        return true;
+                    }
+                );
+
+
+            /* NO RESULTS */
+
+            if (
+                filteredBookings.length === 0
+            ) {
+
+                tbody.innerHTML = `
+                <tr>
+
+                    <td
+                        colspan="9"
+                        style="
+                            text-align:center;
+                            padding:30px;
+                            color:#888;
+                        "
+                    >
+                        No clients found.
+                    </td>
+
+                </tr>
+            `;
+
                 return;
             }
 
-            showToast(
-                "Booking Rejected",
-                "The booking has been rejected."
+
+            /* DISPLAY */
+
+            filteredBookings.forEach(
+                booking => {
+
+                    const status =
+                        String(
+                            booking.status || ""
+                        ).toLowerCase();
+
+
+                    let actionHTML = "-";
+
+
+                    if (
+                        status === "pending"
+                    ) {
+
+                        actionHTML = `
+                        <button
+                            class="confirm-btn"
+                            data-id="${escapeHtml(
+                            booking.id
+                        )}"
+                        >
+                            Confirm
+                        </button>
+
+                        <button
+                            class="reject-btn"
+                            data-id="${escapeHtml(
+                            booking.id
+                        )}"
+                        >
+                            Reject
+                        </button>
+                    `;
+
+                    } else if (
+                        status === "confirmed"
+                    ) {
+
+                        actionHTML = `
+                        <button
+                            class="complete-btn"
+                            data-id="${escapeHtml(
+                            booking.id
+                        )}"
+                        >
+                            Complete
+                        </button>
+                    `;
+                    }
+
+
+                    tbody.innerHTML += `
+
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                        booking.full_name ||
+                        "-"
+                    )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                        booking.contact_number ||
+                        "-"
+                    )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                        booking.email ||
+                        "-"
+                    )}
+                        </td>
+
+                        <td>
+                            ${formatBookingDate(
+                        booking.booking_date
+                    )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                        booking.booking_time ||
+                        "-"
+                    )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                        booking.session_type ||
+                        "-"
+                    )}
+                        </td>
+
+                        <td>
+
+                            <span
+                                class="
+                                    status-badge
+                                    ${status}
+                                "
+                            >
+                                ${escapeHtml(
+                        booking.status ||
+                        "-"
+                    )}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                        booking.notes ||
+                        "-"
+                    )}
+                        </td>
+
+                        <td>
+                            ${actionHTML}
+                        </td>
+
+                    </tr>
+
+                `;
+                }
             );
-            loadBookedSessions();
+        }
 
-        }); document.addEventListener("click", async (e) => {
 
-            const btn = e.target.closest(".complete-btn");
-            if (!btn) return;
+        /* =========================================================
+           CREATE CLIENT REPOSITORY
+           
+           This is the important new function.
+    
+           When a booking becomes Confirmed:
+    
+           bookings
+              ↓
+           repository_client_links
+              ↓
+           unique access_token
+              ↓
+           client-gallery.html?token=...
+        ========================================================= */
 
-            const bookingId = btn.dataset.id;
+        async function createClientRepository(
+            booking
+        ) {
 
-            const { error } = await supabaseClient
-                .from("bookings")
-                .update({
-                    status: "Completed"
-                })
-                .eq("id", bookingId);
-            await supabaseClient
-                .from("bookings")
-                .update({
-                    is_archived: true,
-                    archived_at: new Date().toISOString()
-                })
-                .eq("id", bookingId);
+            console.log(
+                "Creating repository for:",
+                booking.full_name
+            );
 
-            if (error) {
-                alert(error.message);
-                return;
+
+            /* -----------------------------------------------------
+               CHECK IF REPOSITORY ALREADY EXISTS
+            ----------------------------------------------------- */
+
+            const {
+                data: existingRepository,
+                error: existingError
+            } = await supabaseClient
+                .from(
+                    "repository_client_links"
+                )
+                .select("*")
+                .eq(
+                    "booking_id",
+                    booking.id
+                )
+                .maybeSingle();
+
+
+            if (existingError) {
+
+                console.error(
+                    "Repository lookup error:",
+                    existingError
+                );
+
+                throw existingError;
             }
 
-            showToast(
-                "Booking Completed",
-                "Booking has been marked as completed."
+
+            /* -----------------------------------------------------
+               IF ALREADY EXISTS, DON'T CREATE ANOTHER ONE
+            ----------------------------------------------------- */
+
+            if (existingRepository) {
+
+                console.log(
+                    "Repository already exists."
+                );
+
+                return existingRepository;
+            }
+
+
+            /* -----------------------------------------------------
+               GET ADMIN USER
+            ----------------------------------------------------- */
+
+            const {
+                data: {
+                    user
+                }
+            } =
+                await supabaseClient
+                    .auth
+                    .getUser();
+
+
+            /* -----------------------------------------------------
+               GENERATE UNIQUE TOKEN
+            ----------------------------------------------------- */
+
+            const uniqueToken =
+                crypto.randomUUID();
+
+
+            /* -----------------------------------------------------
+               INSERT REPOSITORY
+            ----------------------------------------------------- */
+
+            const {
+                data: repository,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        "repository_client_links"
+                    )
+                    .insert({
+
+                        booking_id:
+                            booking.id,
+
+                        access_token:
+                            uniqueToken,
+
+                        created_by:
+                            user?.id || null
+
+                    })
+                    .select()
+                    .single();
+
+
+            if (error) {
+
+                console.error(
+                    "Repository creation error:",
+                    error
+                );
+
+                throw error;
+            }
+
+
+            console.log(
+                "Repository created:",
+                repository
             );
 
-            loadBookedSessions();
 
-        });
+            return repository;
+        }
+
+
+        /* =========================================================
+           GENERATE CLIENT LINK
+        ========================================================= */
+
+        function getClientRepositoryLink(
+            repository
+        ) {
+
+            return (
+                window.location.origin +
+                "/client-gallery.html?token=" +
+                encodeURIComponent(
+                    repository.access_token
+                )
+            );
+        }
+
+
+        /* =========================================================
+           CONFIRM BOOKING
+           
+           THIS IS WHERE THE REPOSITORY IS CREATED.
+        ========================================================= */
+
+        document.addEventListener(
+            "click",
+            async function (e) {
+
+                const btn =
+                    e.target.closest(
+                        ".confirm-btn"
+                    );
+
+                if (!btn) {
+                    return;
+                }
+
+
+                const bookingId =
+                    btn.dataset.id;
+
+
+                /* Prevent double-click */
+
+                btn.disabled = true;
+
+                btn.textContent =
+                    "Confirming...";
+
+
+                try {
+
+                    /* ---------------------------------------------
+                       UPDATE BOOKING STATUS
+                    --------------------------------------------- */
+
+                    const {
+                        data: booking,
+                        error
+                    } =
+                        await supabaseClient
+                            .from("bookings")
+                            .update({
+
+                                status:
+                                    "Confirmed"
+
+                            })
+                            .eq(
+                                "id",
+                                bookingId
+                            )
+                            .select()
+                            .single();
+
+
+                    if (error) {
+                        throw error;
+                    }
+
+
+                    console.log(
+                        "Booking confirmed:",
+                        booking
+                    );
+
+
+                    /* ---------------------------------------------
+                       CREATE REPOSITORY
+                    --------------------------------------------- */
+
+                    const repository =
+                        await createClientRepository(
+                            booking
+                        );
+
+
+                    /* ---------------------------------------------
+                       GENERATE LINK
+                    --------------------------------------------- */
+
+                    const clientLink =
+                        getClientRepositoryLink(
+                            repository
+                        );
+
+
+                    console.log(
+                        "Client repository link:",
+                        clientLink
+                    );
+
+
+                    /* ---------------------------------------------
+                       CREATE CUSTOMER NOTIFICATION
+                    --------------------------------------------- */
+
+                    if (
+                        booking.customer_id
+                    ) {
+
+                        const {
+                            error:
+                            notificationError
+                        } =
+                            await supabaseClient
+                                .from(
+                                    "notifications"
+                                )
+                                .insert([
+
+                                    {
+
+                                        customer_id:
+                                            booking.customer_id,
+
+                                        booking_id:
+                                            booking.id,
+
+                                        recipient:
+                                            "customer",
+
+                                        title:
+                                            "Booking Confirmation",
+
+                                        message:
+                                            `Your booking request for ${booking.session_type} on ` +
+                                            `${new Date(
+                                                booking.booking_date
+                                            ).toLocaleDateString(
+                                                "en-US",
+                                                {
+                                                    year:
+                                                        "numeric",
+
+                                                    month:
+                                                        "long",
+
+                                                    day:
+                                                        "numeric"
+                                                }
+                                            )} at ${booking.booking_time} has been confirmed.`,
+
+                                        is_read:
+                                            false
+
+                                    }
+
+                                ]);
+
+
+                        if (
+                            notificationError
+                        ) {
+
+                            console.error(
+                                "Notification error:",
+                                notificationError
+                            );
+                        }
+                    }
+
+
+                    /* ---------------------------------------------
+                       SUCCESS
+                    --------------------------------------------- */
+
+                    showToast(
+                        "Booking Confirmed",
+                        `${booking.full_name}'s photo repository has been created.`
+                    );
+
+
+                    /* ---------------------------------------------
+                       REFRESH TABLE
+                    --------------------------------------------- */
+
+                    await loadBookedSessions();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "CONFIRM PROCESS ERROR:",
+                        error
+                    );
+
+
+                    alert(
+                        "The booking could not be fully confirmed.\n\n" +
+                        error.message
+                    );
+
+
+                    /*
+                     * If repository creation failed AFTER the
+                     * booking was already confirmed, reload the
+                     * table so the UI reflects the database.
+                     */
+
+                    await loadBookedSessions();
+
+
+                } finally {
+
+                    btn.disabled = false;
+
+                    btn.textContent =
+                        "Confirm";
+                }
+            }
+        );
+
+
+        /* =========================================================
+           REJECT BOOKING
+        ========================================================= */
+
+        document.addEventListener(
+            "click",
+            async function (e) {
+
+                const btn =
+                    e.target.closest(
+                        ".reject-btn"
+                    );
+
+                if (!btn) {
+                    return;
+                }
+
+
+                const bookingId =
+                    btn.dataset.id;
+
+
+                const rejected =
+                    confirm(
+                        "Are you sure you want to reject this booking?"
+                    );
+
+
+                if (!rejected) {
+                    return;
+                }
+
+
+                btn.disabled = true;
+
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from("bookings")
+                        .update({
+
+                            status:
+                                "Rejected"
+
+                        })
+                        .eq(
+                            "id",
+                            bookingId
+                        );
+
+
+                if (error) {
+
+                    console.error(
+                        error
+                    );
+
+                    alert(
+                        error.message
+                    );
+
+                    btn.disabled = false;
+
+                    return;
+                }
+
+
+                showToast(
+                    "Booking Rejected",
+                    "The booking has been rejected."
+                );
+
+
+                await loadBookedSessions();
+            }
+        );
+
+        /* =========================================================
+           COMPLETE BOOKING
+        ========================================================= */
+        /* =========================================================
+           COMPLETE BOOKING
+        ========================================================= */
+
+        document.addEventListener(
+            "click",
+            async function (e) {
+
+                const btn =
+                    e.target.closest(".complete-btn");
+
+                if (!btn) {
+                    return;
+                }
+
+                const bookingId =
+                    btn.dataset.id;
+
+                const confirmed =
+                    confirm(
+                        "Mark this booking as completed?"
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = "Completing...";
+
+                try {
+
+                    /* ---------------------------------------------
+                       GET BOOKING FIRST
+                    --------------------------------------------- */
+
+                    const {
+                        data: booking,
+                        error: bookingError
+                    } =
+                        await supabaseClient
+                            .from("bookings")
+                            .select("*")
+                            .eq("id", bookingId)
+                            .single();
+
+                    if (bookingError) {
+                        throw bookingError;
+                    }
+
+
+                    /* ---------------------------------------------
+                       CHANGE STATUS TO COMPLETED
+                    --------------------------------------------- */
+
+                    const {
+                        error: statusError
+                    } =
+                        await supabaseClient
+                            .from("bookings")
+                            .update({
+                                status: "Completed"
+                            })
+                            .eq("id", bookingId);
+
+                    if (statusError) {
+                        throw statusError;
+                    }
+
+
+                    /* ---------------------------------------------
+                       CREATE CUSTOMER REPOSITORY
+                       
+                       This makes sure the client has a folder.
+                    --------------------------------------------- */
+
+                    const repository =
+                        await createClientRepository(
+                            booking
+                        );
+
+
+                    console.log(
+                        "Customer repository ready:",
+                        repository
+                    );
+
+
+                    /* ---------------------------------------------
+                       DO NOT ARCHIVE HERE
+                       
+                       Customer Folders needs to see:
+                       
+                       status = Completed
+                       is_archived = false
+                    --------------------------------------------- */
+
+
+                    /* ---------------------------------------------
+                       SUCCESS
+                    --------------------------------------------- */
+
+                    showToast(
+                        "Booking Completed",
+                        `${booking.full_name}'s customer folder is now available.`
+                    );
+
+
+                    /* ---------------------------------------------
+                       REFRESH CLIENT TABLE
+                    --------------------------------------------- */
+
+                    await loadBookedSessions();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "COMPLETE BOOKING ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "The booking could not be completed.\n\n" +
+                        error.message
+                    );
+
+                    await loadBookedSessions();
+
+
+                } finally {
+
+                    btn.disabled = false;
+                    btn.textContent = "Complete";
+
+                }
+
+            }
+        );
+        /* =========================================================
+           SEARCH
+        ========================================================= */
+
+        const searchInput =
+            document.getElementById(
+                "clientSearchInput"
+            );
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                function () {
+
+                    renderBookedSessions();
+
+                }
+            );
+        }
+
+
+        /* =========================================================
+           TABS
+        ========================================================= */
+
+        const tableHeader =
+            document.getElementById(
+                "clientTableHeader"
+            );
+
+        const tabs =
+            document.querySelectorAll(
+                ".tab-btn"
+            );
+
+        const addNewClientBtn =
+            document.getElementById(
+                "addNewClientBtn"
+            );
+
+
+        function renderHeaders(
+            activeTabId
+        ) {
+
+            if (
+                activeTabId ===
+                "tabBookedSessions"
+            ) {
+
+                tableHeader.innerHTML = `
+                <tr>
+
+                    <th>Full Name</th>
+
+                    <th>Contact Number</th>
+
+                    <th>Email Address</th>
+
+                    <th>Date</th>
+
+                    <th>Time</th>
+
+                    <th>Session Type</th>
+
+                    <th>Status</th>
+
+                    <th>Note</th>
+
+                    <th>Action</th>
+
+                </tr>
+            `;
+
+
+                if (
+                    addNewClientBtn
+                ) {
+
+                    addNewClientBtn.style.display =
+                        "none";
+                }
+
+
+                loadBookedSessions();
+
+
+            } else {
+
+                tableHeader.innerHTML = `
+                <tr>
+
+                    <th>Clients</th>
+
+                    <th>Email Address</th>
+
+                    <th>Event Type</th>
+
+                    <th>Expiry Date</th>
+
+                    <th>Payment Status</th>
+
+                    <th>Access Status</th>
+
+                </tr>
+            `;
+
+
+                document
+                    .getElementById(
+                        "clientTableBody"
+                    )
+                    .innerHTML = "";
+
+
+                if (
+                    addNewClientBtn
+                ) {
+
+                    addNewClientBtn.style.display =
+                        "flex";
+                }
+            }
+        }
+
+
+        tabs.forEach(
+            tab => {
+
+                tab.addEventListener(
+                    "click",
+                    () => {
+
+                        tabs.forEach(
+                            t =>
+                                t.classList
+                                    .remove(
+                                        "active"
+                                    )
+                        );
+
+
+                        tab.classList.add(
+                            "active"
+                        );
+
+
+                        renderHeaders(
+                            tab.id
+                        );
+                    }
+                );
+            }
+        );
+
+
+        /* =========================================================
+           FILTER
+        ========================================================= */
+
+        const filterBtn =
+            document.getElementById(
+                "filterBtn"
+            );
+
+        const filterDropdown =
+            document.getElementById(
+                "filterDropdown"
+            );
+
+
+        if (
+            filterBtn &&
+            filterDropdown
+        ) {
+
+            filterBtn.addEventListener(
+                "click",
+                function (e) {
+
+                    e.stopPropagation();
+
+                    filterDropdown
+                        .classList
+                        .toggle(
+                            "show"
+                        );
+                }
+            );
+
+
+            filterDropdown
+                .querySelectorAll(
+                    ".dropdown-scroll-area a, .clear-filter"
+                )
+                .forEach(
+                    option => {
+
+                        option.addEventListener(
+                            "click",
+                            function (e) {
+
+                                e.preventDefault();
+
+
+                                selectedMonth =
+                                    option.getAttribute(
+                                        "data-filter"
+                                    );
+
+
+                                console.log(
+                                    "Selected month:",
+                                    selectedMonth
+                                );
+
+
+                                filterDropdown
+                                    .classList
+                                    .remove(
+                                        "show"
+                                    );
+
+
+                                renderBookedSessions();
+                            }
+                        );
+                    }
+                );
+
+
+            document.addEventListener(
+                "click",
+                function (e) {
+
+                    if (
+                        !filterDropdown
+                            .contains(
+                                e.target
+                            ) &&
+                        e.target !== filterBtn
+                    ) {
+
+                        filterDropdown
+                            .classList
+                            .remove(
+                                "show"
+                            );
+                    }
+                }
+            );
+        }
+
+
+        /* =========================================================
+           NOTIFICATION BUTTON
+        ========================================================= */
+
+        const notificationBtn =
+            document.getElementById(
+                "notificationBtn"
+            );
+
+
+        if (notificationBtn) {
+
+            notificationBtn.addEventListener(
+                "click",
+                async function () {
+
+                    const dropdown =
+                        document.getElementById(
+                            "notificationDropdown"
+                        );
+
+
+                    const opening =
+                        dropdown.style.display !==
+                        "block";
+
+
+                    dropdown.style.display =
+                        opening
+                            ? "block"
+                            : "none";
+
+
+                    if (opening) {
+
+                        /*
+                         * Mark unread admin notifications
+                         * as read.
+                         */
+
+                        const {
+                            error
+                        } =
+                            await supabaseClient
+                                .from(
+                                    "notifications"
+                                )
+                                .update({
+                                    is_read:
+                                        true
+                                })
+                                .eq(
+                                    "recipient",
+                                    "admin"
+                                )
+                                .eq(
+                                    "is_read",
+                                    false
+                                );
+
+
+                        if (error) {
+
+                            console.error(
+                                "Notification update error:",
+                                error
+                            );
+
+                            return;
+                        }
+
+
+                        await loadAdminNotifications();
+                    }
+                }
+            );
+
+
+            document.addEventListener(
+                "click",
+                function (e) {
+
+                    const dropdown =
+                        document.getElementById(
+                            "notificationDropdown"
+                        );
+
+
+                    if (
+                        !notificationBtn
+                            .contains(
+                                e.target
+                            ) &&
+                        !dropdown
+                            .contains(
+                                e.target
+                            )
+                    ) {
+
+                        dropdown.style.display =
+                            "none";
+                    }
+                }
+            );
+        }
+
+
+        /* =========================================================
+           REALTIME NOTIFICATIONS
+        ========================================================= */
+
+        supabaseClient
+            .channel(
+                "admin_notifications"
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event:
+                        "INSERT",
+
+                    schema:
+                        "public",
+
+                    table:
+                        "notifications"
+                },
+                payload => {
+
+                    if (
+                        payload.new
+                            .recipient ===
+                        "admin"
+                    ) {
+
+                        loadAdminNotifications();
+                    }
+                }
+            )
+            .subscribe();
+
+
+        /* =========================================================
+           REALTIME BOOKINGS
+        ========================================================= */
+
+        supabaseClient
+            .channel(
+                "admin_bookings"
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event:
+                        "INSERT",
+
+                    schema:
+                        "public",
+
+                    table:
+                        "bookings"
+                },
+                payload => {
+
+                    console.log(
+                        "New booking:",
+                        payload.new
+                    );
+
+
+                    const bookedTab =
+                        document.getElementById(
+                            "tabBookedSessions"
+                        );
+
+
+                    if (
+                        bookedTab &&
+                        bookedTab.classList
+                            .contains(
+                                "active"
+                            )
+                    ) {
+
+                        loadBookedSessions();
+                    }
+                }
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event:
+                        "UPDATE",
+
+                    schema:
+                        "public",
+
+                    table:
+                        "bookings"
+                },
+                payload => {
+
+                    console.log(
+                        "Booking updated:",
+                        payload.new
+                    );
+
+
+                    loadBookedSessions();
+                }
+            )
+            .subscribe();
+
+
+        /* =========================================================
+           LOGOUT
+        ========================================================= */
+
+        const logoutBtn =
+            document.getElementById(
+                "logoutBtn"
+            );
+
+
+        if (logoutBtn) {
+
+            logoutBtn.addEventListener(
+                "click",
+                async function (e) {
+
+                    e.preventDefault();
+
+
+                    await supabaseClient
+                        .auth
+                        .signOut();
+
+
+                    window.location.href =
+                        "admin_login.html";
+                }
+            );
+        }
+
+
+        /* =========================================================
+           INITIAL LOAD
+        ========================================================= */
+
+        window.addEventListener(
+            "load",
+            async function () {
+
+                try {
+
+                    const {
+                        data: {
+                            session
+                        }
+                    } =
+                        await supabaseClient
+                            .auth
+                            .getSession();
+
+
+                    if (!session) {
+
+                        window.location.href =
+                            "admin_login.html";
+
+                        return;
+                    }
+
+
+                    const user =
+                        session.user;
+
+
+                    console.log(
+                        "Logged in user:",
+                        user.id
+                    );
+
+                    console.log(
+                        "Logged in email:",
+                        user.email
+                    );
+
+
+                    /* ---------------------------------------------
+                       LOAD ADMIN PROFILE
+                    --------------------------------------------- */
+
+                    const {
+                        data: profile,
+                        error:
+                        profileError
+                    } =
+                        await supabaseClient
+                            .from(
+                                "staff_profiles"
+                            )
+                            .select("*")
+                            .eq(
+                                "id",
+                                user.id
+                            )
+                            .single();
+
+
+                    if (
+                        profileError
+                    ) {
+
+                        console.error(
+                            "Profile error:",
+                            profileError
+                        );
+                    }
+
+
+                    if (profile) {
+
+                        const userName =
+                            document.getElementById(
+                                "userName"
+                            );
+
+
+                        const userAvatar =
+                            document.getElementById(
+                                "userAvatar"
+                            );
+
+
+                        if (userName) {
+
+                            userName.textContent =
+                                profile.full_name ||
+                                user.email;
+                        }
+
+
+                        if (
+                            userAvatar &&
+                            profile.avatar_url
+                        ) {
+
+                            userAvatar.src =
+                                profile.avatar_url;
+                        }
+                    }
+
+
+                    /* ---------------------------------------------
+                       LOAD PAGE DATA
+                    --------------------------------------------- */
+
+                    await loadAdminNotifications();
+
+                    renderHeaders(
+                        "tabBookedSessions"
+                    );
+
+                    await loadBookedSessions();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "INITIALIZATION ERROR:",
+                        error
+                    );
+                }
+            }
+        );
 
     </script>
 </body>

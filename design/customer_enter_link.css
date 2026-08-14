@@ -98,6 +98,36 @@ body {
     font-size: 14px;
     font-weight: 500;
 }
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-profile-image {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.user-profile-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.user-profile-info span {
+    color: #242020;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.user-profile-info small {
+    color: rgba(19, 17, 17, 0.8);
+    font-size: 11px;
+}
 
 .logo-img {
     height: 38px;

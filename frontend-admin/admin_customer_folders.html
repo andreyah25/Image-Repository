@@ -4,182 +4,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Folders</title>
+
+    <title>Customer Folders | Captured Studio</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="/design/admin_dashboard.css">
     <link rel="stylesheet" href="/design/admin_client.css">
     <link rel="stylesheet" href="/design/admin_repository.css">
+
+    <link rel="stylesheet" href="/design/admin_customer_folders.css">
 </head>
 
 <body>
 
     <header class="top-navbar">
+
         <div class="logo-section">
+
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
+
             <span>Captured Studio</span>
+
         </div>
 
+
         <div class="navbar-right">
-            <!-- Clickable notification bell icon -->
+
             <button type="button" class="notification-btn" id="notificationTrigger" aria-label="Notifications">
                 <i class="fa-solid fa-bell"></i>
             </button>
+
+
             <div class="user-profile">
+
                 <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
-                <span id="userName">Loading...</span>
+
+                <span id="userName">
+                    Loading...
+                </span>
+
             </div>
+
         </div>
+
     </header>
+
+
 
     <div class="dashboard-wrapper">
 
         <aside class="sidebar">
+
             <nav>
+
                 <a href="admin_dashboard.html">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
+
+
                 <a href="admin_client.html">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
+
+
                 <a href="admin_repository.html" class="active">
                     <i class="fa-solid fa-book"></i>
                     Repository
                 </a>
+
+
                 <a href="admin_payment.html">
                     <i class="fa-solid fa-credit-card"></i>
                     Payments
                 </a>
-                <!-- Archives Menu Item positioned correctly below Payments -->
+
+
                 <a href="admin_archives.html">
                     <i class="fa-solid fa-box-archive"></i>
                     Archives
                 </a>
+
+
                 <a href="admin_profile.html">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
+
+
                 <a href="admin_settings.html">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
+
             </nav>
+
 
             <a href="admin_login.html" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
-                <span>Log out</span>
+
+                <span>
+                    Log out
+                </span>
+
             </a>
+
         </aside>
+
 
         <main class="content">
 
-            <div class="repo-top-header-block">
-                <div class="page-header">
-                    <h1 id="eventTitle">Customer Folders</h1>
+            <!-- =========================================
+         CUSTOMER FOLDERS VIEW
+    ========================================== -->
 
-                    <p>
-                        Select a customer folder to manage photos.
-                    </p>
+            <div id="foldersView">
+
+                <div class="repo-top-header-block">
+
+                    <div class="page-header">
+
+                        <h1>
+                            Customer Folders
+                        </h1>
+
+                        <p>
+                            Completed clients appear here.
+                            Open a customer folder to upload and manage photos.
+                        </p>
+
+                    </div>
+
                 </div>
 
-                <div class="filter-dropdown-wrapper">
-                    <button class="add-new-client-btn" id="addNewDropdownTrigger">
-                        <i class="fa-solid fa-plus"></i>
-                        Add New
-                    </button>
-                    <div class="add-new-dropdown-box" id="addNewDropdownMenu">
-                        <button id="uploadPhotosActionOption">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Upload Photos</span>
-                        </button>
-                        <button id="createFolderActionOption">
-                            <i class="fa-regular fa-folder"></i>
-                            <span>Create Customer Folder</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-            <div class="repo-sub-actions-container">
-                <div class="repo-filter-selects-group">
-                    <div class="repo-select-wrapper">
-                        <select>
-                            <option>All tags</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down select-arrow"></i>
-                    </div>
-                    <div class="repo-select-wrapper">
-                        <select>
-                            <option>All events</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down select-arrow"></i>
-                    </div>
-                    <div class="repo-select-wrapper">
-                        <select>
-                            <option>Sort by:</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down select-arrow"></i>
-                    </div>
-                </div>
+                <!-- SEARCH + ACTIONS -->
 
-                <div class="client-actions-row">
+                <div class="repo-actions-row">
+
                     <div class="table-search-box">
-                        <input type="text" id="repoFolderSearchInput" placeholder="Search repository...">
+
+                        <input type="text" id="repoFolderSearchInput" placeholder="Search customer..."
+                            autocomplete="off">
+
                         <i class="fa-solid fa-magnifying-glass"></i>
+
                     </div>
+
                 </div>
+
+
+                <!-- CUSTOMER FOLDERS -->
+
+                <div class="repo-view-container" id="customerFoldersContainer">
+
+                    <!-- JavaScript will insert folders here -->
+
+                </div>
+
             </div>
 
-            <div class="repo-view-container">
 
-                <div class="repo-folders-grid-panel" id="foldersView">
-                    <div class="empty-repo-message">Loading active directories...</div>
+
+            <!-- =========================================
+         CUSTOMER PHOTO VIEW
+    ========================================== -->
+
+            <div id="photosView" style="display:none;">
+
+                <div class="repo-top-header-block">
+
+                    <div class="page-header">
+
+                        <h1 id="selectedCustomerName">
+                            Customer Folder
+                        </h1>
+
+                        <p id="selectedCustomerDetails">
+                            Loading customer information...
+                        </p>
+
+                    </div>
+
+
+                    <div class="repository-actions">
+
+                        <button type="button" class="add-new-client-btn" id="uploadFolderPhotosBtn">
+
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                            Upload Photos
+
+                        </button>
+
+
+                        <button type="button" class="copy-client-link-btn" id="copyClientLinkBtn">
+
+                            <i class="fa-regular fa-copy"></i>
+
+                            Copy Client Link
+
+                        </button>
+
+
+                        <button type="button" class="back-to-folders-btn" id="backToFoldersBtn">
+
+                            <i class="fa-solid fa-arrow-left"></i>
+
+                            Back to Folders
+
+                        </button>
+
+                    </div>
+
                 </div>
 
-                <div class="repo-photos-grid-panel" id="photosView" style="display:none;">
-                    <div class="empty-repo-message">No photos yet.</div>
+
+
+                <!-- CLIENT LINK -->
+
+                <div class="client-link-section">
+
+                    <label>
+                        Client Gallery Link
+                    </label>
+
+                    <div class="client-link-row">
+
+                        <input type="text" id="clientLinkInput" readonly>
+
+                        <button type="button" id="copyClientLinkInputBtn">
+
+                            <i class="fa-regular fa-copy"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- EVENT TITLE -->
+
+                <div class="repository-heading">
+
+                    <h2 id="eventTitle">
+                        Customer Folder
+                    </h2>
+
+                    <p id="repositoryDescription">
+                        Manage photos for this customer.
+                    </p>
+
+                </div>
+
+
+
+                <!-- UPLOAD STATUS -->
+
+                <div id="uploadStatus" class="upload-status"></div>
+
+
+
+                <!-- PHOTO GRID -->
+
+                <div class="repo-view-container" id="customerFolder">
+
+                    <div id="photoGrid" class="customer-photo-grid">
+
+                        <div class="customer-folder-empty">
+
+                            <i class="fa-regular fa-images"></i>
+
+                            <div>
+                                No photos yet.
+                            </div>
+
+                            <small>
+                                Click "Upload Photos" to add photos.
+                            </small>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
+
+
+
+            <!-- =========================================
+         HIDDEN FILE UPLOADER
+    ========================================== -->
+
+            <input type="file" id="photoFilesUploader" multiple accept="image/*" style="display:none;">
 
         </main>
+
     </div>
-    <div class="modal-overlay" id="createFolderModal">
-        <div class="modal-card">
 
-            <div class="modal-header">
-                <i class="fa-solid fa-folder-plus"></i>
-                <h2>Create Folder</h2>
-            </div>
 
-            <form id="newCustomerFolderForm" class="modal-form">
 
-                <div class="form-field">
+    <!-- =========================================
+     FILE UPLOADER
+========================================== -->
 
-                    <input type="text" id="customerNameInput" placeholder="Customer Name" required>
+    <input type="file" id="photoFilesUploader" multiple accept="image/*" style="display:none;">
 
-                </div>
 
-                <button type="submit" class="save-client-btn">
-                    Create Folder
-                </button>
 
-            </form>
-        </div>
-    </div>
-    <input type="file" id="photoFilesUploader" multiple accept="image/*" style="display: none;">
+    <!-- SUPABASE -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
         /* =========================================================
-           SUPABASE CONFIGURATION
-        ========================================================= */
+   SUPABASE CONFIGURATION
+========================================================= */
 
         const SUPABASE_URL =
             "https://rprcbeabdvxdenmngxxc.supabase.co";
@@ -187,217 +337,120 @@
         const SUPABASE_ANON_KEY =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
-        const supabaseClient = supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_ANON_KEY
-        );
 
-
-        /* =========================================================
-           PAGE VARIABLES
-        ========================================================= */
-
-        const params = new URLSearchParams(window.location.search);
-
-        const eventId = params.get("event");
+        const supabaseClient =
+            supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
 
         let currentUser = null;
-        let selectedFolderId = null;
-        let selectedFolder = null;
-        let allFolders = [];
 
+        let completedClients = [];
 
-        /* =========================================================
-           DOM ELEMENTS
-        ========================================================= */
+        let selectedClient = null;
 
-        const addNewBtn =
-            document.getElementById("addNewDropdownTrigger");
-
-        const addNewMenu =
-            document.getElementById("addNewDropdownMenu");
-
-        const createFolderModal =
-            document.getElementById("createFolderModal");
-
-        const createFolderActionOption =
-            document.getElementById("createFolderActionOption");
-
-        const uploadPhotosActionOption =
-            document.getElementById("uploadPhotosActionOption");
-
-        const photoFilesUploader =
-            document.getElementById("photoFilesUploader");
+        let selectedRepository = null;
 
         const foldersView =
             document.getElementById("foldersView");
 
+        const customerFoldersContainer =
+            document.getElementById("customerFoldersContainer");
+
         const photosView =
             document.getElementById("photosView");
-
         const searchInput =
             document.getElementById("repoFolderSearchInput");
 
+        const photoGrid =
+            document.getElementById("photoGrid");
 
-        /* =========================================================
-           CHECK EVENT ID
-        ========================================================= */
+        const photoFilesUploader =
+            document.getElementById("photoFilesUploader");
 
-        if (!eventId) {
+        const uploadStatus =
+            document.getElementById("uploadStatus");
 
-            alert("No event was selected.");
+        const selectedCustomerName =
+            document.getElementById("selectedCustomerName");
 
-            window.location.href = "admin_dashboard.html";
-        }
+        const selectedCustomerDetails =
+            document.getElementById("selectedCustomerDetails");
 
+        const clientLinkInput =
+            document.getElementById("clientLinkInput");
 
-        /* =========================================================
-           ADD NEW DROPDOWN
-        ========================================================= */
+        const uploadFolderPhotosBtn =
+            document.getElementById("uploadFolderPhotosBtn");
 
-        addNewBtn.addEventListener("click", (e) => {
+        const copyClientLinkBtn =
+            document.getElementById("copyClientLinkBtn");
 
-            e.stopPropagation();
+        const copyClientLinkInputBtn =
+            document.getElementById("copyClientLinkInputBtn");
 
-            addNewMenu.classList.toggle("show");
+        const backToFoldersBtn =
+            document.getElementById("backToFoldersBtn");
 
-        });
+        const logoutBtn =
+            document.getElementById("logoutBtn");
 
-
-        document.addEventListener("click", () => {
-
-            addNewMenu.classList.remove("show");
-
-        });
-
-
-        /* =========================================================
-           OPEN CREATE FOLDER MODAL
-        ========================================================= */
-
-        createFolderActionOption.addEventListener("click", (e) => {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            addNewMenu.classList.remove("show");
-
-            createFolderModal.classList.add("show");
-
-            document
-                .getElementById("customerNameInput")
-                .focus();
-
-        });
-
-
-        /* =========================================================
-           CLOSE MODAL WHEN CLICKING OUTSIDE
-        ========================================================= */
-
-        createFolderModal.addEventListener("click", (e) => {
-
-            if (e.target === createFolderModal) {
-
-                createFolderModal.classList.remove("show");
-
-            }
-
-        });
-
-
-        /* =========================================================
-           PAGE LOAD
-        ========================================================= */
 
         window.addEventListener("load", async () => {
 
             try {
 
                 const {
-                    data: { session },
+                    data: {
+                        session
+                    },
                     error
-                } = await supabaseClient.auth.getSession();
+                } =
+                    await supabaseClient.auth.getSession();
+
 
                 if (error) {
 
-                    console.error(error);
+                    console.error(
+                        "Session error:",
+                        error
+                    );
 
-                    window.location.href = "admin_login.html";
+                    window.location.href =
+                        "admin_login.html";
 
                     return;
                 }
 
-
-                /* -------------------------------------------------
-                   CHECK LOGIN
-                ------------------------------------------------- */
 
                 if (!session) {
 
-                    window.location.href = "admin_login.html";
+                    window.location.href =
+                        "admin_login.html";
 
                     return;
                 }
 
 
-                currentUser = session.user;
+                currentUser =
+                    session.user;
 
 
-                /* -------------------------------------------------
-                   LOAD ADMIN PROFILE
-                ------------------------------------------------- */
+                await loadAdminProfile();
 
-                const {
-                    data: profile,
-                    error: profileError
-                } = await supabaseClient
-                    .from("staff_profiles")
-                    .select("*")
-                    .eq("id", currentUser.id)
-                    .single();
+                await loadCompletedClients();
 
 
-                if (profileError) {
-
-                    console.error(
-                        "Profile loading error:",
-                        profileError
-                    );
-
-                }
-
-
-                if (profile) {
-
-                    document.getElementById("userName").textContent =
-                        profile.full_name || "Admin";
-
-
-                    if (profile.avatar_url) {
-
-                        document.getElementById("userAvatar").src =
-                            profile.avatar_url;
-
-                    }
-
-                }
-
-
-                /* -------------------------------------------------
-                   LOAD CUSTOMER FOLDERS
-                ------------------------------------------------- */
-
-                await loadCustomerFolders();
-
-            }
-
-            catch (error) {
+            } catch (error) {
 
                 console.error(
-                    "Page initialization error:",
+                    "Repository initialization error:",
                     error
+                );
+
+                showFolderError(
+                    "Unable to load the customer repository."
                 );
 
             }
@@ -405,112 +458,378 @@
         });
 
 
-        /* =========================================================
-           LOAD CUSTOMER FOLDERS
-        ========================================================= */
-
-        async function loadCustomerFolders() {
-
-            foldersView.innerHTML = `
-        <div class="empty-repo-message">
-            Loading customer folders...
-        </div>
-    `;
-
+        async function loadAdminProfile() {
 
             const {
-                data,
+                data: profile,
                 error
-            } = await supabaseClient
-                .from("customer_folders")
-                .select("*")
-                .eq("event_id", eventId)
-                .order("customer_name", {
-                    ascending: true
-                });
+            } =
+                await supabaseClient
+                    .from("staff_profiles")
+                    .select("*")
+                    .eq("id", currentUser.id)
+                    .single();
 
 
             if (error) {
 
-                console.error(
-                    "Error loading folders:",
-                    error
+                console.warn(
+                    "Could not load staff profile:",
+                    error.message
                 );
-
-                foldersView.innerHTML = `
-            <div class="empty-repo-message">
-                Failed to load customer folders.
-            </div>
-        `;
 
                 return;
             }
 
 
-            /* Save folders globally for search */
+            if (!profile) {
+                return;
+            }
 
-            allFolders = data || [];
+
+            const userName =
+                document.getElementById("userName");
+
+            const userAvatar =
+                document.getElementById("userAvatar");
 
 
-            renderCustomerFolders(allFolders);
+            if (userName) {
+
+                userName.textContent =
+                    profile.full_name || "Admin";
+
+            }
+
+
+            if (
+                userAvatar &&
+                profile.avatar_url
+            ) {
+
+                userAvatar.src =
+                    profile.avatar_url;
+
+            }
 
         }
 
 
         /* =========================================================
-           RENDER CUSTOMER FOLDERS
+           LOAD COMPLETED CLIENTS
+        ========================================================= */
+        /* =========================================================
+           LOAD COMPLETED CLIENTS
         ========================================================= */
 
-        function renderCustomerFolders(folders) {
+        async function loadCompletedClients() {
 
-            foldersView.innerHTML = "";
+            foldersView.innerHTML = `
+
+        <div class="customer-folder-empty">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            <div>
+                Loading completed clients...
+            </div>
+
+        </div>
+
+    `;
 
 
-            if (!folders || folders.length === 0) {
+            try {
+
+                const {
+                    data,
+                    error
+                } = await supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .eq("status", "Completed")
+                    .order("created_at", {
+                        ascending: false
+                    });
+
+                if (error) {
+
+                    console.error(
+                        "Completed clients error:",
+                        error
+                    );
+
+                    showFolderError(
+                        "Could not load completed clients: " +
+                        error.message
+                    );
+
+                    return;
+                }
+
+                console.log("Completed bookings found:", data);
+                console.log("QUERY ERROR:", error);
+
+                completedClients = data || [];
+
+                renderCompletedClients(completedClients);
+
+
+            } catch (error) {
+
+                console.error(
+                    "Unexpected completed clients error:",
+                    error
+                );
+
+                showFolderError(
+                    "Unable to load completed clients."
+                );
+
+            }
+
+        }
+
+        /* =========================================================
+           RENDER CLIENTS
+        ========================================================= */
+
+        function renderCompletedClients(
+            clients
+        ) {
+
+            customerFoldersContainer.innerHTML = "";
+
+
+            if (
+                !clients ||
+                clients.length === 0
+            ) {
 
                 foldersView.innerHTML = `
-            <div class="empty-repo-message">
-                No customer folders yet.
+
+            <div class="customer-folder-empty">
+
+                <i class="fa-regular fa-folder-open"></i>
+
+                <div>
+                    No completed clients yet.
+                </div>
+
+                <small>
+                    When a booking is marked Completed,
+                    it will automatically appear here.
+                </small>
+
             </div>
+
         `;
 
                 return;
             }
 
 
-            folders.forEach(folder => {
+            clients.forEach(
+                client => {
 
-                const folderCard =
-                    document.createElement("div");
-
-                folderCard.className = "folder-card";
-
-                folderCard.dataset.id = folder.id;
+                    const card =
+                        document.createElement("div");
 
 
-                folderCard.innerHTML = `
-            <i class="fa-solid fa-folder folder-icon"></i>
-
-            <h3>
-                ${escapeHTML(folder.customer_name)}
-            </h3>
-        `;
+                    card.className =
+                        "folder-card repository-client-card";
 
 
-                /* ---------------------------------------------
-                   OPEN FOLDER
-                --------------------------------------------- */
-
-                folderCard.addEventListener("click", () => {
-
-                    openCustomerFolder(folder);
-
-                });
+                    card.dataset.id =
+                        client.id;
 
 
-                foldersView.appendChild(folderCard);
+                    const name =
+                        client.full_name ||
+                        "Unnamed Client";
 
-            });
+
+                    const eventType =
+                        client.session_type ||
+                        "Session";
+
+
+                    const bookingDate =
+                        formatDate(
+                            client.booking_date
+                        );
+
+
+                    card.innerHTML = `
+
+    <div class="folder-icon-wrapper">
+        <i class="fa-solid fa-folder folder-icon"></i>
+    </div>
+
+    <div class="client-name">
+        <span class="info-label"></span>
+        <strong>
+            ${escapeHTML(
+                        client.full_name ||
+                        client.name ||
+                        client.client_name ||
+                        "Unnamed Client"
+                    )}
+        </strong>
+    </div>
+
+    <div class="client-id">
+        <span class="info-label">Booking ID</span>
+        <span class="info-value">
+            ${escapeHTML(client.id)}
+        </span>
+    </div>
+
+    <div class="client-event">
+        <i class="fa-solid fa-camera"></i>
+        <span>
+            ${escapeHTML(eventType)}
+        </span>
+    </div>
+
+    <div class="client-date">
+        <i class="fa-regular fa-calendar"></i>
+        <span>
+            ${escapeHTML(bookingDate)}
+        </span>
+    </div>
+
+    <div class="client-status">
+        <i class="fa-solid fa-circle-check"></i>
+        Completed
+    </div>
+
+    <div
+        class="photo-count"
+        data-photo-count="${escapeHTML(client.id)}"
+    >
+        Checking photos...
+    </div>
+
+    <div class="quick-actions">
+
+        <button
+            type="button"
+            class="open-client-btn primary"
+        >
+            <i class="fa-solid fa-folder-open"></i>
+            Open
+        </button>
+
+        <button
+            type="button"
+            class="copy-client-link-btn"
+        >
+            <i class="fa-regular fa-copy"></i>
+            Copy Link
+        </button>
+
+    </div>
+
+`;
+
+
+                    /* -----------------------------------------
+                       OPEN CARD
+                    ----------------------------------------- */
+
+                    card.addEventListener(
+                        "click",
+                        async event => {
+
+                            if (
+                                event.target.closest("button")
+                            ) {
+                                return;
+                            }
+
+
+                            await openCustomerFolder(
+                                client
+                            );
+
+                        }
+                    );
+
+
+                    /* -----------------------------------------
+                       OPEN BUTTON
+                    ----------------------------------------- */
+
+                    card
+                        .querySelector(
+                            ".open-client-btn"
+                        )
+                        .addEventListener(
+                            "click",
+                            async () => {
+
+                                await openCustomerFolder(
+                                    client
+                                );
+
+                            }
+                        );
+
+
+                    /* -----------------------------------------
+                       COPY LINK BUTTON
+                    ----------------------------------------- */
+
+                    card
+                        .querySelector(
+                            ".copy-client-link-btn"
+                        )
+                        .addEventListener(
+                            "click",
+                            async () => {
+
+                                try {
+
+                                    const repository =
+                                        await getOrCreateRepository(
+                                            client
+                                        );
+
+
+                                    await copyClientLink(
+                                        repository
+                                    );
+
+
+                                } catch (error) {
+
+                                    console.error(
+                                        error
+                                    );
+
+                                    alert(
+                                        "Could not create client link.\n\n" +
+                                        error.message
+                                    );
+
+                                }
+
+                            }
+                        );
+
+
+                    customerFoldersContainer.appendChild(
+                        card
+                    );
+
+
+                    loadClientPhotoCount(
+                        client
+                    );
+
+                }
+            );
 
         }
 
@@ -519,68 +838,322 @@
            OPEN CUSTOMER FOLDER
         ========================================================= */
 
-        function openCustomerFolder(folder) {
+        async function openCustomerFolder(
+            client
+        ) {
 
-            selectedFolderId = folder.id;
+            try {
 
-            selectedFolder = folder;
+                selectedClient =
+                    client;
 
 
-            console.log(
-                "Selected folder:",
-                folder
+                selectedRepository =
+                    await getOrCreateRepository(
+                        client
+                    );
+
+
+                selectedCustomerName.textContent =
+                    client.full_name ||
+                    "Customer";
+
+
+                selectedCustomerDetails.textContent =
+                    "Booking ID: " +
+                    client.id +
+                    " • " +
+                    (client.session_type || "Session");
+
+
+                const link =
+                    makeClientLink(
+                        selectedRepository.access_token
+                    );
+
+
+                clientLinkInput.value =
+                    link;
+
+
+                foldersView.style.display =
+                    "none";
+
+
+                photosView.style.display =
+                    "block";
+
+
+                document.getElementById(
+                    "eventTitle"
+                ).textContent =
+                    client.full_name ||
+                    "Customer Folder";
+
+
+                document.getElementById(
+                    "repositoryDescription"
+                ).textContent =
+                    "Manage photos for this customer.";
+
+
+                await loadPhotos(
+                    selectedRepository.id
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Open customer folder error:",
+                    error
+                );
+
+                alert(
+                    "Could not open customer folder.\n\n" +
+                    error.message
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           CREATE / GET REPOSITORY
+        ========================================================= */
+        async function getOrCreateRepository(client) {
+
+            if (!client || !client.id) {
+                throw new Error("Invalid client.");
+            }
+
+            /* =========================================
+               CHECK IF REPOSITORY ALREADY EXISTS
+            ========================================= */
+
+            const {
+                data: existing,
+                error: findError
+            } = await supabaseClient
+                .from("repository_client_links")
+                .select("*")
+                .eq("booking_id", client.id)
+                .maybeSingle();
+
+            if (findError) {
+                throw findError;
+            }
+
+            /* =========================================
+               RETURN EXISTING REPOSITORY
+            ========================================= */
+
+            if (existing) {
+                return existing;
+            }
+
+            /* =========================================
+               CREATE UNIQUE ACCESS TOKEN
+            ========================================= */
+
+            const token = generateSecureToken();
+
+            /* =========================================
+               CREATE CUSTOMER REPOSITORY
+            ========================================= */
+
+            const {
+                data: created,
+                error: createError
+            } = await supabaseClient
+                .from("repository_client_links")
+                .insert({
+                    booking_id: client.id,
+                    access_token: token,
+                    created_by: currentUser.id
+                })
+                .select("*")
+                .single();
+
+            if (createError) {
+
+                /*
+                 * If another request created the repository
+                 * at the same time, retrieve that repository.
+                 */
+
+                if (createError.code === "23505") {
+
+                    const {
+                        data: existingAfterConflict,
+                        error: retryError
+                    } = await supabaseClient
+                        .from("repository_client_links")
+                        .select("*")
+                        .eq("booking_id", client.id)
+                        .single();
+
+                    if (retryError) {
+                        throw retryError;
+                    }
+
+                    return existingAfterConflict;
+                }
+
+                throw createError;
+            }
+
+            return created;
+        }
+
+        /* =========================================================
+           TOKEN GENERATOR
+        ========================================================= */
+
+        function generateSecureToken() {
+
+            const bytes =
+                new Uint8Array(32);
+
+
+            crypto.getRandomValues(
+                bytes
             );
 
 
-            /* ---------------------------------------------
-               Hide folders
-            --------------------------------------------- */
+            return Array
+                .from(
+                    bytes,
+                    byte =>
+                        byte
+                            .toString(16)
+                            .padStart(2, "0")
+                )
+                .join("");
 
-            foldersView.style.display = "none";
+        }
 
 
-            /* ---------------------------------------------
-               Show photos
-            --------------------------------------------- */
+        /* =========================================================
+           CLIENT LINK
+        ========================================================= */
+        function makeClientLink(token) {
 
-            photosView.style.display = "grid";
+            const siteURL =
+                "https://captured-photo-studio.onrender.com";
+
+            return (
+                siteURL +
+                "/customer_gallery_view.html?token=" +
+                encodeURIComponent(token)
+            );
+
+        }
+
+        /* =========================================================
+           COPY CLIENT LINK
+        ========================================================= */
+
+        async function copyClientLink(
+            repository
+        ) {
+
+            const link =
+                makeClientLink(
+                    repository.access_token
+                );
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    link
+                );
+
+                alert(
+                    "Unique client link copied!"
+                );
+
+            } catch (error) {
+
+                window.prompt(
+                    "Copy this client link:",
+                    link
+                );
+
+            }
+        }
 
 
-            /* ---------------------------------------------
-               Update page title
-            --------------------------------------------- */
+        /* =========================================================
+           LOAD PHOTO COUNT
+        ========================================================= */
 
-            const eventTitle =
-                document.getElementById("eventTitle");
+        async function loadClientPhotoCount(
+            client
+        ) {
 
-            if (eventTitle) {
+            const countElement =
+                document.querySelector(
+                    `[data-photo-count="${CSS.escape(String(client.id))}"]`
+                );
 
-                eventTitle.textContent =
-                    folder.customer_name;
 
+            if (!countElement) {
+                return;
             }
 
 
-            /* ---------------------------------------------
-               Update description
-            --------------------------------------------- */
+            const {
+                data: repository,
+                error: repositoryError
+            } =
+                await supabaseClient
+                    .from("repository_client_links")
+                    .select("id")
+                    .eq("booking_id", client.id)
+                    .maybeSingle();
 
-            const description =
-                document.querySelector(".page-header p");
 
-            if (description) {
+            if (
+                repositoryError ||
+                !repository
+            ) {
 
-                description.textContent =
-                    "Manage photos for this customer.";
+                countElement.textContent =
+                    "0 photos";
 
+                return;
             }
 
 
-            /* ---------------------------------------------
-               Load photos
-            --------------------------------------------- */
+            const {
+                count,
+                error
+            } =
+                await supabaseClient
+                    .from("repository_photos")
+                    .select("id", {
+                        count: "exact",
+                        head: true
+                    })
+                    .eq(
+                        "repository_id",
+                        repository.id
+                    );
 
-            loadPhotos(folder.id);
+
+            if (error) {
+
+                countElement.textContent =
+                    "Photos unavailable";
+
+                return;
+            }
+
+
+            countElement.textContent =
+                `${count || 0} photo${count === 1 ? "" : "s"}`;
 
         }
 
@@ -589,301 +1162,610 @@
            LOAD PHOTOS
         ========================================================= */
 
-        async function loadPhotos(folderId) {
+        async function loadPhotos(
+            repositoryId
+        ) {
 
-            photosView.innerHTML = `
-        <div class="empty-repo-message">
-            Loading photos...
+            photoGrid.innerHTML = `
+
+        <div class="customer-folder-empty">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            <div>
+                Loading photos...
+            </div>
+
         </div>
+
     `;
 
 
             const {
-                data,
+                data: photos,
                 error
-            } = await supabaseClient
-                .from("photos")
-                .select("*")
-                .eq("folder_id", folderId)
-                .order("created_at", {
-                    ascending: false
-                });
+            } =
+                await supabaseClient
+                    .from("repository_photos")
+                    .select("*")
+                    .eq(
+                        "repository_id",
+                        repositoryId
+                    )
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    );
 
 
             if (error) {
 
                 console.error(
-                    "Error loading photos:",
+                    "Photo loading error:",
                     error
                 );
 
 
-                photosView.innerHTML = `
-            <div class="empty-repo-message">
-                Failed to load photos.
+                photoGrid.innerHTML = `
+
+            <div class="customer-folder-empty">
+
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <div>
+                    Could not load photos.
+                </div>
+
+                <small>
+                    ${escapeHTML(error.message)}
+                </small>
+
             </div>
+
         `;
 
                 return;
             }
 
 
-            renderPhotos(data || []);
+            renderPhotos(
+                photos || []
+            );
 
         }
 
 
-        /* RENDER PHOTOS */
+        /* =========================================================
+           RENDER PHOTOS
+        ========================================================= */
 
-        function renderPhotos(photos) {
+        function renderPhotos(
+            photos
+        ) {
 
-            photosView.innerHTML = "";
+            photoGrid.innerHTML = "";
 
 
-            if (!photos || photos.length === 0) {
+            if (
+                !photos ||
+                photos.length === 0
+            ) {
 
-                photosView.innerHTML = `
-            <div class="empty-repo-message">
-                No photos yet.
-                <br>
-                Click "Add New → Upload Photos"
-                to add photos.
+                photoGrid.innerHTML = `
+
+            <div class="customer-folder-empty">
+
+                <i class="fa-regular fa-images"></i>
+
+                <div>
+                    No photos yet.
+                </div>
+
+                <small>
+                    Click "Upload Photos" to add photos.
+                </small>
+
             </div>
+
         `;
 
                 return;
             }
 
 
-            photos.forEach(photo => {
+            photos.forEach(
+                photo => {
 
-                const photoCard =
-                    document.createElement("div");
-
-                photoCard.className =
-                    "photo-card";
+                    const card =
+                        document.createElement("div");
 
 
-                /*
-                 * This assumes your photos table has
-                 * an image_url column.
-                 *
-                 * We can adjust this later depending
-                 * on your actual database structure.
-                 */
-
-                photoCard.innerHTML = `
-            <img
-                src="${escapeHTML(photo.image_url || "")}"
-                alt="Customer photo"
-            >
-        `;
+                    card.className =
+                        "customer-photo-card";
 
 
-                photosView.appendChild(photoCard);
+                    card.innerHTML = `
 
-            });
+                <div
+                    class="photo-processing-badge"
+                >
+                    ${escapeHTML(
+                        photo.processing_status ||
+                        "pending"
+                    )}
+                </div>
+
+                <img
+                    src="${escapeHTML(
+                        photo.image_url || ""
+                    )}"
+                    alt="${escapeHTML(
+                        photo.original_name ||
+                        "Customer photo"
+                    )}"
+                    loading="lazy"
+                >
+
+                <div class="photo-information">
+
+                    <div class="photo-name">
+
+                        ${escapeHTML(
+                        photo.original_name ||
+                        "Photo"
+                    )}
+
+                    </div>
+
+                    <div class="photo-status">
+
+                        ${escapeHTML(
+                        photo.processing_status ||
+                        "Pending processing"
+                    )}
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+                    photoGrid.appendChild(
+                        card
+                    );
+
+                }
+            );
 
         }
 
 
-        /*   CREATE CUSTOMER FOLDER   */
+        /* =========================================================
+           START UPLOAD
+        ========================================================= */
 
-        document
-            .getElementById("newCustomerFolderForm")
-            .addEventListener("submit", async (e) => {
+        function startPhotoUpload() {
 
-                e.preventDefault();
+            if (
+                !selectedClient ||
+                !selectedRepository
+            ) {
 
-                console.log("CREATE FOLDER BUTTON CLICKED");
-
-
-                /* =========================================
-                   CHECK USER
-                ========================================= */
-
-                if (!currentUser) {
-
-                    alert("Your session has expired. Please log in again.");
-
-                    return;
-                }
-
-
-                /* =========================================
-                   CHECK EVENT
-                ========================================= */
-
-                if (!eventId) {
-
-                    alert("No event was selected.");
-
-                    return;
-                }
-
-                const input =
-                    document.getElementById("customerNameInput");
-
-                const customerName =
-                    input.value.trim();
-
-
-                console.log(
-                    "Customer name:",
-                    customerName
+                alert(
+                    "Please open a customer folder first."
                 );
 
-                console.log(
-                    "Event ID:",
-                    eventId
-                );
-
-                console.log(
-                    "User ID:",
-                    currentUser.id
-                );
+                return;
+            }
 
 
-                if (!customerName) {
+            photoFilesUploader.click();
 
-                    alert("Please enter a customer name.");
+        }
 
-                    input.focus();
 
-                    return;
-                }
+        /* =========================================================
+           FILE SELECTION
+        ========================================================= */
 
-                const submitButton =
-                    document.querySelector(
-                        "#newCustomerFolderForm .save-client-btn"
+        photoFilesUploader.addEventListener(
+            "change",
+            async event => {
+
+                const files =
+                    Array.from(
+                        event.target.files || []
                     );
 
 
-                if (!submitButton) {
-
-                    console.error(
-                        "Create Folder button not found."
-                    );
-
-                    alert(
-                        "Create Folder button could not be found."
-                    );
-
+                if (!files.length) {
                     return;
                 }
-
-
-                submitButton.disabled = true;
-
-                submitButton.textContent =
-                    "Creating...";
 
 
                 try {
 
-                    const {
-                        data,
-                        error
-                    } = await supabaseClient
-                        .from("customer_folders")
-                        .insert({
-                            event_id: eventId,
-                            user_id: currentUser.id,
-                            customer_name: customerName
-                        })
-                        .select()
-                        .single();
+                    await uploadPhotos(
+                        files
+                    );
+
+                } finally {
+
+                    photoFilesUploader.value =
+                        "";
+
+                }
+
+            }
+        );
 
 
-                    if (error) {
+        /* =========================================================
+           UPLOAD PHOTOS
+        ========================================================= */
 
-                        console.error(
-                            "SUPABASE CREATE FOLDER ERROR:",
-                            error
+        async function uploadPhotos(
+            files
+        ) {
+
+            if (
+                !selectedClient ||
+                !selectedRepository
+            ) {
+
+                alert(
+                    "Please open a customer folder first."
+                );
+
+                return;
+            }
+
+
+            let uploaded =
+                0;
+
+            let failed =
+                0;
+
+
+            showUploadStatus(
+                `Uploading ${files.length} photo(s)...`,
+                false
+            );
+
+
+            for (
+                let index = 0;
+                index < files.length;
+                index++
+            ) {
+
+                const file =
+                    files[index];
+
+
+                showUploadStatus(
+                    `Uploading ${index + 1} of ${files.length}: ${file.name}`,
+                    false
+                );
+
+
+                try {
+
+                    if (
+                        !file.type.startsWith(
+                            "image/"
+                        )
+                    ) {
+
+                        throw new Error(
+                            "File is not an image."
                         );
 
-                        alert(
-                            "Folder could not be created.\n\n" +
-                            error.message
-                        );
-
-                        return;
                     }
 
-                    console.log(
-                        "FOLDER CREATED:",
-                        data
-                    );
+
+                    /* -----------------------------------------
+                       SAFE FILE NAME
+                    ----------------------------------------- */
+
+                    const safeName =
+                        file.name.replace(
+                            /[^a-zA-Z0-9._-]/g,
+                            "_"
+                        );
 
 
-                    /* Close modal */
+                    /* -----------------------------------------
+                       UNIQUE STORAGE PATH
+                    ----------------------------------------- */
 
-                    createFolderModal.classList.remove(
-                        "show"
-                    );
-
-
-                    /* Clear input */
-
-                    input.value = "";
+                    const storagePath =
+                        `${selectedClient.id}/${selectedRepository.id}/${crypto.randomUUID()}-${safeName}`;
 
 
-                    /* Reload folders */
+                    /* -----------------------------------------
+                       UPLOAD TO SUPABASE STORAGE
+                    ----------------------------------------- */
 
-                    await loadCustomerFolders();
+                    const {
+                        error: storageError
+                    } =
+                        await supabaseClient
+                            .storage
+                            .from("client-photos")
+                            .upload(
+                                storagePath,
+                                file,
+                                {
+                                    cacheControl:
+                                        "3600",
+
+                                    upsert:
+                                        false,
+
+                                    contentType:
+                                        file.type
+                                }
+                            );
 
 
-                    console.log(
-                        "Folder list refreshed."
-                    );
+                    if (storageError) {
+
+                        throw storageError;
+
+                    }
 
 
-                    alert(
-                        "Customer folder created successfully!"
-                    );
+                    /* -----------------------------------------
+                       GET PUBLIC URL
+                    ----------------------------------------- */
 
-                }
+                    const {
+                        data: publicUrlData
+                    } =
+                        supabaseClient
+                            .storage
+                            .from("client-photos")
+                            .getPublicUrl(
+                                storagePath
+                            );
 
-                catch (error) {
+
+                    const imageUrl =
+                        publicUrlData.publicUrl;
+
+
+                    /* -----------------------------------------
+                       SAVE PHOTO DATABASE RECORD
+                    ----------------------------------------- */
+
+                    const {
+                        error: databaseError
+                    } =
+                        await supabaseClient
+                            .from("repository_photos")
+                            .insert({
+
+                                repository_id:
+                                    selectedRepository.id,
+
+                                booking_id:
+                                    selectedClient.id,
+
+                                storage_path:
+                                    storagePath,
+
+                                image_url:
+                                    imageUrl,
+
+                                original_name:
+                                    file.name,
+
+                                mime_type:
+                                    file.type,
+
+                                file_size:
+                                    file.size,
+
+                                processing_status:
+                                    "pending",
+
+                                uploaded_by:
+                                    currentUser.id
+
+                            });
+
+
+                    if (databaseError) {
+
+                        /* Remove orphaned storage file */
+
+                        await supabaseClient
+                            .storage
+                            .from("client-photos")
+                            .remove([
+                                storagePath
+                            ]);
+
+
+                        throw databaseError;
+
+                    }
+
+
+                    uploaded++;
+
+
+                } catch (error) {
+
+                    failed++;
+
 
                     console.error(
-                        "UNEXPECTED ERROR:",
+                        "Upload failed:",
+                        file.name,
                         error
                     );
 
-                    alert(
-                        "Something went wrong.\n\n" +
-                        error.message
-                    );
-
                 }
 
-                finally {
+            }
 
-                    submitButton.disabled = false;
 
-                    submitButton.textContent =
-                        "Create Folder";
+            await loadPhotos(
+                selectedRepository.id
+            );
 
+
+            const message =
+                `Upload finished: ${uploaded} uploaded` +
+                (
+                    failed
+                        ? `, ${failed} failed.`
+                        : "."
+                );
+
+
+            showUploadStatus(
+                message,
+                failed > 0
+            );
+
+        }
+
+
+        /* =========================================================
+           UPLOAD BUTTONS
+        ========================================================= */
+
+        uploadFolderPhotosBtn.addEventListener(
+            "click",
+            () => {
+
+                startPhotoUpload();
+
+            }
+        );
+
+
+
+
+        /* =========================================================
+           COPY LINK BUTTONS
+        ========================================================= */
+
+        copyClientLinkBtn.addEventListener(
+            "click",
+            async () => {
+
+                if (
+                    !selectedRepository
+                ) {
+
+                    return;
                 }
 
-            });
-        /* search customers fodler*/
+
+                await copyClientLink(
+                    selectedRepository
+                );
+
+            }
+        );
+
+
+        copyClientLinkInputBtn.addEventListener(
+            "click",
+            async () => {
+
+                if (
+                    !selectedRepository
+                ) {
+
+                    return;
+                }
+
+
+                await copyClientLink(
+                    selectedRepository
+                );
+
+            }
+        );
+
+
+        /* =========================================================
+           BACK TO CUSTOMER LIST
+        ========================================================= */
+
+        backToFoldersBtn.addEventListener(
+            "click",
+            async () => {
+
+                selectedClient =
+                    null;
+
+                selectedRepository =
+                    null;
+
+
+                photosView.style.display =
+                    "none";
+
+
+                foldersView.style.display =
+                    "grid";
+
+
+                document.getElementById(
+                    "eventTitle"
+                ).textContent =
+                    "Customer Folders";
+
+
+                document.getElementById(
+                    "repositoryDescription"
+                ).textContent =
+                    "Completed clients appear here. Open a customer to upload and manage photos.";
+
+
+                await loadCompletedClients();
+
+            }
+        );
+
+
+        /* =========================================================
+           SEARCH
+        ========================================================= */
 
         searchInput.addEventListener(
             "input",
-            (e) => {
+            event => {
+
+                if (
+                    photosView.style.display !==
+                    "none"
+                ) {
+
+                    return;
+                }
+
 
                 const keyword =
-                    e.target.value
+                    event.target.value
                         .trim()
                         .toLowerCase();
 
 
                 if (!keyword) {
 
-                    renderCustomerFolders(
-                        allFolders
+                    renderCompletedClients(
+                        completedClients
                     );
 
                     return;
@@ -891,202 +1773,205 @@
 
 
                 const filtered =
-                    allFolders.filter(folder => {
+                    completedClients.filter(
+                        client => {
 
-                        const customerName =
-                            (
-                                folder.customer_name ||
-                                ""
-                            ).toLowerCase();
-
-
-                        const folderName =
-                            (
-                                folder.folder_name ||
-                                ""
-                            ).toLowerCase();
+                            const name =
+                                (
+                                    client.full_name ||
+                                    client.name ||
+                                    client.client_name ||
+                                    ""
+                                ).toLowerCase();
 
 
-                        const eventType =
-                            (
-                                folder.event_type ||
-                                ""
-                            ).toLowerCase();
+                            const id =
+                                (
+                                    client.id ||
+                                    ""
+                                ).toLowerCase();
 
 
-                        return (
-                            customerName.includes(
-                                keyword
-                            )
-
-                            ||
-
-                            folderName.includes(
-                                keyword
-                            )
-
-                            ||
-
-                            eventType.includes(
-                                keyword
-                            )
-                        );
-
-                    });
+                            const email =
+                                (
+                                    client.email ||
+                                    ""
+                                ).toLowerCase();
 
 
-                renderCustomerFolders(
+                            const sessionType =
+                                (
+                                    client.session_type ||
+                                    ""
+                                ).toLowerCase();
+
+
+                            return (
+                                name.includes(keyword) ||
+                                id.includes(keyword) ||
+                                email.includes(keyword) ||
+                                sessionType.includes(keyword)
+                            );
+
+                        }
+                    );
+
+
+                renderCompletedClients(
                     filtered
                 );
 
             }
         );
-
-
         /* =========================================================
-           UPLOAD PHOTOS BUTTON
+           UPLOAD STATUS
         ========================================================= */
 
-        uploadPhotosActionOption.addEventListener(
-            "click",
-            () => {
+        function showUploadStatus(
+            message,
+            isError
+        ) {
 
-                addNewMenu.classList.remove("show");
-
-
-                /* ---------------------------------------------
-                   Make sure a folder is selected
-                --------------------------------------------- */
-
-                if (!selectedFolderId) {
-
-                    alert(
-                        "Please open a customer folder first."
-                    );
-
-                    return;
-                }
+            uploadStatus.textContent =
+                message;
 
 
-                /* ---------------------------------------------
-                   Open file selector
-                --------------------------------------------- */
-
-                photoFilesUploader.click();
-
-            }
-        );
-
-
-        /* =========================================================
-           PHOTO FILE SELECTION
-        ========================================================= */
-
-        photoFilesUploader.addEventListener(
-            "change",
-            async (e) => {
-
-                const files =
-                    Array.from(e.target.files);
-
-
-                if (!selectedFolderId) {
-
-                    alert(
-                        "Please open a customer folder first."
-                    );
-
-                    return;
-                }
-
-
-                if (files.length === 0) {
-
-                    return;
-                }
-
-
-                console.log(
-                    "Selected folder:",
-                    selectedFolderId
-                );
-
-
-                console.log(
-                    "Selected photos:",
-                    files
-                );
-
-
-                /*
-                 * -------------------------------------------------
-                 * FUTURE PHOTO PROCESSING
-                 * -------------------------------------------------
-                 *
-                 * This is where we will eventually:
-                 *
-                 * 1. Upload the photo to Supabase Storage
-                 * 2. Save its URL to the photos table
-                 * 3. Send the image to your ML system
-                 * 4. Receive the ML result
-                 * 5. Categorize/tag the photo
-                 * 6. Display the processed photos
-                 *
-                 * For now, nothing is uploaded yet.
-                 */
-
-
-                alert(
-                    files.length +
-                    " photo(s) selected.\n\n" +
-                    "Photo uploading and machine learning " +
-                    "processing will be added next."
-                );
-
-
-                /* Reset input so the same files
-                   can be selected again */
-
-                photoFilesUploader.value = "";
-
-            }
-        );
-
-
-        /* LOGOUT */
-
-        document
-            .getElementById("logoutBtn")
-            .addEventListener(
-                "click",
-                async (e) => {
-
-                    e.preventDefault();
-
-
-                    await supabaseClient.auth.signOut();
-
-
-                    window.location.href =
-                        "admin_login.html";
-
-                }
+            uploadStatus.classList.add(
+                "show"
             );
 
 
-
-
-        function escapeHTML(value) {
-
-            return String(value || "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            uploadStatus.classList.toggle(
+                "error",
+                Boolean(isError)
+            );
 
         }
+
+
+        /* =========================================================
+           ERROR STATE
+        ========================================================= */
+
+        function showFolderError(
+            message
+        ) {
+
+            foldersView.innerHTML = `
+
+        <div class="customer-folder-empty">
+
+            <i class="fa-solid fa-circle-exclamation"></i>
+
+            <div>
+                ${escapeHTML(message)}
+            </div>
+
+        </div>
+
+    `;
+
+        }
+
+
+        /* =========================================================
+           DATE FORMAT
+        ========================================================= */
+
+        function formatDate(
+            dateString
+        ) {
+
+            if (!dateString) {
+                return "-";
+            }
+
+
+            const date =
+                new Date(
+                    dateString + "T00:00:00"
+                );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return dateString;
+
+            }
+
+
+            return date.toLocaleDateString(
+                "en-US",
+                {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           HTML ESCAPE
+        ========================================================= */
+
+        function escapeHTML(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        /* =========================================================
+           LOGOUT
+        ========================================================= */
+
+        logoutBtn.addEventListener(
+            "click",
+            async event => {
+
+                event.preventDefault();
+
+
+                await supabaseClient.auth.signOut();
+
+
+                window.location.href =
+                    "admin_login.html";
+
+            }
+        );
     </script>
+
 </body>
 
 </html>

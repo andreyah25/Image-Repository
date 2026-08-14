@@ -12,8 +12,6 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
         rel="stylesheet">
-
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Dedicated CSS for this page only -->
@@ -25,12 +23,12 @@
     <!-- TOP NAVBAR -->
     <header class="top-navbar">
         <div class="logo-section">
-            <img src="/images/studio logo.jpg" alt="Logo" class="logo-img">
-            <span>Website Name</span>
+            <img src="/images/captured.png" class="logo-img" alt="Captured Photography Studio"> <span>Captured
+                Photography Studio</span>
         </div>
-
         <div class="navbar-right">
-            <i class="fa-solid fa-circle-user" style="color: white; font-size: 32px; cursor: pointer;"></i>
+            <img id="userAvatar" class="avatar" src="/images/default-profile.png" alt="Profile"> <span
+                id="userName">Loading...</span>
         </div>
     </header>
 
@@ -58,39 +56,46 @@
                 <span>Log out</span>
             </a>
         </aside>
+        <main class="content">
 
-        <div class="gallery-header">
+            <div class="gallery-header">
 
-            <div>
+                <div>
+                    <h1 id="galleryTitle">Loading...</h1>
+                    <p id="gallerySubtitle">Loading...</p>
+                </div>
 
-                <h1 id="galleryTitle">Loading...</h1>
-
-                <p id="gallerySubtitle">Loading...</p>
+                <button id="downloadAllBtn" class="btn-download-all">
+                    <i class="fa-solid fa-download"></i>
+                    Download All
+                </button>
 
             </div>
 
-            <button id="downloadAllBtn" class="btn-download-all">
 
-                <i class="fa-solid fa-download"></i>
+            <!-- Pagination Bar -->
+            <div class="gallery-pagination">
+                <a href="#" class="page-arrow">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
 
-                Download All
+                <a href="#" class="page-num">1</a>
+                <a href="#" class="page-num">2</a>
+                <a href="#" class="page-num active">3</a>
+                <a href="#" class="page-num">4</a>
+                <a href="#" class="page-num">5</a>
 
-            </button>
+                <span class="page-dots">...</span>
 
-        </div>
+                <a href="#" class="page-num">30</a>
 
-        <!-- Pagination Bar -->
-        <div class="gallery-pagination">
-            <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-left"></i></a>
-            <a href="#" class="page-num">1</a>
-            <a href="#" class="page-num">2</a>
-            <a href="#" class="page-num active">3</a>
-            <a href="#" class="page-num">4</a>
-            <a href="#" class="page-num">5</a>
-            <span class="page-dots">...</span>
-            <a href="#" class="page-num">30</a>
-            <a href="#" class="page-arrow"><i class="fa-solid fa-chevron-right"></i></a>
-        </div>
+                <a href="#" class="page-arrow">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </div>
+
+            <!-- ADD THIS -->
+            <div id="galleryGrid" class="gallery-grid"></div>
 
         </main>
 
@@ -124,144 +129,831 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
 
+    <script>
+        /* =========================================================
+           SUPABASE CONFIGURATION
+        ========================================================= */
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
-        const supabaseClient = supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_ANON_KEY
-        );
-        (async () => {
+        const supabaseClient =
+            supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
+        async function loadCustomerProfile() {
 
             const {
-                data: { user }
+                data: {
+                    user
+                },
+                error: authError
             } = await supabaseClient.auth.getUser();
 
-            if (!user) {
-                window.location.href = "customer_login.html";
+            if (authError || !user) {
+
+                console.error(
+                    "Unable to get logged-in customer:",
+                    authError
+                );
+
+                document.getElementById("userName").textContent = "Customer";
+
                 return;
             }
 
-            loadGallery(user);
+            console.log("Logged-in customer:", user);
 
-        })();
+            /*
+             * Fetch customer's profile from your profile table
+             */
 
-        async function loadGallery(user) {
-
-            const { data: folder, error } = await supabaseClient
-                .from("folders")
+            const {
+                data: profile,
+                error: profileError
+            } = await supabaseClient
+                .from("profiles")
                 .select("*")
-                .eq("customer_id", user.id)
-                .single();
+                .eq("id", user.id)
+                .maybeSingle();
 
-            if (error || !folder) {
+            if (profileError) {
 
-                document.getElementById("galleryTitle").textContent =
-                    "No Gallery Available";
+                console.error(
+                    "Customer profile error:",
+                    profileError
+                );
 
-                document.getElementById("gallerySubtitle").textContent =
-                    "Your gallery has not been assigned yet.";
+                document.getElementById("userName").textContent =
+                    user.email || "Customer";
 
                 return;
             }
 
-            document.getElementById("galleryTitle").textContent =
-                folder.folder_name;
+            console.log("Customer profile:", profile);
 
-            document.getElementById("gallerySubtitle").textContent =
-                `${new Date(folder.event_date).toLocaleDateString()}`;
 
-            loadPhotos(folder);
+            /*
+             * CUSTOMER NAME
+             */
+
+            const userName =
+                profile?.full_name ||
+                profile?.name ||
+                user.user_metadata?.full_name ||
+                user.user_metadata?.name ||
+                user.email ||
+                "Customer";
+
+            document.getElementById("userName").textContent =
+                userName;
+
+
+            /*
+             * CUSTOMER PROFILE IMAGE
+             */
+
+            const avatar =
+                profile?.avatar_url ||
+                profile?.profile_image ||
+                user.user_metadata?.avatar_url ||
+                user.user_metadata?.picture ||
+                "";
+
+            const avatarElement =
+                document.getElementById("userAvatar");
+
+            if (avatar) {
+
+                avatarElement.src = avatar;
+
+            } else {
+
+                /*
+                 * No profile photo uploaded
+                 * Show a default icon instead.
+                 */
+
+                avatarElement.src = "/images/default-profile.png";
+
+            }
+        }
+        const galleryTitle =
+            document.getElementById("galleryTitle");
+
+        const gallerySubtitle =
+            document.getElementById("gallerySubtitle");
+
+        const galleryGrid =
+            document.getElementById("galleryGrid");
+
+        const downloadAllBtn =
+            document.getElementById("downloadAllBtn");
+
+        const paymentModal =
+            document.getElementById("paymentModal");
+
+        const closeButton =
+            document.getElementById("btnMaybeLater");
+
+
+        let currentRepository = null;
+
+        let currentBooking = null;
+
+        let currentPhotos = [];
+        window.addEventListener(
+            "DOMContentLoaded",
+            async () => {
+
+                await loadCustomerProfile();
+
+                initializeGallery();
+
+            }
+        );
+        async function initializeGallery() {
+
+            const urlParams =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+
+            const token =
+                urlParams.get("token");
+
+
+            /* -----------------------------------------
+               NO TOKEN
+            ----------------------------------------- */
+
+            if (!token || token.trim() === "") {
+
+                showGalleryError(
+                    "Invalid Gallery Link",
+                    "Please use the gallery link provided by the studio."
+                );
+
+                return;
+            }
+
+
+            try {
+
+                const {
+                    data: repository,
+                    error
+                } = await supabaseClient
+                    .from("repository_client_links")
+                    .select("id, booking_id, access_token")
+                    .eq("access_token", token.trim())
+                    .limit(1)
+                    .maybeSingle();
+
+                console.log(
+                    "TOKEN:",
+                    token
+                );
+
+                console.log(
+                    "REPOSITORY:",
+                    repository
+                );
+
+                console.log(
+                    "REPOSITORY ERROR:",
+                    JSON.stringify(error, null, 2)
+                );
+                if (error) {
+
+                    console.error(
+                        "Repository validation error:",
+                        error
+                    );
+
+
+                    showGalleryError(
+                        "Unable to Open Gallery",
+                        "We could not verify this gallery link."
+                    );
+
+                    return;
+                }
+
+
+
+                if (!repository) {
+
+                    console.warn(
+                        "Invalid gallery token."
+                    );
+
+
+                    showGalleryError(
+                        "Invalid Gallery Link",
+                        "This gallery link does not exist or may have expired."
+                    );
+
+                    return;
+                }
+
+
+                currentRepository =
+                    repository;
+
+
+                const {
+                    data: booking,
+                    error: bookingError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .eq(
+                        "id",
+                        repository.booking_id
+                    )
+                    .maybeSingle();
+
+
+                if (bookingError) {
+
+                    console.error(
+                        "Booking error:",
+                        bookingError
+                    );
+
+
+                    showGalleryError(
+                        "Unable to Load Gallery",
+                        "The booking information could not be loaded."
+                    );
+
+                    return;
+                }
+
+
+                if (!booking) {
+
+                    showGalleryError(
+                        "Gallery Not Found",
+                        "The booking associated with this gallery could not be found."
+                    );
+
+                    return;
+                }
+
+
+                currentBooking =
+                    booking;
+
+
+                displayClientInformation(
+                    booking
+                );
+
+
+                await loadRepositoryPhotos(
+                    repository.id
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Gallery initialization error:",
+                    error
+                );
+
+
+                showGalleryError(
+                    "Unable to Open Gallery",
+                    "Something went wrong while verifying your gallery link."
+                );
+
+            }
 
         }
-        async function loadPhotos(folder) {
 
-            const { data: photos } = await supabaseClient
-                .from("photos")
-                .select("*")
-                .eq("folder_id", folder.id);
 
-            const grid =
-                document.getElementById("galleryGrid");
+        function displayClientInformation(
+            booking
+        ) {
 
-            grid.innerHTML = "";
+            const clientName =
+                booking.full_name ||
+                "Customer";
 
-            photos.forEach(photo => {
 
-                const image =
-                    folder.download_access
-                        ? photo.image_url
-                        : photo.preview_url;
+            const sessionType =
+                booking.session_type ||
+                "Photography Session";
 
-                grid.innerHTML += `
 
-        <div class="photo-card ${folder.download_access ? "" : "unlocked"}">
+            const bookingDate =
+                formatDate(
+                    booking.booking_date
+                );
 
-            <img src="${image}">
 
-            <button
-                class="individual-download-btn"
-                onclick="downloadPhoto('${photo.image_url}',${folder.download_access})">
+            galleryTitle.textContent =
+                clientName;
 
-                <i class="fa-solid fa-download"></i>
 
-            </button>
+            gallerySubtitle.textContent =
+                `${sessionType} • ${bookingDate}`;
+
+        }
+
+        async function loadRepositoryPhotos(
+            repositoryId
+        ) {
+
+            galleryGrid.innerHTML = `
+
+        <div class="gallery-loading">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            <p>
+                Loading your photos...
+            </p>
 
         </div>
 
+    `;
+
+
+            const {
+                data: photos,
+                error
+            } = await supabaseClient
+                .from("repository_photos")
+                .select("*")
+                .eq(
+                    "repository_id",
+                    repositoryId
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    "Photo loading error:",
+                    error
+                );
+
+
+                galleryGrid.innerHTML = `
+
+            <div class="gallery-loading">
+
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <p>
+                    Unable to load your photos.
+                </p>
+
+            </div>
+
         `;
 
-            });
+                return;
+            }
+
+
+            currentPhotos =
+                photos || [];
+
+
+            renderGalleryPhotos(
+                currentPhotos
+            );
 
         }
-        function downloadPhoto(url, paid) {
 
-            if (!paid) {
 
-                paymentModal.classList.add("active");
+        /* =========================================================
+           RENDER PHOTOS
+        ========================================================= */
+
+        function renderGalleryPhotos(
+            photos
+        ) {
+
+            galleryGrid.innerHTML = "";
+
+
+            if (
+                !photos ||
+                photos.length === 0
+            ) {
+
+                galleryGrid.innerHTML = `
+
+            <div class="gallery-loading">
+
+                <i class="fa-regular fa-images"></i>
+
+                <p>
+                    No photos have been uploaded yet.
+                </p>
+
+                <small>
+                    Please check again later.
+                </small>
+
+            </div>
+
+        `;
 
                 return;
-
             }
 
-            window.open(url, "_blank");
+
+            photos.forEach(
+                photo => {
+
+                    const card =
+                        document.createElement("div");
+
+
+                    card.className =
+                        "photo-card";
+
+
+                    const image =
+                        document.createElement("img");
+
+
+                    image.src =
+                        photo.image_url || "";
+
+
+                    image.alt =
+                        photo.original_name ||
+                        "Gallery Photo";
+
+
+                    image.loading =
+                        "lazy";
+
+
+                    const button =
+                        document.createElement("button");
+
+
+                    button.type =
+                        "button";
+
+
+                    button.className =
+                        "individual-download-btn";
+
+
+                    button.innerHTML =
+                        `<i class="fa-solid fa-download"></i>`;
+
+
+                    button.addEventListener(
+                        "click",
+                        event => {
+
+                            event.stopPropagation();
+
+                            downloadPhoto(
+                                photo
+                            );
+
+                        }
+                    );
+
+
+                    card.appendChild(
+                        image
+                    );
+
+
+                    card.appendChild(
+                        button
+                    );
+
+
+                    galleryGrid.appendChild(
+                        card
+                    );
+
+                }
+            );
 
         }
-        document
-            .getElementById("downloadAllBtn")
-            .addEventListener("click", () => {
 
-                paymentModal.classList.add("active");
 
-            });
-        const paymentModal = document.getElementById('paymentModal');
-        const triggerButtons = document.querySelectorAll('.btn-trigger-payment');
-        const closeButton = document.getElementById('btnMaybeLater');
+        /* =========================================================
+           DOWNLOAD INDIVIDUAL
+        ========================================================= */
 
-        // Open modal when download buttons are clicked
-        triggerButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault(); // Stop instant anchor linking
-                paymentModal.classList.add('active');
-            });
-        });
+        function downloadPhoto(
+            photo
+        ) {
 
-        // Close modal when "Maybe Later" is clicked
-        closeButton.addEventListener('click', () => {
-            paymentModal.classList.remove('active');
-        });
+            const downloadAllowed =
+                currentRepository &&
+                currentRepository.download_access === true;
 
-        // Close modal when clicking on the dark outer background overlay
-        paymentModal.addEventListener('click', (e) => {
-            if (e.target === paymentModal) {
-                paymentModal.classList.remove('active');
+
+            if (!downloadAllowed) {
+
+                openPaymentModal();
+
+                return;
             }
-        });
+
+
+            if (!photo.image_url) {
+
+                alert(
+                    "This photo is unavailable."
+                );
+
+                return;
+            }
+
+
+            window.open(
+                photo.image_url,
+                "_blank"
+            );
+
+        }
+
+
+        /* =========================================================
+           DOWNLOAD ALL
+        ========================================================= */
+
+        downloadAllBtn.addEventListener(
+            "click",
+            () => {
+
+                if (
+                    !currentPhotos ||
+                    currentPhotos.length === 0
+                ) {
+
+                    alert(
+                        "There are no photos to download."
+                    );
+
+                    return;
+                }
+
+
+                const downloadAllowed =
+                    currentRepository &&
+                    currentRepository.download_access === true;
+
+
+                if (!downloadAllowed) {
+
+                    openPaymentModal();
+
+                    return;
+                }
+
+
+                currentPhotos.forEach(
+                    photo => {
+
+                        if (photo.image_url) {
+
+                            window.open(
+                                photo.image_url,
+                                "_blank"
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* =========================================================
+           PAYMENT MODAL
+        ========================================================= */
+
+        function openPaymentModal() {
+
+            if (!paymentModal) {
+                return;
+            }
+
+
+            paymentModal.classList.add(
+                "active"
+            );
+
+        }
+
+
+        function closePaymentModal() {
+
+            if (!paymentModal) {
+                return;
+            }
+
+
+            paymentModal.classList.remove(
+                "active"
+            );
+
+        }
+
+
+        if (closeButton) {
+
+            closeButton.addEventListener(
+                "click",
+                closePaymentModal
+            );
+
+        }
+
+
+        if (paymentModal) {
+
+            paymentModal.addEventListener(
+                "click",
+                event => {
+
+                    if (
+                        event.target ===
+                        paymentModal
+                    ) {
+
+                        closePaymentModal();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           ERROR SCREEN
+        ========================================================= */
+
+        function showGalleryError(
+            title,
+            message
+        ) {
+
+            galleryTitle.textContent =
+                title;
+
+
+            gallerySubtitle.textContent =
+                message;
+
+
+            if (downloadAllBtn) {
+
+                downloadAllBtn.style.display =
+                    "none";
+
+            }
+
+
+            if (!galleryGrid) {
+                return;
+            }
+
+
+            galleryGrid.innerHTML = `
+
+        <div class="gallery-loading">
+
+            <i class="fa-solid fa-link-slash"></i>
+
+            <p>
+                ${escapeHTML(message)}
+            </p>
+
+            <a
+                href="customer_gallery_request.html"
+                style="
+                    display:inline-block;
+                    margin-top:15px;
+                    padding:10px 18px;
+                    background:#639A88;
+                    color:white;
+                    text-decoration:none;
+                    border-radius:6px;
+                "
+            >
+                Enter Gallery Link
+            </a>
+
+        </div>
+
+    `;
+
+        }
+
+
+        /* =========================================================
+           DATE
+        ========================================================= */
+
+        function formatDate(
+            dateString
+        ) {
+
+            if (!dateString) {
+
+                return "Date not specified";
+
+            }
+
+
+            const date =
+                new Date(
+                    dateString + "T00:00:00"
+                );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return dateString;
+
+            }
+
+
+            return date.toLocaleDateString(
+                "en-US",
+                {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           ESCAPE HTML
+        ========================================================= */
+
+        function escapeHTML(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
 
     </script>
+
 
 </body>
 

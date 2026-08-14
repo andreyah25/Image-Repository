@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings</title>
+    <title>Account Security & Settings</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,18 +18,25 @@
 <body>
 
     <header class="top-navbar">
-       <div class="logo-section">
-            <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Studio</span>
+        <div class="logo-section">
+            <div class="logo-box"></div>
+            <span>Website Name</span>
         </div>
 
         <div class="navbar-right">
-            <button class="notification-btn" aria-label="Notifications">
-                <i class="fa-solid fa-bell"></i>
-            </button>
-            <div class="user-profile">
-                <img id="userAvatar" class="avatar-placeholder" src="https://via.placeholder.com/45">
+            <div class="notification-container">
+                <button id="notificationBtn" class="notification-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notificationCount">0</span>
+                </button>
 
+                <div id="notificationDropdown" class="notification-dropdown">
+                    <div id="notificationList"></div>
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
                 <span id="userName">Loading...</span>
             </div>
         </div>
@@ -41,7 +48,7 @@
             <nav>
                 <a href="admin_dashboard.html">
                     <i class="fa-solid fa-table-cells-large"></i>
-                    Dashboard
+                    Home
                 </a>
                 <a href="admin_client.html">
                     <i class="fa-solid fa-users"></i>
@@ -69,191 +76,159 @@
                 </a>
             </nav>
 
-            <a href="admin_login.html" class="logout-btn" id="logoutBtn">
+            <a href="admin_dashboard.html" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
             </a>
         </aside>
 
         <main class="content">
-            <div class="settings-grid-container">
 
+            <div class="settings-header">
+                <h1>Account Security</h1>
+                <p>Manage your account preferences and security</p>
+            </div>
+
+            <div class="settings-grid">
+
+                <!-- LEFT COLUMN -->
                 <div class="settings-column">
+                    <!-- CHANGE PASSWORD CARD -->
+                    <div class="settings-card">
+                        <div class="card-header-with-icon">
+                            <div class="header-icon-circle">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <div>
+                                <h2>Change Password</h2>
+                                <p>Manage your account preferences and security</p>
+                            </div>
+                        </div>
 
-                    <div class="settings-header-block">
-                        <h2>Account Security</h2>
-                        <p>Update your password and security preferences.</p>
-                    </div>
-
-                    <div class="settings-card shadow-box" id="passwordCard">
-                        <h3 class="card-inner-title">Change Password</h3>
                         <form id="changePasswordForm" class="settings-form">
-                            <div class="form-input-row">
-                                <label>Current Password</label>
-                                <div class="password-field-container">
-                                    <input id="currentPassword" type="password"
-                                        placeholder="Enter your current password" required>
-                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <div class="input-password-wrapper">
+                                    <input type="password" id="currentPassword"
+                                        placeholder="Enter your current password">
+                                    <i class="fa-regular fa-eye-slash toggle-password"></i>
                                 </div>
                             </div>
-                            <div class="form-input-row">
-                                <label>New Password</label>
-                                <div class="password-field-container">
-                                    <input id="newPassword" type="password" placeholder="Enter your new password"
-                                        required> <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
+
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <div class="input-password-wrapper">
+                                    <input type="password" id="newPassword" placeholder="Enter your new password">
+                                    <i class="fa-regular fa-eye-slash toggle-password"></i>
                                 </div>
                             </div>
-                            <div class="form-input-row">
-                                <label>Confirm New Password</label>
-                                <div class="password-field-container">
-                                    <input id="confirmPassword" type="password" placeholder="Confirm your new password"
-                                        required> <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
+
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm New Password</label>
+                                <div class="input-password-wrapper">
+                                    <input type="password" id="confirmPassword" placeholder="Confirm your new password">
+                                    <i class="fa-regular fa-eye-slash toggle-password"></i>
                                 </div>
                             </div>
-                            <button type="submit" class="primary-settings-action-btn">Update Password</button>
+
+                            <button type="submit" class="btn-primary">Update Password</button>
                         </form>
                     </div>
 
-                    <div id="googlePasswordMessage" class="settings-card shadow-box" style="display:none;">
-
-                        <h3>
-                            <i class="fa-brands fa-google"></i>
-                            Google Account
-                        </h3>
-
-                        <p>
-                            This account uses Google Sign-In.
-                            Password changes are managed through your Google Account.
-                        </p>
-
-                        <a href="https://myaccount.google.com/security" target="_blank"
-                            class="primary-settings-action-btn">
-
-                            Open Google Security
-
-                        </a>
-
-                    </div>
-                    <div class="settings-card shadow-box simple-row-card">
-                        <div class="text-info-group">
-                            <h3>Two-Factor Authentication</h3>
-                            <p>Enable additional account protection.</p>
-                        </div>
-                        <label class="switch-toggle-widget">
-                            <input type="checkbox" id="twoFactorToggle">
-                            <span class="slider-round-element"></span>
-                        </label>
-                    </div>
-
-                    <div class="settings-header-block">
-                        <h2>Account Actions</h2>
-                        <p>Manage important actions related to your account.</p>
-                    </div>
-
-                    <div class="settings-card shadow-box spacing-controlled-card">
-                        <div class="action-row-item">
-                            <div class="text-info-group">
-                                <h3>Sign Out of All Devices</h3>
-                                <p>End all active sessions across your devices.</p>
+                    <!-- TWO-FACTOR AUTHENTICATION CARD -->
+                    <div class="settings-card compact-card">
+                        <div class="toggle-item single-row">
+                            <div class="toggle-info">
+                                <h3>Two-Factor Authentication</h3>
+                                <p>Enable additional account protection.</p>
                             </div>
-                            <button class="action-outline-dark-btn">Sign Out</button>
-                        </div>
-                        <div class="action-row-item">
-                            <div class="text-info-group">
-                                <h3>Sign Out of All Devices</h3>
-                                <p>End all active sessions across your devices.</p>
-                            </div>
-                            <button class="action-danger-solid-btn">Delete</button>
+                            <label class="switch">
+                                <input type="checkbox" id="toggle2FA">
+                                <span class="slider"></span>
+                            </label>
                         </div>
                     </div>
-
                 </div>
 
+                <!-- RIGHT COLUMN -->
                 <div class="settings-column">
-
-                    <div class="settings-header-block">
-                        <h2>Notifications</h2>
-                        <p>Choose your preferred updates and alerts.</p>
-                    </div>
-
-                    <div class="settings-card shadow-box list-rows-card">
-                        <div class="toggle-list-item-row">
-                            <div class="text-info-group">
-                                <h3>Email Notifications</h3>
-                                <p>Stay informed with important system updates and announcements via email.</p>
+                    <!-- NOTIFICATIONS CARD -->
+                    <div class="settings-card">
+                        <div class="card-header-with-icon">
+                            <div class="header-icon-circle">
+                                <i class="fa-regular fa-bell"></i>
                             </div>
-                            <label class="switch-toggle-widget">
-                                <input type="checkbox" id="emailNotifications" checked>
-                                <span class="slider-round-element"></span>
-                            </label>
-                        </div>
-
-                        <div class="toggle-list-item-row">
-                            <div class="text-info-group">
-                                <h3>Access Requests</h3>
-                                <p>Be notified by email of new access requests and customer inquiries.</p>
+                            <div>
+                                <h2>Notifications</h2>
+                                <p>Choose your preferred updates and alerts.</p>
                             </div>
-                            <label class="switch-toggle-widget">
-                                <input type="checkbox" id="accessRequests" checked>
-                                <span class="slider-round-element"></span>
-                            </label>
                         </div>
 
-                        <div class="toggle-list-item-row">
-                            <div class="text-info-group">
-                                <h3>Payment Alerts</h3>
-                                <p>Stay informed of completed, pending, and failed transactions.</p>
+                        <div class="toggle-list-wrapper">
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h3>Email Notifications</h3>
+                                    <p>Stay informed with important system updates and announcements via email.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="toggleEmailNotif" checked>
+                                    <span class="slider"></span>
+                                </label>
                             </div>
-                            <label class="switch-toggle-widget">
-                                <input type="checkbox" id="paymentAlerts" checked>
-                                <span class="slider-round-element"></span>
-                            </label>
-                        </div>
-                    </div>
 
-                    <div class="settings-header-block">
-                        <h2>Storage</h2>
-                        <p>Check storage capacity and available space.</p>
-                    </div>
-
-                    <div class="settings-card shadow-box list-rows-card storage-card-wrapper">
-                        <div class="storage-metrics-title-row">
-                            <h3>Storage Usage</h3>
-                        </div>
-                        <div class="metric-percentage-readout">67%</div>
-                        <div class="metric-bytes-fraction-legend">60 GB / 100 GB</div>
-
-                        <div class="progress-bar-track-layout">
-                            <div class="progress-bar-fill-indicator" style="width: 67%;"></div>
-                        </div>
-
-                        <div class="toggle-list-item-row border-top-divider">
-                            <div class="text-info-group">
-                                <h3>Auto Cleanup</h3>
-                                <p>Automatically remove temporary files and unused data to optimize storage.</p>
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h3>Access Requests</h3>
+                                    <p>Be notified by email of new access requests and customer inquiries.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="toggleAccessRequests" checked>
+                                    <span class="slider"></span>
+                                </label>
                             </div>
-                            <label class="switch-toggle-widget">
-                                <input type="checkbox" id="autoCleanup" checked>
-                                <span class="slider-round-element"></span>
-                            </label>
-                        </div>
 
-                        <div class="toggle-list-item-row">
-                            <div class="text-info-group">
-                                <h3>Storage Alerts</h3>
-                                <p>Receive notifications when storage space is running low.</p>
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h3>Payment Alerts</h3>
+                                    <p>Stay informed of completed, pending, and failed transactions.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="togglePaymentAlerts" checked>
+                                    <span class="slider"></span>
+                                </label>
                             </div>
-                            <label class="switch-toggle-widget">
-                                <input type="checkbox" id="storageAlerts" checked>
-                                <span class="slider-round-element"></span>
-                            </label>
                         </div>
                     </div>
 
+                    <!-- ACCOUNT ACTIONS CARD -->
+                    <div class="settings-card">
+                        <div class="card-simple-header">
+                            <h2>Account Actions</h2>
+                            <p>Manage important actions related to your account.</p>
+                        </div>
 
+                        <div class="action-list-wrapper">
+                            <div class="action-item">
+                                <div class="action-info">
+                                    <h3>Sign Out of All Devices</h3>
+                                    <p>End all active sessions across your devices.</p>
+                                </div>
+                                <button type="button" class="btn-dark" id="signOutDevicesBtn">Sign Out</button>
+                            </div>
+
+                            <div class="action-item">
+                                <div class="action-info">
+                                    <h3>Delete Account</h3>
+                                    <p>Permanently remove your account and all stored data.</p>
+                                </div>
+                                <button type="button" class="btn-danger" id="deleteAccountBtn">Delete</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
+
         </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

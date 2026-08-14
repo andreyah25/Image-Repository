@@ -177,6 +177,103 @@
             </h3>
 
             <div id="calendar"></div>
+            <h2 class="section-title">
+                ANALYTICS
+            </h2>
+
+            <div class="analytics-card">
+
+                <div class="analytics-header">
+
+                    <div>
+                        <h3>Client Bookings</h3>
+                        <p class="analytics-subtitle">
+                            Number of confirmed client bookings per month
+                        </p>
+                    </div>
+
+                    <div class="dropdown-wrapper">
+
+                        <select id="yearFilter" class="year-dropdown">
+                            <!-- Years will be generated dynamically -->
+                        </select>
+
+                        <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ANALYTICS SUMMARY -->
+
+                <div class="analytics-summary">
+
+                    <div class="analytics-summary-card">
+
+                        <span>
+                            Total Bookings
+                        </span>
+
+                        <strong id="yearlyBookingTotal">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-summary-card">
+
+                        <span>
+                            Average Monthly
+                        </span>
+
+                        <strong id="averageMonthlyBookings">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-summary-card">
+
+                        <span>
+                            Busiest Month
+                        </span>
+
+                        <strong id="busiestBookingMonth">
+                            —
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CHART -->
+
+                <div class="chart-container">
+
+                    <div class="y-axis" id="bookingYAxis">
+                        <!-- Generated dynamically -->
+                    </div>
+
+
+                    <div class="chart-area" id="chartArea">
+
+                        <div class="grid-lines" id="bookingGridLines">
+                            <!-- Generated dynamically -->
+                        </div>
+
+
+                        <div class="bars-wrapper" id="barsWrapper">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
             <div id="bookingModal" class="booking-modal">
 
                 <div class="booking-card">
@@ -409,6 +506,7 @@
 
         </main>
 
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 
@@ -425,6 +523,671 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+        // =========================================================
+        // MONTHLY EARNINGS ANALYTICS
+        // =========================================================
+
+        const monthNames = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+
+        async function loadBookingAnalytics(selectedYear) {
+
+            console.log("Loading booking analytics for:", selectedYear);
+
+            const startDate = `${selectedYear}-01-01`;
+            const endDate = `${Number(selectedYear) + 1}-01-01`;
+
+            const {
+                data: bookings,
+                error
+            } = await supabaseClient
+                .from("bookings")
+                .select(`
+            id,
+            booking_date,
+            status
+        `)
+                .eq("status", "Confirmed")
+                .gte("booking_date", startDate)
+                .lt("booking_date", endDate);
+
+            if (error) {
+                console.error("Booking analytics error:", error);
+                return;
+            }
+
+            // 12 months: January -> December
+            const monthlyBookings = Array(12).fill(0);
+
+            bookings.forEach(booking => {
+
+                if (!booking.booking_date) {
+                    return;
+                }
+
+                /*
+                 * Extract the month directly from YYYY-MM-DD.
+                 * This avoids timezone problems.
+                 */
+                const month = Number(
+                    booking.booking_date.substring(5, 7)
+                ) - 1;
+
+                if (month >= 0 && month <= 11) {
+                    monthlyBookings[month]++;
+                }
+            });
+
+            console.log(
+                `Bookings for ${selectedYear}:`,
+                monthlyBookings
+            );
+
+            renderBookingAnalytics(
+                monthlyBookings,
+                selectedYear
+            );
+        }
+
+
+        function renderBookingAnalytics(
+            monthlyBookings,
+            selectedYear
+        ) {
+
+            const barsWrapper =
+                document.getElementById("barsWrapper");
+
+            const yAxis =
+                document.getElementById("bookingYAxis");
+
+            const gridLines =
+                document.getElementById("bookingGridLines");
+
+            if (!barsWrapper || !yAxis || !gridLines) {
+                console.error("Analytics chart elements not found.");
+                return;
+            }
+
+            // Clear previous chart
+            barsWrapper.innerHTML = "";
+            yAxis.innerHTML = "";
+            gridLines.innerHTML = "";
+
+
+            // =========================================================
+            // DETERMINE CHART SCALE
+            // =========================================================
+
+            const maxBooking =
+                Math.max(...monthlyBookings, 0);
+
+            let chartMax;
+
+            if (maxBooking === 0) {
+                chartMax = 5;
+            }
+            else if (maxBooking <= 5) {
+                chartMax = 5;
+            }
+            else if (maxBooking <= 10) {
+                chartMax = 10;
+            }
+            else if (maxBooking <= 20) {
+                chartMax = 20;
+            }
+            else if (maxBooking <= 50) {
+                chartMax = Math.ceil(maxBooking / 10) * 10;
+            }
+            else {
+                chartMax = Math.ceil(maxBooking / 20) * 20;
+            }
+
+
+            // =========================================================
+            // Y-AXIS
+            // =========================================================
+
+            const steps = 5;
+            const stepValue = chartMax / steps;
+
+            for (let i = steps; i >= 0; i--) {
+
+                const value = Math.round(
+                    stepValue * i
+                );
+
+                const label =
+                    document.createElement("span");
+
+                label.textContent =
+                    value.toLocaleString();
+
+                yAxis.appendChild(label);
+
+
+                const line =
+                    document.createElement("div");
+
+                line.className = "grid-line";
+
+                gridLines.appendChild(line);
+            }
+
+
+            // =========================================================
+            // BARS
+            // =========================================================
+
+            monthlyBookings.forEach(
+                (value, index) => {
+
+                    const percentage =
+                        chartMax > 0
+                            ? (value / chartMax) * 100
+                            : 0;
+
+                    const column =
+                        document.createElement("div");
+
+                    column.className =
+                        "bar-column";
+
+                    column.innerHTML = `
+                <div class="bar-track">
+
+                    <div
+                        class="bar-fill"
+                        style="height: ${percentage}%"
+                    >
+                        <span class="bar-value">
+                            ${value}
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="bar-label">
+                    ${monthNames[index]}
+                </div>
+            `;
+
+                    barsWrapper.appendChild(column);
+                }
+            );
+
+
+            // =========================================================
+            // TOTAL BOOKINGS
+            // =========================================================
+
+            const yearlyTotal =
+                monthlyBookings.reduce(
+                    (total, value) => total + value,
+                    0
+                );
+
+            const yearlyTotalElement =
+                document.getElementById(
+                    "yearlyBookingTotal"
+                );
+
+            if (yearlyTotalElement) {
+
+                yearlyTotalElement.textContent =
+                    yearlyTotal.toLocaleString();
+            }
+
+
+            // =========================================================
+            // AVERAGE MONTHLY BOOKINGS
+            // =========================================================
+
+            const average =
+                yearlyTotal / 12;
+
+            const averageElement =
+                document.getElementById(
+                    "averageMonthlyBookings"
+                );
+
+            if (averageElement) {
+
+                averageElement.textContent =
+                    average.toFixed(1);
+            }
+
+
+            // =========================================================
+            // BUSIEST MONTH
+            // =========================================================
+
+            const busiestElement =
+                document.getElementById(
+                    "busiestBookingMonth"
+                );
+
+            if (busiestElement) {
+
+                if (yearlyTotal === 0) {
+
+                    busiestElement.textContent = "—";
+
+                }
+                else {
+
+                    const highest =
+                        Math.max(...monthlyBookings);
+
+                    const busiestIndex =
+                        monthlyBookings.indexOf(highest);
+
+                    busiestElement.textContent =
+                        monthNames[busiestIndex];
+                }
+            }
+
+
+            console.log(
+                `Analytics rendered for ${selectedYear}`,
+                {
+                    monthlyBookings,
+                    yearlyTotal,
+                    average,
+                    chartMax
+                }
+            );
+        }
+        function renderBookingAnalytics(
+            monthlyBookings,
+            selectedYear
+        ) {
+
+            const barsWrapper =
+                document.getElementById(
+                    "barsWrapper"
+                );
+
+
+            const yAxis =
+                document.getElementById(
+                    "bookingYAxis"
+                );
+
+
+            const gridLines =
+                document.getElementById(
+                    "bookingGridLines"
+                );
+
+
+            if (!barsWrapper) {
+                return;
+            }
+
+
+            barsWrapper.innerHTML = "";
+            yAxis.innerHTML = "";
+            gridLines.innerHTML = "";
+
+
+            /*
+             * Find highest number of bookings.
+             */
+
+            const maxBooking =
+                Math.max(
+                    ...monthlyBookings,
+                    0
+                );
+
+
+            /*
+             * Make the chart scale nicely.
+             *
+             * Example:
+             * 13 bookings -> maximum becomes 20
+             * 27 bookings -> maximum becomes 30
+             */
+
+            let chartMax;
+
+            if (maxBooking <= 5) {
+
+                chartMax = 5;
+
+            }
+            else if (maxBooking <= 10) {
+
+                chartMax = 10;
+
+            }
+            else if (maxBooking <= 20) {
+
+                chartMax = 20;
+
+            }
+            else if (maxBooking <= 50) {
+
+                chartMax =
+                    Math.ceil(maxBooking / 10) * 10;
+
+            }
+            else {
+
+                chartMax =
+                    Math.ceil(maxBooking / 20) * 20;
+
+            }
+
+
+            /*
+             * Create Y-axis.
+             */
+
+            const steps = 5;
+
+            const stepValue =
+                chartMax / steps;
+
+
+            for (
+                let i = steps;
+                i >= 0;
+                i--
+            ) {
+
+                const value =
+                    Math.round(
+                        stepValue * i
+                    );
+
+
+                const label =
+                    document.createElement(
+                        "span"
+                    );
+
+                label.textContent =
+                    value.toLocaleString();
+
+
+                yAxis.appendChild(label);
+
+
+                const line =
+                    document.createElement(
+                        "div"
+                    );
+
+                line.className =
+                    "grid-line";
+
+
+                gridLines.appendChild(line);
+
+            }
+
+
+            /*
+             * Render bars.
+             */
+
+            monthlyBookings.forEach(
+                (value, index) => {
+
+                    const percentage =
+                        chartMax === 0
+                            ? 0
+                            : (
+                                value /
+                                chartMax
+                            ) * 100;
+
+
+                    const column =
+                        document.createElement(
+                            "div"
+                        );
+
+                    column.className =
+                        "bar-column";
+
+
+                    column.innerHTML = `
+
+                <div class="bar-track">
+
+                    <div
+                        class="bar-fill"
+                        style="
+                            height: ${percentage}%;
+                        "
+                    >
+
+                        <span class="bar-value">
+                            ${value}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="bar-label">
+                    ${monthNames[index]}
+                </div>
+
+            `;
+
+
+                    barsWrapper.appendChild(
+                        column
+                    );
+
+                }
+            );
+
+
+            /*
+             * YEARLY TOTAL
+             */
+
+            const yearlyTotal =
+                monthlyBookings.reduce(
+                    (total, value) =>
+                        total + value,
+                    0
+                );
+
+
+            document.getElementById(
+                "yearlyBookingTotal"
+            ).textContent =
+                yearlyTotal.toLocaleString();
+
+
+            /*
+             * AVERAGE MONTHLY BOOKINGS
+             */
+
+            const average =
+                yearlyTotal / 12;
+
+
+            document.getElementById(
+                "averageMonthlyBookings"
+            ).textContent =
+                average.toFixed(1);
+
+
+            /*
+             * BUSIEST MONTH
+             */
+
+            const highest =
+                Math.max(
+                    ...monthlyBookings
+                );
+
+
+            if (highest === 0) {
+
+                document.getElementById(
+                    "busiestBookingMonth"
+                ).textContent =
+                    "—";
+
+            }
+            else {
+
+                const busiestIndex =
+                    monthlyBookings.indexOf(
+                        highest
+                    );
+
+
+                document.getElementById(
+                    "busiestBookingMonth"
+                ).textContent =
+                    monthNames[busiestIndex];
+
+            }
+
+        }
+        async function loadAnalyticsYears() {
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+
+                .from("bookings")
+
+                .select("booking_date")
+
+                .eq("status", "Confirmed");
+
+
+            if (error) {
+
+                console.error(
+                    "Unable to load booking years:",
+                    error
+                );
+
+                return;
+
+            }
+
+
+            const years =
+                new Set();
+
+
+            data.forEach(
+                booking => {
+
+                    if (!booking.booking_date) {
+                        return;
+                    }
+
+
+                    years.add(
+                        booking.booking_date.substring(0, 4)
+                    );
+
+                }
+            );
+
+
+            const currentYear =
+                String(
+                    new Date().getFullYear()
+                );
+
+
+            years.add(currentYear);
+
+
+            const sortedYears =
+                Array.from(years)
+                    .sort(
+                        (a, b) =>
+                            Number(b) -
+                            Number(a)
+                    );
+
+
+            const yearFilter =
+                document.getElementById(
+                    "yearFilter"
+                );
+
+
+            const previousYear =
+                yearFilter.value;
+
+
+            yearFilter.innerHTML = "";
+
+
+            sortedYears.forEach(
+                year => {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+
+                    option.value =
+                        year;
+
+
+                    option.textContent =
+                        year === currentYear
+                            ? `This Year (${year})`
+                            : year;
+
+
+                    yearFilter.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+
+            /*
+             * Keep selected year if it still exists.
+             */
+
+            if (
+                sortedYears.includes(
+                    previousYear
+                )
+            ) {
+
+                yearFilter.value =
+                    previousYear;
+
+            }
+            else {
+
+                yearFilter.value =
+                    currentYear;
+
+            }
+
+
+            await loadBookingAnalytics(
+                yearFilter.value
+            );
+
+        }
+       
         let currentUser = null;
         window.addEventListener("load", async () => {
 
@@ -502,11 +1265,11 @@
                     profile.full_name;
 
                 await loadDashboardStats(user.id);
-
                 await loadBookingCalendar();
-
+                await loadAnalyticsYears();
                 await loadNotifications();
                 setupNotificationRealtime();
+
                 if (profile.avatar_url) {
                     document.getElementById("userAvatar").src =
                         profile.avatar_url;
@@ -518,6 +1281,7 @@
             }
 
         });
+
 
         async function loadDashboardStats() {
 
@@ -862,9 +1626,7 @@
 
         });
 
-        /* =========================================================
-           NOTIFICATION SYSTEM
-        ========================================================= */
+
 
         const notificationTrigger =
             document.getElementById("notificationTrigger");
@@ -880,11 +1642,6 @@
 
         const markNotificationsRead =
             document.getElementById("markNotificationsRead");
-
-
-        /* =========================================================
-           BOOKING NOTIFICATION MODAL
-        ========================================================= */
 
         const notificationBookingModal =
             document.getElementById("notificationBookingModal");
@@ -932,10 +1689,6 @@
         });
 
 
-        /* =========================================================
-           LOAD SAVED READ NOTIFICATIONS
-        ========================================================= */
-
         function loadSavedReadNotifications() {
 
             if (!currentUser) {
@@ -968,11 +1721,6 @@
             }
 
         }
-
-
-        /* =========================================================
-           SAVE READ NOTIFICATIONS
-        ========================================================= */
 
         function saveReadNotifications() {
 
@@ -1641,7 +2389,39 @@
 
             }
         );
+        let analyticsInitialized = false;
 
+
+        async function initializeAnalytics() {
+
+            const yearFilter =
+                document.getElementById(
+                    "yearFilter"
+                );
+
+
+            if (!analyticsInitialized) {
+
+                yearFilter.addEventListener(
+                    "change",
+                    async function () {
+
+                        await loadBookingAnalytics(
+                            this.value
+                        );
+
+                    }
+                );
+
+
+                analyticsInitialized = true;
+
+            }
+
+
+            await loadAnalyticsYears();
+
+        }
 
         /* =========================================================
            REALTIME BOOKING NOTIFICATIONS
@@ -1734,6 +2514,7 @@
                         await refreshBookingCalendar();
 
                         await loadDashboardStats();
+                        await loadAnalyticsYears();
 
                     }
 

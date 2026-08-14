@@ -57,11 +57,34 @@ body {
     display: block;
     border-radius: 4px;
 }
+.logo-box {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    display: block;
+    border-radius: 6px;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid rgba(255,255,255,0.8);
+}
+
+#userName {
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
 
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
 }
 
 /* --- Main Dashboard Body Frame Layout --- */
@@ -158,26 +181,32 @@ body {
     flex: 1;
     padding: 40px;
     margin-left: 230px; /* Offset so content doesn't slip under sidebar */
-    min-height: 100%;
+    min-height: calc(100vh - 70px);
     display: flex;
     flex-direction: column;
     gap: 30px;
 }
 
-/* ==========================================================================
-   GALLERY PAGE CORE LAYOUT RULES
-   ========================================================================= */
-
-/* ==========================
-   GALLERY HEADER
-========================== */
 
 .gallery-header {
     display: flex;
     justify-content: space-between;
+    alig-items: flex-start;
     align-items: center;
-    margin-bottom: 28px;
+    margin-bottom: 0;
     gap: 20px;
+}
+.gallery-header h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: #222;
+}
+
+.gallery-header p {
+    margin: 6px 0 0;
+    color: #888;
+    font-size: 15px;
 }
 
 .gallery-title-wrapper{
@@ -236,7 +265,7 @@ body {
 }
 
 /* 4x2 Grid Layout */
-.gallery-photos-grid {
+.gallery-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
@@ -291,9 +320,6 @@ body {
     align-items:center;
 
     justify-content:center;
-
-    background:white;
-
     color:#639A88;
 
     z-index:5;
@@ -315,13 +341,22 @@ body {
     color:white;
 
 }
-/* Pagination Row styling */
-.gallery-pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 14px;
-    margin-top: 20px;
+.photo-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #f3f3f3;
+    aspect-ratio: 1 / 1;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.photo-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .gallery-pagination a,
@@ -477,7 +512,7 @@ body {
         padding: 30px 20px;
     }
     
-    .gallery-photos-grid {
+    .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
@@ -515,7 +550,7 @@ body {
         justify-content: center;
     }
     
-    .gallery-photos-grid {
+    .gallery-grid {
         grid-template-columns: 1fr;
     }
 }

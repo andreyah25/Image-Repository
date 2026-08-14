@@ -1,0 +1,966 @@
+/* =========================================================
+   CUSTOMER FOLDERS PAGE
+   CLEAN / FINAL VERSION
+   ========================================================= */
+
+#foldersView {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+#foldersView .repo-top-header-block {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+#foldersView .page-header {
+    flex: 1;
+    min-width: 0;
+}
+
+#foldersView .page-header h1 {
+    margin: 0;
+    color: #111;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+#foldersView .page-header p {
+    margin: 7px 0 0;
+    color: #777;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   SEARCH ROW
+   ========================================================= */
+
+#foldersView .repo-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 22px;
+}
+
+#foldersView .table-search-box {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+}
+
+#foldersView .table-search-box input {
+    display: block;
+    width: 100%;
+    height: 40px;
+
+    padding: 0 40px 0 13px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #ddd;
+    border-radius: 9px;
+
+    background: #fff;
+    color: #222;
+
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color .15s ease,
+        box-shadow .15s ease;
+}
+
+#foldersView .table-search-box input::placeholder {
+    color: #999;
+}
+
+#foldersView .table-search-box input:focus {
+    border-color: #aaa;
+
+    box-shadow:
+        0 0 0 3px rgba(0, 0, 0, .04);
+}
+
+#foldersView .table-search-box i {
+    position: absolute;
+
+    right: 13px;
+    top: 50%;
+
+    margin: 0;
+
+    transform: translateY(-50%);
+
+    color: #999;
+    font-size: 13px;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CUSTOMER FOLDER GRID
+   ========================================================= */
+
+#customerFoldersContainer {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(240px, 1fr));
+
+    gap: 18px;
+
+    width: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    box-sizing: border-box;
+
+    align-items: stretch;
+}
+
+
+/* =========================================================
+   CUSTOMER FOLDER CARD
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 285px;
+
+    margin: 0;
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+    background: #fff;
+
+    border: 1px solid #e3e3e3;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s ease,
+        border-color .15s ease,
+        box-shadow .15s ease;
+}
+
+#customerFoldersContainer .repository-client-card:hover {
+    transform: translateY(-2px);
+
+    border-color: #d0d0d0;
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, .07);
+}
+
+
+/* =========================================================
+   FOLDER ICON
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .folder-icon {
+    position: static !important;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+
+    width: 42px;
+    height: 36px;
+
+    margin: 0 0 15px !important;
+    padding: 0 !important;
+
+    transform: none !important;
+
+    color: #111 !important;
+
+    font-size: 34px !important;
+    line-height: 1;
+
+    z-index: 1;
+}
+
+
+/* =========================================================
+   CUSTOMER NAME
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card h3 {
+    display: block;
+
+    width: 100%;
+
+    margin: 0 0 7px !important;
+
+    color: #111;
+
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+
+    line-height: 1.3;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   BOOKING ID
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .client-id {
+    display: block;
+
+    width: 100%;
+
+    margin: 0 !important;
+
+    color: #999;
+
+    font-size: 10px;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   SESSION TYPE
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .client-event {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 14px !important;
+
+    color: #555;
+
+    font-size: 13px;
+
+    line-height: 1.4;
+}
+
+#customerFoldersContainer .repository-client-card .client-event i {
+    width: 14px;
+
+    color: #555;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .client-date {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 7px !important;
+
+    color: #777;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+#customerFoldersContainer .repository-client-card .client-date i {
+    width: 14px;
+
+    color: #777;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   COMPLETED STATUS
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .client-status {
+    display: inline-flex;
+    align-items: center;
+
+    width: fit-content;
+
+    gap: 6px;
+
+    margin-top: 12px !important;
+
+    color: #247a3d;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    line-height: 1.4;
+}
+
+#customerFoldersContainer .repository-client-card .client-status i {
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   PHOTO COUNT
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .photo-count {
+    display: block;
+
+    margin-top: 8px !important;
+
+    color: #777;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   CARD ACTIONS
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .quick-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    width: 100%;
+
+    margin-top: auto !important;
+    padding-top: 18px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CARD BUTTONS
+   ========================================================= */
+
+#customerFoldersContainer .repository-client-card .quick-actions button {
+    position: static !important;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    min-height: 34px;
+
+    margin: 0 !important;
+    padding: 7px 12px !important;
+
+    box-sizing: border-box;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    background: #fff;
+    color: #222;
+
+    cursor: pointer;
+
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+
+    line-height: 1;
+
+    transition:
+        background .15s ease,
+        border-color .15s ease;
+}
+
+#customerFoldersContainer
+.repository-client-card
+.quick-actions
+button:hover {
+    background: #f5f5f5;
+
+    border-color: #ccc;
+}
+
+
+/* =========================================================
+   OPEN BUTTON
+   ========================================================= */
+
+#customerFoldersContainer
+.repository-client-card
+.quick-actions
+button.primary {
+    border-color: #111;
+
+    background: #111;
+
+    color: #fff;
+}
+
+#customerFoldersContainer
+.repository-client-card
+.quick-actions
+button.primary:hover {
+    background: #222;
+
+    border-color: #222;
+}
+
+
+/* =========================================================
+   REPOSITORY ACTION BUTTONS
+   Used on customer photo view
+   ========================================================= */
+
+.repository-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+}
+
+.repository-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 38px;
+
+    padding: 9px 13px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+
+    transition:
+        background .15s ease,
+        border-color .15s ease;
+}
+
+.add-new-client-btn {
+    border: 1px solid #111;
+
+    background: #111;
+
+    color: #fff;
+}
+
+.add-new-client-btn:hover {
+    background: #222;
+}
+
+.copy-client-link-btn,
+.back-to-folders-btn {
+    border: 1px solid #ddd;
+
+    background: #fff;
+
+    color: #222;
+}
+
+.copy-client-link-btn:hover,
+.back-to-folders-btn:hover {
+    background: #f6f6f6;
+}
+
+
+/* =========================================================
+   CLIENT GALLERY LINK
+   ========================================================= */
+
+.client-link-section {
+    margin-bottom: 20px;
+
+    padding: 14px;
+
+    border: 1px solid #e4e4e4;
+    border-radius: 10px;
+
+    background: #fafafa;
+}
+
+.client-link-section label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #555;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.client-link-row {
+    display: flex;
+
+    gap: 7px;
+}
+
+.client-link-row input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 38px;
+
+    padding: 0 10px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #555;
+
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+
+    outline: none;
+}
+
+.client-link-row button {
+    flex: 0 0 40px;
+
+    height: 38px;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #444;
+
+    cursor: pointer;
+}
+
+.client-link-row button:hover {
+    background: #f1f1f1;
+}
+
+
+/* =========================================================
+   PHOTO SECTION
+   ========================================================= */
+
+.repository-heading {
+    margin: 22px 0 14px;
+}
+
+.repository-heading h2 {
+    margin: 0;
+
+    color: #111;
+
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.repository-heading p {
+    margin: 4px 0 0;
+
+    color: #777;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   UPLOAD STATUS
+   ========================================================= */
+
+.upload-status {
+    display: none;
+
+    margin-bottom: 18px;
+
+    padding: 11px 13px;
+
+    border-radius: 9px;
+
+    background: #f5f5f5;
+
+    color: #555;
+
+    font-size: 13px;
+}
+
+.upload-status.show {
+    display: block;
+}
+
+.upload-status.error {
+    background: #fff1f1;
+
+    color: #a32121;
+}
+
+
+/* =========================================================
+   PHOTO GRID
+   ========================================================= */
+
+.customer-photo-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(180px, 1fr));
+
+    gap: 15px;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   PHOTO CARD
+   ========================================================= */
+
+.customer-photo-card {
+    position: relative;
+
+    overflow: hidden;
+
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+
+    background: #fff;
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease;
+}
+
+.customer-photo-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 20px rgba(0, 0, 0, .07);
+}
+
+.customer-photo-card img {
+    display: block;
+
+    width: 100%;
+    height: 190px;
+
+    object-fit: cover;
+
+    background: #f5f5f5;
+}
+
+.customer-photo-card .photo-information {
+    padding: 9px 10px;
+
+    background: #fff;
+}
+
+.customer-photo-card .photo-name {
+    overflow: hidden;
+
+    color: #666;
+
+    font-size: 11px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.customer-photo-card .photo-status {
+    margin-top: 4px;
+
+    color: #888;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   PROCESSING BADGE
+   ========================================================= */
+
+.photo-processing-badge {
+    position: absolute;
+
+    top: 8px;
+    left: 8px;
+
+    z-index: 2;
+
+    padding: 4px 8px;
+
+    border-radius: 999px;
+
+    background: rgba(0, 0, 0, .72);
+
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    text-transform: capitalize;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+#customerFoldersContainer .customer-folder-empty {
+    grid-column: 1 / -1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 250px;
+
+    padding: 40px 20px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+    color: #777;
+}
+
+#customerFoldersContainer .customer-folder-empty i {
+    display: block;
+
+    margin: 0 0 14px;
+
+    color: #aaa;
+
+    font-size: 36px;
+}
+
+#customerFoldersContainer .customer-folder-empty div {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#customerFoldersContainer .customer-folder-empty small {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #999;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+    #customerFoldersContainer {
+        grid-template-columns:
+            repeat(3, minmax(220px, 1fr));
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — SMALL TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    #customerFoldersContainer {
+        grid-template-columns:
+            repeat(2, minmax(220px, 1fr));
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    #foldersView .repo-top-header-block {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    #foldersView .table-search-box {
+        width: 100%;
+    }
+
+    #customerFoldersContainer {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 12px;
+    }
+
+    #customerFoldersContainer .repository-client-card {
+        min-height: 275px;
+
+        padding: 16px;
+    }
+
+    #customerFoldersContainer
+    .repository-client-card
+    .folder-icon {
+        margin-bottom: 13px !important;
+
+        font-size: 30px !important;
+    }
+
+    #customerFoldersContainer
+    .repository-client-card
+    h3 {
+        font-size: 14px;
+    }
+
+    #customerFoldersContainer
+    .repository-client-card
+    .quick-actions {
+        gap: 6px;
+    }
+
+    #customerFoldersContainer
+    .repository-client-card
+    .quick-actions button {
+        flex: 1;
+    }
+
+    #photosView .repository-actions {
+        width: 100%;
+    }
+
+    #photosView .repository-actions button {
+        flex: 1;
+    }
+
+    .client-link-row {
+        flex-direction: column;
+    }
+
+    .client-link-row button {
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .customer-photo-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 10px;
+    }
+
+    .customer-photo-card img {
+        height: 150px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+    #customerFoldersContainer {
+        grid-template-columns: 1fr;
+    }
+
+    #customerFoldersContainer
+    .repository-client-card {
+        min-height: 255px;
+    }
+
+    #customerFoldersContainer
+    .repository-client-card
+    .quick-actions {
+        flex-direction: row;
+    }
+
+    #customerFoldersContainer
+    .repository-client-card
+    .quick-actions button {
+        flex: 1;
+    }
+
+    .customer-photo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .customer-photo-card img {
+        height: 220px;
+    }
+
+    .repository-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .repository-actions button {
+        width: 100%;
+        flex: none;
+    }
+
+    #foldersView .page-header h1 {
+        font-size: 23px;
+    }
+}
