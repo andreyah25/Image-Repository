@@ -24,7 +24,7 @@
 }
 
 .tab-btn.active {
-    color: #1f2d2f;
+    color: #639A88;
     font-weight: 700;
 }
 
@@ -35,14 +35,14 @@
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: #1f2d2f;
+    background-color: #528373;
 }
 
 .confirm-btn {
     background: #1d7a4a;
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     padding: 8px 14px;
     font-size: 13px;
     font-weight: 600;
@@ -67,7 +67,7 @@
     background: #d9534f;
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     padding: 8px 14px;
     font-size: 13px;
     font-weight: 600;
@@ -200,7 +200,7 @@
 }
 
 .add-new-client-btn {
-    background-color: #1f2d2f;
+    background-color: #639A88;
     color: #ffffff;
     border: none;
     border-radius: 4px;
@@ -217,7 +217,7 @@
 }
 
 .add-new-client-btn:hover {
-    background-color: #2b3d40;
+    background-color: #528373;
 }
 
 .ui-table-card-panel {
@@ -225,34 +225,61 @@
     border: 1px solid #e5e5e5;
     border-radius: 6px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
-    overflow: hidden;
+    overflow-x: auto; /* Enables smooth horizontal scroll for 11 columns */
     min-height: 580px;
+    width: 100%;
 }
 
 .ui-data-grid {
     width: 100%;
+    min-width: 1200px; /* Ensures wide tables do not squash text headers */
     border-collapse: collapse;
     text-align: left;
 }
 
 .ui-data-grid thead tr {
-    background-color: #1f2d2f;
+    background-color: #639A88;
 }
 
 .ui-data-grid th {
     color: #ffffff;
-    font-weight: 400;
+    font-weight: 500;
     font-size: 13px;
-    padding: 14px 20px;
+    padding: 14px 18px;
     letter-spacing: 0.2px;
     white-space: nowrap;
 }
 
 .ui-data-grid td {
-    padding: 16px 20px;
+    padding: 14px 18px;
     border-bottom: 1px solid #f2f2f2;
     color: #333333;
-    font-size: 14px;
+    font-size: 13.5px;
+    vertical-align: middle;
+}
+
+.confirm-btn, .reject-btn, .complete-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.complete-btn {
+    background: #1D4ED8;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.complete-btn:hover {
+    background: #1E40AF;
+    transform: translateY(-1px);
 }
 
 .filter-dropdown-wrapper {
@@ -326,6 +353,10 @@
     margin: 4px 0;
 }
 
+/* =========================================================
+   ADD NEW CLIENT MODAL STYLING
+========================================================= */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -349,7 +380,7 @@
 
 .modal-card {
     background: #ffffff;
-    width: 440px;
+    width: 420px;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
@@ -362,39 +393,39 @@
 }
 
 .modal-header {
-    background-color: #1f2d2f;
-    padding: 18px;
+    background-color: #639A88;
+    padding: 18px 24px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     color: #ffffff;
 }
 
 .modal-header i {
-    font-size: 20px;
+    font-size: 22px;
 }
 
 .modal-header h2 {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 500;
-    letter-spacing: 0.3px;
     margin: 0;
+    letter-spacing: 0.3px;
 }
 
 .modal-form {
-    padding: 25px 35px 35px 35px;
+    padding: 24px 32px 32px 32px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
 .form-instruction {
     text-align: center;
-    color: #666666;
+    color: #777777;
     font-size: 15px;
-    font-weight: 300;
-    margin-bottom: 8px;
+    font-weight: 400;
+    margin: 0 0 6px 0;
 }
 
 .form-field {
@@ -405,8 +436,8 @@
 .form-field input,
 .form-field select {
     width: 100%;
-    height: 48px;
-    border: 1px solid #b5b5b5;
+    height: 46px;
+    border: 1px solid #c8c8c8;
     border-radius: 6px;
     padding: 0 16px;
     font-family: inherit;
@@ -420,11 +451,11 @@
 
 .form-field input:focus,
 .form-field select:focus {
-    border-color: #1f2d2f;
+    border-color: #233539;
 }
 
 .form-field input::placeholder {
-    color: #999999;
+    color: #a0a0a0;
 }
 
 .select-field-wrapper select {
@@ -436,7 +467,7 @@
 
 .select-field-wrapper select:invalid,
 .select-field-wrapper select option[value=""] {
-    color: #999999;
+    color: #a0a0a0;
 }
 
 .select-arrow {
@@ -444,7 +475,7 @@
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
-    color: #888888;
+    color: #777777;
     font-size: 14px;
     pointer-events: none;
 }
@@ -453,328 +484,286 @@
     position: relative;
 }
 
-.date-field-wrapper input[type="date"] {
-    color: transparent;
-    cursor: pointer;
-}
-
-.date-field-wrapper input[type="date"]:valid {
-    color: #333333;
-}
-
-.date-placeholder {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #999999;
-    font-size: 14px;
-    pointer-events: none;
-    display: block;
-}
-
-.date-field-wrapper input[type="date"]:valid~.date-placeholder,
-.date-field-wrapper input[type="date"]:focus~.date-placeholder {
-    display: none;
-}
-
-.date-field-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
-    background: transparent;
-    bottom: 0;
-    color: transparent;
-    cursor: pointer;
-    height: auto;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: auto;
-}
-
-.date-field-wrapper::after {
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-    content: "\f133";
+.date-icon {
     position: absolute;
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
-    color: #888888;
-    font-size: 16px;
+    color: #777777;
+    font-size: 18px;
     pointer-events: none;
 }
 
 .save-client-btn {
-    background-color: #1f2d2f;
+    background-color: #639A88;
     color: #ffffff;
     border: none;
     border-radius: 6px;
     height: 48px;
     font-family: inherit;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     margin-top: 10px;
-    transition: background-color 0.15s ease;
 }
 
 .save-client-btn:hover {
-    background-color: #2b3d40;
+    background-color: #528373;
 }
 
-/* ==========================
-   Notification Dropdown
-========================== */
+/* =========================================================
+   NOTIFICATION DROPDOWN & TRIGGER BUTTON STYLING
+========================================================= */
 
-.notification-dropdown {
-    position: absolute;
-    top: 62px;
-    right: 80px;
+div.notification-wrapper {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+}
 
-    width: 390px;
-    max-height: 480px;
-    overflow-y: auto;
+button.notification-btn {
+    position: relative !important;
+    background: transparent !important;
+    border: none !important;
+    color: #353535 !important;
+    font-size: 18px !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    transition: background-color 0.2s ease, color 0.2s ease !important;
+}
 
-    background: #fff;
-    border-radius: 18px;
-    border: 1px solid #e9edf5;
+button.notification-btn:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #000000 !important;
+}
 
-    box-shadow:
-        0 12px 35px rgba(0, 0, 0, .12),
-        0 2px 10px rgba(0, 0, 0, .05);
+span.notification-badge,
+#notificationCount {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    min-width: 17px !important;
+    height: 17px !important;
+    padding: 0 4px !important;
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    font-family: "DM Sans", sans-serif, inherit !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid #ffffff !important;
+}
 
+.notification-dropdown,
+.notification-panel {
+    position: absolute !important;
+    top: 70px !important;
+    right: 50px !important;
+    width: 380px !important;
+    max-height: 480px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    border: 1px solid #e9edf5 !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12), 0 2px 10px rgba(0, 0, 0, 0.05) !important;
     display: none;
-    z-index: 999;
-    overflow-x: hidden;
-
-    animation: notifFade .25s ease;
+    z-index: 99999 !important;
 }
 
-/* nice scrollbar */
+.notification-dropdown.show,
+.notification-panel.show {
+    display: block !important;
+    animation: notifFade 0.2s ease-out forwards;
+}
 
-.notification-dropdown::-webkit-scrollbar {
+/* Custom Scrollbar */
+.notification-dropdown::-webkit-scrollbar,
+.notification-panel::-webkit-scrollbar {
     width: 8px;
 }
 
-.notification-dropdown::-webkit-scrollbar-thumb {
+.notification-dropdown::-webkit-scrollbar-thumb,
+.notification-panel::-webkit-scrollbar-thumb {
     background: #d6dce6;
     border-radius: 20px;
 }
 
-.notification-dropdown::-webkit-scrollbar-thumb:hover {
+.notification-dropdown::-webkit-scrollbar-thumb:hover,
+.notification-panel::-webkit-scrollbar-thumb:hover {
     background: #bcc5d2;
 }
 
+.notification-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    background: #ffffff !important;
+    padding: 16px 20px !important;
+    border-bottom: 1px solid #eceff4 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.notification-header h3 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #222222 !important;
+}
+
+.notification-header button {
+    background: none !important;
+    border: none !important;
+    color: #639A88 !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+}
+
+.notification-header button:hover {
+    color: #528373 !important;
+}
+
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Individual Notification Items */
 .notification-item {
-    position: relative;
-
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-
-    padding: 18px;
-
-    cursor: pointer;
-    transition: .25s;
-
-    border-bottom: 1px solid #f3f4f8;
-    background: #fff;
+    position: relative !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+    padding: 16px 20px !important;
+    cursor: pointer !important;
+    transition: background 0.25s ease !important;
+    border-bottom: 1px solid #f3f4f8 !important;
+    background: #ffffff !important;
 }
 
 .notification-item:last-child {
-    border-bottom: none;
+    border-bottom: none !important;
 }
 
 .notification-item:hover {
-    background: #f8fbff;
+    background: #f8fbff !important;
 }
 
-/* unread */
-
+/* Unread Notifications */
 .notification-item.unread {
-    background: #eef6ff;
+    background: #eef6ff !important;
 }
 
 .notification-item.unread::before {
-    content: "";
-    position: absolute;
-
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-
-    width: 8px;
-    height: 8px;
-
-    border-radius: 50%;
-    background: #2f80ed;
+    content: "" !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    background: #2f80ed !important;
 }
-
-
 
 .notification-icon {
-
-    width: 48px;
-    height: 48px;
-
-    border-radius: 14px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    flex-shrink: 0;
-
-    color: #fff;
-    font-size: 18px;
-
-    background: linear-gradient(135deg, #2f80ed, #56ccf2);
-
-    box-shadow:
-        0 8px 18px rgba(47, 128, 237, .25);
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    background: #639A88 !important;
+    box-shadow: 0 6px 14px rgba(99, 154, 136, 0.25) !important;
 }
 
-
-
 .notification-content {
-    flex: 1;
+    flex: 1 !important;
 }
 
 .notification-content h4 {
-
-    margin: 0;
-
-    color: #222;
-
-    font-size: 15px;
-    font-weight: 700;
+    margin: 0 !important;
+    color: #222222 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
 }
-.notification-btn{
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+
 .notification-content p {
-
-    margin: 6px 0 8px;
-
-    color: #666;
-
-    font-size: 13px;
-    line-height: 1.6;
+    margin: 4px 0 6px !important;
+    color: #666666 !important;
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
 }
 
 .notification-content small {
-
-    display: flex;
-    align-items: center;
-    gap: 5px;
-
-    color: #9aa2af;
-
-    font-size: 12px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: #9aa2af !important;
+    font-size: 11.5px !important;
 }
-
-
-
-#notificationCount {
-
-    position: absolute;
-
-    top: -6px;
-    right: -6px;
-
-    min-width: 21px;
-    height: 21px;
-
-    padding: 0 6px;
-
-    border-radius: 999px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background: #ff3b30;
-    color: #fff;
-
-    font-size: 11px;
-    font-weight: 700;
-
-    border: 2px solid #fff;
-
-    box-shadow: 0 5px 12px rgba(255, 59, 48, .35);
-}
-
 
 .notification-list-empty {
+    text-align: center !important;
+    padding: 40px 20px !important;
+    color: #999999 !important;
+    font-size: 13.5px !important;
+}
 
+/* =========================================================
+   STATUS BADGES & ANIMATIONS
+========================================================= */
+
+.status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .3px;
     text-align: center;
-
-    padding: 45px 20px;
-
-    color: #999;
+    min-width: 110px;
 }
 
-.notification-header{
-    position:sticky;
-    top:0;
-    z-index:5;
-
-    background:#fff;
-
-    padding:18px 20px;
-
-    border-bottom:1px solid #eceff4;
+.status-badge.pending {
+    background: #fff3cd;
+    color: #b7791f;
+    border: 1px solid #f6d365;
 }
 
-.notification-header h3{
-    margin:0;
-    font-size:17px;
-    font-weight:700;
-    color:#222;
+.status-badge.confirmed {
+    background: rgba(34, 197, 94, 0.15) !important;
+    color: #16a34a !important;
+    border: 1px solid #6ee7b7;
 }
 
-/* Status Badge */
-.status-badge{
-    display:inline-block;
-    padding:8px 16px;
-    border-radius:30px;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:.3px;
-    text-align:center;
-    min-width:110px;
+.status-badge.rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
 }
 
-/* Pending */
-.status-badge.pending{
-    background:#fff3cd;
-    color:#b7791f;
-    border:1px solid #f6d365;
-}
-
-/* Confirmed */
-.status-badge.confirmed{
-    background:#d1fae5;
-    color:#065f46;
-    border:1px solid #6ee7b7;
-}
-
-/* Rejected */
-.status-badge.rejected{
-    background:#fee2e2;
-    color:#b91c1c;
-    border:1px solid #fca5a5;
-}
 @keyframes notifFade {
-
     from {
         opacity: 0;
-        transform: translateY(-12px) scale(.98);
+        transform: translateY(-10px) scale(.98);
     }
-
     to {
         opacity: 1;
         transform: translateY(0) scale(1);

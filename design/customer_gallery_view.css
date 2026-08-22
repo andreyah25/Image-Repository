@@ -1,22 +1,25 @@
 /* --- Direct Google Font Import (First Priority) --- */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
-/* --- Reset Rules (Matching client_enter_link.css) --- */
+/* --- Reset Rules --- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+body, input, button, select, textarea, p, h1, h2, h3, h4, h5, h6, a, span, label {
+    font-family: 'DM Sans', sans-serif !important;
+}
+
 body {
-    font-family: "DM Sans", sans-serif !important;
     background: #f6f6f6;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* --- Top Header Navigation (Exact Copied Gradient from Booking) --- */
+/* --- Top Header Navigation --- */
 .top-navbar {
     height: 70px;
     background: linear-gradient(
@@ -57,6 +60,7 @@ body {
     display: block;
     border-radius: 4px;
 }
+
 .logo-box {
     width: 42px;
     height: 42px;
@@ -65,37 +69,38 @@ body {
     border-radius: 6px;
 }
 
-.avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    border: 2px solid rgba(255,255,255,0.8);
-}
-
-#userName {
-    color: #353535;
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
 .navbar-right {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
+/* Header User Name Styling */
+.top-navbar .navbar-right #userName {
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
 /* --- Main Dashboard Body Frame Layout --- */
 .dashboard-wrapper {
     display: flex;
     flex: 1;
-    margin-top: 70px; /* Offset for the fixed header */
+    margin-top: 70px; /* Offset for fixed header */
     min-height: calc(100vh - 70px);
 }
 
-/* --- Sidebar (Matching client_enter_link.css) --- */
+/* --- Sidebar --- */
 .sidebar {
     width: 230px;
     background: white;
@@ -135,7 +140,7 @@ body {
 }
 
 .sidebar a.active {
-    background: #639A88; /* Buttons & Active State strictly #639A88 */
+    background: #639A88;
     color: #ffffff;
 }
 
@@ -143,7 +148,7 @@ body {
     background: #528373;
 }
 
-/* --- Red Logout Button Overrides (Matching client_enter_link.css) --- */
+/* Red Logout Button Overrides */
 .sidebar .logout-btn {
     display: flex;
     align-items: center;
@@ -176,175 +181,103 @@ body {
     background: #fff3f3 !important;
 }
 
-/* --- Center Content Area (Matching layout architecture) --- */
+/* --- Center Content Area --- */
 .content {
     flex: 1;
     padding: 40px;
-    margin-left: 230px; /* Offset so content doesn't slip under sidebar */
+    margin-left: 230px;
     min-height: calc(100vh - 70px);
     display: flex;
     flex-direction: column;
     gap: 30px;
 }
 
-
 .gallery-header {
     display: flex;
     justify-content: space-between;
-    alig-items: flex-start;
     align-items: center;
     margin-bottom: 0;
-    gap: 20px;
-}
-.gallery-header h1 {
-    margin: 0;
-    font-size: 30px;
-    font-weight: 700;
-    color: #222;
+    gap: 35px;
 }
 
-.gallery-header p {
-    margin: 6px 0 0;
-    color: #888;
+/* --- MAXIMUM SPECIFICITY FIX FOR CLIENT NAME INSIDE GALLERY CONTENT --- */
+main.content .gallery-header #galleryTitle,
+.dashboard-wrapper .content .gallery-header #galleryTitle,
+h1#galleryTitle {
+    font-size: 48px;
+    font-weight: 400;
+    color: #333;
+}
+
+main.content .gallery-header #gallerySubtitle,
+.dashboard-wrapper .content .gallery-header #gallerySubtitle,
+p#gallerySubtitle {
+    color: #888888 !important;
+    font-size: 15px !important;
+    margin: 0 !important;
+}
+
+.btn-download-all {
+    padding: 13px 24px;
+    border-radius: 5px;
+    background: #639A88;
+    color: white;
+    border: none;
     font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .25s;
 }
 
-.gallery-title-wrapper{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
+.btn-download-all:hover {
+    background: #527f71;
 }
 
-.gallery-title{
-    font-size:30px;
-    font-weight:700;
-    color:#222;
-}
-
-.gallery-subtitle{
-    color:#888;
-    font-size:15px;
-}
-
-.gallery-title:empty::before{
-    content:"Gallery";
-    color:#c7c7c7;
-}
-
-.gallery-subtitle:empty::before{
-    content:"Waiting for gallery details...";
-    color:#c7c7c7;
-}
-
-.btn-download-all{
-
-    padding:13px 24px;
-
-    border-radius:10px;
-
-    background:#639A88;
-
-    color:white;
-
-    border:none;
-
-    font-size:15px;
-
-    font-weight:600;
-
-    cursor:pointer;
-
-    transition:.25s;
-
-}
-
-.btn-download-all:hover{
-
-    background:#527f71;
-
-}
-
-/* 4x2 Grid Layout */
+/* Grid Layout */
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 20px;
     width: 100%;
+    flex: 1;
 }
 
-/* Gray Wireframe Placeholder Card Boxes */
-/* ==========================
-   PHOTO CARD
-========================== */
-
-.photo-card{
-    position:relative;
-    overflow:hidden;
-    border-radius:14px;
-    background:#f3f3f3;
-    aspect-ratio:1;
-    cursor:pointer;
-    box-shadow:0 8px 22px rgba(0,0,0,.08);
-    transition:.35s;
+/* Empty Gallery / Loading Container */
+.gallery-loading {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #888;
+    margin: auto 0;
 }
 
-.photo-card:hover{
-    transform:translateY(-4px);
-    box-shadow:0 18px 35px rgba(0,0,0,.12);
+.gallery-loading i {
+    font-size: 40px;
+    margin-bottom: 16px;
+    color: #b0b0b0;
 }
 
-.photo-card img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    transition:.45s;
+.gallery-loading p {
+    font-size: 17px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
 }
 
-.individual-download-btn{
-
-    position:absolute;
-
-    right:15px;
-
-    top:15px;
-
-    width:42px;
-
-    height:42px;
-
-    border-radius:50%;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-    color:#639A88;
-
-    z-index:5;
-
-    text-decoration:none;
-
-    box-shadow:0 8px 18px rgba(0,0,0,.15);
-
-    transition:.25s;
-
+.gallery-loading small {
+    font-size: 14px;
+    color: #888;
 }
 
-.individual-download-btn:hover{
-
-    transform:scale(1.1);
-
-    background:#639A88;
-
-    color:white;
-
-}
+/* Photo Card Styling */
 .photo-card {
     position: relative;
     overflow: hidden;
-    border-radius: 14px;
+    border-radius: 8px;
     background: #f3f3f3;
     aspect-ratio: 1 / 1;
     cursor: pointer;
@@ -352,11 +285,54 @@ body {
     transition: transform .25s ease, box-shadow .25s ease;
 }
 
+.photo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 35px rgba(0,0,0,.12);
+}
+
 .photo-card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: .45s;
+}
+
+.individual-download-btn {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #639A88;
+    z-index: 5;
+    text-decoration: none;
+    box-shadow: 0 8px 18px rgba(0,0,0,.15);
+    transition: .25s;
+    background: #ffffff;
+    border: none;
+    cursor: pointer;
+}
+
+.individual-download-btn:hover {
+    transform: scale(1.1);
+    background: #639A88;
+    color: white;
+}
+
+/* Pagination Bar */
+.gallery-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 0;
 }
 
 .gallery-pagination a,
@@ -373,80 +349,7 @@ body {
     border-radius: 4px;
     transition: color 0.15s, background-color 0.15s;
 }
-/* ==========================
-   LOCKED GALLERY
-========================== */
 
-.photo-card.locked img{
-    filter: blur(10px) brightness(.75);
-    transform: scale(1.15);
-    pointer-events:none;
-    user-select:none;
-    transition:.4s;
-}
-.photo-card:hover img{
-    transform:scale(1.08);
-}
-
-.photo-card.locked:hover img{
-    transform:scale(1.18);
-}
-.photo-card.locked::after{
-
-    content:"Preview Only";
-
-    position:absolute;
-
-    top:50%;
-
-    left:50%;
-
-    transform:translate(-50%,-50%);
-
-    background:rgba(0,0,0,.65);
-
-    color:white;
-
-    padding:10px 18px;
-
-    border-radius:30px;
-
-    font-size:13px;
-
-    font-weight:600;
-
-    letter-spacing:.5px;
-
-}
-.photo-card.unlocked img{
-
-    filter:none;
-
-    transform:none;
-
-}
-.photo-card::before{
-
-    content:"";
-
-    position:absolute;
-
-    inset:0;
-
-    background:linear-gradient(
-        transparent,
-        rgba(0,0,0,.25)
-    );
-
-    z-index:2;
-
-}
-
-.photo-card.unlocked::before{
-
-    display:none;
-
-}
 .gallery-pagination a:hover {
     color: #333333;
     background-color: #f5f5f5;
@@ -468,10 +371,7 @@ body {
     color: #8c8c8c;
 }
 
-/* ==========================================================================
-   RESPONSIVE LAYOUT OVERRIDES
-   ========================================================================= */
-
+/* Responsive Overrides */
 @media (max-width: 900px) {
     .dashboard-wrapper {
         flex-direction: column;
@@ -513,7 +413,8 @@ body {
     }
     
     .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
     }
 }
 
@@ -542,7 +443,7 @@ body {
     .gallery-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
+        gap: 25px;
     }
     
     .btn-download-all {
@@ -555,34 +456,7 @@ body {
     }
 }
 
-/* ==========================================================================
-   PAYMENT REQUIRED MODAL POPUP SYSTEM
-   ========================================================================= */
-.payment-required{
-
-    position:absolute;
-
-    bottom:15px;
-
-    left:50%;
-
-    transform:translateX(-50%);
-
-    background:#639A88;
-
-    color:white;
-
-    padding:8px 16px;
-
-    border-radius:25px;
-
-    font-size:12px;
-
-    font-weight:600;
-
-    z-index:4;
-
-}
+/* Payment Modal System */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -608,7 +482,7 @@ body {
     background-color: #ffffff;
     width: calc(100% - 30px);
     max-width: 390px;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     transform: scale(0.95);
@@ -619,7 +493,6 @@ body {
     transform: scale(1);
 }
 
-/* Modal Header - Set to #639A88 */
 .modal-header {
     background-color: #639A88;
     color: #ffffff;
@@ -640,7 +513,6 @@ body {
     font-weight: 500;
     letter-spacing: 0.2px;
     color: #ffffff;
-    font-family: "DM Sans", sans-serif !important;
 }
 
 .modal-body {
@@ -657,7 +529,6 @@ body {
     font-weight: 400;
     line-height: 1.4;
     color: #555555;
-    font-family: "DM Sans", sans-serif !important;
 }
 
 .modal-actions-row {
@@ -677,10 +548,9 @@ body {
     width: 165px;
     font-size: 13.5px;
     font-weight: 600;
-    border-radius: 6px;
+    border-radius: 5px;
     text-align: center;
     white-space: nowrap;
-    font-family: "DM Sans", sans-serif !important;
     box-sizing: border-box;
 }
 
@@ -697,7 +567,6 @@ body {
     border-color: #1f2d2f;
 }
 
-/* Proceed to Payment Button - Primary Action Button ONLY #639A88 */
 .btn-modal-proceed {
     background-color: #639A88;
     color: #ffffff !important;

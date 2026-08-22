@@ -255,10 +255,55 @@
 }
 
 
-/* =========================================================
-   SESSION TYPE
-   ========================================================= */
+.photo-search-section {
+    margin: 20px 0;
+}
 
+.photo-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+}
+
+.photo-search-box > i {
+    position: absolute;
+    left: 16px;
+    color: #777;
+    pointer-events: none;
+}
+
+.photo-search-box input {
+    width: 100%;
+    height: 46px;
+    padding: 0 45px 0 45px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    outline: none;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+}
+
+.photo-search-box input:focus {
+    border-color: #888;
+}
+
+.photo-search-box button {
+    position: absolute;
+    right: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #777;
+    font-size: 15px;
+}
+
+.photo-search-info {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #777;
+}
 #customerFoldersContainer .repository-client-card .client-event {
     display: flex;
     align-items: center;

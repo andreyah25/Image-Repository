@@ -1,11 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: "DM Sans", sans-serif !important;
 }
 
 body {
-    font-family: "DM Sans", sans-serif;
+    font-family: "DM Sans", sans-serif !important;
     background: #f6f6f6;
     height: 100vh;
     overflow: hidden;
@@ -13,7 +16,7 @@ body {
 
 .top-navbar {
     height: 70px;
-    background: #1f2d2f;
+    background: linear-gradient(135deg, #dbeffe 0%, #fed7aa 25%, #fef08a 50%, #dcfce7 75%, #f3e8ff 100%);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -24,7 +27,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: white;
+    color: #353535;
     font-size: 13px;
 }
 
@@ -32,7 +35,6 @@ body {
     width: 50px;
     height: 44px;
     object-fit: contain;
-    background: white;
     border-radius: 6px;
     padding: 3px;
 }
@@ -47,19 +49,21 @@ body {
     position: relative;
     background: none;
     border: none;
-    color: #999;
+    color: #353535;
     font-size: 18px;
     cursor: pointer;
-    padding: 8px;
+    padding: 0;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: 50% !important; /* Circle Icon Frame */
 }
 
 .notification-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: rgba(255, 255, 255, 0.15);
+    color: #000;
 }
 
 .search-box {
@@ -78,16 +82,16 @@ body {
     width: 350px;
     height: 40px;
     border: none;
-    border-radius: 3px;
+    border-radius: 6px;
     padding-left: 40px;
     outline: none;
-    font-family: inherit;
+    font-family: "DM Sans", sans-serif !important;
 }
 
 .avatar {
     width: 42px;
     height: 42px;
-    border-radius: 50%;
+    border-radius: 50% !important; /* Circle Avatar */
     object-fit: cover;
     border: 2px solid white;
 }
@@ -99,7 +103,7 @@ body {
 }
 
 #userName {
-    color: white;
+    color: #353535;
     font-size: 14px;
     font-weight: 500;
     max-width: 150px;
@@ -108,6 +112,9 @@ body {
     text-overflow: ellipsis;
 }
 
+/* ==========================================================================
+   LAYOUT WRAPPER & SIDEBAR
+   ========================================================================== */
 .dashboard-wrapper {
     display: flex;
     height: calc(100vh - 70px);
@@ -125,17 +132,6 @@ body {
     overflow: hidden;
 }
 
-.sidebar.collapsed {
-    width: 0;
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.sidebar.collapsed nav,
-.sidebar.collapsed .logout-btn {
-    display: none;
-}
-
 .sidebar nav {
     display: flex;
     flex-direction: column;
@@ -147,7 +143,7 @@ body {
     color: #444;
     font-size: 14px;
     padding: 12px 15px;
-    border-radius: 4px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -162,32 +158,101 @@ body {
 }
 
 .sidebar a.active {
-    background: #1f2d2f;
-    color: white;
+    background: #639A88 !important;
+    color: white !important;
+}
+
+
+.sidebar {
+    width: 230px;
+    flex-shrink: 0;
+    transition: width 0.3s ease;
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+    width: 70px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Keep navigation centered */
+.sidebar.collapsed nav a {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    gap: 0;
+}
+
+/* Hide navigation text */
+.sidebar.collapsed nav a {
+    font-size: 0;
+}
+
+/* Keep icons visible */
+.sidebar.collapsed nav a i {
+    width: 18px;
+    margin: 0;
+    font-size: 15px;
+}
+
+/* Logout button */
+.sidebar.collapsed .logout-btn {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    gap: 0;
+}
+
+/* Hide "Log out" */
+.sidebar.collapsed .logout-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .logout-icon {
+    margin: 0;
 }
 
 .sidebar-toggle {
-    position: fixed;
-    top: 80px;
-    left: 245px;
-    width: 42px;
-    height: 42px;
-    border: none;
+    position: absolute;
+    left: 235px;
+    top: 100px;
+
+    width: 32px;
+    height: 32px;
+
+    border: 1px solid #e5e5e5;
     border-radius: 50%;
-    background: #1f2d2f;
-    color: white;
-    cursor: pointer;
-    z-index: 9999;
+
+    background: #ffffff;
+    color: #444;
     display: flex;
-    justify-content: center;
     align-items: center;
-    transition: 0.3s ease;
+    justify-content: center;
+
+    cursor: pointer;
+    z-index: 1000;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+
+    transition:
+        left 0.3s ease,
+        transform 0.3s ease,
+        background 0.2s ease;
+}
+.sidebar-toggle:hover {
+    background: #f5f5f5;
 }
 
-.sidebar-toggle.closed {
-    left: 20px;
+/* Button position when sidebar is collapsed */
+.dashboard-wrapper:has(.sidebar.collapsed) .sidebar-toggle {
+    left: 70px;
 }
 
+
+.sidebar.collapsed ~ .content {
+    margin-left: 10px;
+}
 .booking-modal {
     display: none;
     position: fixed;
@@ -207,11 +272,12 @@ body {
     width: 650px;
     max-width: 95%;
     background: white;
-    border-radius: 24px;
+    border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
     animation: popup 0.25s ease;
 }
+
 
 @keyframes popup {
     from {
@@ -226,7 +292,7 @@ body {
 }
 
 .booking-header {
-    background: linear-gradient(135deg, #252453, #181435);
+    background: linear-gradient(135deg, #639A88 0%, #466E61 100%) !important;
     color: white;
     display: flex;
     justify-content: space-between;
@@ -240,10 +306,11 @@ body {
     gap: 18px;
 }
 
+/* CIRCLE ICON CONVERSIONS */
 .booking-icon {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    border-radius: 50% !important; /* Circle Icon */
     background: rgba(255, 255, 255, 0.2);
     display: flex;
     justify-content: center;
@@ -255,7 +322,8 @@ body {
     display: inline-block;
     margin-top: 8px;
     padding: 6px 14px;
-    background: #22c55e;
+    background: #528373 !important;
+    color: #ffffff;
     border-radius: 30px;
     font-size: 13px;
     font-weight: 600;
@@ -285,15 +353,16 @@ body {
     align-items: center;
     padding: 16px;
     background: #f8f9fc;
-    border-radius: 14px;
+    border-radius: 12px;
 }
 
 .info-card i {
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    background: #103c75;
-    color: white;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50% !important; /* Circle Icon */
+    background: rgba(99, 154, 136, 0.15);
+    color: #639A88;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -311,6 +380,18 @@ body {
     color: #222;
 }
 
+i.fa-solid, 
+i.fa-regular, 
+i.fa-brands, 
+.fa-solid, 
+.fa-regular, 
+.fa-brands {
+    font-family: "Font Awesome 6 Free" !important;
+}
+
+/* ==========================================================================
+   NOTIFICATIONS & PANELS
+   ========================================================================== */
 .notification-wrapper {
     position: relative;
 }
@@ -324,8 +405,8 @@ body {
     padding: 0 4px;
     background: #dc2626;
     color: white;
-    border-radius: 10px;
-    font-family: "DM Sans", sans-serif;
+    border-radius: 50% !important; /* Circle Badge */
+    font-family: "DM Sans", sans-serif !important;
     font-size: 10px;
     font-weight: 700;
     display: flex;
@@ -340,7 +421,7 @@ body {
     width: 350px;
     background: white;
     border: 1px solid #e5e5e5;
-    border-radius: 6px;
+    border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
     z-index: 10000;
     display: none;
@@ -360,8 +441,8 @@ body {
 }
 
 .notification-header strong {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     color: #333;
 }
 
@@ -369,13 +450,13 @@ body {
     background: none;
     border: none;
     color: #777;
-    font-family: "DM Sans", sans-serif;
+    font-family: "DM Sans", sans-serif !important;
     font-size: 11px;
     cursor: pointer;
 }
 
 .notification-header button:hover {
-    color: #1f2d2f;
+    color: #000;
 }
 
 .notification-list {
@@ -400,16 +481,16 @@ body {
 }
 
 .notification-item-icon {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
-    background: #1f2d2f;
-    color: white;
-    border-radius: 50%;
+    background: rgba(99, 154, 136, 0.15);
+    color: #353535;
+    border-radius: 30% !important; /* Circle Icon */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .notification-item-content {
@@ -443,6 +524,44 @@ body {
     font-size: 13px;
 }
 
+.notification-item .notification-icon i {
+    color: #ffffff !important; 
+    font-size: 18px !important; 
+}
+
+.notification-item .notification-icon {
+    background-color: #639A88 !important; 
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-title {
+    font-size: 15px !important;    
+    font-weight: 700 !important;   
+    color: #353535 !important;     
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    font-size: 13.5px !important;
+    color: #556070 !important;   
+    line-height: 1.4 !important;
+    margin-bottom: 6px;
+}
+
+.notification-time {
+    font-size: 11.5px !important;
+    color: #9aa5b5 !important;     
+    font-weight: 500 !important;
+}
+
+/* ==========================================================================
+   NOTIFICATION BOOKING MODAL
+   ========================================================================== */
 .notification-booking-modal {
     position: fixed;
     inset: 0;
@@ -467,7 +586,7 @@ body {
     max-height: 90vh;
     overflow-y: auto;
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 10px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     transform: translateY(20px);
     transition: transform 0.25s ease;
@@ -494,12 +613,12 @@ body {
 .notification-booking-icon {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
+    border-radius: 50% !important; 
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f0edff;
-    color: #5c3bfe;
+    background: #639A88;
+    color: #ffffff;
     font-size: 20px;
 }
 
@@ -511,20 +630,20 @@ body {
 }
 
 .notification-booking-status {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: #eaf8ef;
-    color: #249653;
-    font-size: 12px;
-    font-weight: 600;
+    background-color: rgba(34, 197, 94, 0.15) !important;
+    color: #16a34a !important;
+    font-size: 13px !important;     
+    font-weight: 600 !important;           
+    padding: 4px 10px !important;              
+    border-radius: 20px !important;  
+    display: inline-block !important;
 }
 
 .notification-booking-close {
     width: 38px;
     height: 38px;
     border: none;
-    border-radius: 10px;
+    border-radius: 50% !important;
     background: #f5f5f5;
     cursor: pointer;
     font-size: 18px;
@@ -555,15 +674,15 @@ body {
 }
 
 .notification-info-card > i {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
-    background: #eeeaff;
-    color: #5c3bfe;
+    border-radius: 50% !important; /* Circle Icon */
+    background: rgba(99, 154, 136, 0.15);
+    color: #639A88;
 }
 
 .notification-info-card label {
@@ -594,7 +713,7 @@ body {
 }
 
 .notification-booking-notes h3 i {
-    color: #5c3bfe;
+    color: #639A88;
 }
 
 #notificationBookingNotes {
@@ -619,20 +738,26 @@ body {
     display: flex;
     align-items: center;
     gap: 9px;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 10px;
-    background: #5c3bfe;
-    color: #ffffff;
-    font-family: inherit;
-    font-size: 14px;
+    padding: 12px 28px;
+    border: none !important;
+    border-radius: 5px;
+    background: #639A88 !important;
+    color: #ffffff !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .process-booking-btn:hover {
-    background: #4b2de0;
+    background: #528373 !important;
     transform: translateY(-1px);
+}
+
+.process-booking-btn:active {
+    background: #528373 !important;
+    transform: translateY(0);
 }
 
 .notes-section {
@@ -686,6 +811,9 @@ body {
     background: #fff3f3;
 }
 
+/* ==========================================================================
+   MAIN DASHBOARD CONTENT AREA
+   ========================================================================== */
 .content {
     flex: 1;
     padding: 35px;
@@ -706,20 +834,20 @@ body {
 .stats-grid {
     margin-top: 25px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 25px;
 }
 
 .card {
     background: white;
     border: 1px solid #e5e5e5;
-    border-radius: 6px;
-    padding: 18px;
+    border-radius: 8px;
+    padding: 15px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .card i {
-    color: #999;
+    color: #353535;
     margin-bottom: 12px;
 }
 
@@ -737,7 +865,7 @@ body {
 }
 
 .green {
-    color: #7bc67b !important;
+    color: #528373 !important;
 }
 
 .red {
@@ -747,20 +875,23 @@ body {
 .section-title {
     margin-top: 35px;
     margin-bottom: 18px;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: #222;
+    font-size: 23px;
+    font-weight: 500;
+    letter-spacing: 0.00em;
+    color: #353535;
 }
 
 .sessions-panel {
     background: white;
     border: 1px solid #e5e5e5;
-    border-radius: 6px;
+    border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
     padding: 20px;
 }
 
+/* ==========================================================================
+   ANALYTICS & CHARTS SECTION
+   ========================================================================== */
 .analytics-section {
     margin-top: 35px;
 }
@@ -801,12 +932,12 @@ body {
 .analytics-stat-icon {
     width: 38px;
     height: 38px;
-    border-radius: 10px;
+    border-radius: 50% !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f1f2f3;
-    color: #1f2d2f;
+    background: #639A88 !important;
+    color: #ffffff !important;                       
     font-size: 15px;
 }
 
@@ -831,7 +962,7 @@ body {
 }
 
 .analytics-stat-change.positive {
-    color: #22a06b;
+    color: #528373;
 }
 
 .analytics-stat-change.negative {
@@ -866,14 +997,14 @@ body {
 
 .analytics-header h3 {
     margin: 0;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 700;
-    color: #222;
+    color: #353535;
 }
 
 .analytics-header p {
     margin: 4px 0 0;
-    font-size: 11px;
+    font-size: 13px;
     color: #999;
 }
 
@@ -890,7 +1021,7 @@ body {
     border: 1px solid #dddddd;
     border-radius: 8px;
     background: #ffffff;
-    font-family: "DM Sans", sans-serif;
+    font-family: "DM Sans", sans-serif !important;
     font-size: 12px;
     font-weight: 500;
     color: #333;
@@ -899,7 +1030,7 @@ body {
 }
 
 .year-dropdown:hover {
-    border-color: #aaa;
+    border-color: #639A88;
 }
 
 .dropdown-arrow {
@@ -987,13 +1118,14 @@ body {
     width: 100%;
     min-height: 4px;
     border-radius: 6px 6px 2px 2px;
-    background: #1f2d2f;
+    background: #639A88 !important;
     transition: height 0.5s ease, opacity 0.2s ease;
     cursor: pointer;
 }
 
 .bar-fill:hover {
-    opacity: 0.75;
+    background: #528373 !important;
+    opacity: 0.9;
 }
 
 .bar-value {
@@ -1062,7 +1194,7 @@ body {
     display: block;
     height: 100%;
     border-radius: 10px;
-    background: #1f2d2f;
+    background: #639A88 !important;
 }
 
 .package-analytics {
@@ -1133,16 +1265,16 @@ body {
 }
 
 .activity-icon {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
-    border-radius: 50%;
-    background: #f1f2f3;
+    border-radius: 50% !important; /* Circle Icon */
+    background: rgba(99, 154, 136, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #1f2d2f;
-    font-size: 12px;
+    color: #639A88;
+    font-size: 13px;
 }
 
 .activity-content {
@@ -1167,6 +1299,9 @@ body {
     color: #aaa;
 }
 
+/* ==========================================================================
+   MEDIA QUERIES / RESPONSIVENESS
+   ========================================================================== */
 @media (max-width: 1200px) {
 
     .stats-grid {
@@ -1302,4 +1437,53 @@ body {
         justify-content: center;
     }
 
+}
+
+.fc .fc-button-group {
+    background-color: #639A88 !important; 
+    border-radius: 5px !important;         
+    overflow: hidden !important;           
+    display: inline-flex !important;
+}
+
+.fc .fc-button-group > .fc-button {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;              
+    color: #ffffff !important;
+    padding: 6px 12px !important;
+}
+
+.fc .fc-button-group > .fc-button:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.fc .fc-button-group > .fc-button:hover {
+    background-color: #528373 !important;
+}
+
+/* =========================================================
+   FULLCALENDAR TODAY BUTTON CUSTOMIZATION
+========================================================= */
+
+.fc .fc-today-button {
+    background-color: #639A88 !important; 
+    border-color: #639A88 !important;     
+    color: #ffffff !important;            
+    opacity: 1 !important;                
+    border-radius: 5px !important;
+}
+
+.fc .fc-today-button:hover {
+    background-color: #528373 !important;
+    border-color: #528373 !important;
+    color: #ffffff !important;
+}
+
+.fc .fc-today-button:disabled {
+    background-color: #639A88 !important;
+    border-color: #639A88 !important;
+    opacity: 0.65 !important;            
+    cursor: not-allowed !important;
 }
