@@ -20,7 +20,7 @@
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Studio</span>
+            <span>Captured Admin Studio</span>
         </div>
         <div class="navbar-right">
             <button class="notification-btn" aria-label="Notifications">
@@ -41,8 +41,8 @@
                 <a href="admin_repository.html"><i class="fa-solid fa-book"></i> Repository</a>
                 <a href="admin_payment.html" class="active"><i class="fa-solid fa-credit-card"></i> Payments</a>
                 <a href="admin_archives.html"><i class="fa-solid fa-box-archive"></i> Archives</a>
-                <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
-                <a href="#"><i class="fa-solid fa-gear"></i> Settings</a>
+                <a href="admin_profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+                <a href="admin_settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
             </nav>
             <a href="landing_page.html" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
@@ -76,6 +76,8 @@
                         </button>
                         <div class="filter-dropdown-menu" id="methodDropdown">
                             <a href="#" data-filter="card">Credit Card</a>
+                            <a href="#" data-filter="gcash">GCash</a>
+                            <a href="#" data-filter="maya">Maya</a>
                             <a href="#" data-filter="paypal">PayPal</a>
                             <div class="dropdown-divider"></div>
                             <a href="#" data-filter="all" class="clear-filter">Clear Filter</a>
@@ -83,7 +85,7 @@
                     </div>
 
                     <div class="table-search-box">
-                        <input type="text" placeholder="Search customer or email...">
+                        <input type="text" placeholder="Search a customer or email">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
                 </div>

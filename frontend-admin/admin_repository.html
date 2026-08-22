@@ -20,7 +20,7 @@
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Studio</span>
+            <span>Captured Admin Studio</span>
         </div>
 
         <div class="navbar-right">
@@ -84,7 +84,7 @@
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
-                <a href="admin_customer_folders.html" class="active">
+                <a href="admin_repository.html" class="active">
                     <i class="fa-solid fa-book"></i>
                     Repository
                 </a>
@@ -212,9 +212,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script>/* =========================================================
-NOTIFICATION SYSTEM
-========================================================= */
+    <script>
+        const urlParams =
+            new URLSearchParams(window.location.search);
+
+        const selectedBookingId =
+            urlParams.get("booking");
 
         const notificationTrigger =
             document.getElementById("notificationTrigger");
@@ -234,54 +237,48 @@ NOTIFICATION SYSTEM
         const markNotificationsRead =
             document.getElementById("markNotificationsRead");
 
-
         let notifications = [];
 
-        let notificationsRead = false;
+        function escapeHTML(value) {
+
+            if (value === null || value === undefined) {
+                return "";
+            }
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
 
         /* =========================================================
            OPEN / CLOSE NOTIFICATION
         ========================================================= */
 
-        notificationTrigger.addEventListener(
-            "click",
-            (e) => {
+        notificationTrigger.addEventListener("click", (e) => {
 
-                e.stopPropagation();
+            e.stopPropagation();
 
-                notificationDropdown.classList.toggle(
-                    "show"
-                );
+            notificationDropdown.classList.toggle("show");
 
-            }
-        );
+        });
 
 
-        /* Prevent dropdown from closing */
+        notificationDropdown.addEventListener("click", (e) => {
 
-        notificationDropdown.addEventListener(
-            "click",
-            (e) => {
+            e.stopPropagation();
 
-                e.stopPropagation();
-
-            }
-        );
+        });
 
 
-        /* Close when clicking outside */
+        document.addEventListener("click", () => {
 
-        document.addEventListener(
-            "click",
-            () => {
+            notificationDropdown.classList.remove("show");
 
-                notificationDropdown.classList.remove(
-                    "show"
-                );
-
-            }
-        );
+        });
 
 
         /* =========================================================
@@ -294,41 +291,38 @@ NOTIFICATION SYSTEM
                 return;
             }
 
-
             try {
-
-                /*
-                 * Get recent events created by this admin.
-                 */
 
                 const {
                     data,
                     error
                 } = await supabaseClient
 
-                    .from("event_folders")
+                    .from("notifications")
 
-                    .select("*")
+                    .select(`
+                id,
+                booking_id,
+                recipient,
+                title,
+                message,
+                is_read,
+                created_at
+            `)
 
-                    .eq(
-                        "user_id",
-                        currentUser.id
-                    )
+                    .eq("recipient", "admin")
 
-                    .order(
-                        "created_at",
-                        {
-                            ascending: false
-                        }
-                    )
+                    .order("created_at", {
+                        ascending: false
+                    })
 
-                    .limit(10);
+                    .limit(20);
 
 
                 if (error) {
 
                     console.error(
-                        "Notification error:",
+                        "Notification loading error:",
                         error
                     );
 
@@ -336,28 +330,9 @@ NOTIFICATION SYSTEM
                 }
 
 
-                notifications =
-                    (data || []).map(
-                        event => ({
-
-                            id: event.id,
-
-                            type: "event",
-
-                            title: "New event created",
-
-                            message:
-                                `${event.event_name} was added to your repository.`,
-
-                            date:
-                                event.created_at
-
-                        })
-                    );
-
+                notifications = data || [];
 
                 renderNotifications();
-
 
             }
 
@@ -382,9 +357,7 @@ NOTIFICATION SYSTEM
             notificationList.innerHTML = "";
 
 
-            if (
-                notifications.length === 0
-            ) {
+            if (!notifications || notifications.length === 0) {
 
                 notificationList.innerHTML = `
 
@@ -392,43 +365,45 @@ NOTIFICATION SYSTEM
 
                 <i class="fa-regular fa-bell-slash"></i>
 
-                <p>
-                    No notifications
-                </p>
+                <p>No notifications</p>
 
             </div>
 
         `;
 
-
-                notificationBadge.style.display =
-                    "none";
-
+                notificationBadge.style.display = "none";
 
                 notificationCountText.textContent =
                     "No new notifications";
-
 
                 return;
             }
 
 
-            /* Number on bell */
+            /* =====================================================
+               COUNT ONLY UNREAD NOTIFICATIONS
+            ===================================================== */
 
-            if (!notificationsRead) {
+            const unreadNotifications =
+                notifications.filter(
+                    notification => !notification.is_read
+                );
+
+
+            const unreadCount =
+                unreadNotifications.length;
+
+
+            if (unreadCount > 0) {
 
                 notificationBadge.textContent =
-                    notifications.length;
+                    unreadCount;
 
                 notificationBadge.style.display =
                     "flex";
 
-
                 notificationCountText.textContent =
-                    `${notifications.length} notification${notifications.length === 1
-                        ? ""
-                        : "s"
-                    }`;
+                    `${unreadCount} notification${unreadCount === 1 ? "" : "s"}`;
 
             }
 
@@ -443,94 +418,208 @@ NOTIFICATION SYSTEM
             }
 
 
-            /* Create notification items */
+            /* =====================================================
+               CREATE NOTIFICATION ITEMS
+            ===================================================== */
 
-            notifications.forEach(
-                notification => {
+            notifications.forEach(notification => {
 
-                    const item =
-                        document.createElement("div");
-
-
-                    item.className =
-                        "notification-item";
+                const item =
+                    document.createElement("div");
 
 
-                    item.innerHTML = `
-
-                <div class="notification-item-icon">
-
-                    <i class="fa-regular fa-folder"></i>
-
-                </div>
+                item.className =
+                    "notification-item";
 
 
-                <div class="notification-item-content">
+                /*
+                 * Add unread class.
+                 * You can style this in CSS if needed.
+                 */
 
-                    <p class="notification-item-title">
-                        ${escapeHTML(
-                        notification.title
-                    )}
-                    </p>
+                if (!notification.is_read) {
 
-
-                    <p class="notification-item-message">
-                        ${escapeHTML(
-                        notification.message
-                    )}
-                    </p>
-
-
-                    <span class="notification-item-time">
-                        ${formatNotificationDate(
-                        notification.date
-                    )}
-                    </span>
-
-                </div>
-
-            `;
-
-
-                    /* Clicking notification */
-
-                    item.addEventListener(
-                        "click",
-                        () => {
-
-                            if (
-                                notification.type ===
-                                "event"
-                            ) {
-
-                                window.location.href =
-                                    `admin_customer_folders.html?event=${notification.id}`;
-
-                            }
-
-                        }
-                    );
-
-
-                    notificationList.appendChild(
-                        item
-                    );
+                    item.classList.add("unread");
 
                 }
-            );
+
+
+                item.innerHTML = `
+
+            <div class="notification-item-icon">
+
+                <i class="fa-regular fa-folder"></i>
+
+            </div>
+
+
+            <div class="notification-item-content">
+
+                <p class="notification-item-title">
+
+                    ${escapeHTML(
+                    notification.title ||
+                    "Notification"
+                )}
+
+                </p>
+
+
+                <p class="notification-item-message">
+
+                    ${escapeHTML(
+                    notification.message ||
+                    ""
+                )}
+
+                </p>
+
+
+                <span class="notification-item-time">
+
+                    ${formatNotificationDate(
+                    notification.created_at
+                )}
+
+                </span>
+
+            </div>
+
+        `;
+
+
+                /* =================================================
+                   CLICK NOTIFICATION
+                ================================================= */
+
+                item.addEventListener("click", async () => {
+
+                    /*
+                     * Mark this notification as read.
+                     */
+
+                    if (!notification.is_read) {
+
+                        const {
+                            error
+                        } = await supabaseClient
+
+                            .from("notifications")
+
+                            .update({
+                                is_read: true
+                            })
+
+                            .eq("id", notification.id);
+
+
+                        if (error) {
+
+                            console.error(
+                                "Could not mark notification as read:",
+                                error
+                            );
+
+                        }
+                        else {
+
+                            notification.is_read = true;
+
+                        }
+
+                    }
+
+
+                    /*
+                     * If notification belongs to a booking,
+                     * open that customer's repository.
+                     */
+
+                    if (notification.booking_id) {
+
+                        window.location.href =
+                            `admin_customer_folders.html?booking=${encodeURIComponent(
+                                notification.booking_id
+                            )}`;
+
+                    }
+
+                });
+
+
+                notificationList.appendChild(item);
+
+            });
 
         }
 
 
         /* =========================================================
-           MARK ALL AS READ
+           MARK ALL NOTIFICATIONS AS READ
         ========================================================= */
 
         markNotificationsRead.addEventListener(
             "click",
-            () => {
+            async () => {
 
-                notificationsRead = true;
+                if (!currentUser) {
+                    return;
+                }
+
+
+                const unreadNotifications =
+                    notifications.filter(
+                        notification => !notification.is_read
+                    );
+
+
+                if (unreadNotifications.length === 0) {
+
+                    notificationBadge.style.display =
+                        "none";
+
+                    notificationCountText.textContent =
+                        "No new notifications";
+
+                    return;
+                }
+
+
+                const {
+                    error
+                } = await supabaseClient
+
+                    .from("notifications")
+
+                    .update({
+                        is_read: true
+                    })
+
+                    .eq("recipient", "admin")
+                    .eq("is_read", false);
+
+
+                if (error) {
+
+                    console.error(
+                        "Mark notifications read error:",
+                        error
+                    );
+
+                    return;
+                }
+
+
+                /*
+                 * Update local data immediately.
+                 */
+
+                notifications.forEach(notification => {
+
+                    notification.is_read = true;
+
+                });
+
 
                 notificationBadge.style.display =
                     "none";
@@ -538,32 +627,29 @@ NOTIFICATION SYSTEM
                 notificationCountText.textContent =
                     "No new notifications";
 
+
+                renderNotifications();
+
             }
         );
 
 
         /* =========================================================
-           FORMAT DATE
+           FORMAT NOTIFICATION DATE
         ========================================================= */
 
-        function formatNotificationDate(
-            date
-        ) {
+        function formatNotificationDate(date) {
 
             if (!date) {
-
                 return "";
-
             }
 
 
             const notificationDate =
                 new Date(date);
 
-
             const now =
                 new Date();
-
 
             const difference =
                 now.getTime() -
@@ -585,10 +671,7 @@ NOTIFICATION SYSTEM
 
             if (minutes < 60) {
 
-                return `${minutes} minute${minutes === 1
-                        ? ""
-                        : "s"
-                    } ago`;
+                return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
 
             }
 
@@ -601,10 +684,7 @@ NOTIFICATION SYSTEM
 
             if (hours < 24) {
 
-                return `${hours} hour${hours === 1
-                        ? ""
-                        : "s"
-                    } ago`;
+                return `${hours} hour${hours === 1 ? "" : "s"} ago`;
 
             }
 
@@ -617,18 +697,21 @@ NOTIFICATION SYSTEM
 
             if (days < 7) {
 
-                return `${days} day${days === 1
-                        ? ""
-                        : "s"
-                    } ago`;
+                return `${days} day${days === 1 ? "" : "s"} ago`;
 
             }
 
 
-            return notificationDate.toLocaleDateString();
+            return notificationDate.toLocaleDateString(
+                "en-US",
+                {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
 
         }
-
         const createFolderModal =
             document.getElementById("createFolderModal");
 
@@ -714,33 +797,302 @@ NOTIFICATION SYSTEM
 
             loadEvents();
             await loadNotifications();
-                });
+        });
 
-        //LOAD FOLDERS
         async function loadEvents() {
 
-            const { data, error } = await supabaseClient
-
-                .from("event_folders")
-
-                .select("*")
-
-                .eq("user_id", currentUser.id)
-
-                .order("event_name");
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("bookings")
+                .select(`
+            id,
+            session_type,
+            status,
+            is_archived
+        `)
+                .eq("status", "Completed")
+                .eq("is_archived", false);
 
             if (error) {
 
-                console.log(error);
+                console.error(
+                    "Repository package loading error:",
+                    error
+                );
+
+                document.getElementById("foldersView").innerHTML = `
+            <div class="empty-repo-message">
+                Could not load repository.
+            </div>
+        `;
 
                 return;
-
             }
 
-            allFolders = data;
+            const uniquePackages = [
+                ...new Set(
+                    (data || [])
+                        .map(booking => booking.session_type)
+                        .filter(Boolean)
+                )
+            ];
 
-            renderEvents(data);
+            uniquePackages.sort((a, b) =>
+                a.localeCompare(b)
+            );
 
+            allFolders = uniquePackages;
+            renderPackageFolders(uniquePackages);
+        }
+        function renderPackageFolders(packages) {
+
+            const view =
+                document.getElementById("foldersView");
+
+            view.innerHTML = "";
+
+            if (!packages || packages.length === 0) {
+
+                view.innerHTML = `
+            <div class="empty-repo-message">
+                No completed packages yet.
+            </div>
+        `;
+
+                return;
+            }
+
+            packages.forEach(packageName => {
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "folder-card repository-package-card";
+
+                card.dataset.package =
+                    packageName;
+
+                /*
+                 * Package folder
+                 */
+
+                card.innerHTML = `
+
+            <div class="folder-icon-wrapper">
+
+                <i class="fa-solid fa-folder folder-icon"></i>
+
+            </div>
+
+            <h3>
+                ${escapeHTML(packageName)}
+            </h3>
+
+        `;
+
+                /*
+                 * Open the customers inside this package.
+                 */
+
+                card.addEventListener("click", () => {
+
+                    window.location.href =
+                        `admin_customer_folders.html?package=${encodeURIComponent(packageName)}`;
+
+                });
+
+                view.appendChild(card);
+
+            });
+        }
+        function renderCustomerFolders(bookings) {
+
+            const view =
+                document.getElementById("foldersView");
+
+            view.style.display = "grid";
+
+            document.getElementById("photosView").style.display = "none";
+
+            view.innerHTML = "";
+
+            if (!bookings || bookings.length === 0) {
+
+                view.innerHTML = `
+            <div class="empty-repo-message">
+                No completed customer bookings yet.
+            </div>
+        `;
+
+                return;
+            }
+
+            /*
+             * Counter for each package.
+             *
+             * Basic Package:
+             * basic_1
+             * basic_2
+             *
+             * Premium Package:
+             * premium_1
+             * premium_2
+             */
+
+            const packageCounters = {};
+
+            bookings.forEach(booking => {
+
+                const packageName =
+                    booking.session_type || "Package";
+
+                /*
+                 * Convert package name into folder-safe name.
+                 *
+                 * Basic Package
+                 *      ↓
+                 * basic
+                 */
+
+                const packageSlug =
+                    packageName
+                        .toLowerCase()
+                        .replace(/\s*package\s*/gi, "")
+                        .trim()
+                        .replace(/[^a-z0-9]+/g, "_")
+                        .replace(/^_+|_+$/g, "");
+
+                /*
+                 * Increment package counter.
+                 */
+
+                if (!packageCounters[packageSlug]) {
+
+                    packageCounters[packageSlug] = 1;
+
+                } else {
+
+                    packageCounters[packageSlug]++;
+                }
+
+                const folderNumber =
+                    packageCounters[packageSlug];
+
+                const folderName =
+                    `${packageSlug}_${folderNumber}`;
+
+                /*
+                 * Create repository folder.
+                 */
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "folder-card repository-client-card";
+
+                card.dataset.bookingId =
+                    booking.id;
+
+                card.dataset.folderName =
+                    folderName;
+
+                card.innerHTML = `
+
+            <div class="folder-icon-wrapper">
+
+                <i class="fa-solid fa-folder folder-icon"></i>
+
+            </div>
+
+            <div class="client-name">
+
+                <strong>
+                    ${escapeHTML(folderName)}
+                </strong>
+
+            </div>
+
+            <div class="client-event">
+
+                <i class="fa-solid fa-camera"></i>
+
+                <span>
+                    ${escapeHTML(packageName)}
+                </span>
+
+            </div>
+
+            <div class="client-date">
+
+                <i class="fa-regular fa-calendar"></i>
+
+                <span>
+                    ${escapeHTML(
+                    formatRepositoryDate(
+                        booking.booking_date
+                    )
+                )}
+                </span>
+
+            </div>
+
+            <div class="client-status">
+
+                <i class="fa-solid fa-user"></i>
+
+                <span>
+                    ${escapeHTML(
+                    booking.full_name ||
+                    "Unnamed Customer"
+                )}
+                </span>
+
+            </div>
+
+        `;
+
+                /*
+                 * Open this customer's repository.
+                 */
+
+                card.addEventListener("click", () => {
+
+                    window.location.href =
+                        `admin_customer_folders.html?booking=${encodeURIComponent(
+                            booking.id
+                        )}`;
+
+                });
+
+                view.appendChild(card);
+
+            });
+        }
+        function formatRepositoryDate(dateString) {
+
+            if (!dateString) {
+                return "-";
+            }
+
+            const date =
+                new Date(dateString + "T00:00:00");
+
+            if (Number.isNaN(date.getTime())) {
+                return dateString;
+            }
+
+            return date.toLocaleDateString(
+                "en-US",
+                {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
         }
 
         async function loadPhotos(folderId) {
@@ -827,60 +1179,58 @@ NOTIFICATION SYSTEM
             .getElementById("photoFilesUploader")
 
             .addEventListener("change", uploadPhotos);
-        function renderEvents(events) {
+        /*function renderEvents(packages) {
 
             const view =
                 document.getElementById("foldersView");
 
             view.innerHTML = "";
 
-            if (events.length === 0) {
+            if (!packages || packages.length === 0) {
 
                 view.innerHTML = `
-
             <div class="empty-repo-message">
-
-                No events yet.
-
+                No completed packages yet.
             </div>
-
         `;
 
                 return;
-
             }
 
+            packages.forEach(packageName => {
 
-            events.forEach(event => {
+                const card =
+                    document.createElement("div");
 
-                view.innerHTML += `
+                card.className = "folder-card";
 
-        <div class="folder-card"
-        data-id="${event.id}">
+                card.dataset.package =
+                    packageName;
+
+                card.innerHTML = `
+
             <i class="fa-solid fa-folder folder-icon"></i>
-            <h3>${event.event_name}</h3>
-        </div>
 
-    `;
+            <h3>
+                ${escapeHTML(packageName)}
+            </h3>
+
+        `;
+
+                card.addEventListener("click", () => {
+
+                    const encodedPackage =
+                        encodeURIComponent(packageName);
+
+                    window.location.href =
+                        `admin_customer_folders.html?package=${encodedPackage}`;
+
+                });
+
+                view.appendChild(card);
 
             });
-
-
-            document.querySelectorAll(".folder-card").forEach(card => {
-
-                card.onclick = () => {
-
-                    const eventId = card.dataset.id;
-
-                    location.href =
-                        `admin_customer_folders.html?event=${eventId}`;
-
-                };
-
-            });
-
-
-        }
+        }*/
         async function uploadPhotos(e) {
 
             const files = e.target.files;
@@ -1010,7 +1360,7 @@ NOTIFICATION SYSTEM
                 e.target.reset();
 
                 loadEvents();
-                
+
 
             });
         //SEARCH FUNCTIONALITY
@@ -1019,37 +1369,21 @@ NOTIFICATION SYSTEM
             .addEventListener("input", (e) => {
 
                 const keyword =
-                    e.target.value.toLowerCase();
+                    e.target.value
+                        .trim()
+                        .toLowerCase();
 
                 const filtered =
+                    allFolders.filter(packageName =>
+                        packageName
+                            .toLowerCase()
+                            .includes(keyword)
+                    );
 
-                    allFolders.filter(folder => {
-
-                        return (
-
-                            (folder.folder_name || "")
-                                .toLowerCase()
-                                .includes(keyword)
-
-                            ||
-
-                            (folder.customer_name || "")
-                                .toLowerCase()
-                                .includes(keyword)
-
-                            ||
-
-                            (folder.event_type || "")
-                                .toLowerCase()
-                                .includes(keyword)
-
-                        );
-
-                    });
-
-                renderFolders(filtered);
+                renderPackageFolders(filtered);
 
             });
+       
         document
 
             .getElementById("logoutBtn")

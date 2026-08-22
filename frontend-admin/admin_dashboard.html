@@ -26,7 +26,7 @@
 
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Studio</span>
+            <span>Captured Admin Studio</span>
         </div>
 
         <div class="navbar-right">
@@ -58,10 +58,6 @@
 
             </div>
 
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search photos by tag, email, or file name">
-            </div>
             <div class="user-profile">
 
                 <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
@@ -147,17 +143,16 @@
                 </div>
 
                 <div class="card">
-                    <i class="fa-solid fa-folder"></i>
-                    <span>Total Folders</span>
-                    <h2 id="totalFolders">0</h2>
-                </div>
-
-                <div class="card">
                     <i class="fa-solid fa-image"></i>
                     <span>Total Photos</span>
                     <h2 id="totalPhotos">0</h2>
                 </div>
 
+                <div class="card">
+                    <i class="fa-solid fa-peso-sign"></i>
+                    <span>Total Income</span>
+                    <h2 id="totalIncome">₱0.00</h2>
+                </div>
                 <div class="card">
                     <i class="fa-solid fa-circle-check green"></i>
                     <span>Active</span>
@@ -522,10 +517,7 @@
         const supabaseClient = supabase.createClient(
             SUPABASE_URL,
             SUPABASE_ANON_KEY
-        );
-        // =========================================================
-        // MONTHLY EARNINGS ANALYTICS
-        // =========================================================
+        )
 
         const monthNames = [
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -592,7 +584,7 @@
         }
 
 
-        function renderBookingAnalytics(
+       /* function renderBookingAnalytics(
             monthlyBookings,
             selectedYear
         ) {
@@ -615,11 +607,6 @@
             barsWrapper.innerHTML = "";
             yAxis.innerHTML = "";
             gridLines.innerHTML = "";
-
-
-            // =========================================================
-            // DETERMINE CHART SCALE
-            // =========================================================
 
             const maxBooking =
                 Math.max(...monthlyBookings, 0);
@@ -644,11 +631,6 @@
             else {
                 chartMax = Math.ceil(maxBooking / 20) * 20;
             }
-
-
-            // =========================================================
-            // Y-AXIS
-            // =========================================================
 
             const steps = 5;
             const stepValue = chartMax / steps;
@@ -675,11 +657,6 @@
 
                 gridLines.appendChild(line);
             }
-
-
-            // =========================================================
-            // BARS
-            // =========================================================
 
             monthlyBookings.forEach(
                 (value, index) => {
@@ -718,11 +695,6 @@
                 }
             );
 
-
-            // =========================================================
-            // TOTAL BOOKINGS
-            // =========================================================
-
             const yearlyTotal =
                 monthlyBookings.reduce(
                     (total, value) => total + value,
@@ -741,9 +713,6 @@
             }
 
 
-            // =========================================================
-            // AVERAGE MONTHLY BOOKINGS
-            // =========================================================
 
             const average =
                 yearlyTotal / 12;
@@ -759,10 +728,6 @@
                     average.toFixed(1);
             }
 
-
-            // =========================================================
-            // BUSIEST MONTH
-            // =========================================================
 
             const busiestElement =
                 document.getElementById(
@@ -799,6 +764,70 @@
                     chartMax
                 }
             );
+        }*/
+        async function loadTotalIncome() {
+
+            console.log("Loading total income...");
+
+            const totalIncomeElement =
+                document.getElementById("totalIncome");
+
+            if (!totalIncomeElement) {
+                console.error("totalIncome element not found.");
+                return;
+            }
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .eq("payment_status", "Paid");
+
+            if (error) {
+
+                console.error(
+                    "Error loading paid bookings:",
+                    error
+                );
+
+                totalIncomeElement.textContent = "₱0.00";
+
+                return;
+            }
+
+            console.log(
+                "Paid bookings:",
+                data
+            );
+
+            const totalIncome =
+                (data || []).reduce(
+                    (total, booking) => {
+
+                        /*
+                         * Currently using booking.price
+                         */
+                        const amount =
+                            Number(booking.total_price) || 0;
+
+                        return total + amount;
+
+                    },
+                    0
+                );
+
+            totalIncomeElement.textContent =
+                `₱${totalIncome.toLocaleString("en-PH", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+
+            console.log(
+                "TOTAL INCOME:",
+                totalIncome
+            );
         }
         function renderBookingAnalytics(
             monthlyBookings,
@@ -833,24 +862,12 @@
             gridLines.innerHTML = "";
 
 
-            /*
-             * Find highest number of bookings.
-             */
 
             const maxBooking =
                 Math.max(
                     ...monthlyBookings,
                     0
                 );
-
-
-            /*
-             * Make the chart scale nicely.
-             *
-             * Example:
-             * 13 bookings -> maximum becomes 20
-             * 27 bookings -> maximum becomes 30
-             */
 
             let chartMax;
 
@@ -1187,7 +1204,7 @@
             );
 
         }
-       
+
         let currentUser = null;
         window.addEventListener("load", async () => {
 
@@ -1280,6 +1297,7 @@
                 alert("Something went wrong.");
             }
 
+
         });
 
 
@@ -1287,8 +1305,10 @@
 
             console.log("Loading dashboard stats...");
 
+            /* =========================================================
+               TOTAL CUSTOMERS
+               ========================================================= */
 
-            // TOTAL CLIENTS
             const {
                 count: customerCount,
                 error: customerError
@@ -1299,41 +1319,23 @@
                     head: true
                 });
 
-
             if (customerError) {
-                console.error("Clients error:", customerError);
+                console.error("Customers error:", customerError);
+            }
+
+            const totalCustomersElement =
+                document.getElementById("totalCustomers");
+
+            if (totalCustomersElement) {
+                totalCustomersElement.textContent =
+                    customerCount || 0;
             }
 
 
-            document.getElementById("totalCustomers").textContent =
-                customerCount || 0;
+            /* =========================================================
+               TOTAL PHOTOS
+               ========================================================= */
 
-
-
-            // TOTAL FOLDERS
-            const {
-                count: folderCount,
-                error: folderError
-            } = await supabaseClient
-                .from("event_folders")
-                .select("*", {
-                    count: "exact",
-                    head: true
-                });
-
-
-            if (folderError) {
-                console.error("Folders error:", folderError);
-            }
-
-
-            document.getElementById("totalFolders").textContent =
-                folderCount || 0;
-
-
-
-
-            // TOTAL PHOTOS
             const {
                 count: photoCount,
                 error: photoError
@@ -1344,19 +1346,30 @@
                     head: true
                 });
 
-
             if (photoError) {
                 console.error("Photos error:", photoError);
             }
 
+            const totalPhotosElement =
+                document.getElementById("totalPhotos");
 
-            document.getElementById("totalPhotos").textContent =
-                photoCount || 0;
+            if (totalPhotosElement) {
+                totalPhotosElement.textContent =
+                    photoCount || 0;
+            }
 
 
+            /* =========================================================
+               TOTAL INCOME
+               ========================================================= */
+
+            await loadTotalIncome();
 
 
-            // ACTIVE ACCES TO FOLDERS
+            /* =========================================================
+               ACTIVE ACCESS
+               ========================================================= */
+
             const {
                 count: activeCount,
                 error: activeError
@@ -1368,23 +1381,25 @@
                 })
                 .eq("status", "Confirmed");
 
-
             if (activeError) {
-                console.error("Active booking error:", activeError);
+                console.error("Active access error:", activeError);
+            }
+
+            const activeElement =
+                document.getElementById("activeSessions");
+
+            if (activeElement) {
+                activeElement.textContent =
+                    activeCount || 0;
             }
 
 
-            document.getElementById("activeSessions").textContent =
-                activeCount || 0;
+            /* =========================================================
+               EXPIRED ACCESS
+               ========================================================= */
 
-
-
-
-            // EXPIRED ACCESS
-            const today = new Date()
-                .toISOString()
-                .split("T")[0];
-
+            const today =
+                new Date().toISOString().split("T")[0];
 
             const {
                 count: expiredCount,
@@ -1397,25 +1412,26 @@
                 })
                 .lt("booking_date", today);
 
-
-
             if (expiredError) {
                 console.error("Expired error:", expiredError);
             }
 
+            const expiredElement =
+                document.getElementById("expiredSessions");
 
-            document.getElementById("expiredSessions").textContent =
-                expiredCount || 0;
+            if (expiredElement) {
+                expiredElement.textContent =
+                    expiredCount || 0;
+            }
 
 
-            console.log({
+            console.log("Dashboard stats loaded:", {
                 customers: customerCount,
-                folders: folderCount,
                 photos: photoCount,
+                income: "loaded",
                 active: activeCount,
                 expired: expiredCount
             });
-
         }
         let calendarInstance = null;
         async function loadBookingCalendar() {
@@ -1607,23 +1623,23 @@
         const sidebar = document.querySelector(".sidebar");
         const sidebarToggle = document.getElementById("sidebarToggle");
 
-
         sidebarToggle.addEventListener("click", () => {
 
             sidebar.classList.toggle("collapsed");
 
+            const icon = sidebarToggle.querySelector("i");
 
             if (sidebar.classList.contains("collapsed")) {
 
-                sidebarToggle.style.left = "20px";
+                icon.classList.remove("fa-bars");
+                icon.classList.add("fa-chevron-right");
+
+            } else {
+
+                icon.classList.remove("fa-chevron-right");
+                icon.classList.add("fa-bars");
 
             }
-            else {
-
-                sidebarToggle.style.left = "240px";
-
-            }
-
         });
 
 

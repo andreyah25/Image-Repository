@@ -29,7 +29,7 @@
 
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
 
-            <span>Captured Studio</span>
+            <span>Captured Admin Studio</span>
 
         </div>
 
@@ -43,8 +43,7 @@
 
             <div class="user-profile">
 
-                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
-
+                <img id="userAvatar" class="avatar" alt="Profile">
                 <span id="userName">
                     Loading...
                 </span>
@@ -121,10 +120,6 @@
 
         <main class="content">
 
-            <!-- =========================================
-         CUSTOMER FOLDERS VIEW
-    ========================================== -->
-
             <div id="foldersView">
 
                 <div class="repo-top-header-block">
@@ -145,16 +140,26 @@
                 </div>
 
 
-                <!-- SEARCH + ACTIONS -->
-
                 <div class="repo-actions-row">
 
+                    <!-- CUSTOMER SEARCH -->
                     <div class="table-search-box">
 
                         <input type="text" id="repoFolderSearchInput" placeholder="Search customer..."
                             autocomplete="off">
 
                         <i class="fa-solid fa-magnifying-glass"></i>
+
+                    </div>
+
+
+                    <!-- GLOBAL AI PHOTO SEARCH -->
+                    <div class="table-search-box ai-search-box">
+
+                        <input type="text" id="globalPhotoSearchInput"
+                            placeholder="Search photos: dog, person, bottle..." autocomplete="off">
+
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
 
                     </div>
 
@@ -170,12 +175,6 @@
                 </div>
 
             </div>
-
-
-
-            <!-- =========================================
-         CUSTOMER PHOTO VIEW
-    ========================================== -->
 
             <div id="photosView" style="display:none;">
 
@@ -253,7 +252,6 @@
 
 
                 <!-- EVENT TITLE -->
-
                 <div class="repository-heading">
 
                     <h2 id="eventTitle">
@@ -266,6 +264,25 @@
 
                 </div>
 
+                <!-- PHOTO SEARCH -->
+
+                <div class="photo-search-section">
+
+                    <div class="photo-search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input type="text" id="customerPhotoSearchInput"
+                            placeholder="Search photos by object, person, filename..." autocomplete="off">
+                        <button type="button" id="clearPhotoSearch" style="display:none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                    </div>
+
+                    <div id="photoSearchInfo" class="photo-search-info"></div>
+
+                </div>
 
 
                 <!-- UPLOAD STATUS -->
@@ -300,12 +317,6 @@
 
             </div>
 
-
-
-            <!-- =========================================
-         HIDDEN FILE UPLOADER
-    ========================================== -->
-
             <input type="file" id="photoFilesUploader" multiple accept="image/*" style="display:none;">
 
         </main>
@@ -313,23 +324,14 @@
     </div>
 
 
-
-    <!-- =========================================
-     FILE UPLOADER
-========================================== -->
-
-    <input type="file" id="photoFilesUploader" multiple accept="image/*" style="display:none;">
-
-
-
-    <!-- SUPABASE -->
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        /* =========================================================
-   SUPABASE CONFIGURATION
-========================================================= */
+        const urlParams =
+            new URLSearchParams(window.location.search);
+
+        const selectedPackage =
+            urlParams.get("package");
 
         const SUPABASE_URL =
             "https://rprcbeabdvxdenmngxxc.supabase.co";
@@ -365,6 +367,14 @@
 
         const photoGrid =
             document.getElementById("photoGrid");
+        const customerPhotoSearchInput =
+            document.getElementById("customerPhotoSearchInput");
+
+        const clearPhotoSearch =
+            document.getElementById("clearPhotoSearch");
+
+        const photoSearchInfo =
+            document.getElementById("photoSearchInfo");
 
         const photoFilesUploader =
             document.getElementById("photoFilesUploader");
@@ -514,43 +524,51 @@
 
         }
 
-
-        /* =========================================================
-           LOAD COMPLETED CLIENTS
-        ========================================================= */
-        /* =========================================================
-           LOAD COMPLETED CLIENTS
-        ========================================================= */
-
         async function loadCompletedClients() {
 
-            foldersView.innerHTML = `
-
+            customerFoldersContainer.innerHTML = `
         <div class="customer-folder-empty">
 
             <i class="fa-solid fa-spinner fa-spin"></i>
 
             <div>
-                Loading completed clients...
+                Loading customers...
             </div>
 
         </div>
-
     `;
 
-
             try {
+
+                let query = supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .eq("status", "Completed")
+                    .eq("is_archived", false)
+                    .order("created_at", {
+                        ascending: false
+                    });
+
+                /*
+                 * If a package was selected,
+                 * only load customers belonging
+                 * to that package.
+                 */
+
+                if (selectedPackage) {
+
+                    query =
+                        query.eq(
+                            "session_type",
+                            selectedPackage
+                        );
+
+                }
 
                 const {
                     data,
                     error
-                } = await supabaseClient
-                    .from("bookings")
-                    .select("*")
-                    .eq("status", "Completed")
-                    .order("created_at", {
-                        ascending: false
-                    });
+                } = await query;
 
                 if (error) {
 
@@ -560,20 +578,37 @@
                     );
 
                     showFolderError(
-                        "Could not load completed clients: " +
+                        "Could not load customers: " +
                         error.message
                     );
 
                     return;
                 }
 
-                console.log("Completed bookings found:", data);
-                console.log("QUERY ERROR:", error);
+                completedClients =
+                    data || [];
 
-                completedClients = data || [];
+                renderCompletedClients(
+                    completedClients
+                );
 
-                renderCompletedClients(completedClients);
+                /*
+                 * Update page title based on package.
+                 */
 
+                if (selectedPackage) {
+
+                    document.querySelector(
+                        "#foldersView .page-header h1"
+                    ).textContent =
+                        selectedPackage;
+
+                    document.querySelector(
+                        "#foldersView .page-header p"
+                    ).textContent =
+                        "Customers who booked this package.";
+
+                }
 
             } catch (error) {
 
@@ -583,16 +618,12 @@
                 );
 
                 showFolderError(
-                    "Unable to load completed clients."
+                    "Unable to load customers."
                 );
 
             }
 
         }
-
-        /* =========================================================
-           RENDER CLIENTS
-        ========================================================= */
 
         function renderCompletedClients(
             clients
@@ -606,7 +637,7 @@
                 clients.length === 0
             ) {
 
-                foldersView.innerHTML = `
+                customerFoldersContainer.innerHTML = `
 
             <div class="customer-folder-empty">
 
@@ -852,7 +883,11 @@
                     await getOrCreateRepository(
                         client
                     );
+                customerPhotoSearchInput.value = "";
 
+                clearPhotoSearch.style.display = "none";
+
+                photoSearchInfo.textContent = "";
 
                 selectedCustomerName.textContent =
                     client.full_name ||
@@ -919,18 +954,12 @@
         }
 
 
-        /* =========================================================
-           CREATE / GET REPOSITORY
-        ========================================================= */
         async function getOrCreateRepository(client) {
 
             if (!client || !client.id) {
                 throw new Error("Invalid client.");
             }
 
-            /* =========================================
-               CHECK IF REPOSITORY ALREADY EXISTS
-            ========================================= */
 
             const {
                 data: existing,
@@ -945,24 +974,12 @@
                 throw findError;
             }
 
-            /* =========================================
-               RETURN EXISTING REPOSITORY
-            ========================================= */
-
             if (existing) {
                 return existing;
             }
 
-            /* =========================================
-               CREATE UNIQUE ACCESS TOKEN
-            ========================================= */
 
             const token = generateSecureToken();
-
-            /* =========================================
-               CREATE CUSTOMER REPOSITORY
-            ========================================= */
-
             const {
                 data: created,
                 error: createError
@@ -978,10 +995,6 @@
 
             if (createError) {
 
-                /*
-                 * If another request created the repository
-                 * at the same time, retrieve that repository.
-                 */
 
                 if (createError.code === "23505") {
 
@@ -1007,9 +1020,6 @@
             return created;
         }
 
-        /* =========================================================
-           TOKEN GENERATOR
-        ========================================================= */
 
         function generateSecureToken() {
 
@@ -1035,9 +1045,7 @@
         }
 
 
-        /* =========================================================
-           CLIENT LINK
-        ========================================================= */
+
         function makeClientLink(token) {
 
             const siteURL =
@@ -1084,10 +1092,6 @@
             }
         }
 
-
-        /* =========================================================
-           LOAD PHOTO COUNT
-        ========================================================= */
 
         async function loadClientPhotoCount(
             client
@@ -1156,15 +1160,424 @@
                 `${count || 0} photo${count === 1 ? "" : "s"}`;
 
         }
+        async function analyzePhoto(photoId, imageUrl) {
+
+            console.log("=================================");
+            console.log("STARTING ML ANALYSIS");
+            console.log("Photo ID:", photoId);
+            console.log("Image URL:", imageUrl);
+            console.log("=================================");
+
+            try {
+
+                // =====================================================
+                // 1. MARK AS PROCESSING
+                // =====================================================
+
+                console.log("Changing status to processing...");
+
+                const {
+                    error: processingError
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .update({
+                        processing_status: "processing"
+                    })
+                    .eq("id", photoId);
+
+                if (processingError) {
+
+                    console.error(
+                        "PROCESSING STATUS ERROR:",
+                        processingError
+                    );
+
+                    throw processingError;
+                }
+
+                console.log(
+                    "Status changed to processing."
+                );
 
 
-        /* =========================================================
-           LOAD PHOTOS
-        ========================================================= */
+                // =====================================================
+                // 2. SEND TO PYTHON ML
+                // =====================================================
 
-        async function loadPhotos(
-            repositoryId
-        ) {
+                console.log(
+                    "Sending image to ML service..."
+                );
+
+                const controller =
+                    new AbortController();
+
+                const timeout =
+                    setTimeout(() => {
+
+                        console.error(
+                            "ML REQUEST TIMED OUT"
+                        );
+
+                        controller.abort();
+
+                    }, 120000);
+
+
+                let response;
+
+                try {
+
+                    response =
+                        await fetch(
+                            "http://127.0.0.1:8000/analyze",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body: JSON.stringify({
+                                    image_url: imageUrl
+                                }),
+
+                                signal: controller.signal
+                            }
+                        );
+
+                } catch (fetchError) {
+
+                    console.error(
+                        "ML FETCH ERROR:",
+                        fetchError
+                    );
+
+                    throw new Error(
+                        "Could not connect to ML service: " +
+                        fetchError.message
+                    );
+
+                } finally {
+
+                    clearTimeout(timeout);
+
+                }
+
+
+                console.log(
+                    "ML HTTP STATUS:",
+                    response.status
+                );
+
+
+                if (!response.ok) {
+
+                    const errorText =
+                        await response.text();
+
+                    console.error(
+                        "ML SERVICE RESPONSE:",
+                        errorText
+                    );
+
+                    throw new Error(
+                        `ML service returned HTTP ${response.status}: ${errorText}`
+                    );
+                }
+
+
+                // =====================================================
+                // 3. GET ML RESULT
+                // =====================================================
+
+                console.log(
+                    "Reading ML response..."
+                );
+
+                const result =
+                    await response.json();
+
+
+                console.log("=================================");
+                console.log("ML RESULT:");
+                console.log(result);
+                console.log("=================================");
+
+
+                if (!result || result.success !== true) {
+
+                    throw new Error(
+                        result?.error ||
+                        "ML analysis failed."
+                    );
+                }
+
+
+                // =====================================================
+                // 4. PREPARE ML DATA
+                // =====================================================
+
+                const detectedObjects =
+                    Array.isArray(result.objects)
+                        ? result.objects
+                        : [];
+
+                const detectedFaces =
+                    Array.isArray(result.faces)
+                        ? result.faces
+                        : [];
+
+                const faceCount =
+                    Number(
+                        result.face_count ??
+                        detectedFaces.length ??
+                        0
+                    );
+
+
+                const updateData = {
+
+                    processing_status:
+                        "completed",
+
+                    face_count:
+                        faceCount,
+
+                    detected_objects:
+                        detectedObjects,
+
+                    detected_faces:
+                        detectedFaces,
+
+                    ml_processed_at:
+                        new Date().toISOString()
+
+                };
+
+
+                console.log(
+                    "================================="
+                );
+
+                console.log(
+                    "UPDATING DATABASE WITH ML DATA"
+                );
+
+                console.log(
+                    JSON.stringify(
+                        updateData,
+                        null,
+                        2
+                    )
+                );
+
+                console.log(
+                    "================================="
+                );
+
+
+                // =====================================================
+                // 5. UPDATE repository_photos
+                // =====================================================
+
+                const {
+                    error: updateError
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .update(updateData)
+                    .eq("id", photoId);
+
+
+                if (updateError) {
+
+                    console.error(
+                        "================================="
+                    );
+
+                    console.error(
+                        "SUPABASE UPDATE ERROR:"
+                    );
+
+                    console.error(
+                        updateError
+                    );
+
+                    console.error(
+                        "================================="
+                    );
+
+                    throw updateError;
+                }
+
+
+                console.log(
+                    "DATABASE UPDATE REQUEST SUCCESS."
+                );
+
+
+                // =====================================================
+                // 6. VERIFY THE SAVED DATA
+                // =====================================================
+
+                console.log(
+                    "Verifying saved ML data..."
+                );
+
+
+                const {
+                    data: verifiedPhoto,
+                    error: verifyError
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .select(`
+                id,
+                processing_status,
+                face_count,
+                detected_objects,
+                detected_faces,
+                ml_processed_at
+            `)
+                    .eq("id", photoId)
+                    .maybeSingle();
+
+
+                if (verifyError) {
+
+                    console.error(
+                        "DATABASE VERIFICATION ERROR:",
+                        verifyError
+                    );
+
+                }
+
+
+                console.log(
+                    "================================="
+                );
+
+                console.log(
+                    "DATABASE VERIFICATION RESULT:"
+                );
+
+                console.log(
+                    verifiedPhoto
+                );
+
+                console.log(
+                    "================================="
+                );
+
+
+                if (!verifiedPhoto) {
+
+                    throw new Error(
+                        "Photo was not found after ML update. Check repository_photos RLS policies."
+                    );
+                }
+
+
+                // =====================================================
+                // 7. SUCCESS
+                // =====================================================
+
+                console.log(
+                    "================================="
+                );
+
+                console.log(
+                    "ML PROCESSING COMPLETED SUCCESSFULLY"
+                );
+
+                console.log(
+                    "Face count:",
+                    verifiedPhoto.face_count
+                );
+
+                console.log(
+                    "Objects:",
+                    verifiedPhoto.detected_objects
+                );
+
+                console.log(
+                    "Faces:",
+                    verifiedPhoto.detected_faces
+                );
+
+                console.log(
+                    "================================="
+                );
+
+
+                return {
+
+                    success: true,
+
+                    result: result,
+
+                    database: verifiedPhoto
+
+                };
+
+
+            } catch (error) {
+
+                console.error(
+                    "================================="
+                );
+
+                console.error(
+                    "ML PROCESSING FAILED"
+                );
+
+                console.error(
+                    error
+                );
+
+                console.error(
+                    "================================="
+                );
+
+
+                // =====================================================
+                // MARK AS FAILED
+                // =====================================================
+
+                const {
+                    error: failedError
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .update({
+                        processing_status: "failed"
+                    })
+                    .eq("id", photoId);
+
+
+                if (failedError) {
+
+                    console.error(
+                        "FAILED STATUS UPDATE ERROR:",
+                        failedError
+                    );
+
+                }
+
+
+                return {
+
+                    success: false,
+
+                    error:
+                        error.name === "AbortError"
+                            ? "ML request timed out."
+                            : error.message
+
+                };
+
+            }
+
+        }
+        async function loadPhotos(repositoryId, searchQuery = "") {
 
             photoGrid.innerHTML = `
 
@@ -1173,40 +1586,142 @@
             <i class="fa-solid fa-spinner fa-spin"></i>
 
             <div>
-                Loading photos...
+                Searching photos...
             </div>
 
         </div>
 
     `;
 
+            try {
 
-            const {
-                data: photos,
-                error
-            } =
-                await supabaseClient
-                    .from("repository_photos")
-                    .select("*")
-                    .eq(
-                        "repository_id",
-                        repositoryId
-                    )
-                    .order(
-                        "created_at",
-                        {
-                            ascending: false
-                        }
+                const query =
+                    String(searchQuery || "").trim();
+
+                let result;
+
+                /*
+                 * If there is no search term,
+                 * load all photos normally.
+                 */
+
+                if (!query) {
+
+                    result =
+                        await supabaseClient
+                            .from("repository_photos")
+                            .select("*")
+                            .eq(
+                                "repository_id",
+                                repositoryId
+                            )
+                            .eq(
+                                "is_archived",
+                                false
+                            )
+                            .order(
+                                "created_at",
+                                {
+                                    ascending: false
+                                }
+                            );
+
+                }
+
+                /*
+                 * If there is a search term,
+                 * use the PostgreSQL search function.
+                 */
+
+                else {
+
+                    result =
+                        await supabaseClient.rpc(
+                            "search_repository_photos",
+                            {
+                                p_repository_id:
+                                    repositoryId,
+
+                                p_query:
+                                    query
+                            }
+                        );
+
+                }
+
+
+                const {
+                    data: photos,
+                    error
+                } = result;
+
+
+                if (error) {
+
+                    console.error(
+                        "Photo search error:",
+                        error
                     );
 
+                    photoGrid.innerHTML = `
 
-            if (error) {
+                <div class="customer-folder-empty">
 
-                console.error(
-                    "Photo loading error:",
-                    error
+                    <i class="fa-solid fa-circle-exclamation"></i>
+
+                    <div>
+                        Could not search photos.
+                    </div>
+
+                    <small>
+                        ${escapeHTML(error.message)}
+                    </small>
+
+                </div>
+
+            `;
+
+                    return;
+                }
+
+
+                const photoResults =
+                    photos || [];
+
+
+                renderPhotos(
+                    photoResults
                 );
 
+
+                /*
+                 * Update search information
+                 */
+
+                if (query) {
+
+                    photoSearchInfo.textContent =
+                        `${photoResults.length} photo${photoResults.length === 1
+                            ? ""
+                            : "s"
+                        } found for "${query}"`;
+
+                } else {
+
+                    photoSearchInfo.textContent =
+                        `${photoResults.length} photo${photoResults.length === 1
+                            ? ""
+                            : "s"
+                        }`;
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Unexpected photo search error:",
+                    error
+                );
 
                 photoGrid.innerHTML = `
 
@@ -1215,7 +1730,7 @@
                 <i class="fa-solid fa-circle-exclamation"></i>
 
                 <div>
-                    Could not load photos.
+                    Search failed.
                 </div>
 
                 <small>
@@ -1226,20 +1741,80 @@
 
         `;
 
-                return;
             }
 
-
-            renderPhotos(
-                photos || []
-            );
-
         }
+        let photoSearchTimer = null;
+
+        customerPhotoSearchInput.addEventListener(
+            "input",
+            () => {
+
+                if (!selectedRepository) {
+                    return;
+                }
+
+                const query =
+                    customerPhotoSearchInput.value.trim();
+
+                /*
+                 * Show/hide clear button
+                 */
+
+                clearPhotoSearch.style.display =
+                    query
+                        ? "block"
+                        : "none";
 
 
-        /* =========================================================
-           RENDER PHOTOS
-        ========================================================= */
+                /*
+                 * Prevent a database request
+                 * for every single keystroke.
+                 */
+
+                clearTimeout(
+                    photoSearchTimer
+                );
+
+
+                photoSearchTimer =
+                    setTimeout(
+                        async () => {
+
+                            await loadPhotos(
+                                selectedRepository.id,
+                                query
+                            );
+
+                        },
+                        350
+                    );
+
+            }
+        );
+
+        clearPhotoSearch.addEventListener(
+            "click",
+            async () => {
+
+                customerPhotoSearchInput.value = "";
+
+                clearPhotoSearch.style.display =
+                    "none";
+
+                if (!selectedRepository) {
+                    return;
+                }
+
+                await loadPhotos(
+                    selectedRepository.id,
+                    ""
+                );
+
+                customerPhotoSearchInput.focus();
+
+            }
+        );
 
         function renderPhotos(
             photos
@@ -1305,7 +1880,6 @@
                         photo.original_name ||
                         "Customer photo"
                     )}"
-                    loading="lazy"
                 >
 
                 <div class="photo-information">
@@ -1538,51 +2112,25 @@
                     const imageUrl =
                         publicUrlData.publicUrl;
 
-
-                    /* -----------------------------------------
-                       SAVE PHOTO DATABASE RECORD
-                    ----------------------------------------- */
-
                     const {
+                        data: photoRecord,
                         error: databaseError
-                    } =
-                        await supabaseClient
-                            .from("repository_photos")
-                            .insert({
-
-                                repository_id:
-                                    selectedRepository.id,
-
-                                booking_id:
-                                    selectedClient.id,
-
-                                storage_path:
-                                    storagePath,
-
-                                image_url:
-                                    imageUrl,
-
-                                original_name:
-                                    file.name,
-
-                                mime_type:
-                                    file.type,
-
-                                file_size:
-                                    file.size,
-
-                                processing_status:
-                                    "pending",
-
-                                uploaded_by:
-                                    currentUser.id
-
-                            });
-
-
+                    } = await supabaseClient
+                        .from("repository_photos")
+                        .insert({
+                            repository_id: selectedRepository.id,
+                            booking_id: selectedClient.id,
+                            storage_path: storagePath,
+                            image_url: imageUrl,
+                            original_name: file.name,
+                            mime_type: file.type,
+                            file_size: file.size,
+                            processing_status: "pending",
+                            uploaded_by: currentUser.id
+                        })
+                        .select()
+                        .single();
                     if (databaseError) {
-
-                        /* Remove orphaned storage file */
 
                         await supabaseClient
                             .storage
@@ -1591,11 +2139,39 @@
                                 storagePath
                             ]);
 
-
                         throw databaseError;
-
                     }
 
+                    console.log(
+                        "Photo saved. Starting ML:",
+                        photoRecord.id
+                    );
+                    // Run ML analysis
+                    const mlResult = await analyzePhoto(
+                        photoRecord.id,
+                        imageUrl
+                    );
+
+                    console.log(
+                        "ML processing result:",
+                        mlResult
+                    );
+
+                    if (!mlResult || !mlResult.success) {
+
+                        console.error(
+                            "ML analysis failed:",
+                            mlResult
+                        );
+
+                    } else {
+
+                        console.log(
+                            "ML analysis successfully saved:",
+                            mlResult.result
+                        );
+
+                    }
 
                     uploaded++;
 
@@ -1637,11 +2213,6 @@
 
         }
 
-
-        /* =========================================================
-           UPLOAD BUTTONS
-        ========================================================= */
-
         uploadFolderPhotosBtn.addEventListener(
             "click",
             () => {
@@ -1651,12 +2222,6 @@
             }
         );
 
-
-
-
-        /* =========================================================
-           COPY LINK BUTTONS
-        ========================================================= */
 
         copyClientLinkBtn.addEventListener(
             "click",
@@ -1698,10 +2263,6 @@
         );
 
 
-        /* =========================================================
-           BACK TO CUSTOMER LIST
-        ========================================================= */
-
         backToFoldersBtn.addEventListener(
             "click",
             async () => {
@@ -1739,9 +2300,6 @@
         );
 
 
-        /* =========================================================
-           SEARCH
-        ========================================================= */
 
         searchInput.addEventListener(
             "input",
@@ -1823,9 +2381,6 @@
 
             }
         );
-        /* =========================================================
-           UPLOAD STATUS
-        ========================================================= */
 
         function showUploadStatus(
             message,
@@ -1849,15 +2404,10 @@
         }
 
 
-        /* =========================================================
-           ERROR STATE
-        ========================================================= */
 
-        function showFolderError(
-            message
-        ) {
+        function showFolderError(message) {
 
-            foldersView.innerHTML = `
+            customerFoldersContainer.innerHTML = `
 
         <div class="customer-folder-empty">
 
@@ -1873,10 +2423,6 @@
 
         }
 
-
-        /* =========================================================
-           DATE FORMAT
-        ========================================================= */
 
         function formatDate(
             dateString
@@ -1916,10 +2462,6 @@
         }
 
 
-        /* =========================================================
-           HTML ESCAPE
-        ========================================================= */
-
         function escapeHTML(
             value
         ) {
@@ -1950,10 +2492,6 @@
 
         }
 
-
-        /* =========================================================
-           LOGOUT
-        ========================================================= */
 
         logoutBtn.addEventListener(
             "click",

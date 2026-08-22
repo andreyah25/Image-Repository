@@ -20,7 +20,7 @@
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Studio</span>
+            <span>Captured Admin Studio</span>
         </div>
 
         <div class="navbar-right">
@@ -244,6 +244,7 @@
 
         let allBookedSessions = [];
         let selectedMonth = "all";
+        let allAccessRequests = [];
 
 
         /* =========================================================
@@ -371,39 +372,48 @@
                 }
 
                 list.innerHTML += `
-                <div class="notification-item ${notification.is_read
-                        ? ""
-                        : "unread"
-                    }">
+<div class="notification-item ${notification.is_read ? "" : "unread"}">
 
-                    <div class="notification-icon">
-                        <i class="fa-solid fa-bell"></i>
-                    </div>
+    <div class="notification-icon">
+        <i class="fa-solid fa-circle-check"></i>
+    </div>
 
-                    <div class="notification-content">
+    <div class="notification-content">
 
-                        <h4>
-                            ${escapeHtml(
-                        notification.title
-                    )}
-                        </h4>
+        <h4>
+            ${notification.title || ""}
+        </h4>
 
-                        <p>
-                            ${escapeHtml(
-                        notification.message
-                    )}
-                        </p>
+        <p class="notification-message">
+            ${notification.message || ""}
+        </p>
 
-                        <small>
-                            ${new Date(
-                        notification.created_at
-                    ).toLocaleString()}
-                        </small>
+        ${notification.link
+                        ? `
+                    <a
+                        href="${notification.link}"
+                        class="notification-link"
+                    >
+                        <i class="fa-solid fa-images"></i>
+                        Open My Gallery
+                    </a>
+                  `
+                        : ""
+                    }
 
-                    </div>
+        <small>
+            ${notification.created_at
+                        ? new Date(
+                            notification.created_at
+                        ).toLocaleString()
+                        : ""
+                    }
+        </small>
 
-                </div>
-            `;
+    </div>
+
+</div>
+`;
             });
 
             const badge =
@@ -477,12 +487,393 @@
 
             renderBookedSessions();
         }
-
-
         /* =========================================================
-           RENDER BOOKINGS
+           LOAD ACCESS REQUESTS
         ========================================================= */
 
+
+
+        document.addEventListener(
+            "click",
+            async function (e) {
+
+                const btn =
+                    e.target.closest(".approve-access-btn");
+
+                if (!btn) {
+                    return;
+                }
+
+                const requestId =
+                    btn.dataset.id;
+
+                if (!requestId) {
+                    console.error("Missing request ID.");
+                    return;
+                }
+
+                const confirmed =
+                    confirm(
+                        "Approve this customer's gallery access request?"
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = "Approving...";
+
+                try {
+
+                    /* ---------------------------------------------
+                       GET ACCESS REQUEST
+                    --------------------------------------------- */
+
+                    const {
+                        data: request,
+                        error: requestError
+                    } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .select("*")
+                        .eq("id", requestId)
+                        .single();
+
+                    if (requestError) {
+                        throw requestError;
+                    }
+
+                    if (!request) {
+                        throw new Error(
+                            "Access request was not found."
+                        );
+                    }
+
+
+                    /* ---------------------------------------------
+                       CHECK IF ALREADY APPROVED
+                    --------------------------------------------- */
+
+                    if (request.status === "approved") {
+
+                        showToast(
+                            "Already Approved",
+                            "This access request has already been approved."
+                        );
+
+                        return;
+                    }
+
+
+                    /* ---------------------------------------------
+                       GET BOOKING
+                    --------------------------------------------- */
+
+                    const {
+                        data: booking,
+                        error: bookingError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .eq("id", request.booking_id)
+                        .single();
+
+                    if (bookingError) {
+                        throw bookingError;
+                    }
+
+                    if (!booking) {
+                        throw new Error(
+                            "The booking connected to this request was not found."
+                        );
+                    }
+
+
+                    /* ---------------------------------------------
+                       CREATE / GET CLIENT REPOSITORY LINK
+                    --------------------------------------------- */
+
+                    const repository =
+                        await createClientRepository(
+                            booking
+                        );
+
+
+                    /* ---------------------------------------------
+                       UPDATE ACCESS REQUEST
+                    --------------------------------------------- */
+
+                    const {
+                        error: updateError
+                    } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .update({
+                            status: "approved",
+                            repository_id: repository.id,
+                            approved_at: new Date().toISOString(),
+                            approved_by:
+                                (await supabaseClient.auth.getUser())
+                                    .data.user?.id || null
+                        })
+                        .eq("id", requestId);
+
+                    if (updateError) {
+                        console.error("Access request update error:", updateError);
+                        throw updateError;
+                    }
+
+
+                    /* ---------------------------------------------
+                       CREATE CUSTOMER NOTIFICATION
+                    --------------------------------------------- */
+
+                    if (request.customer_id) {
+
+                        const {
+                            error: notificationError
+                        } = await supabaseClient
+                            .from("notifications")
+                            .insert({
+
+                                customer_id:
+                                    request.customer_id,
+
+                                booking_id:
+                                    request.booking_id,
+
+                                recipient:
+                                    "customer",
+
+                                title:
+                                    "Gallery Access Approved",
+
+                                message:
+                                    "Your gallery access request has been approved. You can now access your photo repository.",
+
+                                is_read:
+                                    false,
+
+                                link:
+                                    getClientRepositoryLink(
+                                        repository
+                                    )
+
+                            });
+
+                        if (notificationError) {
+
+                            console.error(
+                                "Customer notification error:",
+                                notificationError
+                            );
+
+                        }
+                    }
+
+
+                    /* ---------------------------------------------
+                       SUCCESS
+                    --------------------------------------------- */
+
+                    showToast(
+                        "Access Approved",
+                        "The customer's gallery access has been approved."
+                    );
+
+
+                    /* ---------------------------------------------
+                       RELOAD ACCESS REQUESTS
+                    --------------------------------------------- */
+
+                    await loadAccessRequests();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "APPROVE ACCESS ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "The access request could not be approved.\n\n" +
+                        error.message
+                    );
+
+                } finally {
+
+                    btn.disabled = false;
+                    btn.textContent = "Approve";
+
+                }
+
+            }
+        );
+        /* =========================================================
+   REJECT GALLERY ACCESS REQUEST
+========================================================= */
+
+        document.addEventListener(
+            "click",
+            async function (e) {
+
+                const btn =
+                    e.target.closest(".reject-access-btn");
+
+                if (!btn) {
+                    return;
+                }
+
+                const requestId =
+                    btn.dataset.id;
+
+                if (!requestId) {
+                    console.error("Missing request ID.");
+                    return;
+                }
+
+                const confirmed =
+                    confirm(
+                        "Are you sure you want to reject this gallery access request?"
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = "Rejecting...";
+
+                try {
+
+                    /* ---------------------------------------------
+                       GET REQUEST
+                    --------------------------------------------- */
+
+                    const {
+                        data: request,
+                        error: requestError
+                    } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .select("*")
+                        .eq("id", requestId)
+                        .single();
+
+                    if (requestError) {
+                        throw requestError;
+                    }
+
+                    if (!request) {
+                        throw new Error(
+                            "Access request was not found."
+                        );
+                    }
+
+
+                    /* ---------------------------------------------
+                       UPDATE REQUEST STATUS
+                    --------------------------------------------- */
+
+                    const {
+                        error: updateError
+                    } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .update({
+
+                            status: "rejected"
+
+                        })
+                        .eq(
+                            "id",
+                            requestId
+                        );
+
+                    if (updateError) {
+                        throw updateError;
+                    }
+
+
+                    /* ---------------------------------------------
+                       CUSTOMER NOTIFICATION
+                    --------------------------------------------- */
+
+                    if (request.customer_id) {
+
+                        const {
+                            error: notificationError
+                        } = await supabaseClient
+                            .from("notifications")
+                            .insert({
+
+                                customer_id:
+                                    request.customer_id,
+
+                                booking_id:
+                                    request.booking_id,
+
+                                recipient:
+                                    "customer",
+
+                                title:
+                                    "Gallery Access Request Rejected",
+
+                                message:
+                                    "Your gallery access request has been rejected.",
+
+                                is_read:
+                                    false
+
+                            });
+
+                        if (notificationError) {
+
+                            console.error(
+                                "Notification error:",
+                                notificationError
+                            );
+
+                        }
+                    }
+
+
+                    /* ---------------------------------------------
+                       SUCCESS
+                    --------------------------------------------- */
+
+                    showToast(
+                        "Access Rejected",
+                        "The gallery access request has been rejected."
+                    );
+
+
+                    /* ---------------------------------------------
+                       RELOAD
+                    --------------------------------------------- */
+
+                    await loadAccessRequests();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "REJECT ACCESS ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "The access request could not be rejected.\n\n" +
+                        error.message
+                    );
+
+                } finally {
+
+                    btn.disabled = false;
+                    btn.textContent = "Reject";
+
+                }
+
+            }
+        );
         function renderBookedSessions() {
 
             const tbody =
@@ -893,16 +1284,17 @@
            GENERATE CLIENT LINK
         ========================================================= */
 
-        function getClientRepositoryLink(
-            repository
-        ) {
+        function getClientRepositoryLink(repository) {
+
+            if (!repository || !repository.access_token) {
+                console.error("Repository token is missing:", repository);
+                return null;
+            }
 
             return (
                 window.location.origin +
-                "/client-gallery.html?token=" +
-                encodeURIComponent(
-                    repository.access_token
-                )
+                "/frontend-customer/client-gallery.html?token=" +
+                encodeURIComponent(repository.access_token)
             );
         }
 
@@ -991,11 +1383,46 @@
                     --------------------------------------------- */
 
                     const clientLink =
-                        getClientRepositoryLink(
-                            repository
+                        getClientRepositoryLink(repository);
+
+                    const {
+                        error: notificationError
+                    } = await supabaseClient
+                        .from("notifications")
+                        .insert({
+
+                            customer_id:
+                                request.customer_id,
+
+                            booking_id:
+                                request.booking_id,
+
+                            recipient:
+                                "customer",
+
+                            title:
+                                "Gallery Access Approved",
+
+                            message:
+                                "Your gallery access request has been approved. " +
+                                "Your photo repository is now available.",
+
+                            is_read:
+                                false,
+
+                            link:
+                                clientLink
+
+                        });
+
+                    if (notificationError) {
+
+                        console.error(
+                            "Customer notification error:",
+                            notificationError
                         );
 
-
+                    }
                     console.log(
                         "Client repository link:",
                         clientLink
@@ -1355,18 +1782,31 @@
 
 
         if (searchInput) {
-
             searchInput.addEventListener(
                 "input",
                 function () {
 
-                    renderBookedSessions();
+                    const activeTab =
+                        document.querySelector(
+                            ".tab-btn.active"
+                        );
+
+                    if (
+                        activeTab &&
+                        activeTab.id ===
+                        "tabAccessRequests"
+                    ) {
+
+                        renderAccessRequests();
+
+                    } else {
+
+                        renderBookedSessions();
+                    }
 
                 }
             );
         }
-
-
         /* =========================================================
            TABS
         ========================================================= */
@@ -1385,11 +1825,226 @@
             document.getElementById(
                 "addNewClientBtn"
             );
+        async function loadAccessRequests() {
 
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("gallery_access_requests")
+                .select("*")
+                .order("requested_at", {
+                    ascending: false
+                });
 
-        function renderHeaders(
-            activeTabId
-        ) {
+            if (error) {
+
+                console.error(
+                    "Error loading access requests:",
+                    error
+                );
+
+                return;
+            }
+
+            allAccessRequests = data || [];
+
+            renderAccessRequests();
+        }
+        function renderAccessRequests() {
+
+            const tbody =
+                document.getElementById(
+                    "clientTableBody"
+                );
+
+            if (!tbody) {
+                return;
+            }
+
+            tbody.innerHTML = "";
+
+            const searchInput =
+                document.getElementById(
+                    "clientSearchInput"
+                );
+
+            const searchTerm =
+                searchInput
+                    ? searchInput.value
+                        .trim()
+                        .toLowerCase()
+                    : "";
+
+            const filteredRequests =
+                allAccessRequests.filter(
+                    request => {
+
+                        if (!searchTerm) {
+                            return true;
+                        }
+
+                        const searchableText = [
+
+                            request.customer_email,
+                            request.status,
+                            request.requested_at
+
+                        ]
+                            .filter(
+                                value =>
+                                    value !== null &&
+                                    value !== undefined
+                            )
+                            .join(" ")
+                            .toLowerCase();
+
+                        return searchableText.includes(
+                            searchTerm
+                        );
+                    }
+                );
+
+            if (
+                filteredRequests.length === 0
+            ) {
+
+                tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="6"
+                    style="
+                        text-align:center;
+                        padding:30px;
+                        color:#888;
+                    "
+                >
+                    No access requests found.
+                </td>
+            </tr>
+        `;
+
+                return;
+            }
+
+            filteredRequests.forEach(
+                request => {
+
+                    const status =
+                        String(
+                            request.status || ""
+                        ).toLowerCase();
+
+                    let actionHTML = "-";
+
+                    if (status === "pending") {
+
+                        actionHTML = `
+                    <button
+                        class="approve-access-btn"
+                        data-id="${escapeHtml(
+                            request.id
+                        )}"
+                    >
+                        Approve
+                    </button>
+
+                    <button
+                        class="reject-access-btn"
+                        data-id="${escapeHtml(
+                            request.id
+                        )}"
+                    >
+                        Reject
+                    </button>
+                `;
+
+                    } else if (
+                        status === "approved"
+                    ) {
+
+                        actionHTML = `
+                    <span class="access-approved-label">
+                        Approved
+                    </span>
+                `;
+
+                    } else if (
+                        status === "rejected"
+                    ) {
+
+                        actionHTML = `
+                    <span class="access-rejected-label">
+                        Rejected
+                    </span>
+                `;
+                    }
+
+                    tbody.innerHTML += `
+                <tr>
+
+                    <td>
+                        ${escapeHtml(
+                        request.customer_email ||
+                        "-"
+                    )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                        request.customer_email ||
+                        "-"
+                    )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                        request.booking_id ||
+                        "-"
+                    )}
+                    </td>
+
+                    <td>
+                        ${request.requested_at
+                            ? new Date(
+                                request.requested_at
+                            ).toLocaleDateString(
+                                "en-US",
+                                {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric"
+                                }
+                            )
+                            : "-"
+                        }
+                    </td>
+
+                    <td>
+                        <span
+                            class="
+                                status-badge
+                                ${status}
+                            "
+                        >
+                            ${escapeHtml(
+                            request.status ||
+                            "-"
+                        )}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${actionHTML}
+                    </td>
+
+                </tr>
+            `;
+                }
+            );
+        }
+
+        function renderHeaders(activeTabId) {
 
             if (
                 activeTabId ===
@@ -1397,80 +2052,67 @@
             ) {
 
                 tableHeader.innerHTML = `
-                <tr>
+            <tr>
 
-                    <th>Full Name</th>
+                <th>Full Name</th>
 
-                    <th>Contact Number</th>
+                <th>Contact Number</th>
 
-                    <th>Email Address</th>
+                <th>Email Address</th>
 
-                    <th>Date</th>
+                <th>Date</th>
 
-                    <th>Time</th>
+                <th>Time</th>
 
-                    <th>Session Type</th>
+                <th>Session Type</th>
 
-                    <th>Status</th>
+                <th>Status</th>
 
-                    <th>Note</th>
+                <th>Note</th>
 
-                    <th>Action</th>
+                <th>Action</th>
 
-                </tr>
-            `;
+            </tr>
+        `;
+
+                if (addNewClientBtn) {
+                    addNewClientBtn.style.display =
+                        "none";
+                }
+
+                loadBookedSessions();
+
+            } else {
+
+                tableHeader.innerHTML = `
+        <tr>
+
+            <th>Customer Email</th>
+
+            <th>Booking ID</th>
+
+            <th>Requested At</th>
+
+            <th>Status</th>
+
+            <th>Approved At</th>
+
+            <th>Action</th>
+
+        </tr>
+    `;
 
 
-                if (
-                    addNewClientBtn
-                ) {
+                if (addNewClientBtn) {
 
                     addNewClientBtn.style.display =
                         "none";
                 }
 
 
-                loadBookedSessions();
-
-
-            } else {
-
-                tableHeader.innerHTML = `
-                <tr>
-
-                    <th>Clients</th>
-
-                    <th>Email Address</th>
-
-                    <th>Event Type</th>
-
-                    <th>Expiry Date</th>
-
-                    <th>Payment Status</th>
-
-                    <th>Access Status</th>
-
-                </tr>
-            `;
-
-
-                document
-                    .getElementById(
-                        "clientTableBody"
-                    )
-                    .innerHTML = "";
-
-
-                if (
-                    addNewClientBtn
-                ) {
-
-                    addNewClientBtn.style.display =
-                        "flex";
-                }
+                loadAccessRequests();
             }
         }
-
 
         tabs.forEach(
             tab => {
