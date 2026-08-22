@@ -441,28 +441,26 @@
         /* =========================================================
            VALIDATE GALLERY TOKEN
         ========================================================= */
-
         async function validateGalleryToken(
-            token
+            token,
+            userId
         ) {
 
             const {
-                data,
+                data: repository,
                 error
-            } =
-                await supabaseClient
-                    .from("repository_client_links")
-                    .select(`
-                    id,
-                    booking_id,
-                    access_token
-                `)
-                    .eq(
-                        "access_token",
-                        token
-                    )
-                    .maybeSingle();
-
+            } = await supabaseClient
+                .from("repository_client_links")
+                .select(`
+            id,
+            booking_id,
+            access_token
+        `)
+                .eq(
+                    "access_token",
+                    token
+                )
+                .maybeSingle();
 
             if (error) {
 
@@ -472,26 +470,258 @@
                 );
 
                 throw error;
-
             }
 
-
-            if (!data) {
+            if (!repository) {
 
                 return null;
 
             }
 
+            /*
+             * Verify that this repository belongs
+             * to the logged-in customer's booking.
+             */
 
-            return data;
+            const {
+                data: booking,
+                error: bookingError
+            } = await supabaseClient
+                .from("bookings")
+                .select(`
+            id,
+            customer_id
+        `)
+                .eq(
+                    "id",
+                    repository.booking_id
+                )
+                .eq(
+                    "customer_id",
+                    userId
+                )
+                .maybeSingle();
 
+            if (bookingError) {
+
+                console.error(
+                    "Booking validation error:",
+                    bookingError
+                );
+
+                throw bookingError;
+            }
+
+            if (!booking) {
+
+                console.warn(
+                    "Gallery does not belong to logged-in customer."
+                );
+
+                return null;
+            }
+
+            return repository;
         }
 
+        async function loadApprovedGallery() {
 
-        /* =========================================================
-           INITIALIZE PAGE
-        ========================================================= */
+            try {
 
+                const {
+                    data: {
+                        user
+                    },
+                    error: authError
+                } = await supabaseClient.auth.getUser();
+
+                if (authError || !user) {
+
+                    window.location.href =
+                        "customer_login.html";
+
+                    return;
+
+                }
+
+                console.log(
+                    "Finding approved gallery for:",
+                    user.id
+                );
+
+                /*
+                 * Find approved gallery access request
+                 */
+
+                const {
+                    data: request,
+                    error: requestError
+                } = await supabaseClient
+                    .from("gallery_access_requests")
+                    .select(`
+                id,
+                booking_id,
+                repository_id,
+                status
+            `)
+                    .eq(
+                        "customer_id",
+                        user.id
+                    )
+                    .eq(
+                        "status",
+                        "approved"
+                    )
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    )
+                    .limit(1)
+                    .maybeSingle();
+
+                if (requestError) {
+
+                    throw requestError;
+
+                }
+
+                if (!request) {
+
+                    showGalleryLinkError(
+                        "Your gallery access has not been approved yet."
+                    );
+
+                    return;
+
+                }
+
+                /*
+                 * Get repository
+                 */
+
+                const {
+                    data: repository,
+                    error: repositoryError
+                } = await supabaseClient
+                    .from("repository_client_links")
+                    .select(`
+                id,
+                booking_id,
+                access_token
+            `)
+                    .eq(
+                        "id",
+                        request.repository_id
+                    )
+                    .eq(
+                        "booking_id",
+                        request.booking_id
+                    )
+                    .maybeSingle();
+
+                if (repositoryError) {
+
+                    throw repositoryError;
+
+                }
+
+                if (!repository) {
+
+                    showGalleryLinkError(
+                        "Your gallery link has not been created yet."
+                    );
+
+                    return;
+
+                }
+
+                /*
+                 * Make sure repository belongs
+                 * to logged-in customer.
+                 */
+
+                const {
+                    data: booking,
+                    error: bookingError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select(`
+                id,
+                customer_id
+            `)
+                    .eq(
+                        "id",
+                        repository.booking_id
+                    )
+                    .eq(
+                        "customer_id",
+                        user.id
+                    )
+                    .maybeSingle();
+
+                if (bookingError) {
+
+                    throw bookingError;
+
+                }
+
+                if (!booking) {
+
+                    showGalleryLinkError(
+                        "This gallery does not belong to your account."
+                    );
+
+                    return;
+
+                }
+
+                /*
+                 * Gallery is valid
+                 */
+
+                const token =
+                    repository.access_token;
+
+                if (!token) {
+
+                    showGalleryLinkError(
+                        "Your gallery access token is missing."
+                    );
+
+                    return;
+
+                }
+
+                showGalleryLinkMessage(
+                    "Gallery found. Opening your photos..."
+                );
+
+                setTimeout(
+                    () => {
+
+                        window.location.href =
+                            "customer_gallery_view.html?token=" +
+                            encodeURIComponent(token);
+
+                    },
+                    500
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Automatic gallery loading error:",
+                    error
+                );
+
+                showGalleryLinkError(
+                    "Unable to load your gallery. Please try again."
+                );
+
+            }
+        }
         async function initializePage() {
 
             const user =
@@ -508,6 +738,7 @@
             console.log(
                 "Customer loaded successfully."
             );
+            await loadApprovedGallery();
 
         }
 
@@ -526,9 +757,6 @@
                     galleryLinkInput.value.trim();
 
 
-                /* -----------------------------------------
-                   EMPTY
-                ----------------------------------------- */
 
                 if (!enteredLink) {
 
@@ -539,12 +767,6 @@
                     return;
 
                 }
-
-
-                /* -----------------------------------------
-                   PARSE URL
-                ----------------------------------------- */
-
                 let galleryURL;
 
 

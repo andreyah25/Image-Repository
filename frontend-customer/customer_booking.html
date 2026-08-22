@@ -14,7 +14,7 @@
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" alt="Logo" class="logo-img">
-            <span>CAPTURED</span>
+            <span>Captured Photography Studio</span>
         </div>
 
         <div class="navbar-right">
@@ -65,143 +65,145 @@
                 <p>Provide your booking details so we can prepare for your session.</p>
             </div>
 
-            <div class="sessions-panel booking-container">
-                <form id="bookingForm" class="booking-form">
+            <div class="booking-layout-wrapper">
+                <div class="sessions-panel booking-container">
+                    <form id="bookingForm" class="booking-form">
 
-                    <!-- Section 1: Contact Information -->
-                    <div class="form-section">
-                        <h3 class="section-title-form">Contact Information</h3>
-                        <div class="form-grid-three">
-                            <div class="form-group">
-                                <label for="fullName">Full Name</label>
-                                <input type="text" id="fullName" placeholder="Enter your name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
-                                <input type="tel" id="contactNumber" placeholder="Enter your contact number"
-                                    maxlength="11" inputmode="numeric" autocomplete="tel" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="emailAddress">Email Address</label>
-                                <input type="email" id="emailAddress" placeholder="Enter your email" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Section 2: Date, Time & Session Details -->
-                    <div class="form-section form-grid-two">
-                        <div>
-                            <h3 class="section-title-form">Select Date and Time</h3>
-                            <div class="form-group icon-input" style="margin-bottom: 15px;">
-                                <label for="bookingDate">Photo Session Date <span style="color:red;">*</span></label>
-                                <div class="field-wrapper">
-                                    <input type="text" id="bookingDate" placeholder="Select a date"
-                                        onfocus="(this.type='date')" onblur="(this.type='text')" required>
-                                    <i class="fa-regular fa-calendar"></i>
+                        <!-- Section 1: Contact Information -->
+                        <div class="form-section">
+                            <h3 class="section-title-form">Contact Information</h3>
+                            <div class="form-grid-three">
+                                <div class="form-group">
+                                    <label for="fullName">Full Name</label>
+                                    <input type="text" id="fullName" placeholder="Enter your name" required>
                                 </div>
-                            </div>
-                            <div class="form-group icon-input">
-                                <label for="bookingTime">Preferred Time <span style="color:red;">*</span></label>
-                                <div class="field-wrapper">
-                                    <input type="text" id="bookingTime" placeholder="Select a time"
-                                        onfocus="(this.type='time')" onblur="(this.type='text')" required>
-                                    <i class="fa-regular fa-clock"></i>
+                                <div class="form-group">
+                                    <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
+                                    <input type="tel" id="contactNumber" placeholder="Enter your contact number"
+                                        maxlength="11" inputmode="numeric" autocomplete="tel" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="emailAddress">Email Address</label>
+                                    <input type="email" id="emailAddress" placeholder="Enter your email" readonly>
                                 </div>
                             </div>
                         </div>
 
-                        <div>
-                            <h3 class="section-title-form">Session Details</h3>
-                            <div class="form-group" style="margin-bottom: 15px;">
-                                <label for="photoPackage">Photo Package</label>
-                                <select id="photoPackage">
-                                    <option value="" selected>Select a photo package</option>
-                                    <option value="basic_1">BASIC 1 (1 person) - ₱399</option>
-                                    <option value="basic_2">BASIC 2 (2 persons) - ₱599</option>
-                                    <option value="basic_3">BASIC 3 (3 persons) - ₱799</option>
-                                    <option value="group_package">GROUP PACKAGE (4-8 persons) - ₱1,999</option>
-                                </select>
+                        <!-- Section 2: Date, Time & Session Details -->
+                        <div class="form-section form-grid-two">
+                            <div>
+                                <h3 class="section-title-form">Select Date and Time</h3>
+                                <div class="form-group icon-input" style="margin-bottom: 15px;">
+                                    <label for="bookingDate">Photo Session Date <span
+                                            style="color:red;">*</span></label>
+                                    <div class="field-wrapper">
+                                        <input type="text" id="bookingDate" placeholder="Select a date"
+                                            onfocus="(this.type='date')" onblur="(this.type='text')" required>
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group icon-input">
+                                    <label for="bookingTime">Preferred Time <span style="color:red;">*</span></label>
+                                    <div class="field-wrapper">
+                                        <input type="text" id="bookingTime" placeholder="Select a time"
+                                            onfocus="(this.type='time')" onblur="(this.type='text')" required>
+                                        <i class="fa-regular fa-clock"></i>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="sessionType">Special Sessions</label>
-                                <select id="sessionType">
-                                    <option value="" selected>Select a session type</option>
-                                    <option value="kids">Kids Pre-Birthday Shoot (6 yrs old and below) - ₱1,699</option>
-                                    <option value="pre_birthday">Pre-Birthday Shoot (7 yrs old & up) - ₱999</option>
-                                    <option value="theme_holiday">Theme / Holiday (3 persons) - ₱1,699</option>
-                                    <option value="maternity">Maternity Shoot - ₱999</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-
-                        <div class="section-header-flex">
-                            <h3 class="section-title-form">
-                                Reservation Down Payment
-                            </h3>
-                        </div>
-
-                        <div class="form-grid-two">
 
                             <div>
-
-                                <div class="form-group">
-
-                                    <label for="paymentMethod">
-                                        Payment Method
-                                        <span style="color:red">*</span>
-                                    </label>
-
-                                    <select id="paymentMethod" required>
-
-                                        <option value="" selected disabled>
-                                            Select payment method
-                                        </option>
-
-                                        <option value="Maya">
-                                            Maya Checkout
-                                        </option>
-
+                                <h3 class="section-title-form">Session Details</h3>
+                                <div class="form-group" style="margin-bottom: 15px;">
+                                    <label for="photoPackage">Photo Package</label>
+                                    <select id="photoPackage">
+                                        <option value="" selected>Select a photo package</option>
+                                        <option value="basic_1">BASIC 1 (1 person) - ₱399</option>
+                                        <option value="basic_2">BASIC 2 (2 persons) - ₱599</option>
+                                        <option value="basic_3">BASIC 3 (3 persons) - ₱799</option>
+                                        <option value="group_package">GROUP PACKAGE (4-8 persons) - ₱1,999</option>
+                                        <option value="classic_1">Classic 1 - ₱1,199</option>
+                                        <option value="classic_2">Classic 2 - ₱1,799</option>
+                                        <option value="classic_3">Classic 3 - ₱3,499</option>
                                     </select>
-
                                 </div>
-
                                 <div class="form-group">
-
-                                    <label>
-                                        <strong>Down Payment</strong>
-                                    </label>
-
-                                    <input type="text" value="₱0.25 (Non-refundable)" readonly>
-
+                                    <label for="sessionType">Special Sessions</label>
+                                    <select id="sessionType">
+                                        <option value="" selected>Select a session type</option>
+                                        <option value="kids">Kids Pre-Birthday Shoot (6 yrs old and below) - ₱1,699
+                                        </option>
+                                        <option value="pre_birthday">Pre-Birthday Shoot (7 yrs old & up) - ₱999</option>
+                                        <option value="theme_holiday">Theme / Holiday (3 persons) - ₱1,699</option>
+                                        <option value="maternity">Maternity Shoot - ₱999</option>
+                                    </select>
                                 </div>
+                            </div>
+                        </div>
 
+                        <!-- Section 3: Reservation Down Payment -->
+                        <div class="form-section">
+
+                            <div class="section-header-flex">
+                                <h3 class="section-title-form">
+                                    Reservation Down Payment
+                                </h3>
                             </div>
 
-                            <div>
+                            <div class="form-grid-two">
 
-                                <div style="
-                padding:20px;
-                border:1px solid #ddd;
-                border-radius:12px;
-                background:#fafafa;
-            ">
+                                <div>
 
-                                    <h4 style="margin-bottom:10px;">
-                                        Secure Online Payment
+                                    <div class="form-group">
+                                        <label for="paymentMethod">
+                                            Payment Method
+                                            <span style="color:red">*</span>
+                                        </label>
+
+                                        <select id="paymentMethod" required>
+                                            <option value="" selected disabled>
+                                                Select payment method
+                                            </option>
+
+                                            <option value="GCash">
+                                                GCash
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>
+                                            <strong>Down Payment</strong>
+                                        </label>
+
+                                        <input type="text" value="₱200.00 (Non-refundable)" readonly>
+                                    </div>
+
+                                </div>
+
+
+                                <div id="gcashPaymentBox" style="display:none;">
+
+                                    <h4 style="margin-bottom:15px;">
+                                        Scan to Pay via GCash
                                     </h4>
 
-                                    <p style="
-                    font-size:14px;
-                    line-height:1.5;
-                    color:#666;
-                ">
-                                        After submitting your booking, you will be
-                                        redirected to Maya's secure checkout page to
-                                        pay the ₱0.25 reservation down payment.
-                                    </p>
+                                    <img src="/images/gcash_qr.jpg" alt="GCash QR" style="
+                        width:230px;
+                        border-radius:12px;
+                        border:1px solid #ddd;
+                        margin-bottom:20px;
+                    ">
+
+                                    <div class="form-group">
+
+                                        <label>
+                                            Upload Proof of Payment
+                                        </label>
+
+                                        <input type="file" id="paymentProof" accept="image/png,image/jpeg,image/jpg">
+
+                                    </div>
 
                                 </div>
 
@@ -209,27 +211,515 @@
 
                         </div>
 
-                    </div>
-                    <!-- Section 4: Notes / Special Requests -->
-                    <div class="form-section">
-                        <h3 class="section-title-form">Notes/Request (Optional)</h3>
-                        <div class="form-group">
-                            <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
+                        <!-- Section 4: Notes / Special Requests -->
+                        <div class="form-section">
+                            <h3 class="section-title-form">Notes/Request (Optional)</h3>
+                            <div class="form-group">
+                                <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Action Button -->
-                    <div class="form-actions" style="justify-content: stretch;">
-                        <button type="submit" class="btn-confirm"
-                            style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <i class="fa-solid fa-calendar-check"></i> Confirm Booking
-                        </button>
-                    </div>
+                        <!-- Action Button -->
+                        <div class="form-actions" style="justify-content: stretch;">
+                            <button type="submit" class="btn-confirm"
+                                style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fa-solid fa-calendar-check"></i> Confirm Booking
+                            </button>
+                        </div>
 
-                </form>
+                    </form>
+                </div>
+
+                <!-- Studio Services Side Panel -->
+                <aside class="studio-services-panel">
+                    <h2>Studio Services</h2>
+                    <p class="services-subtitle">Click a category below to view packages, inclusions, and pricing.</p>
+                    <div class="services-menu-list">
+                        <button type="button" class="service-menu-btn" id="openBasicPackages">Basic Packages</button>
+                        <button type="button" class="service-menu-btn" id="openGraduationPackage">Graduation
+                            Package</button>
+                        <button type="button" class="service-menu-btn" id="openSpecialSessions">Special
+                            Sessions</button>
+                        <button type="button" class="service-menu-btn" id="openAddOns">Add-Ons</button>
+                        <button type="button" class="service-menu-btn" id="openPetGuidelines">Pet Guidelines</button>
+                        <button type="button" class="service-menu-btn" id="openStudioRental">Studio Rental</button>
+                    </div>
+                </aside>
             </div>
         </main>
 
+    </div>
+
+    <!-- Basic Packages Modal -->
+    <div id="basicPackagesModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="closePackagesModal">&times;</button>
+
+            <div class="modal-table-container">
+                <table class="packages-table">
+                    <thead>
+                        <tr>
+                            <th>PACKAGE</th>
+                            <th>GOOD FOR</th>
+                            <th>INCLUSIONS</th>
+                            <th>PRICE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="pkg-name">Basic 1</td>
+                            <td class="pkg-goodfor">1 person</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>15 minutes self-shoot</li>
+                                    <li>1 backdrop of choice</li>
+                                    <li>FREE (2) 4R printing</li>
+                                    <li>FREE use of (1) chair or posing box</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P399</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Basic 2</td>
+                            <td class="pkg-goodfor">2 persons</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>20 minutes self-shoot</li>
+                                    <li>1 backdrop of choice</li>
+                                    <li>FREE (2) 4R prints or (4) wallet-size prints</li>
+                                    <li>FREE (6) digital copies</li>
+                                    <li>FREE use of (2) chairs or posing boxes</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P599</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Basic 3</td>
+                            <td class="pkg-goodfor">
+                                3 persons
+                                <span class="sub-text">Additional guest: P200/head</span>
+                            </td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>20 minutes self-shoot</li>
+                                    <li>1 backdrop of choice</li>
+                                    <li>FREE (4) 4R prints + (1) 5R print</li>
+                                    <li>FREE (6) digital copies</li>
+                                    <li>FREE use of (2) chairs or posing boxes</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P799</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Group<br>Package</td>
+                            <td class="pkg-goodfor">
+                                4–8 persons
+                                <span class="sub-text">Additional guest: P200/head</span>
+                            </td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>40 minutes self-shoot</li>
+                                    <li>20 minutes photo selection</li>
+                                    <li>3 backdrops of choice</li>
+                                    <li>FREE (6) 4R prints + (2) 5R prints</li>
+                                    <li>FREE (10) digital copies</li>
+                                    <li>FREE use of all available props</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P1,999</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graduation Package Modal -->
+    <div id="graduationPackageModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="closeGraduationPackageModal">&times;</button>
+
+            <div class="modal-table-container">
+                <table class="packages-table">
+                    <thead>
+                        <tr>
+                            <th>PACKAGE</th>
+                            <th>INCLUSIONS</th>
+                            <th>PRICE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Classic 1 -->
+                        <tr>
+                            <td class="pkg-name">Classic 1</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>2 Layouts (Toga or Uniform)</li>
+                                    <li>10 Edited/Retouched Softcopies</li>
+                                    <li>FREE Use of Toga & Cap</li>
+                                    <li>Professional Photographer</li>
+                                    <li>Professional Lighting Setup</li>
+                                </ul>
+                                <div style="margin-top: 10px; font-weight: bold;">PRINTS:</div>
+                                <ul style="margin-top: 4px;">
+                                    <li>4pcs Wallet Size</li>
+                                    <li>2pcs 5x7</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P1199</td>
+                        </tr>
+
+                        <!-- Classic 2 -->
+                        <tr>
+                            <td class="pkg-name">Classic 2</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>2 Layouts (Toga or Uniform)</li>
+                                    <li>15 Edited/Retouched Softcopies</li>
+                                    <li>FREE Use of Toga & Cap</li>
+                                    <li>Professional Photographer</li>
+                                    <li>Professional Lighting Setup</li>
+                                </ul>
+                                <div style="margin-top: 10px; font-weight: bold;">PHOTO FRAME & PRINTS:</div>
+                                <ul style="margin-top: 4px;">
+                                    <li>(1) 8X10 Photo Print in 10x12 Double Premium Glass Frame</li>
+                                    <li>(4) Wallet Size</li>
+                                    <li>(2) 5x7 - 5r Print</li>
+                                    <li>(2) 4x6 - 4r Print</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P1799</td>
+                        </tr>
+
+                        <!-- Classic 3 -->
+                        <tr>
+                            <td class="pkg-name">Classic 3</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>2 Layouts (Toga or Uniform)</li>
+                                    <li>20 Edited/Retouched Softcopies</li>
+                                    <li>10 Minutes Self Shoot Session</li>
+                                    <li>FREE Use of Toga & Cap</li>
+                                    <li>Professional Hair & Makeup</li>
+                                    <li>Professional Photographer</li>
+                                    <li>Professional Lighting Setup</li>
+                                </ul>
+                                <div style="margin-top: 10px; font-weight: bold;">PHOTO FRAME & PRINTS:</div>
+                                <ul style="margin-top: 4px;">
+                                    <li>(1) 8X10 Photo Print in 10x12 Double Premium Glass Frame</li>
+                                    <li>(4) Wallet Size</li>
+                                    <li>(2) 5x7 - 5r Print</li>
+                                    <li>(2) 4x6 - 4r Print</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P3499</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Graduation Add-Ons Section -->
+                <div style="margin-top: 25px; padding-top: 20px; border-top: 2px dashed #e0e0e0;">
+                    <h3
+                        style="font-size: 1rem; font-weight: 700; color: #353535; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Available Add-Ons
+                    </h3>
+                    <table class="packages-table">
+                        <thead>
+                            <tr>
+                                <th>ADD-ON SERVICE</th>
+                                <th>PRICE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pkg-name">Hair and make-up</td>
+                                <td class="pkg-price">P1,000</td>
+                            </tr>
+                            <tr>
+                                <td class="pkg-name">Raw copies</td>
+                                <td class="pkg-price">P200</td>
+                            </tr>
+                            <tr>
+                                <td class="pkg-name">Additional person</td>
+                                <td class="pkg-price">P200</td>
+                            </tr>
+                            <tr>
+                                <td class="pkg-name">Rush editing</td>
+                                <td class="pkg-price">P500</td>
+                            </tr>
+                            <tr>
+                                <td class="pkg-name">Extra prints</td>
+                                <td class="pkg-price">P50</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Special Sessions Modal -->
+    <div id="specialSessionsModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="closeSpecialSessionsModal">&times;</button>
+
+            <div class="modal-table-container">
+                <table class="packages-table">
+                    <thead>
+                        <tr>
+                            <th>PACKAGE</th>
+                            <th>GOOD FOR</th>
+                            <th>INCLUSIONS</th>
+                            <th>PRICE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="pkg-name">Kids Pre-Birthday Shoot</td>
+                            <td class="pkg-goodfor">6 yrs old and below</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>20 minutes assisted photoshoot</li>
+                                    <li>15 minutes prep time</li>
+                                    <li>15 minutes photo selection</li>
+                                    <li>1 backdrop of choice</li>
+                                    <li>FREE (4) 4R prints + (1) 5R print</li>
+                                    <li>FREE all digital copies</li>
+                                    <li>FREE use of all props</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P1,699</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Pre-Birthday Shoot</td>
+                            <td class="pkg-goodfor">7 yrs old & up</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>20 minutes self-shoot</li>
+                                    <li>15 minutes prep time</li>
+                                    <li>15 minutes photo selection</li>
+                                    <li>1 backdrop of choice</li>
+                                    <li>FREE (4) 4R prints + (1) 5R print</li>
+                                    <li>FREE all digital copies</li>
+                                    <li>FREE use of all props</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P999</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Theme / Holiday</td>
+                            <td class="pkg-goodfor">3 persons</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>20 minutes self photoshoot</li>
+                                    <li>1 outfit change</li>
+                                    <li>15 minutes photo selection</li>
+                                    <li>FREE use of Christmas props</li>
+                                    <li>FREE 6 soft copies</li>
+                                    <li>15R print</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P1,699</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Maternity Shoot</td>
+                            <td class="pkg-goodfor"> </td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>20 minutes choice of self-shoot or assisted Photoshoot</li>
+                                    <li>15 minutes prep time</li>
+                                    <li>15 minutes photo selection</li>
+                                    <li>1 backdrop of choice</li>
+                                    <li>FREE (4) 4R prints + (1) 5R print</li>
+                                    <li>FREE all digital copies</li>
+                                    <li>FREE use of all props</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">P999</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add-Ons Modal -->
+    <div id="addOnsModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="closeAddOnsModal">&times;</button>
+
+            <div class="modal-table-container">
+                <table class="packages-table">
+                    <thead>
+                        <tr>
+                            <th>AVAILABLE ADD-ONS</th>
+                            <th>PRICE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="pkg-name">Additional Person</td>
+                            <td class="pkg-price">P200 / head</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Additional Pet</td>
+                            <td class="pkg-price">P100 / head</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Additional 4R Print (any layout)</td>
+                            <td class="pkg-price">P50</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">8R Frame</td>
+                            <td class="pkg-price">P600</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">3 pcs. Refrigerator Magnet (2"x2")</td>
+                            <td class="pkg-price">P150</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Backdrop Request</td>
+                            <td class="pkg-price">P300</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">With Photographer for 15 minutes</td>
+                            <td class="pkg-price">P500</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">With Photographer for 30 minutes</td>
+                            <td class="pkg-price">P800</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pet Guidelines Modal -->
+    <div id="petGuidelinesModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="closePetGuidelinesModal">&times;</button>
+
+            <div class="modal-table-container">
+                <table class="packages-table">
+                    <thead>
+                        <tr>
+                            <th>PET SIZE</th>
+                            <th>ALLOWED CAPACITY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="pkg-name">Small to Medium-sized</td>
+                            <td class="pkg-goodfor">Up to 3 pets</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Medium to Large-sized</td>
+                            <td class="pkg-goodfor">Up to 2 pets</td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name">Extra Large and above</td>
+                            <td class="pkg-goodfor">1 pet only</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pet-reminders-section">
+                    <h3>Reminders for Pet Owners</h3>
+                    <ul class="pet-reminders-list">
+                        <li>They MUST WEAR A DIAPER when inside our studio.</li>
+                        <li>Please keep them on a leash or a carrier/cage.</li>
+                        <li>Please pick up after your pet/s.</li>
+                        <li>Client will be responsible for any damage made by his/her pets.</li>
+                        <li>Please take our other clients into consideration. Should your pet become disruptive, please
+                            excuse yourselves and calm your pet, so everyone can have a comfortable and enjoyable
+                            experience.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Studio Rental Modal -->
+    <div id="studioRentalModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="closeStudioRentalModal">&times;</button>
+
+            <div class="modal-table-container">
+                <table class="packages-table">
+                    <thead>
+                        <tr>
+                            <th>PACKAGE</th>
+                            <th>GOOD FOR</th>
+                            <th>INCLUSIONS</th>
+                            <th>PRICE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="pkg-name text-red">Weekday Rate</td>
+                            <td class="pkg-goodfor">Monday to Friday (Except Holidays)</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>Maximum of 10 persons only</li>
+                                    <li>Dressing area and own restroom</li>
+                                    <li>Fully air-conditioned space</li>
+                                    <li>Free use of WiFi and Bluetooth Speaker</li>
+                                    <li>Plenty of natural light</li>
+                                    <li>Use of Lighting equipment</li>
+                                    <li>Use of furniture</li>
+                                    <li>2 seamless backdrop papers</li>
+                                    <li>With parking spaces</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">
+                                <div class="rate-box">
+                                    <span class="rate-main">P2,500</span>
+                                    <span class="rate-sub">FOR THE FIRST 2 HOURS</span>
+                                    <span class="rate-main rate-spacer">P800/hr</span>
+                                    <span class="rate-sub">ADDITIONAL HOUR</span>
+                                    <div class="rate-discounted">
+                                        <strong>DISCOUNTED RATE FOR EXTENDED HOURS:</strong>
+                                        <div class="rate-discount-row"><span>6 Hours</span> <span>– P5,400</span></div>
+                                        <div class="rate-discount-row"><span>12 Hours</span> <span>– P9,600</span></div>
+                                        <small class="rate-time-slot">(8 AM TO 8 PM)</small>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pkg-name text-red">Weekend Rate</td>
+                            <td class="pkg-goodfor">Saturday to Sunday (Including Holidays)</td>
+                            <td class="pkg-inclusions">
+                                <ul>
+                                    <li>Maximum of 10 persons only</li>
+                                    <li>Dressing area and own restroom</li>
+                                    <li>Fully air-conditioned space</li>
+                                    <li>Free use of WiFi and Bluetooth Speaker</li>
+                                    <li>Plenty of natural light</li>
+                                    <li>Use of Lighting equipment</li>
+                                    <li>Use of furniture</li>
+                                    <li>2 seamless backdrop papers</li>
+                                    <li>With parking spaces</li>
+                                </ul>
+                            </td>
+                            <td class="pkg-price">
+                                <div class="rate-box">
+                                    <span class="rate-main">P4,000</span>
+                                    <span class="rate-sub">FOR THE FIRST 2 HOURS</span>
+                                    <span class="rate-main rate-spacer">P1,500/hr</span>
+                                    <span class="rate-sub">ADDITIONAL HOUR</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="addons-note">
+                    NOTE: CAMERA IS NOT INCLUDED IN THE RENTAL
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -243,14 +733,15 @@
             SUPABASE_ANON_KEY
         );
 
-
         (async () => {
 
-            console.log("Loading customer information...");
+            console.log("=================================");
+            console.log("LOADING CUSTOMER INFORMATION");
+            console.log("=================================");
 
             /* =========================================================
-               GET LOGGED-IN USER
-            ========================================================= */
+               1. GET LOGGED-IN SUPABASE USER
+               ========================================================= */
 
             const {
                 data: { user },
@@ -271,6 +762,10 @@
 
             if (!user) {
 
+                console.warn(
+                    "No logged-in user."
+                );
+
                 window.location.href =
                     "/frontend-customer/customer_login.html";
 
@@ -278,20 +773,26 @@
             }
 
 
-            console.log("Logged-in user:", user.id);
-            console.log("User email:", user.email);
+            console.log("AUTH USER ID:", user.id);
+            console.log("AUTH EMAIL:", user.email);
 
 
             /* =========================================================
-               GET CUSTOMER PROFILE FROM CUSTOMERS TABLE
-            ========================================================= */
+               2. GET CUSTOMER USING AUTH USER ID
+               ========================================================= */
 
             const {
                 data: customer,
                 error: customerError
             } = await supabaseClient
                 .from("customers")
-                .select("id, email, full_name, profile_image, phone")
+                .select(`
+            id,
+            email,
+            full_name,
+            profile_image,
+            phone
+        `)
                 .eq("id", user.id)
                 .maybeSingle();
 
@@ -306,32 +807,29 @@
             }
 
 
-            console.log(
-                "Customer profile:",
-                customer
-            );
+            console.log("CUSTOMER RECORD:", customer);
 
 
             /* =========================================================
-               CUSTOMER NAME
-            ========================================================= */
+               3. CUSTOMER NAME
+               ========================================================= */
 
             const customerName =
                 customer?.full_name ||
                 user.user_metadata?.full_name ||
                 user.user_metadata?.name ||
-                user.email;
+                user.email ||
+                "Customer";
 
 
             document.getElementById(
                 "customer-name"
-            ).textContent =
-                customerName;
+            ).textContent = customerName;
 
 
             /* =========================================================
-               CUSTOMER PROFILE IMAGE
-            ========================================================= */
+               4. CUSTOMER PROFILE IMAGE
+               ========================================================= */
 
             const profileImage =
                 customer?.profile_image ||
@@ -341,39 +839,40 @@
 
 
             console.log(
-                "Profile image:",
+                "CUSTOMER PROFILE IMAGE:",
                 profileImage
             );
 
 
             const profileImageElement =
-                document.getElementById("profile-image");
+                document.getElementById(
+                    "profile-image"
+                );
 
 
             profileImageElement.src =
                 profileImage;
 
 
+            profileImageElement.onerror =
+                function () {
+
+                    console.warn(
+                        "Profile image failed:",
+                        this.src
+                    );
+
+                    this.onerror = null;
+
+                    this.src =
+                        "/images/default-profile.png";
+
+                };
+
+
             /* =========================================================
-               FALLBACK IF IMAGE FAILS
-            ========================================================= */
-
-            profileImageElement.onerror = function () {
-
-                console.warn(
-                    "Profile image failed to load:",
-                    this.src
-                );
-
-                this.src =
-                    "/images/default-profile.png";
-
-            };
-
-
-            /* =========================================================
-               BOOKING FORM
-            ========================================================= */
+               5. FILL BOOKING FORM
+               ========================================================= */
 
             document.getElementById(
                 "fullName"
@@ -387,22 +886,100 @@
             document.getElementById(
                 "emailAddress"
             ).value =
-                user.email;
+                user.email || "";
 
 
             document.getElementById(
                 "emailAddress"
-            ).readOnly =
-                true;
+            ).readOnly = true;
 
 
             /* =========================================================
-               LOAD NOTIFICATIONS
-            ========================================================= */
+               6. LOAD NOTIFICATIONS
+               ========================================================= */
 
-            loadNotifications();
+            await loadNotifications();
+
+
+            console.log("=================================");
+            console.log("CUSTOMER INFORMATION LOADED");
+            console.log("Name:", customerName);
+            console.log("Email:", user.email);
+            console.log("Customer ID:", customer?.id);
+            console.log("=================================");
 
         })();
+        document.addEventListener("DOMContentLoaded", function () {
+
+            function bindModal(openBtnId, modalId, closeBtnId) {
+
+                const modal = document.getElementById(modalId);
+                const openBtn = document.getElementById(openBtnId);
+                const closeBtn = document.getElementById(closeBtnId);
+
+                // OPEN MODAL
+                if (openBtn && modal) {
+                    openBtn.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        modal.classList.add("active");
+                    });
+                }
+
+                // CLOSE MODAL
+                if (closeBtn && modal) {
+                    closeBtn.addEventListener("click", function () {
+                        modal.classList.remove("active");
+                    });
+                }
+
+                // CLOSE WHEN CLICKING OUTSIDE THE MODAL
+                if (modal) {
+                    modal.addEventListener("click", function (e) {
+                        if (e.target === modal) {
+                            modal.classList.remove("active");
+                        }
+                    });
+                }
+            }
+
+            // STUDIO SERVICES
+            bindModal(
+                "openBasicPackages",
+                "basicPackagesModal",
+                "closePackagesModal"
+            );
+
+            bindModal(
+                "openGraduationPackage",
+                "graduationPackageModal",
+                "closeGraduationPackageModal"
+            );
+
+            bindModal(
+                "openSpecialSessions",
+                "specialSessionsModal",
+                "closeSpecialSessionsModal"
+            );
+
+            bindModal(
+                "openAddOns",
+                "addOnsModal",
+                "closeAddOnsModal"
+            );
+
+            bindModal(
+                "openPetGuidelines",
+                "petGuidelinesModal",
+                "closePetGuidelinesModal"
+            );
+
+            bindModal(
+                "openStudioRental",
+                "studioRentalModal",
+                "closeStudioRentalModal"
+            );
+
+        });
 
         async function loadNotifications() {
 

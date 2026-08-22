@@ -27,8 +27,9 @@
                 Photography Studio</span>
         </div>
         <div class="navbar-right">
-            <img id="userAvatar" class="avatar" src="/images/default-profile.png" alt="Profile"> <span
-                id="userName">Loading...</span>
+            <img id="userAvatar" class="avatar" alt="Profile" style="display:none;"><span id="userName">
+                Loading...
+            </span>
         </div>
     </header>
 
@@ -51,10 +52,10 @@
                 </a>
             </nav>
 
-            <a href="customer_homepage.html" class="logout-btn">
+            <button type="button" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
-            </a>
+            </button>
         </aside>
         <main class="content">
 
@@ -73,26 +74,6 @@
             </div>
 
 
-            <!-- Pagination Bar -->
-            <div class="gallery-pagination">
-                <a href="#" class="page-arrow">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </a>
-
-                <a href="#" class="page-num">1</a>
-                <a href="#" class="page-num">2</a>
-                <a href="#" class="page-num active">3</a>
-                <a href="#" class="page-num">4</a>
-                <a href="#" class="page-num">5</a>
-
-                <span class="page-dots">...</span>
-
-                <a href="#" class="page-num">30</a>
-
-                <a href="#" class="page-arrow">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </a>
-            </div>
 
             <!-- ADD THIS -->
             <div id="galleryGrid" class="gallery-grid"></div>
@@ -143,101 +124,246 @@
                 SUPABASE_URL,
                 SUPABASE_ANON_KEY
             );
+        let loggedInUser = null;
+
+        async function getLoggedInCustomer() {
+
+            try {
+
+                const {
+                    data: { user },
+                    error
+                } = await supabaseClient.auth.getUser();
+
+                if (error) {
+                    console.error("AUTH ERROR:", error);
+                    return null;
+                }
+
+                if (!user) {
+                    console.warn("NO LOGGED-IN USER");
+                    return null;
+                }
+
+                loggedInUser = user;
+
+                console.log("=================================");
+                console.log("LOGGED-IN CUSTOMER");
+                console.log("User ID:", user.id);
+                console.log("Email:", user.email);
+                console.log("Metadata:", user.user_metadata);
+                console.log("=================================");
+
+                return user;
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to fetch logged-in customer:",
+                    error
+                );
+
+                return null;
+            }
+        }
         async function loadCustomerProfile() {
 
-            const {
-                data: {
-                    user
-                },
-                error: authError
-            } = await supabaseClient.auth.getUser();
-
-            if (authError || !user) {
-
-                console.error(
-                    "Unable to get logged-in customer:",
-                    authError
-                );
-
-                document.getElementById("userName").textContent = "Customer";
-
-                return;
-            }
-
-            console.log("Logged-in customer:", user);
-
-            /*
-             * Fetch customer's profile from your profile table
-             */
-
-            const {
-                data: profile,
-                error: profileError
-            } = await supabaseClient
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .maybeSingle();
-
-            if (profileError) {
-
-                console.error(
-                    "Customer profile error:",
-                    profileError
-                );
-
-                document.getElementById("userName").textContent =
-                    user.email || "Customer";
-
-                return;
-            }
-
-            console.log("Customer profile:", profile);
-
-
-            /*
-             * CUSTOMER NAME
-             */
-
-            const userName =
-                profile?.full_name ||
-                profile?.name ||
-                user.user_metadata?.full_name ||
-                user.user_metadata?.name ||
-                user.email ||
-                "Customer";
-
-            document.getElementById("userName").textContent =
-                userName;
-
-
-            /*
-             * CUSTOMER PROFILE IMAGE
-             */
-
-            const avatar =
-                profile?.avatar_url ||
-                profile?.profile_image ||
-                user.user_metadata?.avatar_url ||
-                user.user_metadata?.picture ||
-                "";
+            const userNameElement =
+                document.getElementById("userName");
 
             const avatarElement =
                 document.getElementById("userAvatar");
 
-            if (avatar) {
+            if (!userNameElement) {
+                console.error("ERROR: #userName element was not found.");
+                return;
+            }
 
-                avatarElement.src = avatar;
+            if (!avatarElement) {
+                console.error("ERROR: #userAvatar element was not found.");
+                return;
+            }
 
-            } else {
+            if (!loggedInUser) {
+                console.warn("No logged-in user.");
+                return;
+            }
 
-                /*
-                 * No profile photo uploaded
-                 * Show a default icon instead.
-                 */
+            console.log("=================================");
+            console.log("FETCHING CUSTOMER PROFILE");
+            console.log("Auth User ID:", loggedInUser.id);
+            console.log("Auth Email:", loggedInUser.email);
+            console.log("=================================");
 
-                avatarElement.src = "/images/default-profile.png";
+            try {
 
+                let profile = null;
+
+                // =====================================================
+                // 1. FIND PROFILE USING AUTH USER ID
+                // =====================================================
+
+                const {
+                    data: profileById,
+                    error: profileIdError
+                } = await supabaseClient
+                    .from("profiles")
+                    .select("*")
+                    .eq("id", loggedInUser.id)
+                    .maybeSingle();
+
+                if (profileIdError) {
+
+                    console.error(
+                        "Profile ID lookup error:",
+                        profileIdError
+                    );
+
+                } else if (profileById) {
+
+                    profile = profileById;
+
+                    console.log(
+                        "Profile found using Auth User ID."
+                    );
+                }
+
+
+                // =====================================================
+                // 2. IF NOT FOUND, SEARCH BY EMAIL
+                // =====================================================
+
+                if (!profile && loggedInUser.email) {
+
+                    console.log(
+                        "No profile found by Auth ID."
+                    );
+
+                    console.log(
+                        "Trying profile using email:",
+                        loggedInUser.email
+                    );
+
+                    const {
+                        data: profileByEmail,
+                        error: profileEmailError
+                    } = await supabaseClient
+                        .from("profiles")
+                        .select("*")
+                        .eq("email", loggedInUser.email)
+                        .maybeSingle();
+
+                    if (profileEmailError) {
+
+                        console.error(
+                            "Profile email lookup error:",
+                            profileEmailError
+                        );
+
+                    } else if (profileByEmail) {
+
+                        profile = profileByEmail;
+
+                        console.log(
+                            "Profile found using email."
+                        );
+                    }
+                }
+
+
+                // =====================================================
+                // 3. DISPLAY PROFILE RESULT
+                // =====================================================
+
+                console.log("=================================");
+                console.log("FINAL PROFILE:");
+                console.log(profile);
+                console.log("=================================");
+
+
+                // =====================================================
+                // 4. GET CUSTOMER NAME
+                // =====================================================
+
+                const customerName =
+                    profile?.full_name ||
+                    profile?.name ||
+                    loggedInUser.user_metadata?.full_name ||
+                    loggedInUser.user_metadata?.name ||
+                    loggedInUser.email ||
+                    "Customer";
+
+
+                // =====================================================
+                // 5. GET CUSTOMER AVATAR
+                // =====================================================
+
+                const customerAvatar =
+                    profile?.avatar_url ||
+                    profile?.profile_image ||
+                    profile?.avatar ||
+                    loggedInUser.user_metadata?.avatar_url ||
+                    loggedInUser.user_metadata?.picture ||
+                    null;
+
+
+                // =====================================================
+                // 6. DISPLAY NAME
+                // =====================================================
+
+                userNameElement.textContent =
+                    customerName;
+
+
+                // =====================================================
+                // 7. DISPLAY AVATAR
+                // =====================================================
+
+                if (customerAvatar) {
+
+                    avatarElement.style.display = "block";
+
+                    avatarElement.src = customerAvatar;
+
+                    avatarElement.onerror = function () {
+
+                        console.warn(
+                            "Profile image failed to load:",
+                            customerAvatar
+                        );
+
+                        this.onerror = null;
+                        this.style.display = "none";
+
+                    };
+
+                } else {
+
+                    // No profile image.
+                    // Do not load default-profile.png.
+                    avatarElement.style.display = "none";
+                }
+
+
+                console.log("=================================");
+                console.log("CUSTOMER DISPLAY");
+                console.log("Name:", customerName);
+                console.log("Avatar:", customerAvatar);
+                console.log("=================================");
+
+
+            } catch (error) {
+
+                console.error(
+                    "LOAD CUSTOMER PROFILE ERROR:",
+                    error
+                );
+
+                // Safe fallback
+                userNameElement.textContent =
+                    loggedInUser.email || "Customer";
+
+                avatarElement.style.display = "none";
             }
         }
         const galleryTitle =
@@ -264,16 +390,29 @@
         let currentBooking = null;
 
         let currentPhotos = [];
-        window.addEventListener(
-            "DOMContentLoaded",
-            async () => {
+        window.addEventListener("DOMContentLoaded", async () => {
 
-                await loadCustomerProfile();
+            // Get the currently logged-in Supabase user
+            const user = await getLoggedInCustomer();
 
-                initializeGallery();
+            // If nobody is logged in, stop here
+            if (!user) {
 
+                showGalleryError(
+                    "Login Required",
+                    "Please log in to access your gallery."
+                );
+
+                return;
             }
-        );
+
+            // Load the logged-in customer's profile/avatar/name
+            await loadCustomerProfile();
+
+            // Load the customer's gallery
+            await initializeGallery();
+
+        });
         async function initializeGallery() {
 
             const urlParams =
@@ -400,6 +539,43 @@
                     showGalleryError(
                         "Gallery Not Found",
                         "The booking associated with this gallery could not be found."
+                    );
+
+                    return;
+                }
+
+
+                /* =========================================================
+                   VERIFY THAT THIS GALLERY BELONGS TO THE LOGGED-IN USER
+                ========================================================= */
+
+                if (!loggedInUser) {
+
+                    showGalleryError(
+                        "Login Required",
+                        "Please log in to access your gallery."
+                    );
+
+                    return;
+                }
+
+                console.log("=================================");
+                console.log("GALLERY OWNERSHIP CHECK");
+                console.log("Logged-in Auth User ID:", loggedInUser.id);
+                console.log("Booking Customer ID:", booking.customer_id);
+                console.log("Logged-in Email:", loggedInUser.email);
+                console.log("Booking Email:", booking.email);
+                console.log("=================================");
+
+                if (booking.customer_id !== loggedInUser.id) {
+
+                    console.warn(
+                        "Gallery does not belong to logged-in user."
+                    );
+
+                    showGalleryError(
+                        "Gallery Access Denied",
+                        "This gallery does not belong to the currently logged-in account."
                     );
 
                     return;
@@ -594,8 +770,13 @@
                         document.createElement("img");
 
 
+                    const highQuality =
+                        canAccessHighQuality();
+
                     image.src =
-                        photo.image_url || "";
+                        highQuality
+                            ? (photo.image_url || "")
+                            : (photo.preview_url || "");
 
 
                     image.alt =
@@ -656,99 +837,87 @@
 
         }
 
+        function canAccessHighQuality() {
 
+            if (!currentRepository) {
+                return false;
+            }
+
+            // Paid customers can always access high quality
+            if (currentRepository.download_access === true) {
+                return true;
+            }
+
+            // Check the 48-hour free period
+            if (
+                currentRepository.gallery_access_expires_at
+            ) {
+
+                const now = new Date();
+
+                const expiresAt = new Date(
+                    currentRepository.gallery_access_expires_at
+                );
+
+                return now < expiresAt;
+            }
+
+            return false;
+        }
         /* =========================================================
            DOWNLOAD INDIVIDUAL
         ========================================================= */
+        function downloadPhoto(photo) {
 
-        function downloadPhoto(
-            photo
-        ) {
+            /*
+             * HIGH QUALITY
+             *
+             * Either:
+             * 1. Still within the first 48 hours
+             * 2. Customer has already paid
+             */
 
-            const downloadAllowed =
-                currentRepository &&
-                currentRepository.download_access === true;
+            if (canAccessHighQuality()) {
 
-
-            if (!downloadAllowed) {
-
-                openPaymentModal();
-
-                return;
-            }
-
-
-            if (!photo.image_url) {
-
-                alert(
-                    "This photo is unavailable."
-                );
-
-                return;
-            }
-
-
-            window.open(
-                photo.image_url,
-                "_blank"
-            );
-
-        }
-
-
-        /* =========================================================
-           DOWNLOAD ALL
-        ========================================================= */
-
-        downloadAllBtn.addEventListener(
-            "click",
-            () => {
-
-                if (
-                    !currentPhotos ||
-                    currentPhotos.length === 0
-                ) {
+                if (!photo.image_url) {
 
                     alert(
-                        "There are no photos to download."
+                        "High-quality photo is unavailable."
                     );
 
                     return;
                 }
 
-
-                const downloadAllowed =
-                    currentRepository &&
-                    currentRepository.download_access === true;
-
-
-                if (!downloadAllowed) {
-
-                    openPaymentModal();
-
-                    return;
-                }
-
-
-                currentPhotos.forEach(
-                    photo => {
-
-                        if (photo.image_url) {
-
-                            window.open(
-                                photo.image_url,
-                                "_blank"
-                            );
-
-                        }
-
-                    }
+                window.open(
+                    photo.image_url,
+                    "_blank"
                 );
 
+                return;
             }
-        );
 
 
+            /*
+             * AFTER 48 HOURS
+             *
+             * Customer has not paid.
+             * They can only download the low-quality preview.
+             */
+
+            if (!photo.preview_url) {
+
+                alert(
+                    "Preview photo is unavailable."
+                );
+
+                return;
+            }
+
+            window.open(
+                photo.preview_url,
+                "_blank"
+            );
+        }
         /* =========================================================
            PAYMENT MODAL
         ========================================================= */
@@ -951,7 +1120,18 @@
                 );
 
         }
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
 
+            const { error } = await supabaseClient.auth.signOut();
+
+            if (error) {
+                console.error("Logout error:", error);
+                alert("Unable to log out.");
+                return;
+            }
+
+            window.location.href = "customer_homepage.html";
+        });
     </script>
 
 

@@ -47,15 +47,17 @@
                 <span>Log out</span>
             </a>
         </aside>
-
         <main class="content central-message-container">
             <div class="request-access-card">
-                <p class="message-text">
-                    You don't have access to this folder yet. Click the button below to request access. Once approved,
-                    you'll receive an access link to enter on the next step.<br>
+
+                <p id="galleryMessage" class="message-text">
+                    Checking your gallery access...
                 </p>
-                <a href="customer_enter_link.html" class="btn-request"
-                    style="text-decoration: none; display: inline-block; text-align: center;">Request Access</a>
+
+                <button id="requestAccessBtn" class="btn-request" style="display:none;">
+                    Request Access
+                </button>
+
             </div>
         </main>
 
@@ -65,19 +67,828 @@
 
     <script>
 
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
-        const SUPABASE_URL =
-            "https://rprcbeabdvxdenmngxxc.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
-        const SUPABASE_ANON_KEY =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+        let approvalChecker = null;
+
+        // ==========================================
+        // GET LOGGED-IN CUSTOMER
+        // ==========================================
+
+        async function getLoggedInCustomer() {
+
+            const {
+                data: {
+                    user
+                },
+                error
+            } = await supabaseClient.auth.getUser();
+
+            if (error) {
+                console.error("AUTH ERROR:", error);
+                return null;
+            }
+
+            if (!user) {
+                console.log("No user is currently logged in.");
+                return null;
+            }
+
+            console.log("Logged-in customer:", user);
+
+            return user;
+        }
+        document.addEventListener(
+            "DOMContentLoaded",
+            async () => {
+
+                const user = await getLoggedInCustomer();
+
+                if (!user) {
+                    document.getElementById("galleryMessage").textContent =
+                        "Please log in to access your gallery.";
+
+                    return;
+                }
+
+                await checkGalleryStatus(user);
+
+            }
+        );
+
+        async function checkGalleryStatus(user) {
+
+            const message =
+                document.getElementById(
+                    "galleryMessage"
+                );
+
+            const button =
+                document.getElementById(
+                    "requestAccessBtn"
+                );
 
 
-        const supabaseClient =
-            supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_ANON_KEY
+            try {
+
+
+                const {
+                    data: booking,
+                    error: bookingError
+                } =
+                    await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .eq(
+                            "customer_id",
+                            user.id
+                        )
+                        .eq(
+                            "status",
+                            "Completed"
+                        )
+                        .order(
+                            "created_at",
+                            {
+                                ascending: false
+                            }
+                        )
+                        .limit(1)
+                        .maybeSingle();
+
+
+                if (bookingError) {
+
+                    console.error(
+                        "Booking check error:",
+                        bookingError
+                    );
+                    return;
+
+                }
+
+
+                if (!booking) {
+
+                    return;
+                }
+
+                // --------------------------------------
+                // 3. FIND CUSTOMER REPOSITORY
+                // --------------------------------------
+
+                const {
+                    data: repository,
+                    error: repositoryError
+                } =
+                    await supabaseClient
+                        .from("repository_client_links")
+                        .select("*")
+                        .eq("booking_id", booking.id)
+                        .maybeSingle();
+
+                if (repositoryError) {
+
+                    throw repositoryError;
+
+                }
+
+                if (!repository) {
+
+                    message.textContent =
+                        "Your photo repository has not been created yet. Please wait for the studio to prepare your gallery.";
+
+                    button.style.display = "none";
+
+                    return;
+                }
+
+                const {
+                    data: existingRequest,
+                    error: requestError
+                } =
+                    await supabaseClient
+                        .from(
+                            "gallery_access_requests"
+                        )
+                        .select("*")
+                        .eq(
+                            "customer_id",
+                            user.id
+                        )
+                        .eq(
+                            "booking_id",
+                            booking.id
+                        )
+                        .order(
+                            "created_at",
+                            {
+                                ascending: false
+                            }
+                        )
+                        .limit(1)
+                        .maybeSingle();
+
+
+                if (requestError) {
+
+                    throw requestError;
+
+                }
+
+
+                // --------------------------------------
+                // 5. NO REQUEST YET
+                // --------------------------------------
+
+                if (!existingRequest) {
+
+                    message.textContent =
+                        "You don't have access to this folder yet. Click the button below to request access. Once approved, you'll be able to enter your gallery link.";
+
+                    button.style.display =
+                        "inline-block";
+
+                    return;
+                }
+                if (
+                    existingRequest.status ===
+                    "pending"
+                ) {
+
+                    message.textContent =
+                        "Your gallery access request is currently pending. Please wait for the admin to approve your request.";
+
+                    button.style.display =
+                        "none";
+
+                    startApprovalChecker();
+
+                    return;
+                }
+
+                if (
+                    existingRequest.status ===
+                    "approved"
+                ) {
+
+                    message.textContent =
+                        "Your gallery access has been approved! Redirecting...";
+
+                    button.style.display =
+                        "none";
+
+                    redirectToGallery();
+
+                    return;
+                }
+
+
+                // --------------------------------------
+                // 8. REQUEST IS REJECTED
+                // --------------------------------------
+
+                if (
+                    existingRequest.status ===
+                    "rejected"
+                ) {
+
+                    message.textContent =
+                        "Your previous gallery access request was rejected. You may submit a new request.";
+
+                    button.style.display =
+                        "inline-block";
+
+                    return;
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "GALLERY STATUS ERROR:",
+                    error
+                );
+
+                message.textContent =
+                    "Unable to check your gallery access. Please try again.";
+
+                button.style.display =
+                    "none";
+            }
+        }
+
+
+        // ==========================================
+        // REQUEST ACCESS BUTTON
+        // ==========================================
+
+        document
+            .getElementById("requestAccessBtn")
+            .addEventListener(
+                "click",
+                async () => {
+
+                    const button =
+                        document.getElementById(
+                            "requestAccessBtn"
+                        );
+
+                    const message =
+                        document.getElementById(
+                            "galleryMessage"
+                        );
+
+
+                    button.disabled = true;
+
+                    button.textContent =
+                        "Sending Request...";
+
+
+                    try {
+
+                        // ----------------------------------
+                        // 1. GET LOGGED-IN CUSTOMER
+                        // ----------------------------------
+
+                        const {
+                            data: {
+                                user
+                            },
+                            error: authError
+                        } =
+                            await supabaseClient.auth.getUser();
+
+
+                        if (
+                            authError ||
+                            !user
+                        ) {
+
+                            alert(
+                                "Please log in first."
+                            );
+
+                            return;
+                        }
+
+
+                        // ----------------------------------
+                        // 2. FIND COMPLETED BOOKING
+                        // ----------------------------------
+
+                        const {
+                            data: booking,
+                            error: bookingError
+                        } =
+                            await supabaseClient
+                                .from("bookings")
+                                .select("*")
+                                .eq(
+                                    "customer_id",
+                                    user.id
+                                )
+                                .eq(
+                                    "status",
+                                    "Completed"
+                                )
+                                .order(
+                                    "created_at",
+                                    {
+                                        ascending: false
+                                    }
+                                )
+                                .limit(1)
+                                .maybeSingle();
+
+
+                        if (bookingError) {
+
+                            throw bookingError;
+
+                        }
+
+
+                        if (!booking) {
+
+                            alert(
+                                "You don't have a completed gallery yet."
+                            );
+
+                            return;
+                        }
+
+
+                        // ----------------------------------
+                        // 3. FIND REPOSITORY
+                        // ----------------------------------
+
+                        const {
+                            data: repository,
+                            error: repositoryError
+                        } =
+                            await supabaseClient
+                                .from(
+                                    "repository_client_links"
+                                )
+                                .select("*")
+                                .eq(
+                                    "booking_id",
+                                    booking.id
+                                )
+                                .maybeSingle();
+
+
+                        if (repositoryError) {
+
+                            throw repositoryError;
+
+                        }
+
+
+                        if (!repository) {
+
+                            alert(
+                                "Your photo repository has not been created yet."
+                            );
+
+                            return;
+                        }
+
+
+                        // ----------------------------------
+                        // 4. CHECK EXISTING REQUEST
+                        // ----------------------------------
+
+                        const {
+                            data: existingRequest,
+                            error: existingError
+                        } =
+                            await supabaseClient
+                                .from(
+                                    "gallery_access_requests"
+                                )
+                                .select("*")
+                                .eq(
+                                    "customer_id",
+                                    user.id
+                                )
+                                .eq(
+                                    "booking_id",
+                                    booking.id
+                                )
+                                .order(
+                                    "created_at",
+                                    {
+                                        ascending: false
+                                    }
+                                )
+                                .limit(1)
+                                .maybeSingle();
+
+
+                        if (existingError) {
+
+                            throw existingError;
+
+                        }
+
+
+                        // ----------------------------------
+                        // 5. ALREADY EXISTS
+                        // ----------------------------------
+
+                        if (existingRequest) {
+
+                            if (
+                                existingRequest.status ===
+                                "approved"
+                            ) {
+
+                                message.textContent =
+                                    "Your gallery access has already been approved. Redirecting...";
+
+                                button.style.display =
+                                    "none";
+
+                                redirectToGallery();
+
+                            } else if (
+                                existingRequest.status ===
+                                "pending"
+                            ) {
+
+                                message.textContent =
+                                    "Your access request is already pending. Please wait for admin approval.";
+
+                                button.style.display =
+                                    "none";
+
+                                startApprovalChecker();
+
+                            } else if (
+                                existingRequest.status ===
+                                "rejected"
+                            ) {
+
+                                // Allow new request
+                                await createAccessRequest(
+                                    user,
+                                    booking,
+                                    repository
+                                );
+                            }
+
+                            return;
+                        }
+
+
+                        // ----------------------------------
+                        // 6. CREATE NEW REQUEST
+                        // ----------------------------------
+
+                        await createAccessRequest(
+                            user,
+                            booking,
+                            repository
+                        );
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "ACCESS REQUEST ERROR:",
+                            error
+                        );
+
+                        alert(
+                            "Failed to send access request.\n\n" +
+                            error.message
+                        );
+
+
+                    } finally {
+
+                        button.disabled = false;
+
+                        button.textContent =
+                            "Request Access";
+                    }
+
+                }
             );
+
+
+        // ==========================================
+        // CREATE ACCESS REQUEST
+        // ==========================================
+
+        async function createAccessRequest(
+            user,
+            booking,
+            repository
+        ) {
+
+            const button =
+                document.getElementById(
+                    "requestAccessBtn"
+                );
+
+            const message =
+                document.getElementById(
+                    "galleryMessage"
+                );
+
+
+            // --------------------------------------
+            // INSERT ACCESS REQUEST
+            // --------------------------------------
+
+            const {
+                error: requestError
+            } =
+                await supabaseClient
+                    .from(
+                        "gallery_access_requests"
+                    )
+                    .insert({
+
+                        customer_id:
+                            user.id,
+
+                        customer_email:
+                            user.email,
+
+                        booking_id:
+                            booking.id,
+
+                        repository_id:
+                            repository.id,
+
+                        status:
+                            "pending"
+
+                    });
+
+
+            if (requestError) {
+
+                throw requestError;
+
+            }
+
+
+            // --------------------------------------
+            // CREATE ADMIN NOTIFICATION
+            // --------------------------------------
+
+            const {
+                error: notificationError
+            } =
+                await supabaseClient
+                    .from("notifications")
+                    .insert({
+
+                        recipient:
+                            "admin",
+
+                        customer_id:
+                            user.id,
+
+                        booking_id:
+                            booking.id,
+
+                        title:
+                            "New Gallery Access Request",
+
+                        message:
+                            `${booking.full_name} requested access to their photo gallery.`,
+
+                        is_read:
+                            false
+
+                    });
+
+
+            if (notificationError) {
+
+                console.error(
+                    "Admin notification error:",
+                    notificationError
+                );
+
+            }
+
+
+            // --------------------------------------
+            // UPDATE CUSTOMER SCREEN
+            // --------------------------------------
+
+            message.textContent =
+                "Your gallery access request is currently pending. Please wait for the admin to approve your request.";
+
+            button.style.display =
+                "none";
+
+
+            alert(
+                "Your gallery access request has been sent to the admin. Please wait for approval."
+            );
+
+
+            // --------------------------------------
+            // START APPROVAL CHECKER
+            // --------------------------------------
+
+            startApprovalChecker();
+
+        }
+
+
+        // ==========================================
+        // START APPROVAL CHECKER
+        // ==========================================
+
+        function startApprovalChecker() {
+
+            if (approvalChecker) {
+
+                clearInterval(
+                    approvalChecker
+                );
+
+            }
+
+
+            approvalChecker =
+                setInterval(
+                    checkGalleryApproval,
+                    8000
+                );
+
+        }
+
+
+        // ==========================================
+        // CHECK IF ADMIN APPROVED
+        // ==========================================
+
+        async function checkGalleryApproval() {
+
+            try {
+
+                const {
+                    data: {
+                        user
+                    },
+                    error: authError
+                } =
+                    await supabaseClient.auth.getUser();
+
+
+                if (
+                    authError ||
+                    !user
+                ) {
+
+                    return;
+
+                }
+
+
+                const {
+                    data: approvedRequest,
+                    error
+                } =
+                    await supabaseClient
+                        .from(
+                            "gallery_access_requests"
+                        )
+                        .select(`
+                        id,
+                        booking_id,
+                        repository_id,
+                        status
+                    `)
+                        .eq(
+                            "customer_id",
+                            user.id
+                        )
+                        .eq(
+                            "status",
+                            "approved"
+                        )
+                        .order(
+                            "created_at",
+                            {
+                                ascending: false
+                            }
+                        )
+                        .limit(1)
+                        .maybeSingle();
+
+
+                if (error) {
+
+                    console.error(
+                        "Approval check error:",
+                        error
+                    );
+
+                    return;
+                }
+
+
+                if (!approvedRequest) {
+
+                    return;
+                }
+
+
+                console.log(
+                    "Gallery access approved:",
+                    approvedRequest
+                );
+
+
+                // --------------------------------------
+                // STOP CHECKING
+                // --------------------------------------
+
+                if (approvalChecker) {
+
+                    clearInterval(
+                        approvalChecker
+                    );
+
+                    approvalChecker =
+                        null;
+                }
+
+
+                // --------------------------------------
+                // REDIRECT
+                // --------------------------------------
+
+                redirectToGallery();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Approval checker error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // ==========================================
+        // REDIRECT TO ENTER LINK
+        // ==========================================
+
+        function redirectToGallery() {
+
+            const message =
+                document.getElementById(
+                    "galleryMessage"
+                );
+
+            const button =
+                document.getElementById(
+                    "requestAccessBtn"
+                );
+
+
+            message.textContent =
+                "Your gallery access has been approved! Redirecting...";
+
+
+            button.style.display =
+                "none";
+
+
+            setTimeout(
+                () => {
+
+                    window.location.href =
+                        "customer_enter_link.html";
+
+                },
+                1000
+            );
+
+        }
+
     </script>
 </body>
 
