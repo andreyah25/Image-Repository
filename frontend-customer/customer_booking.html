@@ -176,11 +176,19 @@
                                             <strong>Down Payment</strong>
                                         </label>
 
-                                        <input type="text" value="₱200.00 (Non-refundable)" readonly>
+                                        <input type="text" id="downpaymentInput"
+                                            value="Select a package or session first" readonly>
+
+                                        <!-- Policy trigger text below input -->
+                                        <small
+                                            style="margin-top: 6px; display: block; font-size: 0.78rem; color: #666666;">
+                                            By proceeding, you acknowledge our <a href="#" id="openDownpaymentPolicy"
+                                                style="color: #639A88; text-decoration: underline; font-weight: 600;">Down
+                                                Payment Policy</a>.
+                                        </small>
                                     </div>
 
                                 </div>
-
 
                                 <div id="gcashPaymentBox" style="display:none;">
 
@@ -188,27 +196,43 @@
                                         Scan to Pay via GCash
                                     </h4>
 
-                                    <img src="/images/gcash_qr.jpg" alt="GCash QR" style="
-                        width:230px;
-                        border-radius:12px;
-                        border:1px solid #ddd;
-                        margin-bottom:20px;
-                    ">
+                                    <img src="/images/gcash_qr.jpeg" alt="GCash QR" style="
+                                        width:230px;
+                                        border-radius:12px;
+                                        border:1px solid #ddd;
+                                        margin-bottom:15px;
+                                    ">
 
-                                    <div class="form-group">
+                                    <!-- Warning & Exact Amount Display Box -->
+                                    <div
+                                        style="background-color: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid #ffeeba; line-height: 1.4;">
+                                        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i>
+                                        <strong>Exact Payment Required:</strong> You must transfer exactly <span
+                                            id="requiredAmountText"
+                                            style="font-weight: 700; text-decoration: underline;">₱0.00</span> via
+                                        GCash. Incomplete payments will not be verified.
+                                    </div>
 
-                                        <label>
-                                            Upload Proof of Payment
+                                    <!-- Amount Sent Input Field -->
+                                    <div class="form-group" style="margin-bottom: 15px;">
+                                        <label for="amountPaid">
+                                            Amount Sent (₱) <span style="color:red">*</span>
                                         </label>
+                                        <input type="number" id="amountPaid" placeholder="Enter exact amount sent"
+                                            step="0.01" min="1">
+                                    </div>
 
+                                    <!-- Proof Upload Field -->
+                                    <div class="form-group">
+                                        <label>
+                                            Upload Proof of Payment <span style="color:red">*</span>
+                                        </label>
                                         <input type="file" id="paymentProof" accept="image/png,image/jpeg,image/jpg">
-
                                     </div>
 
                                 </div>
 
                             </div>
-
                         </div>
 
                         <!-- Section 4: Notes / Special Requests -->
@@ -722,6 +746,36 @@
         </div>
     </div>
 
+    <!-- Down Payment Policy Modal -->
+    <div id="downpaymentPolicyModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" id="closeDownpaymentPolicyModal">&times;</button>
+            <div class="modal-table-container">
+                <h2
+                    style="font-size: 1.1rem; font-weight: 700; color: #353535; margin-bottom: 18px; border-bottom: 2px solid #639A88; padding-bottom: 8px;">
+                    Down Payment & Cancellation Policy
+                </h2>
+                <div class="pet-reminders-section" style="margin-top: 0; padding-top: 0;">
+                    <ul class="pet-reminders-list">
+                        <li><strong>Non-Refundable:</strong> All down payments are strictly non-refundable once payment
+                            verification is complete.</li>
+                        <li><strong>Exact Amount & Verification:</strong> Receipts must match the exact required down
+                            payment. Submitting fake, altered, or inaccurate proofs will result in booking cancellation,
+                            gallery access restriction, and blacklisting.</li>
+                        <li><strong>Slot Reservation:</strong> Your selected date and time slot will only be officially
+                            reserved once proof of down payment is uploaded and confirmed.</li>
+                        <li><strong>Rescheduling Policy:</strong> Bookings may be rescheduled at least 24 to 48 hours
+                            prior to your scheduled session, subject to time slot availability.</li>
+                        <li><strong>Cancellation & No-Show:</strong> Failure to show up or cancelling less than 24 hours
+                            before your shoot will result in the immediate forfeiture of your down payment.</li>
+                        <li><strong>Remaining Balance:</strong> The remaining balance of your total package fee must be
+                            settled in full on or before the day of the photo session.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
@@ -732,6 +786,56 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+
+        /* =========================================================
+           PACKAGE PRICE MAPPING & DOWN PAYMENT LOGIC
+           ========================================================= */
+        const packagePrices = {
+            "basic_1": 399,
+            "basic_2": 599,
+            "basic_3": 799,
+            "group_package": 1999,
+            "classic_1": 1199,
+            "classic_2": 1799,
+            "classic_3": 3499,
+            "kids": 1699,
+            "pre_birthday": 999,
+            "theme_holiday": 1699,
+            "maternity": 999
+        };
+
+        function getCalculatedDownpayment() {
+            const photoPackageSelect = document.getElementById("photoPackage");
+            const sessionTypeSelect = document.getElementById("sessionType");
+            const selectedKey = sessionTypeSelect.value || photoPackageSelect.value;
+            const totalPrice = packagePrices[selectedKey] || 0;
+
+            return {
+                total: totalPrice,
+                downpayment: totalPrice * 0.50
+            };
+        }
+
+        function updateDownpaymentUI() {
+            const downpaymentInput = document.getElementById("downpaymentInput");
+            const requiredAmountText = document.getElementById("requiredAmountText");
+            const { total, downpayment } = getCalculatedDownpayment();
+
+            if (total > 0) {
+                const formattedAmount = `₱${downpayment.toFixed(2)}`;
+                downpaymentInput.value = `${formattedAmount} (50% deposit of ₱${total.toFixed(2)} package - Non-refundable)`;
+
+                // Update GCash notice text
+                if (requiredAmountText) {
+                    requiredAmountText.textContent = formattedAmount;
+                }
+            } else {
+                downpaymentInput.value = "Select a package or session first";
+                if (requiredAmountText) {
+                    requiredAmountText.textContent = "₱0.00";
+                }
+            }
+        }
 
         (async () => {
 
@@ -909,7 +1013,40 @@
             console.log("=================================");
 
         })();
+
         document.addEventListener("DOMContentLoaded", function () {
+
+            // LISTENERS TO AUTOMATICALLY UPDATE DOWN PAYMENT ON SELECTION
+            const photoPackageSelect = document.getElementById("photoPackage");
+            const sessionTypeSelect = document.getElementById("sessionType");
+
+            if (photoPackageSelect) {
+                photoPackageSelect.addEventListener("change", function () {
+                    if (this.value) sessionTypeSelect.value = "";
+                    updateDownpaymentUI();
+                });
+            }
+
+            if (sessionTypeSelect) {
+                sessionTypeSelect.addEventListener("change", function () {
+                    if (this.value) photoPackageSelect.value = "";
+                    updateDownpaymentUI();
+                });
+            }
+
+            // AUTOMATICALLY SHOW GCASH QR UPON SELECTION
+            const paymentSelect = document.getElementById("paymentMethod");
+            const gcashBox = document.getElementById("gcashPaymentBox");
+
+            if (paymentSelect && gcashBox) {
+                paymentSelect.addEventListener("change", function () {
+                    if (this.value === "GCash") {
+                        gcashBox.style.display = "block";
+                    } else {
+                        gcashBox.style.display = "none";
+                    }
+                });
+            }
 
             function bindModal(openBtnId, modalId, closeBtnId) {
 
@@ -979,6 +1116,13 @@
                 "closeStudioRentalModal"
             );
 
+            // DOWN PAYMENT POLICY MODAL
+            bindModal(
+                "openDownpaymentPolicy",
+                "downpaymentPolicyModal",
+                "closeDownpaymentPolicyModal"
+            );
+
         });
 
         async function loadNotifications() {
@@ -1008,30 +1152,48 @@
                 if (!notification.is_read) {
                     unread++;
                 }
+                let notificationIcon = "fa-circle-info";
+
+                if (
+                    notification.title?.toLowerCase().includes("accepted") ||
+                    notification.title?.toLowerCase().includes("approved") ||
+                    notification.message?.toLowerCase().includes("accepted") ||
+                    notification.message?.toLowerCase().includes("approved")
+                ) {
+                    notificationIcon = "fa-circle-check";
+                }
+                else if (
+                    notification.title?.toLowerCase().includes("rejected") ||
+                    notification.title?.toLowerCase().includes("declined") ||
+                    notification.message?.toLowerCase().includes("rejected") ||
+                    notification.message?.toLowerCase().includes("declined")
+                ) {
+                    notificationIcon = "fa-circle-xmark";
+                }
 
                 list.innerHTML += `
-<div class="notification-item ${notification.is_read ? "" : "unread"}">
+<div class="notification-item ${notification.is_read ? "" : "unread"}"> 
 
-    <div class="notification-icon">
-        <i class="fa-solid fa-circle-check"></i>
-    </div>
+    <div class="notification-icon"> 
+        <i class="fa-solid ${notificationIcon}"></i> 
+    </div> 
 
-    <div class="notification-content">
-        <h4>${notification.title}</h4>
+    <div class="notification-content"> 
+        <h4>${notification.title}</h4> 
 
-        <p class="notification-message">
-            ${notification.message}
-        </p>
+        <p class="notification-message"> 
+            ${notification.message} 
+        </p> 
 
-        <small>
+        <small> 
             ${notification.created_at
                         ? new Date(notification.created_at).toLocaleString()
                         : ""
-                    }
-        </small>
-    </div>
+                    } 
+        </small> 
+    </div> 
 
-</div>
+</div> 
 `;
 
             });
@@ -1064,16 +1226,14 @@
             const email = user.email;
             const date = document.getElementById("bookingDate").value;
             const time = document.getElementById("bookingTime").value;
-            const photoPackage =
-                document.getElementById("photoPackage").value.trim();
-
-            const session =
-                document.getElementById("sessionType").value.trim();
+            const photoPackage = document.getElementById("photoPackage").value.trim();
+            const session = document.getElementById("sessionType").value.trim();
 
             // Customer can choose either one
             const selectedType = session || photoPackage;
             const paymentMethod = document.getElementById("paymentMethod").value;
             const notes = document.getElementById("notes").value.trim();
+            const paymentFile = document.getElementById("paymentProof").files[0];
 
             // Validate contact number 
             if (!/^09\d{9}$/.test(contact)) {
@@ -1093,39 +1253,69 @@
                 alert("Please complete all required fields.");
                 return;
             }
-            /*const paymentFile = document.getElementById("paymentProof").files[0];
 
-            if (!paymentFile) {
-                alert("Please upload your GCash payment proof.");
-                return;
+            // --- GCASH PAYMENT & AMOUNT VALIDATION ---
+            if (paymentMethod === "GCash") {
+                const requiredDownpayment = getCalculatedDownpayment().downpayment;
+                const amountPaidInput = document.getElementById("amountPaid");
+                const enteredAmount = parseFloat(amountPaidInput.value);
+
+                // 1. Check if user typed an amount
+                if (!enteredAmount || isNaN(enteredAmount)) {
+                    alert("Please enter the exact GCash amount you sent.");
+                    amountPaidInput.focus();
+                    return;
+                }
+
+                // 2. Validate typed amount against required deposit
+                if (enteredAmount !== requiredDownpayment) {
+                    alert(`Incorrect payment amount entered. The required down payment is ₱${requiredDownpayment.toFixed(2)}.`);
+                    amountPaidInput.focus();
+                    return;
+                }
+
+                // 3. Check for proof file
+                if (!paymentFile) {
+                    alert("Please upload your GCash payment proof.");
+                    return;
+                }
             }
 
-            const fileName = `${user.id}/${Date.now()}-${paymentFile.name}`;
-
-            const { error: uploadError } = await supabaseClient.storage
-                .from("payment-proofs")
-                .upload(fileName, paymentFile);
-
-            if (uploadError) {
-                console.error(uploadError);
-                alert("Failed to upload payment proof.");
-                return;
-            }
-
-            const { data: publicUrlData } = supabaseClient.storage
-                .from("payment-proofs")
-                .getPublicUrl(fileName);
-
-            const paymentProofURL = publicUrlData.publicUrl; */
             // ---------------------------------------------
-            // PAYMENT PROOF
-            // TEMPORARILY OPTIONAL
+            // UPLOAD PROOF OF PAYMENT FILE TO SUPABASE
+            // ---------------------------------------------
+            let paymentProofURL = null;
+
+            if (paymentFile) {
+                const fileName = `${user.id}/${Date.now()}-${paymentFile.name}`;
+
+                const { error: uploadError } = await supabaseClient.storage
+                    .from("payment-proofs")
+                    .upload(fileName, paymentFile);
+
+                if (uploadError) {
+                    console.error(uploadError);
+                    alert("Failed to upload payment proof.");
+                    return;
+                }
+
+                const { data: publicUrlData } = supabaseClient.storage
+                    .from("payment-proofs")
+                    .getPublicUrl(fileName);
+
+                paymentProofURL = publicUrlData.publicUrl;
+            }
+
+            // Calculate actual down payment to save to database
+            const calculatedDownpayment = getCalculatedDownpayment().downpayment;
+
+            // ---------------------------------------------
+            // INSERT BOOKING INTO DATABASE
             // ---------------------------------------------
             const { data: bookingData, error } = await supabaseClient
                 .from("bookings")
                 .insert([
                     {
-
                         customer_id: user.id,
                         full_name: fullName,
                         contact_number: contact,
@@ -1138,7 +1328,8 @@
 
                         notes: notes,
                         payment_method: paymentMethod,
-                        downpayment_amount: 0.25,
+                        payment_proof: paymentProofURL,
+                        downpayment_amount: calculatedDownpayment,
                         payment_status: "Pending Verification",
                         status: "Pending"
                     }
@@ -1161,7 +1352,7 @@
                     recipient: "customer",
                     title: "Booking Submitted",
                     message:
-                        "Your booking request has been submitted successfully.. Please wait while the administrator verifies your payment.",
+                        "Your booking request has been submitted successfully. Please wait while the administrator verifies your payment.",
                     is_read: false
                 });
 
@@ -1178,64 +1369,15 @@
                     is_read: false
                 });
 
-            try {
+            alert("Booking request submitted successfully!");
 
-                const mayaResponse = await fetch(
-                    "http://localhost:3000/api/maya/create-checkout",
-                    {
-                        method: "POST",
+            // Reset Form Fields
+            bookingForm.reset();
+            updateDownpaymentUI();
+            document.getElementById("gcashPaymentBox").style.display = "none";
 
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-
-                        body: JSON.stringify({
-
-                            bookingId: bookingData.id,
-
-                            amount: 0.25,
-
-                            fullName: fullName,
-
-                            email: email,
-
-                            description:
-                                `Captured Photography Studio Reservation - ${selectedType || "Photo Session"}`
-
-                        })
-                    }
-                );
-
-                const mayaData = await mayaResponse.json();
-
-                console.log("Maya Checkout:", mayaData);
-
-                if (!mayaResponse.ok || !mayaData.success) {
-
-                    console.error("Maya error:", mayaData);
-
-                    alert(
-                        mayaData.message ||
-                        "Unable to create Maya payment checkout."
-                    );
-
-                    return;
-                }
-
-                // Redirect customer to Maya
-                window.location.href = mayaData.redirectUrl;
-
-            } catch (error) {
-
-                console.error("Maya connection error:", error);
-
-                alert(
-                    "Unable to connect to the payment system. Please try again."
-                );
-
-            }
             document.getElementById("fullName").value =
-                user.user_metadata.full_name || "";
+                user.user_metadata?.full_name || customerName || "";
 
             document.getElementById("emailAddress").value =
                 user.email;

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Gallery - Website Name</title>
+    <title>My Gallery - Captured Photography Studio</title>
 
     <!-- Direct Google Font Import -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,36 +73,206 @@
 
             </div>
 
-
-
-            <!-- ADD THIS -->
             <div id="galleryGrid" class="gallery-grid"></div>
 
         </main>
 
     </div>
 
-    <!-- PAYMENT REQUIRED POPUP MODAL (Hidden by default) -->
+    <!-- PAYMENT & QR MODAL -->
     <div class="modal-overlay" id="paymentModal">
-        <div class="payment-modal-card">
+        <div class="payment-modal-card" style="width: 420px; min-height: 540px; border-radius: 8px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
 
-            <!-- Dark Modal Header -->
-            <div class="modal-header">
-                <i class="fa-regular fa-credit-card modal-card-icon"></i>
-                <h2>Payment Required</h2>
+            <!-- STEP 1: PAYMENT SUMMARY & METHOD SELECTION -->
+            <div id="paymentNoticeStep" style="padding: 24px; display: flex; flex-direction: column; flex: 1;">
+                <div class="modal-header">
+                    <i class="fa-regular fa-credit-card modal-card-icon"></i>
+                    <h2>Make a Payment</h2>
+                </div>
+                <div class="modal-body" style="gap: 15px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <p class="modal-prompt-text" style="margin-bottom: 0;">
+                        Complete your payment to download your photos.
+                    </p>
+
+                    <!-- Payment Summary Box -->
+                    <div style="background: #f4f5f7; border-radius: 4px; padding: 16px; text-align: left;">
+                        <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #333; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;">
+                            Payment Summary
+                        </h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #555;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Order ID:</span>
+                                <strong id="summaryOrderId" style="color: #222;">#ORD-001</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Client:</span>
+                                <strong id="summaryClientName" style="color: #222;">Customer</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Access:</span>
+                                <strong style="color: #222;">Folder Access</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 6px; border-top: 1px stroke #e0e0e0;">
+                                <span>Total Amount:</span>
+                                <strong id="summaryAmount" style="color: #639A88; font-size: 14px;">₱0.00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Direct Payment Method Options -->
+                    <div style="text-align: left; display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 12.5px; font-weight: 600; color: #333;">Select Payment Method</label>
+                        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 2px;">
+                            <button type="button" class="btn-payment-method" data-method="gcash" data-label="GCash" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background-color: #ffffff; border: 1.5px solid #e0e0e0; border-radius: 4px; font-size: 13.5px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s ease; text-align: left;">
+                                <i class="fa-solid fa-mobile-screen-button" style="color: #639A88; font-size: 16px;"></i>
+                                <span>GCash QR</span>
+                            </button>
+                            <button type="button" class="btn-payment-method" data-method="maya" data-label="Maya" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background-color: #ffffff; border: 1.5px solid #e0e0e0; border-radius: 4px; font-size: 13.5px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s ease; text-align: left;">
+                                <i class="fa-solid fa-wallet" style="color: #639A88; font-size: 16px;"></i>
+                                <span>Maya QR</span>
+                            </button>
+                            <button type="button" class="btn-payment-method" data-method="bank" data-label="Bank Transfer" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background-color: #ffffff; border: 1.5px solid #e0e0e0; border-radius: 4px; font-size: 13.5px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s ease; text-align: left;">
+                                <i class="fa-solid fa-building-columns" style="color: #639A88; font-size: 16px;"></i>
+                                <span>Bank Transfer QR</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions-row" style="margin-top: 5px;">
+                        <button type="button" class="btn-modal-cancel" id="btnMaybeLater" style="width: 100%; border-radius: 4px;">Maybe Later</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Modal Body Content -->
-            <div class="modal-body">
-                <p class="modal-prompt-text">
-                    Complete your payment to save and<br>download your images.
-                </p>
+            <!-- STEP 2: QR PAYMENT DISPLAY -->
+            <div id="qrPaymentStep" style="display: none; padding: 24px; flex-direction: column; flex: 1;">
+                <div class="modal-header">
+                    <i class="fa-solid fa-qrcode modal-card-icon"></i>
+                    <h2>Scan to Pay</h2>
+                </div>
+                <div class="modal-body" style="gap: 15px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <p class="modal-prompt-text" style="font-size: 13.5px; margin-bottom: 0;">
+                        Scan the <span id="selectedMethodLabel" style="font-weight: 700;">GCash</span> QR code below to complete your payment.
+                    </p>
+                    
+                    <!-- QR Image Placeholder -->
+                    <div class="qr-container" style="padding: 10px; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
+                        <img id="paymentQrImage" src="/images/gcash_qr.jpeg" alt="Payment QR Code" style="width: 180px; height: 180px; object-fit: contain; display: block; border-radius: 10px;">
+                    </div>
 
-                <!-- Action Buttons -->
-                <div class="modal-actions-row">
-                    <button type="button" class="btn-modal-cancel" id="btnMaybeLater">Maybe Later</button>
-                    <!-- Routes to a checkout or payment page -->
-                    <a href="customer_checkout.html" class="btn-modal-proceed">Proceed to Payment</a>
+                    <!-- Scan-Specific Notice -->
+                    <div style="background-color: #eef7f4; border: 1px solid #c2e5d9; border-radius: 4px; padding: 10px 12px; text-align: left; font-size: 12px; color: #2d6a54; line-height: 1.4;">
+                        <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>
+                        <strong>Payment Instructions:</strong> Please scan using your selected payment app, save your transaction receipt, and click <strong>Next</strong> to upload your proof.
+                    </div>
+
+                    <div class="modal-actions-row" style="margin-top: 5px; display: flex; gap: 10px; width: 100%;">
+                        <button type="button" class="btn-modal-cancel" id="btnBackToNotice" style="flex: 1; border-radius: 4px;">Back</button>
+                        <button type="button" class="btn-modal-proceed" id="btnGoToForm" style="flex: 1; border-radius: 4px;">Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: INPUT AMOUNT & UPLOAD PROOF -->
+            <div id="paymentFormStep" style="display: none; padding: 24px; flex-direction: column; flex: 1;">
+                <div class="modal-header">
+                    <i class="fa-solid fa-receipt modal-card-icon"></i>
+                    <h2>Verify Payment</h2>
+                </div>
+                <div class="modal-body" style="gap: 12px; text-align: left; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    
+                    <p class="modal-prompt-text" style="font-size: 13.5px; margin-bottom: 5px; text-align: center;">
+                        Enter your payment details below to unlock gallery downloads.
+                    </p>
+
+                    <!-- Amount Field -->
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 12px; font-weight: 600; color: #333;">Amount Paid (PHP) <span style="color: #dc2626;">*</span></label>
+                        <input type="number" id="paymentAmountInput" placeholder="Enter exact amount paid" style="width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;" />
+                    </div>
+
+                    <!-- File Upload Input Container -->
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 12px; font-weight: 600; color: #333;">Upload Proof of Payment <span style="color: #dc2626;">*</span></label>
+                        
+                        <div class="custom-file-upload-field" style="display: flex; align-items: center; border: 1px solid #ccc; border-radius: 4px; background: #fff; overflow: hidden; height: 38px;">
+                            <label for="paymentReceiptInput" style="background-color: #f0f0f0; border-right: 1px solid #ccc; padding: 0 12px; height: 100%; display: flex; align-items: center; font-size: 12.5px; font-weight: 600; color: #444; cursor: pointer; white-space: nowrap; margin: 0; transition: background 0.2s;">
+                                Choose File
+                            </label>
+                            <span id="fileNameDisplay" style="padding: 0 10px; font-size: 12.5px; color: #777; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                                No file chosen
+                            </span>
+                            <input type="file" id="paymentReceiptInput" accept="image/*" style="display: none;" />
+                        </div>
+                    </div>
+
+                    <!-- Exact Payment Policy Notice -->
+                    <div style="background-color: #fff8e6; border: 1px solid #ffe58f; border-radius: 4px; padding: 10px 12px; text-align: left; font-size: 12px; color: #8a6d3b; line-height: 1.4;">
+                        <strong>Exact Amount & Verification:</strong> Submitting fake, altered, or inaccurate proofs will result in gallery access restriction and account blacklisting.
+                    </div>
+
+                    <p id="paymentErrorMsg" style="color: #d9534f; font-size: 12px; margin: 0; display: none;"></p>
+
+                    <div class="modal-actions-row" style="margin-top: 10px; display: flex; gap: 10px; width: 100%;">
+                        <button type="button" class="btn-modal-cancel" id="btnBackToQR" style="flex: 1; border-radius: 4px;">Back</button>
+                        <button type="button" class="btn-modal-proceed" id="btnSubmitPayment" style="flex: 1; border-radius: 4px;">Submit & Verify</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: PAYMENT SUCCESS RECEIPT -->
+            <div id="paymentReceiptStep" style="display: none; flex-direction: column; flex: 1;">
+                <!-- Header Banner -->
+                <div style="background-color: #639A88; color: #ffffff; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                    <i class="fa-solid fa-ribbon" style="font-size: 20px;"></i>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">Payment Successful</h3>
+                </div>
+
+                <div style="padding: 24px; text-align: center; background: #fff; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <!-- Big Green Check Icon -->
+                    <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 12px;">
+                        <div style="width: 72px; height: 72px; border-radius: 50%; border: 4px solid #4CAF50; display: flex; justify-content: center; align-items: center;">
+                            <i class="fa-solid fa-check" style="font-size: 38px; color: #4CAF50;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Text -->
+                    <p style="font-size: 16px; color: #555; margin: 0 0 16px 0; line-height: 1.4; font-weight: 400;">
+                        Payment of <strong id="receiptPaidAmount" style="color: #111; font-weight: 800;">₱1,000.00</strong> for Order<br>
+                        <strong id="receiptOrderId" style="color: #111; font-weight: 800; font-size: 17px;">#ORD-001</strong> Confirmed!
+                    </p>
+
+                    <!-- Order Details Box -->
+                    <div style="background-color: #f4f6f8; border-radius: 4px; padding: 16px; text-align: left; margin-bottom: 16px;">
+                        <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #333; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+                            Your Order Details
+                        </h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #555;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Order ID:</span>
+                                <strong id="receiptDetailOrderId" style="color: #222;">#ORD-001</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Client:</span>
+                                <strong id="receiptDetailClient" style="color: #222;">Customer</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Access:</span>
+                                <strong style="color: #222;">Folder Access</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Total Amount:</span>
+                                <strong id="receiptDetailAmount" style="color: #222; font-weight: 700;">₱1,000.00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Close Button -->
+                    <button type="button" id="btnCloseReceipt" style="width: 100%; padding: 12px; background-color: #639A88; color: #ffffff; border: none; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s;">
+                        Close
+                    </button>
                 </div>
             </div>
 
@@ -199,10 +369,6 @@
 
                 let profile = null;
 
-                // =====================================================
-                // 1. FIND PROFILE USING AUTH USER ID
-                // =====================================================
-
                 const {
                     data: profileById,
                     error: profileIdError
@@ -227,11 +393,6 @@
                         "Profile found using Auth User ID."
                     );
                 }
-
-
-                // =====================================================
-                // 2. IF NOT FOUND, SEARCH BY EMAIL
-                // =====================================================
 
                 if (!profile && loggedInUser.email) {
 
@@ -270,20 +431,10 @@
                     }
                 }
 
-
-                // =====================================================
-                // 3. DISPLAY PROFILE RESULT
-                // =====================================================
-
                 console.log("=================================");
                 console.log("FINAL PROFILE:");
                 console.log(profile);
                 console.log("=================================");
-
-
-                // =====================================================
-                // 4. GET CUSTOMER NAME
-                // =====================================================
 
                 const customerName =
                     profile?.full_name ||
@@ -293,11 +444,6 @@
                     loggedInUser.email ||
                     "Customer";
 
-
-                // =====================================================
-                // 5. GET CUSTOMER AVATAR
-                // =====================================================
-
                 const customerAvatar =
                     profile?.avatar_url ||
                     profile?.profile_image ||
@@ -306,18 +452,8 @@
                     loggedInUser.user_metadata?.picture ||
                     null;
 
-
-                // =====================================================
-                // 6. DISPLAY NAME
-                // =====================================================
-
                 userNameElement.textContent =
                     customerName;
-
-
-                // =====================================================
-                // 7. DISPLAY AVATAR
-                // =====================================================
 
                 if (customerAvatar) {
 
@@ -338,19 +474,14 @@
                     };
 
                 } else {
-
-                    // No profile image.
-                    // Do not load default-profile.png.
                     avatarElement.style.display = "none";
                 }
-
 
                 console.log("=================================");
                 console.log("CUSTOMER DISPLAY");
                 console.log("Name:", customerName);
                 console.log("Avatar:", customerAvatar);
                 console.log("=================================");
-
 
             } catch (error) {
 
@@ -359,7 +490,6 @@
                     error
                 );
 
-                // Safe fallback
                 userNameElement.textContent =
                     loggedInUser.email || "Customer";
 
@@ -384,18 +514,16 @@
         const closeButton =
             document.getElementById("btnMaybeLater");
 
-
         let currentRepository = null;
 
         let currentBooking = null;
 
         let currentPhotos = [];
+
         window.addEventListener("DOMContentLoaded", async () => {
 
-            // Get the currently logged-in Supabase user
             const user = await getLoggedInCustomer();
 
-            // If nobody is logged in, stop here
             if (!user) {
 
                 showGalleryError(
@@ -406,13 +534,12 @@
                 return;
             }
 
-            // Load the logged-in customer's profile/avatar/name
             await loadCustomerProfile();
 
-            // Load the customer's gallery
             await initializeGallery();
 
         });
+
         async function initializeGallery() {
 
             const urlParams =
@@ -420,14 +547,8 @@
                     window.location.search
                 );
 
-
             const token =
                 urlParams.get("token");
-
-
-            /* -----------------------------------------
-               NO TOKEN
-            ----------------------------------------- */
 
             if (!token || token.trim() === "") {
 
@@ -438,7 +559,6 @@
 
                 return;
             }
-
 
             try {
 
@@ -452,27 +572,12 @@
                     .limit(1)
                     .maybeSingle();
 
-                console.log(
-                    "TOKEN:",
-                    token
-                );
-
-                console.log(
-                    "REPOSITORY:",
-                    repository
-                );
-
-                console.log(
-                    "REPOSITORY ERROR:",
-                    JSON.stringify(error, null, 2)
-                );
                 if (error) {
 
                     console.error(
                         "Repository validation error:",
                         error
                     );
-
 
                     showGalleryError(
                         "Unable to Open Gallery",
@@ -482,14 +587,11 @@
                     return;
                 }
 
-
-
                 if (!repository) {
 
                     console.warn(
                         "Invalid gallery token."
                     );
-
 
                     showGalleryError(
                         "Invalid Gallery Link",
@@ -499,10 +601,8 @@
                     return;
                 }
 
-
                 currentRepository =
                     repository;
-
 
                 const {
                     data: booking,
@@ -516,14 +616,12 @@
                     )
                     .maybeSingle();
 
-
                 if (bookingError) {
 
                     console.error(
                         "Booking error:",
                         bookingError
                     );
-
 
                     showGalleryError(
                         "Unable to Load Gallery",
@@ -532,7 +630,6 @@
 
                     return;
                 }
-
 
                 if (!booking) {
 
@@ -544,11 +641,6 @@
                     return;
                 }
 
-
-                /* =========================================================
-                   VERIFY THAT THIS GALLERY BELONGS TO THE LOGGED-IN USER
-                ========================================================= */
-
                 if (!loggedInUser) {
 
                     showGalleryError(
@@ -558,14 +650,6 @@
 
                     return;
                 }
-
-                console.log("=================================");
-                console.log("GALLERY OWNERSHIP CHECK");
-                console.log("Logged-in Auth User ID:", loggedInUser.id);
-                console.log("Booking Customer ID:", booking.customer_id);
-                console.log("Logged-in Email:", loggedInUser.email);
-                console.log("Booking Email:", booking.email);
-                console.log("=================================");
 
                 if (booking.customer_id !== loggedInUser.id) {
 
@@ -581,20 +665,16 @@
                     return;
                 }
 
-
                 currentBooking =
                     booking;
-
 
                 displayClientInformation(
                     booking
                 );
 
-
                 await loadRepositoryPhotos(
                     repository.id
                 );
-
 
             } catch (error) {
 
@@ -602,7 +682,6 @@
                     "Gallery initialization error:",
                     error
                 );
-
 
                 showGalleryError(
                     "Unable to Open Gallery",
@@ -613,7 +692,6 @@
 
         }
 
-
         function displayClientInformation(
             booking
         ) {
@@ -622,21 +700,17 @@
                 booking.full_name ||
                 "Customer";
 
-
             const sessionType =
                 booking.session_type ||
                 "Photography Session";
-
 
             const bookingDate =
                 formatDate(
                     booking.booking_date
                 );
 
-
             galleryTitle.textContent =
                 clientName;
-
 
             gallerySubtitle.textContent =
                 `${sessionType} • ${bookingDate}`;
@@ -648,19 +722,11 @@
         ) {
 
             galleryGrid.innerHTML = `
-
-        <div class="gallery-loading">
-
-            <i class="fa-solid fa-spinner fa-spin"></i>
-
-            <p>
-                Loading your photos...
-            </p>
-
-        </div>
-
-    `;
-
+                <div class="gallery-loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Loading your photos...</p>
+                </div>
+            `;
 
             const {
                 data: photos,
@@ -679,7 +745,6 @@
                     }
                 );
 
-
             if (error) {
 
                 console.error(
@@ -687,28 +752,18 @@
                     error
                 );
 
-
                 galleryGrid.innerHTML = `
-
-            <div class="gallery-loading">
-
-                <i class="fa-solid fa-circle-exclamation"></i>
-
-                <p>
-                    Unable to load your photos.
-                </p>
-
-            </div>
-
-        `;
+                    <div class="gallery-loading">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <p>Unable to load your photos.</p>
+                    </div>
+                `;
 
                 return;
             }
 
-
             currentPhotos =
                 photos || [];
-
 
             renderGalleryPhotos(
                 currentPhotos
@@ -716,17 +771,11 @@
 
         }
 
-
-        /* =========================================================
-           RENDER PHOTOS
-        ========================================================= */
-
         function renderGalleryPhotos(
             photos
         ) {
 
             galleryGrid.innerHTML = "";
-
 
             if (
                 !photos ||
@@ -734,26 +783,15 @@
             ) {
 
                 galleryGrid.innerHTML = `
-
-            <div class="gallery-loading">
-
-                <i class="fa-regular fa-images"></i>
-
-                <p>
-                    No photos have been uploaded yet.
-                </p>
-
-                <small>
-                    Please check again later.
-                </small>
-
-            </div>
-
-        `;
+                    <div class="gallery-loading">
+                        <i class="fa-regular fa-images"></i>
+                        <p>No photos have been uploaded yet.</p>
+                        <small>Please check again later.</small>
+                    </div>
+                `;
 
                 return;
             }
-
 
             photos.forEach(
                 photo => {
@@ -761,14 +799,11 @@
                     const card =
                         document.createElement("div");
 
-
                     card.className =
                         "photo-card";
 
-
                     const image =
                         document.createElement("img");
-
 
                     const highQuality =
                         canAccessHighQuality();
@@ -778,31 +813,24 @@
                             ? (photo.image_url || "")
                             : (photo.preview_url || "");
 
-
                     image.alt =
                         photo.original_name ||
                         "Gallery Photo";
 
-
                     image.loading =
                         "lazy";
-
 
                     const button =
                         document.createElement("button");
 
-
                     button.type =
                         "button";
-
 
                     button.className =
                         "individual-download-btn";
 
-
                     button.innerHTML =
                         `<i class="fa-solid fa-download"></i>`;
-
 
                     button.addEventListener(
                         "click",
@@ -817,16 +845,13 @@
                         }
                     );
 
-
                     card.appendChild(
                         image
                     );
 
-
                     card.appendChild(
                         button
                     );
-
 
                     galleryGrid.appendChild(
                         card
@@ -843,12 +868,10 @@
                 return false;
             }
 
-            // Paid customers can always access high quality
             if (currentRepository.download_access === true) {
                 return true;
             }
 
-            // Check the 48-hour free period
             if (
                 currentRepository.gallery_access_expires_at
             ) {
@@ -864,264 +887,273 @@
 
             return false;
         }
-        /* =========================================================
-           DOWNLOAD INDIVIDUAL
-        ========================================================= */
-        function downloadPhoto(photo) {
 
-            /*
-             * HIGH QUALITY
-             *
-             * Either:
-             * 1. Still within the first 48 hours
-             * 2. Customer has already paid
-             */
+        function downloadPhoto(photo) {
 
             if (canAccessHighQuality()) {
 
                 if (!photo.image_url) {
-
-                    alert(
-                        "High-quality photo is unavailable."
-                    );
-
+                    alert("High-quality photo is unavailable.");
                     return;
                 }
 
-                window.open(
-                    photo.image_url,
-                    "_blank"
-                );
-
+                window.open(photo.image_url, "_blank");
                 return;
             }
-
-
-            /*
-             * AFTER 48 HOURS
-             *
-             * Customer has not paid.
-             * They can only download the low-quality preview.
-             */
 
             if (!photo.preview_url) {
-
-                alert(
-                    "Preview photo is unavailable."
-                );
-
+                alert("Preview photo is unavailable.");
                 return;
             }
 
-            window.open(
-                photo.preview_url,
-                "_blank"
-            );
+            window.open(photo.preview_url, "_blank");
         }
+
         /* =========================================================
-           PAYMENT MODAL
+           PAYMENT & QR MODAL
         ========================================================= */
+        const paymentNoticeStep = document.getElementById("paymentNoticeStep");
+        const qrPaymentStep = document.getElementById("qrPaymentStep");
+        const paymentFormStep = document.getElementById("paymentFormStep");
+        const paymentReceiptStep = document.getElementById("paymentReceiptStep");
+
+        const btnBackToNotice = document.getElementById("btnBackToNotice");
+        const btnGoToForm = document.getElementById("btnGoToForm");
+        const btnBackToQR = document.getElementById("btnBackToQR");
+        const btnSubmitPayment = document.getElementById("btnSubmitPayment");
+        const btnCloseReceipt = document.getElementById("btnCloseReceipt");
+
+        const paymentAmountInput = document.getElementById("paymentAmountInput");
+        const paymentReceiptInput = document.getElementById("paymentReceiptInput");
+        const fileNameDisplay = document.getElementById("fileNameDisplay");
+        const paymentErrorMsg = document.getElementById("paymentErrorMsg");
+
+        const selectedMethodLabel = document.getElementById("selectedMethodLabel");
+        const paymentQrImage = document.getElementById("paymentQrImage");
+
+        const summaryOrderId = document.getElementById("summaryOrderId");
+        const summaryClientName = document.getElementById("summaryClientName");
+        const summaryAmount = document.getElementById("summaryAmount");
+
+        const receiptPaidAmount = document.getElementById("receiptPaidAmount");
+        const receiptOrderId = document.getElementById("receiptOrderId");
+        const receiptDetailOrderId = document.getElementById("receiptDetailOrderId");
+        const receiptDetailClient = document.getElementById("receiptDetailClient");
+        const receiptDetailAmount = document.getElementById("receiptDetailAmount");
+
+        if (paymentReceiptInput && fileNameDisplay) {
+            paymentReceiptInput.addEventListener("change", (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    fileNameDisplay.textContent = e.target.files[0].name;
+                    fileNameDisplay.style.color = "#333";
+                } else {
+                    fileNameDisplay.textContent = "No file chosen";
+                    fileNameDisplay.style.color = "#777";
+                }
+            });
+        }
 
         function openPaymentModal() {
+            if (!paymentModal) return;
 
-            if (!paymentModal) {
-                return;
+            if (currentBooking) {
+                if (summaryOrderId) summaryOrderId.textContent = currentBooking.id ? `#ORD-${String(currentBooking.id).slice(-3)}` : "#ORD-001";
+                if (summaryClientName) summaryClientName.textContent = currentBooking.full_name || "Customer";
+                
+                const dueAmount = currentBooking.total_amount || currentBooking.amount || 0;
+                if (summaryAmount) summaryAmount.textContent = `₱${parseFloat(dueAmount).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             }
 
-
-            paymentModal.classList.add(
-                "active"
-            );
-
+            if (paymentNoticeStep) paymentNoticeStep.style.display = "flex";
+            if (qrPaymentStep) qrPaymentStep.style.display = "none";
+            if (paymentFormStep) paymentFormStep.style.display = "none";
+            if (paymentReceiptStep) paymentReceiptStep.style.display = "none";
+            if (paymentErrorMsg) paymentErrorMsg.style.display = "none";
+            paymentModal.classList.add("active");
         }
-
 
         function closePaymentModal() {
-
-            if (!paymentModal) {
-                return;
-            }
-
-
-            paymentModal.classList.remove(
-                "active"
-            );
-
+            if (!paymentModal) return;
+            paymentModal.classList.remove("active");
         }
-
 
         if (closeButton) {
-
-            closeButton.addEventListener(
-                "click",
-                closePaymentModal
-            );
-
+            closeButton.addEventListener("click", closePaymentModal);
         }
 
+        document.querySelectorAll(".btn-payment-method").forEach(button => {
+            button.addEventListener("click", (e) => {
+                const targetBtn = e.currentTarget;
+                const selectedMethod = targetBtn.getAttribute("data-method");
+                const labelText = targetBtn.getAttribute("data-label");
+                
+                if (selectedMethodLabel) {
+                    selectedMethodLabel.textContent = labelText;
+                }
+
+                if (paymentQrImage) {
+                    paymentQrImage.src = `/images/payment_qr_${selectedMethod}.png`;
+                    paymentQrImage.onerror = function() {
+                        this.onerror = null;
+                        this.src = "/images/gcash_qr.jpeg";
+                    };
+                }
+
+                if (paymentNoticeStep) paymentNoticeStep.style.display = "none";
+                if (qrPaymentStep) qrPaymentStep.style.display = "flex";
+                if (paymentFormStep) paymentFormStep.style.display = "none";
+                if (paymentReceiptStep) paymentReceiptStep.style.display = "none";
+            });
+        });
+
+        if (btnBackToNotice) {
+            btnBackToNotice.addEventListener("click", () => {
+                if (qrPaymentStep) qrPaymentStep.style.display = "none";
+                if (paymentNoticeStep) paymentNoticeStep.style.display = "flex";
+            });
+        }
+
+        if (btnGoToForm) {
+            btnGoToForm.addEventListener("click", () => {
+                if (qrPaymentStep) qrPaymentStep.style.display = "none";
+                if (paymentFormStep) paymentFormStep.style.display = "flex";
+            });
+        }
+
+        if (btnBackToQR) {
+            btnBackToQR.addEventListener("click", () => {
+                if (paymentFormStep) paymentFormStep.style.display = "none";
+                if (qrPaymentStep) qrPaymentStep.style.display = "flex";
+            });
+        }
+
+        if (btnSubmitPayment) {
+            btnSubmitPayment.addEventListener("click", async () => {
+                const enteredAmount = parseFloat(paymentAmountInput.value);
+                const file = paymentReceiptInput.files[0];
+
+                if (!enteredAmount || isNaN(enteredAmount)) {
+                    paymentErrorMsg.textContent = "Please enter the payment amount.";
+                    paymentErrorMsg.style.display = "block";
+                    return;
+                }
+
+                if (!file) {
+                    paymentErrorMsg.textContent = "Please upload a proof of payment image.";
+                    paymentErrorMsg.style.display = "block";
+                    return;
+                }
+
+                const targetStudioAmount = currentBooking?.total_amount || currentBooking?.amount || 0;
+
+                if (targetStudioAmount > 0 && enteredAmount !== targetStudioAmount) {
+                    paymentErrorMsg.textContent = `Transaction failed: Payment amount must match the required studio amount (₱${targetStudioAmount}).`;
+                    paymentErrorMsg.style.display = "block";
+                    return;
+                }
+
+                if (currentRepository) {
+                    currentRepository.download_access = true;
+                }
+
+                const formattedAmount = `₱${enteredAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                const formattedOrderId = currentBooking?.id ? `#ORD-${String(currentBooking.id).slice(-3)}` : "#ORD-001";
+                const clientNameStr = currentBooking?.full_name || "Customer";
+
+                if (receiptPaidAmount) receiptPaidAmount.textContent = formattedAmount;
+                if (receiptOrderId) receiptOrderId.textContent = formattedOrderId;
+                if (receiptDetailOrderId) receiptDetailOrderId.textContent = formattedOrderId;
+                if (receiptDetailClient) receiptDetailClient.textContent = clientNameStr;
+                if (receiptDetailAmount) receiptDetailAmount.textContent = formattedAmount;
+
+                if (paymentFormStep) paymentFormStep.style.display = "none";
+                if (paymentReceiptStep) paymentReceiptStep.style.display = "flex";
+
+                renderGalleryPhotos(currentPhotos);
+            });
+        }
+
+        if (btnCloseReceipt) {
+            btnCloseReceipt.addEventListener("click", closePaymentModal);
+        }
 
         if (paymentModal) {
-
-            paymentModal.addEventListener(
-                "click",
-                event => {
-
-                    if (
-                        event.target ===
-                        paymentModal
-                    ) {
-
-                        closePaymentModal();
-
-                    }
-
+            paymentModal.addEventListener("click", event => {
+                if (event.target === paymentModal) {
+                    closePaymentModal();
                 }
-            );
-
+            });
         }
 
+        if (downloadAllBtn) {
+            downloadAllBtn.addEventListener("click", () => {
+                if (canAccessHighQuality()) {
+                    if (currentPhotos && currentPhotos.length > 0) {
+                        currentPhotos.forEach(photo => {
+                            if (photo.image_url) {
+                                window.open(photo.image_url, "_blank");
+                            }
+                        });
+                    } else {
+                        alert("No photos available to download.");
+                    }
+                } else {
+                    openPaymentModal();
+                }
+            });
+        }
 
-        /* =========================================================
-           ERROR SCREEN
-        ========================================================= */
-
-        function showGalleryError(
-            title,
-            message
-        ) {
-
-            galleryTitle.textContent =
-                title;
-
-
-            gallerySubtitle.textContent =
-                message;
-
+        function showGalleryError(title, message) {
+            galleryTitle.textContent = title;
+            gallerySubtitle.textContent = message;
 
             if (downloadAllBtn) {
-
-                downloadAllBtn.style.display =
-                    "none";
-
+                downloadAllBtn.style.display = "none";
             }
-
 
             if (!galleryGrid) {
                 return;
             }
 
-
             galleryGrid.innerHTML = `
-
-        <div class="gallery-loading">
-
-            <i class="fa-solid fa-link-slash"></i>
-
-            <p>
-                ${escapeHTML(message)}
-            </p>
-
-            <a
-                href="customer_gallery_request.html"
-                style="
-                    display:inline-block;
-                    margin-top:15px;
-                    padding:10px 18px;
-                    background:#639A88;
-                    color:white;
-                    text-decoration:none;
-                    border-radius:6px;
-                "
-            >
-                Enter Gallery Link
-            </a>
-
-        </div>
-
-    `;
-
+                <div class="gallery-loading">
+                    <i class="fa-solid fa-link-slash"></i>
+                    <p>${escapeHTML(message)}</p>
+                    <a href="customer_gallery_request.html" style="display:inline-block; margin-top:15px; padding:10px 18px; background:#639A88; color:white; text-decoration:none; border-radius:8px;">
+                        Enter Gallery Link
+                    </a>
+                </div>
+            `;
         }
 
-
-        /* =========================================================
-           DATE
-        ========================================================= */
-
-        function formatDate(
-            dateString
-        ) {
-
+        function formatDate(dateString) {
             if (!dateString) {
-
                 return "Date not specified";
-
             }
 
+            const date = new Date(dateString + "T00:00:00");
 
-            const date =
-                new Date(
-                    dateString + "T00:00:00"
-                );
-
-
-            if (
-                Number.isNaN(
-                    date.getTime()
-                )
-            ) {
-
+            if (Number.isNaN(date.getTime())) {
                 return dateString;
-
             }
 
-
-            return date.toLocaleDateString(
-                "en-US",
-                {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric"
-                }
-            );
-
+            return date.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric"
+            });
         }
 
-
-        /* =========================================================
-           ESCAPE HTML
-        ========================================================= */
-
-        function escapeHTML(
-            value
-        ) {
-
-            return String(
-                value ?? ""
-            )
-                .replace(
-                    /&/g,
-                    "&amp;"
-                )
-                .replace(
-                    /</g,
-                    "&lt;"
-                )
-                .replace(
-                    />/g,
-                    "&gt;"
-                )
-                .replace(
-                    /"/g,
-                    "&quot;"
-                )
-                .replace(
-                    /'/g,
-                    "&#039;"
-                );
-
+        function escapeHTML(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
+
         document.getElementById("logoutBtn").addEventListener("click", async () => {
-
             const { error } = await supabaseClient.auth.signOut();
 
             if (error) {
@@ -1133,7 +1165,6 @@
             window.location.href = "customer_homepage.html";
         });
     </script>
-
 
 </body>
 

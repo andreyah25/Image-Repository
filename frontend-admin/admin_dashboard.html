@@ -584,187 +584,187 @@
         }
 
 
-       /* function renderBookingAnalytics(
-            monthlyBookings,
-            selectedYear
-        ) {
-
-            const barsWrapper =
-                document.getElementById("barsWrapper");
-
-            const yAxis =
-                document.getElementById("bookingYAxis");
-
-            const gridLines =
-                document.getElementById("bookingGridLines");
-
-            if (!barsWrapper || !yAxis || !gridLines) {
-                console.error("Analytics chart elements not found.");
-                return;
-            }
-
-            // Clear previous chart
-            barsWrapper.innerHTML = "";
-            yAxis.innerHTML = "";
-            gridLines.innerHTML = "";
-
-            const maxBooking =
-                Math.max(...monthlyBookings, 0);
-
-            let chartMax;
-
-            if (maxBooking === 0) {
-                chartMax = 5;
-            }
-            else if (maxBooking <= 5) {
-                chartMax = 5;
-            }
-            else if (maxBooking <= 10) {
-                chartMax = 10;
-            }
-            else if (maxBooking <= 20) {
-                chartMax = 20;
-            }
-            else if (maxBooking <= 50) {
-                chartMax = Math.ceil(maxBooking / 10) * 10;
-            }
-            else {
-                chartMax = Math.ceil(maxBooking / 20) * 20;
-            }
-
-            const steps = 5;
-            const stepValue = chartMax / steps;
-
-            for (let i = steps; i >= 0; i--) {
-
-                const value = Math.round(
-                    stepValue * i
-                );
-
-                const label =
-                    document.createElement("span");
-
-                label.textContent =
-                    value.toLocaleString();
-
-                yAxis.appendChild(label);
-
-
-                const line =
-                    document.createElement("div");
-
-                line.className = "grid-line";
-
-                gridLines.appendChild(line);
-            }
-
-            monthlyBookings.forEach(
-                (value, index) => {
-
-                    const percentage =
-                        chartMax > 0
-                            ? (value / chartMax) * 100
-                            : 0;
-
-                    const column =
-                        document.createElement("div");
-
-                    column.className =
-                        "bar-column";
-
-                    column.innerHTML = `
-                <div class="bar-track">
-
-                    <div
-                        class="bar-fill"
-                        style="height: ${percentage}%"
-                    >
-                        <span class="bar-value">
-                            ${value}
-                        </span>
-                    </div>
-
-                </div>
-
-                <div class="bar-label">
-                    ${monthNames[index]}
-                </div>
-            `;
-
-                    barsWrapper.appendChild(column);
-                }
-            );
-
-            const yearlyTotal =
-                monthlyBookings.reduce(
-                    (total, value) => total + value,
-                    0
-                );
-
-            const yearlyTotalElement =
-                document.getElementById(
-                    "yearlyBookingTotal"
-                );
-
-            if (yearlyTotalElement) {
-
-                yearlyTotalElement.textContent =
-                    yearlyTotal.toLocaleString();
-            }
-
-
-
-            const average =
-                yearlyTotal / 12;
-
-            const averageElement =
-                document.getElementById(
-                    "averageMonthlyBookings"
-                );
-
-            if (averageElement) {
-
-                averageElement.textContent =
-                    average.toFixed(1);
-            }
-
-
-            const busiestElement =
-                document.getElementById(
-                    "busiestBookingMonth"
-                );
-
-            if (busiestElement) {
-
-                if (yearlyTotal === 0) {
-
-                    busiestElement.textContent = "—";
-
-                }
-                else {
-
-                    const highest =
-                        Math.max(...monthlyBookings);
-
-                    const busiestIndex =
-                        monthlyBookings.indexOf(highest);
-
-                    busiestElement.textContent =
-                        monthNames[busiestIndex];
-                }
-            }
-
-
-            console.log(
-                `Analytics rendered for ${selectedYear}`,
-                {
-                    monthlyBookings,
-                    yearlyTotal,
-                    average,
-                    chartMax
-                }
-            );
-        }*/
+        /* function renderBookingAnalytics(
+             monthlyBookings,
+             selectedYear
+         ) {
+ 
+             const barsWrapper =
+                 document.getElementById("barsWrapper");
+ 
+             const yAxis =
+                 document.getElementById("bookingYAxis");
+ 
+             const gridLines =
+                 document.getElementById("bookingGridLines");
+ 
+             if (!barsWrapper || !yAxis || !gridLines) {
+                 console.error("Analytics chart elements not found.");
+                 return;
+             }
+ 
+             // Clear previous chart
+             barsWrapper.innerHTML = "";
+             yAxis.innerHTML = "";
+             gridLines.innerHTML = "";
+ 
+             const maxBooking =
+                 Math.max(...monthlyBookings, 0);
+ 
+             let chartMax;
+ 
+             if (maxBooking === 0) {
+                 chartMax = 5;
+             }
+             else if (maxBooking <= 5) {
+                 chartMax = 5;
+             }
+             else if (maxBooking <= 10) {
+                 chartMax = 10;
+             }
+             else if (maxBooking <= 20) {
+                 chartMax = 20;
+             }
+             else if (maxBooking <= 50) {
+                 chartMax = Math.ceil(maxBooking / 10) * 10;
+             }
+             else {
+                 chartMax = Math.ceil(maxBooking / 20) * 20;
+             }
+ 
+             const steps = 5;
+             const stepValue = chartMax / steps;
+ 
+             for (let i = steps; i >= 0; i--) {
+ 
+                 const value = Math.round(
+                     stepValue * i
+                 );
+ 
+                 const label =
+                     document.createElement("span");
+ 
+                 label.textContent =
+                     value.toLocaleString();
+ 
+                 yAxis.appendChild(label);
+ 
+ 
+                 const line =
+                     document.createElement("div");
+ 
+                 line.className = "grid-line";
+ 
+                 gridLines.appendChild(line);
+             }
+ 
+             monthlyBookings.forEach(
+                 (value, index) => {
+ 
+                     const percentage =
+                         chartMax > 0
+                             ? (value / chartMax) * 100
+                             : 0;
+ 
+                     const column =
+                         document.createElement("div");
+ 
+                     column.className =
+                         "bar-column";
+ 
+                     column.innerHTML = `
+                 <div class="bar-track">
+ 
+                     <div
+                         class="bar-fill"
+                         style="height: ${percentage}%"
+                     >
+                         <span class="bar-value">
+                             ${value}
+                         </span>
+                     </div>
+ 
+                 </div>
+ 
+                 <div class="bar-label">
+                     ${monthNames[index]}
+                 </div>
+             `;
+ 
+                     barsWrapper.appendChild(column);
+                 }
+             );
+ 
+             const yearlyTotal =
+                 monthlyBookings.reduce(
+                     (total, value) => total + value,
+                     0
+                 );
+ 
+             const yearlyTotalElement =
+                 document.getElementById(
+                     "yearlyBookingTotal"
+                 );
+ 
+             if (yearlyTotalElement) {
+ 
+                 yearlyTotalElement.textContent =
+                     yearlyTotal.toLocaleString();
+             }
+ 
+ 
+ 
+             const average =
+                 yearlyTotal / 12;
+ 
+             const averageElement =
+                 document.getElementById(
+                     "averageMonthlyBookings"
+                 );
+ 
+             if (averageElement) {
+ 
+                 averageElement.textContent =
+                     average.toFixed(1);
+             }
+ 
+ 
+             const busiestElement =
+                 document.getElementById(
+                     "busiestBookingMonth"
+                 );
+ 
+             if (busiestElement) {
+ 
+                 if (yearlyTotal === 0) {
+ 
+                     busiestElement.textContent = "—";
+ 
+                 }
+                 else {
+ 
+                     const highest =
+                         Math.max(...monthlyBookings);
+ 
+                     const busiestIndex =
+                         monthlyBookings.indexOf(highest);
+ 
+                     busiestElement.textContent =
+                         monthNames[busiestIndex];
+                 }
+             }
+ 
+ 
+             console.log(
+                 `Analytics rendered for ${selectedYear}`,
+                 {
+                     monthlyBookings,
+                     yearlyTotal,
+                     average,
+                     chartMax
+                 }
+             );
+         }*/
         async function loadTotalIncome() {
 
             console.log("Loading total income...");
@@ -778,17 +778,16 @@
             }
 
             const {
-                data,
+                data: bookings,
                 error
             } = await supabaseClient
                 .from("bookings")
-                .select("*")
-                .eq("payment_status", "Paid");
+                .select("id, total_price, payment_status");
 
             if (error) {
 
                 console.error(
-                    "Error loading paid bookings:",
+                    "Error loading booking payments:",
                     error
                 );
 
@@ -797,26 +796,70 @@
                 return;
             }
 
-            console.log(
-                "Paid bookings:",
-                data
-            );
+            let totalIncome = 0;
 
-            const totalIncome =
-                (data || []).reduce(
-                    (total, booking) => {
+            (bookings || []).forEach(booking => {
 
-                        /*
-                         * Currently using booking.price
-                         */
-                        const amount =
-                            Number(booking.total_price) || 0;
+                const totalPrice =
+                    Number(booking.total_price) || 0;
 
-                        return total + amount;
+                const paymentStatus =
+                    String(booking.payment_status || "")
+                        .trim()
+                        .toLowerCase();
 
-                    },
-                    0
+                let amountPaid = 0;
+
+                /*
+                 * FULL PAYMENT
+                 */
+                if (
+                    paymentStatus === "paid" ||
+                    paymentStatus === "completed" ||
+                    paymentStatus === "fully paid" ||
+                    paymentStatus === "full"
+                ) {
+
+                    amountPaid = totalPrice;
+
+                }
+
+                /*
+                 * HALF / PARTIAL PAYMENT
+                 */
+                else if (
+                    paymentStatus === "half" ||
+                    paymentStatus === "half paid" ||
+                    paymentStatus === "partial" ||
+                    paymentStatus === "partially paid"
+                ) {
+
+                    amountPaid = totalPrice * 0.50;
+
+                }
+
+                /*
+                 * UNPAID / PENDING
+                 */
+                else {
+
+                    amountPaid = 0;
+
+                }
+
+                totalIncome += amountPaid;
+
+                console.log(
+                    "Booking payment:",
+                    {
+                        id: booking.id,
+                        totalPrice,
+                        paymentStatus,
+                        amountPaid
+                    }
                 );
+
+            });
 
             totalIncomeElement.textContent =
                 `₱${totalIncome.toLocaleString("en-PH", {
@@ -828,6 +871,51 @@
                 "TOTAL INCOME:",
                 totalIncome
             );
+        }
+        let photoRealtimeChannel = null;
+
+        function setupPhotoRealtime() {
+
+            console.log("Starting photo realtime listener...");
+
+            if (photoRealtimeChannel) {
+                return;
+            }
+
+            photoRealtimeChannel =
+                supabaseClient
+                    .channel(
+                        "staff-photo-dashboard-" +
+                        (currentUser?.id || "global")
+                    )
+
+                    .on(
+                        "postgres_changes",
+                        {
+                            event: "*",
+                            schema: "public",
+                            table: "photos"
+                        },
+                        async function (payload) {
+
+                            console.log(
+                                "PHOTO DATABASE CHANGE:",
+                                payload
+                            );
+
+                            await loadDashboardStats();
+
+                        }
+                    )
+
+                    .subscribe(function (status) {
+
+                        console.log(
+                            "PHOTO REALTIME STATUS:",
+                            status
+                        );
+
+                    });
         }
         function renderBookingAnalytics(
             monthlyBookings,
@@ -1286,7 +1374,7 @@
                 await loadAnalyticsYears();
                 await loadNotifications();
                 setupNotificationRealtime();
-
+                setupPhotoRealtime();
                 if (profile.avatar_url) {
                     document.getElementById("userAvatar").src =
                         profile.avatar_url;
@@ -1336,29 +1424,48 @@
                TOTAL PHOTOS
                ========================================================= */
 
+            /* =========================================================
+    TOTAL PHOTOS
+    ========================================================= */
+
+            console.log("📸 Fetching total photos...");
+
             const {
+                data: photoData,
                 count: photoCount,
                 error: photoError
             } = await supabaseClient
                 .from("photos")
-                .select("*", {
-                    count: "exact",
-                    head: true
+                .select("id", {
+                    count: "exact"
                 });
 
-            if (photoError) {
-                console.error("Photos error:", photoError);
-            }
+            console.log("📸 PHOTO DATA:", photoData);
+            console.log("📸 PHOTO COUNT:", photoCount);
+            console.log("📸 PHOTO ERROR:", photoError);
 
             const totalPhotosElement =
                 document.getElementById("totalPhotos");
 
-            if (totalPhotosElement) {
-                totalPhotosElement.textContent =
-                    photoCount || 0;
+            if (photoError) {
+
+                console.error(
+                    "❌ Photos fetch failed:",
+                    photoError
+                );
+
+                if (totalPhotosElement) {
+                    totalPhotosElement.textContent = "ERR";
+                }
+
+            } else {
+
+                if (totalPhotosElement) {
+                    totalPhotosElement.textContent =
+                        photoCount || 0;
+                }
+
             }
-
-
             /* =========================================================
                TOTAL INCOME
                ========================================================= */
@@ -1802,36 +1909,27 @@
         async function loadNotifications() {
 
             if (!currentUser) {
-                console.warn(
-                    "Cannot load notifications: no current user."
-                );
+                console.warn("Cannot load notifications: no current user.");
                 return;
             }
 
-            loadSavedReadNotifications();
-
             try {
 
+                console.log("Loading notifications from database...");
+
                 const {
-                    data: bookings,
+                    data,
                     error
                 } = await supabaseClient
-
-                    .from("bookings")
-
-                    .select("*")
-
-                    .eq("status", "Confirmed")
-
-                    .order(
-                        "created_at",
-                        {
-                            ascending: false
-                        }
-                    )
-
+                    .from("notifications")
+                    .select(`
+                *,
+                bookings (*)
+            `)
+                    .order("created_at", {
+                        ascending: false
+                    })
                     .limit(15);
-
 
                 if (error) {
 
@@ -1840,40 +1938,70 @@
                         error
                     );
 
+                    notificationList.innerHTML = `
+                <div class="notification-empty">
+                    Unable to load notifications
+                </div>
+            `;
+
                     return;
                 }
 
-
                 notifications = [];
 
+                (data || []).forEach(notificationRow => {
 
-                if (bookings && bookings.length > 0) {
+                    const booking =
+                        notificationRow.bookings;
 
-                    bookings.forEach(function (booking) {
+                    /*
+                     * Ignore notifications whose booking
+                     * no longer exists.
+                     */
+                    if (!booking) {
+                        return;
+                    }
 
-                        const notification =
-                            createBookingNotification(
-                                booking
-                            );
+                    const notification = {
 
-                        if (notification) {
+                        id: String(notificationRow.id),
 
-                            notifications.push(
-                                notification
-                            );
+                        type:
+                            notificationRow.type ||
+                            "booking",
 
-                        }
+                        title:
+                            notificationRow.title ||
+                            "New Customer Booking",
 
-                    });
+                        message:
+                            notificationRow.message ||
+                            `${booking.full_name || "A customer"} has a confirmed booking.`,
 
-                }
+                        date:
+                            notificationRow.created_at ||
+                            booking.created_at ||
+                            new Date().toISOString(),
 
+                        unread:
+                            notificationRow.is_read === false ||
+                            notificationRow.is_read === null,
+
+                        booking: booking,
+
+                        databaseId:
+                            notificationRow.id
+
+                    };
+
+                    notifications.push(notification);
+
+                });
 
                 renderNotifications();
 
-
                 console.log(
-                    "Notifications loaded:",
+                    "✅ Notifications loaded:",
                     notifications
                 );
 
@@ -1885,9 +2013,7 @@
                 );
 
             }
-
         }
-
 
         /* =========================================================
            OPEN BOOKING MODAL
@@ -2059,7 +2185,7 @@
            CLICK NOTIFICATION
         ========================================================= */
 
-        function handleNotificationClick(
+        async function handleNotificationClick(
             notification,
             item
         ) {
@@ -2069,45 +2195,49 @@
                 notification
             );
 
+            notification.unread = false;
 
-            /* Mark as read */
-
-            notification.unread =
-                false;
-
-
-            readNotificationIds.add(
-                notification.id
-            );
-
-
-            saveReadNotifications();
-
-
-            item.classList.remove(
-                "unread"
-            );
-
+            item.classList.remove("unread");
 
             updateNotificationBadge();
 
+            /*
+             * Save read status in Supabase
+             */
+            if (notification.databaseId) {
 
-            /* Close notification panel */
+                const {
+                    error
+                } = await supabaseClient
+                    .from("notifications")
+                    .update({
+                        is_read: true
+                    })
+                    .eq("id", notification.databaseId);
 
-            notificationPanel.classList.remove(
-                "show"
-            );
+                if (error) {
 
+                    console.error(
+                        "Failed to mark notification as read:",
+                        error
+                    );
 
-            /* Open booking modal */
+                }
 
+            }
+
+            notificationPanel.classList.remove("show");
+
+            /*
+             * Open booking details
+             */
             if (
                 notification.type === "booking" &&
                 notification.booking &&
                 notification.booking.id
             ) {
 
-                openNotificationBooking(
+                await openNotificationBooking(
                     notification
                 );
 
@@ -2291,34 +2421,50 @@
 
         markNotificationsRead.addEventListener(
             "click",
-            function (e) {
+            async function (e) {
 
                 e.stopPropagation();
 
+                if (!notifications.length) {
+                    return;
+                }
 
-                notifications.forEach(
-                    function (notification) {
+                const notificationIds =
+                    notifications
+                        .map(notification => notification.databaseId)
+                        .filter(Boolean);
 
-                        notification.unread =
-                            false;
+                if (notificationIds.length > 0) {
 
+                    const {
+                        error
+                    } = await supabaseClient
+                        .from("notifications")
+                        .update({
+                            is_read: true
+                        })
+                        .in("id", notificationIds);
 
-                        readNotificationIds.add(
-                            notification.id
+                    if (error) {
+
+                        console.error(
+                            "Failed to mark notifications as read:",
+                            error
                         );
 
+                        return;
                     }
-                );
 
+                }
 
-                saveReadNotifications();
-
+                notifications.forEach(notification => {
+                    notification.unread = false;
+                });
 
                 renderNotifications();
 
             }
         );
-
 
         /* =========================================================
            CLOSE BOOKING MODAL
@@ -2439,217 +2585,206 @@
 
         }
 
-        /* =========================================================
-           REALTIME BOOKING NOTIFICATIONS
-        ========================================================= */
-
         function setupNotificationRealtime() {
 
             console.log(
-                "Starting booking realtime listener..."
+                "Starting notification realtime listener..."
             );
-
-
-            /* Prevent duplicate channels */
 
             if (notificationChannel) {
 
                 console.log(
-                    "Realtime channel already exists."
+                    "Realtime notification channel already exists."
                 );
 
                 return;
 
             }
 
-
             notificationChannel =
-                supabaseClient.channel(
-                    "staff-booking-notifications-" +
-                    currentUser.id
-                );
+                supabaseClient
+                    .channel(
+                        "staff-notifications-" +
+                        currentUser.id
+                    )
 
-
-            notificationChannel
-
-                .on(
-
-                    "postgres_changes",
-
-                    {
-                        event: "INSERT",
-                        schema: "public",
-                        table: "bookings"
-                    },
-
-                    async function (payload) {
-
-                        console.log(
-                            "REALTIME INSERT RECEIVED:",
-                            payload
-                        );
-
-
-                        const booking =
-                            payload.new;
-
-
-                        if (
-                            !booking ||
-                            !booking.id
-                        ) {
-
-                            return;
-
-                        }
-
-
-                        /*
-                         * Only notify for confirmed bookings.
-                         */
-
-                        if (
-                            booking.status !==
-                            "Confirmed"
-                        ) {
+                    .on(
+                        "postgres_changes",
+                        {
+                            event: "INSERT",
+                            schema: "public",
+                            table: "notifications"
+                        },
+                        async function (payload) {
 
                             console.log(
-                                "Inserted booking is not confirmed."
+                                "🔔 NEW NOTIFICATION:",
+                                payload
                             );
 
-                            return;
+                            const notificationRow =
+                                payload.new;
+
+                            if (!notificationRow) {
+                                return;
+                            }
+
+                            /*
+                             * Get the booking associated
+                             * with this notification.
+                             */
+                            if (notificationRow.booking_id) {
+
+                                const {
+                                    data: booking,
+                                    error
+                                } = await supabaseClient
+                                    .from("bookings")
+                                    .select("*")
+                                    .eq(
+                                        "id",
+                                        notificationRow.booking_id
+                                    )
+                                    .single();
+
+                                if (error) {
+
+                                    console.error(
+                                        "Unable to load notification booking:",
+                                        error
+                                    );
+
+                                    return;
+                                }
+
+                                if (!booking) {
+                                    return;
+                                }
+
+                                const notification = {
+
+                                    id:
+                                        String(
+                                            notificationRow.id
+                                        ),
+
+                                    databaseId:
+                                        notificationRow.id,
+
+                                    type:
+                                        notificationRow.type ||
+                                        "booking",
+
+                                    title:
+                                        notificationRow.title ||
+                                        "New Customer Booking",
+
+                                    message:
+                                        notificationRow.message ||
+                                        `${booking.full_name || "A customer"} has a confirmed booking.`,
+
+                                    date:
+                                        notificationRow.created_at ||
+                                        new Date().toISOString(),
+
+                                    unread:
+                                        notificationRow.is_read !== true,
+
+                                    booking:
+                                        booking
+
+                                };
+
+                                /*
+                                 * Prevent duplicate notification
+                                 */
+                                const exists =
+                                    notifications.some(
+                                        n =>
+                                            String(n.databaseId) ===
+                                            String(notificationRow.id)
+                                    );
+
+                                if (!exists) {
+
+                                    notifications.unshift(
+                                        notification
+                                    );
+
+                                    notifications =
+                                        notifications.slice(
+                                            0,
+                                            15
+                                        );
+
+                                    renderNotifications();
+
+                                    console.log(
+                                        "✅ New notification added:",
+                                        notification
+                                    );
+
+                                }
+
+                            }
+
+                            await refreshBookingCalendar();
+                            await loadDashboardStats();
+                            await loadAnalyticsYears();
 
                         }
+                    )
 
-
-                        addRealtimeBookingNotification(
-                            booking
-                        );
-
-
-                        await refreshBookingCalendar();
-
-                        await loadDashboardStats();
-                        await loadAnalyticsYears();
-
-                    }
-
-                )
-
-                .on(
-
-                    "postgres_changes",
-
-                    {
-                        event: "UPDATE",
-                        schema: "public",
-                        table: "bookings"
-                    },
-
-                    async function (payload) {
-
-                        console.log(
-                            "REALTIME UPDATE RECEIVED:",
-                            payload
-                        );
-
-
-                        const booking =
-                            payload.new;
-
-
-                        if (
-                            !booking ||
-                            !booking.id
-                        ) {
-
-                            return;
-
-                        }
-
-
-                        /*
-                         * If booking became confirmed,
-                         * create notification.
-                         */
-
-                        const oldBooking =
-                            payload.old || {};
-
-
-                        const becameConfirmed =
-                            booking.status ===
-                            "Confirmed" &&
-                            oldBooking.status !==
-                            "Confirmed";
-
-
-                        if (becameConfirmed) {
-
-                            addRealtimeBookingNotification(
-                                booking
-                            );
-
-                        }
-
-
-                        await refreshBookingCalendar();
-
-                        await loadDashboardStats();
-
-                    }
-
-                )
-
-                .subscribe(
-                    function (status) {
-
-                        console.log(
-                            "SUPABASE REALTIME STATUS:",
-                            status
-                        );
-
-
-                        if (
-                            status ===
-                            "SUBSCRIBED"
-                        ) {
+                    .on(
+                        "postgres_changes",
+                        {
+                            event: "UPDATE",
+                            schema: "public",
+                            table: "notifications"
+                        },
+                        async function (payload) {
 
                             console.log(
-                                "✅ BOOKING REALTIME CONNECTED"
+                                "🔔 NOTIFICATION UPDATED:",
+                                payload
+                            );
+
+                            const updated =
+                                payload.new;
+
+                            const index =
+                                notifications.findIndex(
+                                    notification =>
+                                        String(
+                                            notification.databaseId
+                                        ) ===
+                                        String(updated.id)
+                                );
+
+                            if (index !== -1) {
+
+                                notifications[index].unread =
+                                    updated.is_read !== true;
+
+                                renderNotifications();
+
+                            }
+
+                        }
+                    )
+
+                    .subscribe(
+                        function (status) {
+
+                            console.log(
+                                "SUPABASE NOTIFICATION REALTIME:",
+                                status
                             );
 
                         }
-
-
-                        if (
-                            status ===
-                            "CHANNEL_ERROR"
-                        ) {
-
-                            console.error(
-                                "❌ SUPABASE REALTIME CHANNEL ERROR"
-                            );
-
-                        }
-
-
-                        if (
-                            status ===
-                            "TIMED_OUT"
-                        ) {
-
-                            console.error(
-                                "❌ SUPABASE REALTIME TIMED OUT"
-                            );
-
-                        }
-
-                    }
-                );
+                    );
 
         }
-
 
         /* =========================================================
            ADD REALTIME BOOKING NOTIFICATION

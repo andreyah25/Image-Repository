@@ -456,7 +456,10 @@ p#gallerySubtitle {
     }
 }
 
-/* Payment Modal System */
+/* =========================================================
+   PAYMENT & MODAL SYSTEM (SEPARATED & CONSOLIDATED)
+========================================================= */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -481,7 +484,7 @@ p#gallerySubtitle {
 .payment-modal-card {
     background-color: #ffffff;
     width: calc(100% - 30px);
-    max-width: 390px;
+    max-width: 440px;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -501,6 +504,8 @@ p#gallerySubtitle {
     align-items: center;
     justify-content: center;
     gap: 10px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 .modal-card-icon {
@@ -519,24 +524,162 @@ p#gallerySubtitle {
     padding: 24px 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 20px;
+    gap: 15px;
     text-align: center;
 }
 
 .modal-prompt-text {
-    font-size: 15px;
+    font-size: 13.5px;
     font-weight: 400;
     line-height: 1.4;
     color: #555555;
+    margin-bottom: 0;
 }
 
+/* Payment Summary Box Styling */
+.modal-summary-box {
+    background: #f4f5f7;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: left;
+}
+
+.modal-summary-box h4 {
+    margin: 0 0 12px 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.summary-row strong {
+    color: #222;
+}
+
+.summary-row.total-row {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px stroke #e0e0e0;
+}
+
+.summary-row .due-amount {
+    color: #639A88;
+    font-size: 14px;
+}
+
+/* Form Groups and Select Inputs */
+.modal-form-group {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-form-group label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-select-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.btn-payment-method:hover {
+    border-color: #639A88 !important;
+    background-color: #f7faf9 !important;
+    transform: translateY(-1px);
+}
+
+.modal-text-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 13px;
+}
+
+.modal-file-input {
+    font-size: 12px;
+}
+
+/* QR Display Container */
+.modal-qr-container {
+    padding: 10px;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-qr-container img {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Instruction Banners */
+.modal-info-banner {
+    background-color: #eef7f4;
+    border: 1px solid #c2e5d9;
+    border-radius: 5px;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    color: #2d6a54;
+    line-height: 1.4;
+}
+
+.modal-warning-banner {
+    background-color: #fff8e6;
+    border: 1px solid #ffe58f;
+    border-radius: 5px;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    color: #8a6d3b;
+    line-height: 1.4;
+}
+
+.modal-error-msg {
+    color: #d9534f;
+    font-size: 12px;
+    margin: 0;
+    display: none;
+    text-align: left;
+}
+
+/* Modal Actions Buttons */
 .modal-actions-row {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     width: 100%;
+    margin-top: 5px;
 }
 
 .btn-modal-cancel,
@@ -557,7 +700,7 @@ p#gallerySubtitle {
 .btn-modal-cancel {
     background-color: #ffffff;
     border: 1.5px solid #b8b8b8;
-    color: #2b3a3c;
+    color: #353535;
     cursor: pointer;
     transition: background-color 0.15s, border-color 0.15s;
 }
@@ -572,6 +715,7 @@ p#gallerySubtitle {
     color: #ffffff !important;
     border: none;
     text-decoration: none;
+    cursor: pointer;
     transition: background-color 0.15s;
 }
 

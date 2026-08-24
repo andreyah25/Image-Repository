@@ -14,3 +14,15 @@ server/.env
 # OS files
 .DS_Store
 Thumbs.db
+
+# Python virtual environment
+venv/
+.venv/
+ml-service/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# YOLO training outputs
+runs/

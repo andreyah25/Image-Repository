@@ -1,0 +1,15 @@
+data/images/train/photo 1.jpg
+data/images/train/photo 10.jpg
+data/images/train/photo 11.jpg
+data/images/train/photo 12.jpg
+data/images/train/photo 13.jpg
+data/images/train/photo 14.jpg
+data/images/train/photo 15.jpg
+data/images/train/photo 2.jpg
+data/images/train/photo 3.jpg
+data/images/train/photo 4.jpg
+data/images/train/photo 5.jpg
+data/images/train/photo 6.jpg
+data/images/train/photo 7.jpg
+data/images/train/photo 8.jpg
+data/images/train/photo 9.jpg

@@ -1,0 +1,29 @@
+path: tags
+
+train: images/train
+val: images/val
+
+names:
+  0: numbers
+  1: balloon
+  2: chair
+  3: dog
+  4: cake
+  5: sunglasses
+  6: graduation
+  7: necklace
+  8: birthday hat
+  9: watch
+  10: graduation cap
+  11: baby
+  12: couple
+  13: dress
+  14: kids
+  15: family
+  16: group
+  17: hat
+  18: flowers
+  19: letters
+  20: cats
+  21: shoes
+  22: candle

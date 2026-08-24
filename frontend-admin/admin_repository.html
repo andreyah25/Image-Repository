@@ -831,6 +831,8 @@
                 return;
             }
 
+            console.log("Completed bookings:", data);
+
             const uniquePackages = [
                 ...new Set(
                     (data || [])
@@ -844,6 +846,7 @@
             );
 
             allFolders = uniquePackages;
+
             renderPackageFolders(uniquePackages);
         }
         function renderPackageFolders(packages) {
@@ -1383,7 +1386,7 @@
                 renderPackageFolders(filtered);
 
             });
-       
+
         document
 
             .getElementById("logoutBtn")

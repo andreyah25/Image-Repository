@@ -758,7 +758,47 @@ span.notification-badge,
     color: #b91c1c;
     border: 1px solid #fca5a5;
 }
+.access-action-btn {
+    min-width: 95px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
 
+.verify-access-btn {
+    background: #669f8d;
+    color: #fff;
+    border-color: #669f8d;
+}
+
+.verify-access-btn:hover {
+    background: #578f7d;
+    border-color: #578f7d;
+}
+
+.approved-action-btn {
+    background: #e8f5ef;
+    color: #2f7d5f;
+    border-color: #b9dfcd;
+    cursor: default;
+}
+
+.rejected-action-btn {
+    background: #fff0f0;
+    color: #d9534f;
+    border-color: #ffb3b3;
+    cursor: default;
+}
+
+.access-action-btn:disabled {
+    opacity: 1;
+}
 @keyframes notifFade {
     from {
         opacity: 0;

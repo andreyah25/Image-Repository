@@ -145,28 +145,15 @@
                     <!-- CUSTOMER SEARCH -->
                     <div class="table-search-box">
 
-                        <input type="text" id="repoFolderSearchInput" placeholder="Search customer..."
-                            autocomplete="off">
+                        <input type="text" id="repoFolderSearchInput"
+                            placeholder="Search object, keywords or filename.." autocomplete="off">
 
                         <i class="fa-solid fa-magnifying-glass"></i>
 
                     </div>
 
 
-                    <!-- GLOBAL AI PHOTO SEARCH -->
-                    <div class="table-search-box ai-search-box">
-
-                        <input type="text" id="globalPhotoSearchInput"
-                            placeholder="Search photos: dog, person, bottle..." autocomplete="off">
-
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-
-                    </div>
-
                 </div>
-
-
-                <!-- CUSTOMER FOLDERS -->
 
                 <div class="repo-view-container" id="customerFoldersContainer">
 
@@ -248,7 +235,25 @@
                     </div>
 
                 </div>
+                <div class="repository-photo-search">
 
+                    <div class="table-search-box">
+
+                        <input type="text" id="repositorySearch"
+                            placeholder="Search photos by object, tag, or filename..." autocomplete="off">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <button type="button" id="clearPhotoSearch" style="display:none;"
+                            aria-label="Clear photo search">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                    </div>
+
+                    <div id="photoSearchInfo"></div>
+
+                </div>
 
 
                 <!-- EVENT TITLE -->
@@ -261,26 +266,6 @@
                     <p id="repositoryDescription">
                         Manage photos for this customer.
                     </p>
-
-                </div>
-
-                <!-- PHOTO SEARCH -->
-
-                <div class="photo-search-section">
-
-                    <div class="photo-search-box">
-
-                        <i class="fa-solid fa-magnifying-glass"></i>
-
-                        <input type="text" id="customerPhotoSearchInput"
-                            placeholder="Search photos by object, person, filename..." autocomplete="off">
-                        <button type="button" id="clearPhotoSearch" style="display:none;">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-
-                    </div>
-
-                    <div id="photoSearchInfo" class="photo-search-info"></div>
 
                 </div>
 
@@ -368,7 +353,7 @@
         const photoGrid =
             document.getElementById("photoGrid");
         const customerPhotoSearchInput =
-            document.getElementById("customerPhotoSearchInput");
+            document.getElementById("repositorySearch");
 
         const clearPhotoSearch =
             document.getElementById("clearPhotoSearch");
@@ -406,6 +391,10 @@
         const logoutBtn =
             document.getElementById("logoutBtn");
 
+        const repositorySearch =
+            document.getElementById("repositorySearch");
+
+        let searchTimeout;
 
         window.addEventListener("load", async () => {
 
@@ -528,19 +517,17 @@
 
             customerFoldersContainer.innerHTML = `
         <div class="customer-folder-empty">
-
             <i class="fa-solid fa-spinner fa-spin"></i>
-
-            <div>
-                Loading customers...
-            </div>
-
+            <div>Loading customers...</div>
         </div>
     `;
 
             try {
 
-                let query = supabaseClient
+                const {
+                    data,
+                    error
+                } = await supabaseClient
                     .from("bookings")
                     .select("*")
                     .eq("status", "Completed")
@@ -549,26 +536,9 @@
                         ascending: false
                     });
 
-                /*
-                 * If a package was selected,
-                 * only load customers belonging
-                 * to that package.
-                 */
-
-                if (selectedPackage) {
-
-                    query =
-                        query.eq(
-                            "session_type",
-                            selectedPackage
-                        );
-
-                }
-
-                const {
-                    data,
-                    error
-                } = await query;
+                console.log("COMPLETED BOOKINGS:", data);
+                console.log("COMPLETED BOOKINGS ERROR:", error);
+                console.log("SELECTED PACKAGE:", selectedPackage);
 
                 if (error) {
 
@@ -585,23 +555,17 @@
                     return;
                 }
 
-                completedClients =
-                    data || [];
+                completedClients = data || [];
 
                 renderCompletedClients(
                     completedClients
                 );
 
-                /*
-                 * Update page title based on package.
-                 */
-
                 if (selectedPackage) {
 
                     document.querySelector(
                         "#foldersView .page-header h1"
-                    ).textContent =
-                        selectedPackage;
+                    ).textContent = selectedPackage;
 
                     document.querySelector(
                         "#foldersView .page-header p"
@@ -622,9 +586,7 @@
                 );
 
             }
-
         }
-
         function renderCompletedClients(
             clients
         ) {
@@ -864,11 +826,306 @@
 
         }
 
+        async function searchRepositoryPhotos(searchTerm) {
 
-        /* =========================================================
-           OPEN CUSTOMER FOLDER
-        ========================================================= */
+            const query = searchTerm.trim();
 
+            if (!query) {
+                renderCompletedClients(completedClients);
+                return;
+            }
+
+            customerFoldersContainer.innerHTML = `
+        <div class="customer-folder-empty">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            <div>
+                Searching photos...
+            </div>
+
+            <small>
+                Searching for "${escapeHTML(query)}"
+            </small>
+        </div>
+    `;
+
+            try {
+
+                const packageName =
+                    new URLSearchParams(window.location.search)
+                        .get("package");
+
+                const {
+                    data,
+                    error
+                } = await supabaseClient.rpc(
+                    "search_all_repository_photos",
+                    {
+                        search_term: query,
+                        package_name: null
+                    }
+                );
+
+                if (error) {
+
+                    console.error(
+                        "Global photo search error:",
+                        error
+                    );
+
+                    customerFoldersContainer.innerHTML = `
+                <div class="customer-folder-empty">
+
+                    <i class="fa-solid fa-circle-exclamation"></i>
+
+                    <div>
+                        Could not search photos.
+                    </div>
+
+                    <small>
+                        ${escapeHTML(error.message)}
+                    </small>
+
+                </div>
+            `;
+
+                    return;
+                }
+
+                console.log(
+                    "Global photo search results:",
+                    data
+                );
+
+                renderGlobalSearchResults(
+                    data || [],
+                    query
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Global photo search failed:",
+                    error
+                );
+
+                customerFoldersContainer.innerHTML = `
+            <div class="customer-folder-empty">
+
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <div>
+                    Search failed.
+                </div>
+
+                <small>
+                    ${escapeHTML(error.message)}
+                </small>
+
+            </div>
+        `;
+            }
+        }
+        function renderGlobalSearchResults(photos, searchTerm) {
+
+            customerFoldersContainer.innerHTML = "";
+
+            if (!photos || photos.length === 0) {
+
+                customerFoldersContainer.innerHTML = `
+            <div class="customer-folder-empty">
+
+                <i class="fa-regular fa-images"></i>
+
+                <div>
+                    No photos found.
+                </div>
+
+                <small>
+                    No photos matched
+                    "<strong>${escapeHTML(searchTerm)}</strong>"
+                </small>
+
+            </div>
+        `;
+
+                return;
+            }
+
+            const header =
+                document.createElement("div");
+
+            header.className =
+                "search-results-header";
+
+            header.innerHTML = `
+        <h3>
+            Photos matching
+            "${escapeHTML(searchTerm)}"
+        </h3>
+
+        <span>
+            ${photos.length}
+            photo${photos.length === 1 ? "" : "s"} found
+        </span>
+    `;
+
+            customerFoldersContainer.appendChild(
+                header
+            );
+
+
+            const grid =
+                document.createElement("div");
+
+            grid.className =
+                "photos-grid repository-search-results";
+
+
+            photos.forEach(photo => {
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "photo-card";
+
+
+                const objects =
+                    Array.isArray(photo.detected_objects)
+                        ? photo.detected_objects
+                        : [];
+
+
+                const objectNames = [
+                    ...new Set(
+                        objects
+                            .map(object => {
+
+                                if (
+                                    typeof object === "string"
+                                ) {
+                                    return object;
+                                }
+
+                                return object?.name || "";
+
+                            })
+                            .filter(Boolean)
+                    )
+                ];
+
+
+                card.innerHTML = `
+
+            <div class="photo-image-wrapper">
+
+                <img
+                    src="${escapeHTML(
+                    photo.image_url || ""
+                )}"
+                    alt="${escapeHTML(
+                    photo.original_name ||
+                    "Photo"
+                )}"
+                    loading="lazy"
+                >
+
+            </div>
+
+
+            <div class="photo-info">
+
+                <div class="photo-name">
+
+                    ${escapeHTML(
+                    photo.original_name ||
+                    "Unnamed photo"
+                )}
+
+                </div>
+
+
+                <div class="photo-client">
+
+                    <i class="fa-solid fa-user"></i>
+
+                    ${escapeHTML(
+                    photo.client_name ||
+                    "Unknown client"
+                )}
+
+                </div>
+
+
+                <div class="photo-tags">
+
+                    ${objectNames.length
+
+                        ? objectNames.map(
+                            name => `
+                                <span class="photo-tag">
+                                    ${escapeHTML(name)}
+                                </span>
+                            `
+                        ).join("")
+
+                        : `
+                            <span class="photo-tag">
+                                No objects detected
+                            </span>
+                        `
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+
+                /*
+                 * Clicking the photo opens the
+                 * customer's folder.
+                 */
+
+                card.addEventListener(
+                    "click",
+                    async () => {
+
+                        const client =
+                            completedClients.find(
+                                item =>
+                                    String(item.id) ===
+                                    String(photo.booking_id)
+                            );
+
+                        if (!client) {
+
+                            alert(
+                                "Customer information could not be found."
+                            );
+
+                            return;
+                        }
+
+                        await openCustomerFolder(
+                            client
+                        );
+
+                    }
+                );
+
+
+                grid.appendChild(card);
+
+            });
+
+
+            customerFoldersContainer.appendChild(
+                grid
+            );
+        }
         async function openCustomerFolder(
             client
         ) {
@@ -1744,54 +2001,6 @@
             }
 
         }
-        let photoSearchTimer = null;
-
-        customerPhotoSearchInput.addEventListener(
-            "input",
-            () => {
-
-                if (!selectedRepository) {
-                    return;
-                }
-
-                const query =
-                    customerPhotoSearchInput.value.trim();
-
-                /*
-                 * Show/hide clear button
-                 */
-
-                clearPhotoSearch.style.display =
-                    query
-                        ? "block"
-                        : "none";
-
-
-                /*
-                 * Prevent a database request
-                 * for every single keystroke.
-                 */
-
-                clearTimeout(
-                    photoSearchTimer
-                );
-
-
-                photoSearchTimer =
-                    setTimeout(
-                        async () => {
-
-                            await loadPhotos(
-                                selectedRepository.id,
-                                query
-                            );
-
-                        },
-                        350
-                    );
-
-            }
-        );
 
         clearPhotoSearch.addEventListener(
             "click",
@@ -2094,9 +2303,6 @@
                     }
 
 
-                    /* -----------------------------------------
-                       GET PUBLIC URL
-                    ----------------------------------------- */
 
                     const {
                         data: publicUrlData
@@ -2175,11 +2381,9 @@
 
                     uploaded++;
 
-
                 } catch (error) {
 
                     failed++;
-
 
                     console.error(
                         "Upload failed:",
@@ -2191,11 +2395,9 @@
 
             }
 
-
             await loadPhotos(
                 selectedRepository.id
             );
-
 
             const message =
                 `Upload finished: ${uploaded} uploaded` +
@@ -2204,7 +2406,6 @@
                         ? `, ${failed} failed.`
                         : "."
                 );
-
 
             showUploadStatus(
                 message,
@@ -2309,79 +2510,37 @@
                     photosView.style.display !==
                     "none"
                 ) {
-
                     return;
                 }
-
 
                 const keyword =
-                    event.target.value
-                        .trim()
-                        .toLowerCase();
+                    event.target.value.trim();
 
+                clearTimeout(searchTimeout);
 
-                if (!keyword) {
+                searchTimeout =
+                    setTimeout(
+                        async () => {
 
-                    renderCompletedClients(
-                        completedClients
-                    );
+                            if (!keyword) {
 
-                    return;
-                }
+                                renderCompletedClients(
+                                    completedClients
+                                );
 
+                                return;
+                            }
 
-                const filtered =
-                    completedClients.filter(
-                        client => {
-
-                            const name =
-                                (
-                                    client.full_name ||
-                                    client.name ||
-                                    client.client_name ||
-                                    ""
-                                ).toLowerCase();
-
-
-                            const id =
-                                (
-                                    client.id ||
-                                    ""
-                                ).toLowerCase();
-
-
-                            const email =
-                                (
-                                    client.email ||
-                                    ""
-                                ).toLowerCase();
-
-
-                            const sessionType =
-                                (
-                                    client.session_type ||
-                                    ""
-                                ).toLowerCase();
-
-
-                            return (
-                                name.includes(keyword) ||
-                                id.includes(keyword) ||
-                                email.includes(keyword) ||
-                                sessionType.includes(keyword)
+                            await searchRepositoryPhotos(
+                                keyword
                             );
 
-                        }
+                        },
+                        300
                     );
-
-
-                renderCompletedClients(
-                    filtered
-                );
 
             }
         );
-
         function showUploadStatus(
             message,
             isError
