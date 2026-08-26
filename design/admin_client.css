@@ -770,7 +770,87 @@ span.notification-badge,
     cursor: pointer;
     transition: 0.2s ease;
 }
+/* =========================================================
+   CLIENT TABLE - AUTO SIZE BASED ON CONTENT
+========================================================= */
 
+.ui-table-card-panel {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.ui-data-grid {
+    width: max-content;
+    min-width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+}
+
+/* Let columns size according to their content */
+.ui-data-grid th,
+.ui-data-grid td {
+    width: auto;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Header */
+.ui-data-grid th {
+    white-space: nowrap;
+}
+
+/* Normal table text */
+.ui-data-grid td {
+    white-space: nowrap;
+}
+
+/* Long notes should have a reasonable maximum */
+.ui-data-grid td:nth-child(12) {
+    white-space: normal;
+    min-width: 150px;
+    max-width: 350px;
+    overflow-wrap: break-word;
+}
+
+/* Email can be long, but don't let it destroy the table */
+.ui-data-grid td:nth-child(4) {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Contact number */
+.ui-data-grid td:nth-child(3) {
+    min-width: 130px;
+}
+
+/* Buttons should stay on one line */
+.ui-data-grid button {
+    white-space: nowrap;
+}
+
+/* Keep action buttons together */
+.ui-data-grid td:last-child {
+    white-space: nowrap;
+}
+
+/* Status badges */
+.ui-data-grid .status-badge {
+    white-space: nowrap;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+    .ui-table-card-panel {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ui-data-grid {
+        min-width: max-content;
+    }
+}
 .verify-access-btn {
     background: #669f8d;
     color: #fff;

@@ -731,32 +731,44 @@
 
                     const clientLink =
                         getClientRepositoryLink(repository);
-                    const approvedAt =
-                        new Date();
+                    const approvedAt = new Date();
 
-                    const expiresAt =
-                        new Date(
-                            approvedAt.getTime() +
-                            (2 * 24 * 60 * 60 * 1000)
-                        );
+                    /*
+                     * Gallery access remains valid for 7 days.
+                     */
+                    const expiresAt = new Date(
+                        approvedAt.getTime() +
+                        (7 * 24 * 60 * 60 * 1000)
+                    );
 
+                    /*
+                     * Access request is archived after 2 days.
+                     */
+                    const archiveAt = new Date(
+                        approvedAt.getTime() +
+                        (2 * 24 * 60 * 60 * 1000)
+                    );
                     const {
                         error: updateError
                     } = await supabaseClient
                         .from("gallery_access_requests")
                         .update({
 
-                            status:
-                                "approved",
+                            status: "approved",
 
-                            repository_id:
-                                repository.id,
+                            repository_id: repository.id,
 
-                            approved_at:
-                                approvedAt.toISOString(),
+                            approved_at: approvedAt.toISOString(),
 
-                            expires_at:
-                                expiresAt.toISOString(),
+                            access_started_at: approvedAt.toISOString(),
+
+                            access_expires_at: expiresAt.toISOString(),
+
+                            expires_at: expiresAt.toISOString(),
+
+                            archive_at: archiveAt.toISOString(),
+
+                            is_expired: false,
 
                             approved_by:
                                 (await supabaseClient.auth.getUser())
@@ -764,7 +776,6 @@
 
                         })
                         .eq("id", requestId);
-
                     if (updateError) {
                         console.error("Access request update error:", updateError);
                         throw updateError;
@@ -976,24 +987,6 @@
             tbody.innerHTML = "";
 
             /* =========================================================
-               SORT BOOKINGS
-            ========================================================= */
-
-            const sortedBookings = [...allBookedSessions].sort((a, b) => {
-
-                const dateA = new Date(
-                    `${a.booking_date || "9999-12-31"}T${a.booking_time || "23:59"}`
-                );
-
-                const dateB = new Date(
-                    `${b.booking_date || "9999-12-31"}T${b.booking_time || "23:59"}`
-                );
-
-                return dateA - dateB;
-            });
-
-
-            /* =========================================================
                SEARCH
             ========================================================= */
 
@@ -1007,67 +1000,138 @@
 
 
             /* =========================================================
-               FILTER
+               SORT BOOKINGS
+               
+               RULE:
+               1. Pending bookings first
+               2. Other non-confirmed bookings next
+               3. Confirmed bookings LAST
+               
+               Within each group:
+               oldest booking first
+               ========================================================= */
+
+            const sortedBookings = [...allBookedSessions].sort((a, b) => {
+
+                const statusA =
+                    String(a.status || "").toLowerCase();
+
+                const statusB =
+                    String(b.status || "").toLowerCase();
+
+
+                /*
+                 * Pending/new bookings get priority.
+                 */
+
+                const priorityA =
+                    statusA === "pending" ? 0 :
+                        statusA === "confirmed" ? 2 :
+                            1;
+
+                const priorityB =
+                    statusB === "pending" ? 0 :
+                        statusB === "confirmed" ? 2 :
+                            1;
+
+
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
+                }
+
+
+                /*
+                 * Same priority:
+                 * oldest booking first.
+                 */
+
+                const dateA = new Date(
+                    a.created_at ||
+                    `${a.booking_date || "9999-12-31"}T${a.booking_time || "23:59"}`
+                );
+
+                const dateB = new Date(
+                    b.created_at ||
+                    `${b.booking_date || "9999-12-31"}T${b.booking_time || "23:59"}`
+                );
+
+                return dateA - dateB;
+            });
+
+
+            /* =========================================================
+               SEARCH + MONTH FILTER
             ========================================================= */
 
-            const filteredBookings = sortedBookings.filter(booking => {
+            const filteredBookings =
+                sortedBookings.filter(booking => {
 
-                /* SEARCH FILTER */
+                    /* ---------------------------------------------
+                       SEARCH
+                    --------------------------------------------- */
 
-                if (searchTerm) {
+                    if (searchTerm) {
 
-                    const searchableText = [
-                        booking.full_name,
-                        booking.contact_number,
-                        booking.email,
-                        booking.booking_date,
-                        booking.booking_time,
-                        booking.session_type,
-                        booking.payment_method,
-                        booking.payment_status,
-                        booking.status,
-                        booking.notes
-                    ]
-                        .filter(value =>
-                            value !== null &&
-                            value !== undefined
-                        )
-                        .join(" ")
-                        .toLowerCase();
+                        const searchableText = [
 
-                    if (!searchableText.includes(searchTerm)) {
-                        return false;
+                            booking.full_name,
+                            booking.contact_number,
+                            booking.email,
+                            booking.booking_date,
+                            booking.booking_time,
+                            booking.session_type,
+                            booking.payment_method,
+                            booking.payment_status,
+                            booking.status,
+                            booking.notes
+
+                        ]
+                            .filter(value =>
+                                value !== null &&
+                                value !== undefined
+                            )
+                            .join(" ")
+                            .toLowerCase();
+
+                        if (!searchableText.includes(searchTerm)) {
+                            return false;
+                        }
                     }
-                }
 
 
-                /* MONTH FILTER */
+                    /* ---------------------------------------------
+                       MONTH FILTER
+                    --------------------------------------------- */
 
-                if (
-                    selectedMonth !== "all" &&
-                    booking.booking_date
-                ) {
+                    if (selectedMonth !== "all") {
 
-                    const bookingDate =
-                        new Date(
-                            booking.booking_date +
-                            "T00:00:00"
-                        );
+                        if (!booking.booking_date) {
+                            return false;
+                        }
 
-                    const bookingMonth =
-                        bookingDate.getMonth() + 1;
+                        /*
+                         * Get month directly from YYYY-MM-DD.
+                         * This avoids timezone problems.
+                         */
 
-                    if (
-                        bookingMonth !==
-                        Number(selectedMonth)
-                    ) {
-                        return false;
+                        const month =
+                            Number(
+                                String(
+                                    booking.booking_date
+                                ).substring(5, 7)
+                            );
+
+                        if (
+                            month !==
+                            Number(selectedMonth)
+                        ) {
+                            return false;
+                        }
                     }
-                }
 
 
-                return true;
-            });
+                    return true;
+                });
 
 
             /* =========================================================
@@ -1107,7 +1171,9 @@
                     ).toLowerCase();
 
 
-                /* ACTION BUTTON */
+                /* ---------------------------------------------
+                   ACTION BUTTON
+                --------------------------------------------- */
 
                 let actionHTML = "-";
 
@@ -1143,7 +1209,9 @@
                 }
 
 
-                /* PAYMENT PROOF */
+                /* ---------------------------------------------
+                   PAYMENT PROOF
+                --------------------------------------------- */
 
                 const proofURL =
                     booking.payment_proof ||
@@ -1169,7 +1237,9 @@
             `;
 
 
-                /* PAYMENT AMOUNT */
+                /* ---------------------------------------------
+                   PAYMENT AMOUNT
+                --------------------------------------------- */
 
                 const paymentAmount =
                     booking.downpayment_amount !== null &&
@@ -1546,8 +1616,22 @@
                         .select("*")
                         .eq("id", bookingId)
                         .single();
-
                     if (bookingError) {
+                        console.error("BOOKING FETCH ERROR:", {
+                            message: bookingError.message,
+                            details: bookingError.details,
+                            hint: bookingError.hint,
+                            code: bookingError.code
+                        });
+
+                        alert(
+                            "BOOKING FETCH ERROR\n\n" +
+                            "Code: " + (bookingError.code || "-") + "\n" +
+                            "Message: " + (bookingError.message || "-") + "\n\n" +
+                            "Details: " + (bookingError.details || "-") + "\n" +
+                            "Hint: " + (bookingError.hint || "-")
+                        );
+
                         throw bookingError;
                     }
 
@@ -1846,7 +1930,8 @@
                         await supabaseClient
                             .from("bookings")
                             .update({
-                                status: "Completed"
+                                status: "Completed",
+                                is_archived: true
                             })
                             .eq("id", bookingId);
 
@@ -1938,9 +2023,6 @@
                 }
             );
         }
-        /* =========================================================
-           TABS
-        ========================================================= */
 
         const tableHeader =
             document.getElementById(
@@ -1956,9 +2038,74 @@
             document.getElementById(
                 "addNewClientBtn"
             );
+        async function autoArchiveAccessRequests() {
+
+            console.log("Checking access requests for archive...");
+
+            const now = new Date().toISOString();
+
+            const { data: requests, error } =
+                await supabaseClient
+                    .from("gallery_access_requests")
+                    .select("id, status, archive_at")
+                    .eq("status", "approved")
+                    .not("archive_at", "is", null)
+                    .lte("archive_at", now);
+
+            if (error) {
+
+                console.error(
+                    "Error checking archive requests:",
+                    error
+                );
+
+                return;
+            }
+
+            if (!requests || requests.length === 0) {
+
+                console.log(
+                    "No access requests need to be archived."
+                );
+
+                return;
+            }
+
+            for (const request of requests) {
+
+                const { error: updateError } =
+                    await supabaseClient
+                        .from("gallery_access_requests")
+                        .update({
+                            status: "expired"
+                        })
+                        .eq("id", request.id)
+                        .eq("status", "approved");
+
+                if (updateError) {
+
+                    console.error(
+                        "Failed to archive request:",
+                        request.id,
+                        updateError
+                    );
+
+                } else {
+
+                    console.log(
+                        "Access request archived:",
+                        request.id
+                    );
+                }
+            }
+        }
         async function loadAccessRequests() {
 
             console.log("Loading access requests...");
+
+
+            await autoArchiveAccessRequests();
+
 
             const {
                 data: requests,
@@ -1966,8 +2113,9 @@
             } = await supabaseClient
                 .from("gallery_access_requests")
                 .select("*")
+                .neq("status", "expired")
                 .order("requested_at", {
-                    ascending: false
+                    ascending: true
                 });
 
             if (error) {
@@ -2022,11 +2170,7 @@
                 }
             }
 
-            /*
-             * Attach the correct booking information
-             * to each access request.
-             */
-            allAccessRequests = (requests || []).map(request => {
+            const rawRequests = (requests || []).map(request => {
 
                 const booking = bookings.find(
                     item =>
@@ -2040,6 +2184,37 @@
                 };
             });
 
+
+
+
+            const requestCounter = {};
+
+
+            allAccessRequests = rawRequests.map(request => {
+
+                const booking =
+                    request.booking || {};
+
+                const customerKey =
+                    request.customer_id ||
+                    request.customer_email ||
+                    booking.email ||
+                    request.booking_id ||
+                    request.id;
+
+                if (!requestCounter[customerKey]) {
+                    requestCounter[customerKey] = 0;
+                }
+
+                requestCounter[customerKey]++;
+
+                return {
+                    ...request,
+
+                    request_number:
+                        requestCounter[customerKey]
+                };
+            });
             console.log(
                 "Access requests loaded:",
                 allAccessRequests
@@ -2189,6 +2364,15 @@
                             )
                             : "-";
 
+                    const requestNumber =
+                        Number(request.request_number || 1);
+
+                    const requestLabel =
+                        requestNumber === 1
+                            ? "1st Request"
+                            : requestNumber === 2
+                                ? "2nd Request"
+                                : `${requestNumber}th Request`;
                     const approvedAt =
                         request.approved_at
                             ? new Date(
@@ -2318,7 +2502,21 @@
                     <td>
                         ${escapeHtml(customerEmail)}
                     </td>
-
+<td>
+        <span
+            style="
+                display:inline-block;
+                padding:6px 10px;
+                border-radius:6px;
+                background:#eef5f2;
+                color:#4f806f;
+                font-size:12px;
+                font-weight:600;
+            "
+        >
+            ${escapeHtml(requestLabel)}
+        </span>
+    </td>
                     <td>
                         ${escapeHtml(bookingId)}
                     </td>
@@ -2405,6 +2603,7 @@
     <tr>
         <th>#</th>
         <th>Customer Name</th>
+        <th> Request # </th>
 
         <th>Email Address</th>
 
@@ -2744,36 +2943,18 @@
         }
 
 
-        /* =========================================================
-           REALTIME NOTIFICATIONS
-        ========================================================= */
-
         supabaseClient
-            .channel(
-                "admin_notifications"
-            )
+            .channel("admin_notifications")
             .on(
                 "postgres_changes",
                 {
-                    event:
-                        "INSERT",
-
-                    schema:
-                        "public",
-
-                    table:
-                        "notifications"
+                    event: "INSERT",
+                    schema: "public",
+                    table: "notifications",
+                    filter: "recipient=eq.admin"
                 },
                 payload => {
-
-                    if (
-                        payload.new
-                            .recipient ===
-                        "admin"
-                    ) {
-
-                        loadAdminNotifications();
-                    }
+                    loadAdminNotifications();
                 }
             )
             .subscribe();

@@ -25,7 +25,7 @@
         </div>
 
         <div class="navbar-right">
-            
+
             <div class="user-profile">
                 <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
                 <span id="userName">Loading...</span>
@@ -86,17 +86,25 @@
                 <button type="button" class="archive-tab-btn active" data-filter="all">All Archives</button>
                 <button type="button" class="archive-tab-btn" data-filter="customer">All Customers</button>
                 <button type="button" class="archive-tab-btn" data-filter="folder">All Folders</button>
-                <button type="button" class="archive-tab-btn" data-filter="photo">All Photos</button>
             </div>
 
             <div class="archive-controls-row">
+
                 <div class="archive-search-wrapper">
-                    <input type="text" id="archiveSearchInput" placeholder="Search" autocomplete="off">
+                    <input type="text" id="archiveSearchInput"
+                        placeholder="Search archived customers, folders, or photos..." autocomplete="off">
 
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                 </div>
 
+                <div class="archive-package-filter">
+                    <select id="packageFilter">
+                        <option value="all">All Packages</option>
+                    </select>
+                </div>
+
             </div>
+            <Fieldset></Fieldset>
 
             <div class="archive-table-card">
                 <table class="archive-table">
@@ -147,207 +155,341 @@
 
         // Function to render the table data dynamically based on active filter button
         function renderArchiveTable() {
-            const tbody = document.getElementById("archiveTableBody");
+
+            const tbody =
+                document.getElementById("archiveTableBody");
+
             tbody.innerHTML = "";
 
-            const searchInput = document.getElementById("archiveSearchInput");
-            const packageFilter = document.getElementById("packageFilter");
+            const searchInput =
+                document.getElementById("archiveSearchInput");
 
-            const searchTerm = searchInput
-                ? searchInput.value.trim().toLowerCase()
-                : "";
+            const packageFilter =
+                document.getElementById("packageFilter");
 
-            const selectedPackage = packageFilter
-                ? packageFilter.value.toLowerCase()
-                : "all";
+            const searchTerm =
+                searchInput
+                    ? searchInput.value.trim().toLowerCase()
+                    : "";
 
-            const filteredItems = archiveItems.filter(item => {
+            const selectedPackage =
+                packageFilter
+                    ? packageFilter.value.toLowerCase()
+                    : "all";
 
-                // -----------------------------------------
-                // 1. ARCHIVE CATEGORY FILTER
-                // -----------------------------------------
-                if (currentFilter !== "all" && item.category !== currentFilter) {
-                    return false;
-                }
 
-                // -----------------------------------------
-                // 2. PACKAGE / SESSION TYPE FILTER
-                // -----------------------------------------
-                if (
-                    selectedPackage !== "all" &&
-                    item.sessionType.toLowerCase() !== selectedPackage
-                ) {
-                    return false;
-                }
+            const filteredItems =
+                archiveItems.filter(item => {
 
-                // -----------------------------------------
-                // 3. SEARCH FILTER
-                // -----------------------------------------
-                if (searchTerm) {
+                    /*
+                     ============================================
+                     1. CATEGORY FILTER
+                     ============================================
+                     */
 
-                    const searchableText = [
-                        item.title,
-                        item.subtext,
-                        item.email,
-                        item.sessionType,
-                        item.bookingDate,
-                        item.archivedDate,
-                        item.date,
-                        item.time
-                    ]
-                        .filter(Boolean)
-                        .join(" ")
-                        .toLowerCase();
-
-                    if (!searchableText.includes(searchTerm)) {
+                    if (
+                        currentFilter !== "all" &&
+                        item.category !== currentFilter
+                    ) {
                         return false;
                     }
-                }
 
-                return true;
-            });
 
-            // -----------------------------------------
-            // NO RESULTS
-            // -----------------------------------------
+                    /*
+                     ============================================
+                     2. PACKAGE FILTER
+                     ============================================
+                     */
+
+                    if (
+                        selectedPackage !== "all" &&
+                        String(item.sessionType || "")
+                            .trim()
+                            .toLowerCase() !== selectedPackage
+                    ) {
+                        return false;
+                    }
+
+
+                    /*
+                     ============================================
+                     3. SEARCH FILTER
+                     ============================================
+                     */
+
+                    if (searchTerm) {
+
+                        const searchableText = [
+
+                            item.title,
+                            item.subtext,
+                            item.email,
+                            item.sessionType,
+                            item.bookingDate,
+                            item.archivedDate,
+                            item.date,
+                            item.time,
+                            item.bookingId,
+                            item.repositoryId
+
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
+                            .toLowerCase();
+
+
+                        if (
+                            !searchableText.includes(searchTerm)
+                        ) {
+                            return false;
+                        }
+
+                    }
+
+
+                    return true;
+
+                });
+
+
+            /*
+             ============================================
+             NO RESULTS
+             ============================================
+             */
+
             if (filteredItems.length === 0) {
+
                 tbody.innerHTML = `
             <tr>
-                <td colspan="4" style="
-                    text-align: center;
-                    color: #888888;
-                    padding: 30px;
-                ">
+                <td colspan="4"
+                    style="
+                        text-align:center;
+                        color:#888;
+                        padding:40px;
+                    ">
+
+                    <i
+                        class="fa-regular fa-folder-open"
+                        style="
+                            font-size:28px;
+                            margin-bottom:10px;
+                            display:block;
+                        "
+                    ></i>
+
                     No archived items found.
+
                 </td>
             </tr>
         `;
+
                 return;
             }
 
-            // -----------------------------------------
-            // DISPLAY RESULTS
-            // -----------------------------------------
+
+            /*
+             ============================================
+             DISPLAY ITEMS
+             ============================================
+             */
+
             filteredItems.forEach(item => {
 
-                const tr = document.createElement("tr");
+                const tr =
+                    document.createElement("tr");
+
+
+                let typeLabel = "Booking";
+
+                if (item.category === "customer") {
+                    typeLabel = "Customer";
+                }
+
+                if (item.category === "folder") {
+                    typeLabel = "Folder";
+                }
+
+                if (item.category === "photo") {
+                    typeLabel = "Photo";
+                }
+
 
                 tr.innerHTML = `
+
             <td>
+
                 <div class="item-meta-cell">
-                    <h4>${escapeHtml(item.title)}</h4>
-                    <p>${escapeHtml(item.subtext)}</p>
+
+                    <h4>
+                        ${escapeHtml(item.title)}
+                    </h4>
+
+                    <p>
+                        ${escapeHtml(item.subtext || "")}
+                    </p>
+
                 </div>
+
             </td>
 
-          <td>
-    <span class="badge booking-type">
-        ${item.category === "customer"
-                        ? "Customer"
-                        : item.category === "folder"
-                            ? "Folder"
-                            : item.category === "photo"
-                                ? "Photo"
-                                : "Booking"
-                    }
-    </span>
-</td>
+
             <td>
-                <div class="timestamp-cell">
-                    ${escapeHtml(item.date)}
-                    <span>${escapeHtml(item.time)}</span>
-                </div>
+
+                <span class="badge booking-type">
+
+                    ${typeLabel}
+
+                </span>
+
             </td>
+
+
+            <td>
+
+                <div class="timestamp-cell">
+
+                    ${escapeHtml(item.date)}
+
+                    <span>
+                        ${escapeHtml(item.time)}
+                    </span>
+
+                </div>
+
+            </td>
+
 
             <td class="actions-cell">
-                <select 
-                    class="archive-actions-select" 
-                    data-id="${item.id}"
+
+                <select
+                    class="archive-actions-select"
+                    data-id="${escapeHtml(item.id)}"
                 >
-                    <option selected disabled>Select Action</option>
-                    <option value="restore">Restore</option>
-                    <option value="delete">Delete Permanently</option>
+
+                    <option value="" selected disabled>
+                        Select Action
+                    </option>
+
+                    <option value="restore">
+                        Restore
+                    </option>
+
+                    <option value="delete">
+                        Delete Permanently
+                    </option>
+
                 </select>
+
             </td>
+
         `;
+
 
                 tbody.appendChild(tr);
 
-                tr.querySelector(".archive-actions-select")
-                    .addEventListener("change", async function () {
+
+                const select =
+                    tr.querySelector(
+                        ".archive-actions-select"
+                    );
+
+
+                select.addEventListener(
+                    "change",
+                    async function () {
 
                         const action =
                             this.value;
 
+
                         try {
 
                             /*
-                             =====================================================
+                             ====================================
                              RESTORE
-                             =====================================================
-                            */
+                             ====================================
+                             */
 
-                            if (action === "restore") {
-
-                                if (
-                                    !confirm(
-                                        `Restore "${item.title}"?`
-                                    )
-                                ) {
-
-                                    this.value = "";
-                                    return;
-
-                                }
-
-                                await restoreArchiveItem(item);
-
-                                archiveItems =
-                                    archiveItems.filter(
-                                        archivedItem =>
-                                            !(
-                                                archivedItem.id === item.id &&
-                                                archivedItem.category === item.category
-                                            )
-                                    );
-
-                                renderArchiveTable();
-
-                                return;
-                            }
-
-
-                            /*
-                             =====================================================
-                             PERMANENT DELETE
-                             =====================================================
-                            */
-
-                            if (action === "delete") {
+                            if (
+                                action === "restore"
+                            ) {
 
                                 const confirmed =
                                     confirm(
-                                        `PERMANENTLY DELETE "${item.title}"?\n\n` +
-                                        `This action cannot be undone.`
+                                        `Restore "${item.title}"?`
                                     );
+
 
                                 if (!confirmed) {
 
                                     this.value = "";
+
                                     return;
 
                                 }
 
-                                await permanentlyDeleteArchiveItem(item);
+
+                                await restoreArchiveItem(
+                                    item
+                                );
+
 
                                 archiveItems =
                                     archiveItems.filter(
                                         archivedItem =>
                                             !(
-                                                archivedItem.id === item.id &&
-                                                archivedItem.category === item.category
+                                                archivedItem.id ===
+                                                item.id
+                                                &&
+                                                archivedItem.category ===
+                                                item.category
                                             )
                                     );
+
+
+                                populatePackageFilter();
+
+                                renderArchiveTable();
+
+                                return;
+
+                            }
+
+
+                            /*
+                             ====================================
+                             PERMANENT DELETE
+                             ====================================
+                             */
+
+                            if (
+                                action === "delete"
+                            ) {
+
+                                const confirmed =
+                                    confirm(
+                                        `PERMANENTLY DELETE "${item.title}"?\n\n` +
+                                        `This will permanently remove the archived ${item.category}.\n\n` +
+                                        `This action cannot be undone.`
+                                    );
+
+
+                                if (!confirmed) {
+
+                                    this.value = "";
+
+                                    return;
+
+                                }
+
+
+                                await permanentlyDeleteArchiveItem(item);
+
+                                // Reload the actual database state
+                                await loadArchivedItems();
+
+                                populatePackageFilter();
 
                                 renderArchiveTable();
 
@@ -360,17 +502,22 @@
                                 error
                             );
 
+
                             alert(
                                 "Action failed:\n\n" +
                                 error.message
                             );
 
+
                             this.value = "";
 
                         }
 
-                    });
+                    }
+                );
+
             });
+
         }
 
         // Initialize display on load
@@ -427,6 +574,11 @@
 
                 await loadArchivedItems();
 
+                populatePackageFilter();
+
+                initializeArchiveTabs();
+
+                renderArchiveTable();
             } catch (err) {
 
                 console.error(
@@ -519,20 +671,26 @@
         }
         async function permanentlyDeleteArchiveItem(item) {
 
+            console.log("PERMANENT DELETE STARTED:", item);
+
             /*
              ============================================================
-             DELETE PHOTO
+             PHOTO
              ============================================================
             */
 
             if (item.category === "photo") {
 
-                /*
-                 * First remove the actual image
-                 * from Supabase Storage.
-                 */
+                // --------------------------------------------
+                // 1. Delete physical image from Storage
+                // --------------------------------------------
 
                 if (item.storagePath) {
+
+                    console.log(
+                        "Deleting storage file:",
+                        item.storagePath
+                    );
 
                     const {
                         error: storageError
@@ -544,32 +702,57 @@
                         ]);
 
                     if (storageError) {
-
-                        console.error(
-                            "Storage deletion error:",
-                            storageError
+                        throw new Error(
+                            "Storage deletion failed: " +
+                            storageError.message
                         );
-
-                        throw storageError;
                     }
-
                 }
 
 
-                /*
-                 * Then delete database record.
-                 */
+                // --------------------------------------------
+                // 2. Delete photo database record
+                // --------------------------------------------
 
                 const {
-                    error
+                    error: photoDeleteError
                 } = await supabaseClient
                     .from("repository_photos")
                     .delete()
                     .eq("id", item.id);
 
-                if (error) {
-                    throw error;
+                if (photoDeleteError) {
+                    throw photoDeleteError;
                 }
+
+
+                // --------------------------------------------
+                // 3. VERIFY deletion
+                // --------------------------------------------
+
+                const {
+                    data: remainingPhoto,
+                    error: verifyError
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .select("id")
+                    .eq("id", item.id)
+                    .maybeSingle();
+
+                if (verifyError) {
+                    throw verifyError;
+                }
+
+                if (remainingPhoto) {
+                    throw new Error(
+                        "Photo was not permanently deleted from the database."
+                    );
+                }
+
+
+                console.log(
+                    "Photo permanently deleted."
+                );
 
                 return;
             }
@@ -577,15 +760,15 @@
 
             /*
              ============================================================
-             DELETE FOLDER
+             FOLDER
              ============================================================
             */
 
             if (item.category === "folder") {
 
-                /*
-                 * Find all photos inside this folder.
-                 */
+                // --------------------------------------------
+                // 1. Get photos in folder
+                // --------------------------------------------
 
                 const {
                     data: photos,
@@ -600,14 +783,15 @@
                 }
 
 
-                /*
-                 * Delete physical files from Storage.
-                 */
+                // --------------------------------------------
+                // 2. Delete physical files
+                // --------------------------------------------
 
                 const storagePaths =
                     (photos || [])
                         .map(photo => photo.storage_path)
                         .filter(Boolean);
+
 
                 if (storagePaths.length > 0) {
 
@@ -621,13 +805,12 @@
                     if (storageError) {
                         throw storageError;
                     }
-
                 }
 
 
-                /*
-                 * Delete photo database records.
-                 */
+                // --------------------------------------------
+                // 3. Delete photo records
+                // --------------------------------------------
 
                 const {
                     error: photoDeleteError
@@ -641,9 +824,9 @@
                 }
 
 
-                /*
-                 * Delete repository folder.
-                 */
+                // --------------------------------------------
+                // 4. Delete folder
+                // --------------------------------------------
 
                 const {
                     error: folderDeleteError
@@ -656,43 +839,72 @@
                     throw folderDeleteError;
                 }
 
+
+                // --------------------------------------------
+                // 5. Verify folder is gone
+                // --------------------------------------------
+
+                const {
+                    data: remainingFolder,
+                    error: verifyFolderError
+                } = await supabaseClient
+                    .from("repository_client_links")
+                    .select("id")
+                    .eq("id", item.id)
+                    .maybeSingle();
+
+                if (verifyFolderError) {
+                    throw verifyFolderError;
+                }
+
+                if (remainingFolder) {
+                    throw new Error(
+                        "Folder was not permanently deleted."
+                    );
+                }
+
+
+                console.log(
+                    "Folder permanently deleted."
+                );
+
                 return;
             }
 
 
             /*
              ============================================================
-             DELETE CUSTOMER
+             CUSTOMER
              ============================================================
             */
 
             if (item.category === "customer") {
 
-                /*
-                 * Find customer's repository.
-                 */
+                // --------------------------------------------
+                // 1. Get all customer folders
+                // --------------------------------------------
 
                 const {
-                    data: repository,
-                    error: repositoryError
+                    data: folders,
+                    error: folderFetchError
                 } = await supabaseClient
                     .from("repository_client_links")
                     .select("id")
                     .eq("booking_id", item.id);
 
-                if (repositoryError) {
-                    throw repositoryError;
+                if (folderFetchError) {
+                    throw folderFetchError;
                 }
 
 
-                /*
-                 * Delete all customer repositories
-                 * and their photos.
-                 */
+                // --------------------------------------------
+                // 2. Get all photos
+                // --------------------------------------------
 
-                for (
-                    const folder of (repository || [])
-                ) {
+                let allStoragePaths = [];
+
+
+                for (const folder of (folders || [])) {
 
                     const {
                         data: photos,
@@ -700,139 +912,306 @@
                     } = await supabaseClient
                         .from("repository_photos")
                         .select("id, storage_path")
-                        .eq(
-                            "repository_id",
-                            folder.id
-                        );
+                        .eq("repository_id", folder.id);
 
                     if (photoFetchError) {
                         throw photoFetchError;
                     }
 
 
-                    const storagePaths =
+                    const paths =
                         (photos || [])
-                            .map(
-                                photo =>
-                                    photo.storage_path
-                            )
+                            .map(photo => photo.storage_path)
                             .filter(Boolean);
 
-
-                    /*
-                     * Delete actual images.
-                     */
-
-                    if (
-                        storagePaths.length > 0
-                    ) {
-
-                        const {
-                            error: storageError
-                        } = await supabaseClient
-                            .storage
-                            .from("client-photos")
-                            .remove(
-                                storagePaths
-                            );
-
-                        if (storageError) {
-                            throw storageError;
-                        }
-
-                    }
+                    allStoragePaths.push(...paths);
+                }
 
 
-                    /*
-                     * Delete photo records.
-                     */
+                // --------------------------------------------
+                // 3. Delete physical images
+                // --------------------------------------------
+
+                if (allStoragePaths.length > 0) {
+
+                    console.log(
+                        "Deleting customer storage files:",
+                        allStoragePaths
+                    );
 
                     const {
-                        error: photoDeleteError
+                        error: storageError
                     } = await supabaseClient
-                        .from("repository_photos")
-                        .delete()
-                        .eq(
-                            "repository_id",
-                            folder.id
-                        );
+                        .storage
+                        .from("client-photos")
+                        .remove(allStoragePaths);
 
-                    if (photoDeleteError) {
-                        throw photoDeleteError;
+                    if (storageError) {
+                        throw storageError;
                     }
-
                 }
 
 
-                /*
-                 * Delete repository folders.
-                 */
+                // --------------------------------------------
+                // 4. Delete customer database records
+                // --------------------------------------------
 
                 const {
-                    error: folderDeleteError
+                    data: deleteResult,
+                    error: rpcError
                 } = await supabaseClient
-                    .from("repository_client_links")
-                    .delete()
-                    .eq(
-                        "booking_id",
-                        item.id
+                    .rpc(
+                        "permanently_delete_customer",
+                        {
+                            p_booking_id: item.id
+                        }
                     );
 
-                if (folderDeleteError) {
-                    throw folderDeleteError;
+                if (rpcError) {
+                    throw rpcError;
                 }
 
 
-                /*
-                 * Finally delete the booking/client.
-                 */
+                console.log(
+                    "Permanent customer deletion result:",
+                    deleteResult
+                );
+
+
+                // --------------------------------------------
+                // 5. FINAL VERIFICATION
+                // --------------------------------------------
 
                 const {
-                    error: bookingDeleteError
+                    data: remainingBooking,
+                    error: verifyBookingError
                 } = await supabaseClient
                     .from("bookings")
-                    .delete()
-                    .eq(
-                        "id",
-                        item.id
-                    );
+                    .select("id")
+                    .eq("id", item.id)
+                    .maybeSingle();
 
-                if (bookingDeleteError) {
-                    throw bookingDeleteError;
+                if (verifyBookingError) {
+                    throw verifyBookingError;
                 }
+
+
+                if (remainingBooking) {
+
+                    throw new Error(
+                        "Customer still exists in the bookings table."
+                    );
+                }
+
+
+                console.log(
+                    "CUSTOMER PERMANENTLY DELETED:",
+                    item.id
+                );
 
                 return;
             }
 
+
+            throw new Error(
+                "Unknown archive category: " +
+                item.category
+            );
         }
         async function archiveCompletedBookings() {
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = new Date()
+                .toISOString()
+                .split("T")[0];
+
+            console.log("Checking for records ready to archive...");
 
             /*
-             * IMPORTANT:
-             * We only automatically archive outdated bookings here.
-             *
-             * Completed bookings should be archived when their status
-             * is changed to Completed, otherwise restoring a completed
-             * booking would immediately archive it again.
-             */
+             ============================================================
+             1. FIND COMPLETED BOOKINGS THAT ARE READY TO BE ARCHIVED
+             ============================================================
+             
+             Conditions:
+             - status = Completed
+             - booking_date is before today
+             - is_archived = false
+            */
 
-            const { error } = await supabaseClient
+            const {
+                data: bookings,
+                error: bookingFetchError
+            } = await supabaseClient
                 .from("bookings")
-                .update({
-                    is_archived: true,
-                    archived_at: new Date().toISOString()
-                })
-                .lt("booking_date", today)
-                .eq("is_archived", false);
+                .select("id, full_name, booking_date, status, is_archived")
+                .eq("status", "Completed")
+                .eq("is_archived", false)
+                .lt("booking_date", today);
 
-            if (error) {
+            if (bookingFetchError) {
+
                 console.error(
-                    "Error archiving outdated bookings:",
-                    error
+                    "Error finding bookings ready for archive:",
+                    bookingFetchError
                 );
+
+                throw bookingFetchError;
             }
+
+            if (!bookings || bookings.length === 0) {
+
+                console.log(
+                    "No completed bookings are ready to be archived."
+                );
+
+                return;
+            }
+
+
+            console.log(
+                `${bookings.length} booking(s) ready to be archived.`
+            );
+
+
+            /*
+             ============================================================
+             2. ARCHIVE EACH CUSTOMER
+             ============================================================
+            */
+
+            for (const booking of bookings) {
+
+                const archiveTime =
+                    new Date().toISOString();
+
+
+                console.log(
+                    `Archiving customer: ${booking.full_name}`
+                );
+
+
+                /*
+                 ========================================================
+                 2A. FIND ALL FOLDERS FOR THIS CUSTOMER
+                 ========================================================
+                */
+
+                const {
+                    data: folders,
+                    error: folderFetchError
+                } = await supabaseClient
+                    .from("repository_client_links")
+                    .select("id, booking_id, is_archived")
+                    .eq("booking_id", booking.id);
+
+                if (folderFetchError) {
+
+                    console.error(
+                        `Error finding folders for ${booking.full_name}:`,
+                        folderFetchError
+                    );
+
+                    throw folderFetchError;
+                }
+
+
+                /*
+                 ========================================================
+                 2B. ARCHIVE ALL PHOTOS INSIDE CUSTOMER FOLDERS
+                 ========================================================
+                */
+
+                for (const folder of (folders || [])) {
+
+                    const {
+                        error: photoArchiveError
+                    } = await supabaseClient
+                        .from("repository_photos")
+                        .update({
+                            is_archived: true,
+                            archived_at: archiveTime
+                        })
+                        .eq("repository_id", folder.id)
+                        .eq("is_archived", false);
+
+                    if (photoArchiveError) {
+
+                        console.error(
+                            `Error archiving photos in folder ${folder.id}:`,
+                            photoArchiveError
+                        );
+
+                        throw photoArchiveError;
+                    }
+
+
+                    /*
+                     ====================================================
+                     2C. ARCHIVE THE FOLDER
+                     ====================================================
+                    */
+
+                    const {
+                        error: folderArchiveError
+                    } = await supabaseClient
+                        .from("repository_client_links")
+                        .update({
+                            is_archived: true,
+                            archived_at: archiveTime
+                        })
+                        .eq("id", folder.id)
+                        .eq("is_archived", false);
+
+                    if (folderArchiveError) {
+
+                        console.error(
+                            `Error archiving folder ${folder.id}:`,
+                            folderArchiveError
+                        );
+
+                        throw folderArchiveError;
+                    }
+
+                }
+
+
+                /*
+                 ========================================================
+                 3. ARCHIVE THE CUSTOMER / BOOKING
+                 ========================================================
+                */
+
+                const {
+                    error: bookingArchiveError
+                } = await supabaseClient
+                    .from("bookings")
+                    .update({
+                        is_archived: true,
+                        archived_at: archiveTime
+                    })
+                    .eq("id", booking.id)
+                    .eq("is_archived", false);
+
+                if (bookingArchiveError) {
+
+                    console.error(
+                        `Error archiving customer ${booking.full_name}:`,
+                        bookingArchiveError
+                    );
+
+                    throw bookingArchiveError;
+                }
+
+
+                console.log(
+                    `Successfully archived: ${booking.full_name}`
+                );
+
+            }
+
+
+            console.log(
+                "Finished archiving customers, folders, and photos."
+            );
         }
         async function loadArchivedItems() {
 
@@ -1110,45 +1489,193 @@
 
             renderArchiveTable();
         }
+        function initializeArchiveTabs() {
+
+            const tabButtons =
+                document.querySelectorAll(
+                    ".archive-tab-btn"
+                );
+
+
+            tabButtons.forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        /*
+                         * Remove active state
+                         * from every tab.
+                         */
+
+                        tabButtons.forEach(tab => {
+
+                            tab.classList.remove(
+                                "active"
+                            );
+
+                        });
+
+
+                        /*
+                         * Activate clicked tab.
+                         */
+
+                        button.classList.add(
+                            "active"
+                        );
+
+
+                        /*
+                         * Get selected category.
+                         */
+
+                        currentFilter =
+                            button.dataset.filter ||
+                            "all";
+
+
+                        /*
+                         * Re-render table.
+                         */
+
+                        renderArchiveTable();
+
+                    }
+                );
+
+            });
+
+        }
         function populatePackageFilter() {
 
-            const packageFilter = document.getElementById("packageFilter");
+            const packageFilter =
+                document.getElementById(
+                    "packageFilter"
+                );
 
-            if (!packageFilter) return;
 
-            // Get unique booking types
+            if (!packageFilter) {
+                return;
+            }
+
+
+            /*
+             * Save current selection.
+             */
+
+            const previousValue =
+                packageFilter.value;
+
+
+            /*
+             * Get unique package names.
+             */
+
             const packageTypes = [
                 ...new Set(
+
                     archiveItems
-                        .map(item => item.sessionType)
-                        .filter(type => type && type.trim() !== "")
+                        .map(
+                            item =>
+                                item.sessionType
+                        )
+                        .filter(
+                            type =>
+                                type &&
+                                type.trim() !== ""
+                        )
+
                 )
-            ].sort();
+            ]
+                .sort(
+                    (a, b) =>
+                        a.localeCompare(b)
+                );
+
+
+            /*
+             * Reset dropdown.
+             */
 
             packageFilter.innerHTML = `
-        <option value="all">All Packages</option>
+
+        <option value="all">
+            All Packages
+        </option>
+
     `;
+
+
+            /*
+             * Add packages.
+             */
 
             packageTypes.forEach(type => {
 
-                const option = document.createElement("option");
+                const option =
+                    document.createElement(
+                        "option"
+                    );
 
-                option.value = type.toLowerCase();
-                option.textContent = type;
 
-                packageFilter.appendChild(option);
+                option.value =
+                    type
+                        .trim()
+                        .toLowerCase();
+
+
+                option.textContent =
+                    type;
+
+
+                packageFilter.appendChild(
+                    option
+                );
+
             });
+
+
+            /*
+             * Restore previous selection
+             * if it still exists.
+             */
+
+            if (
+                [...packageFilter.options]
+                    .some(
+                        option =>
+                            option.value ===
+                            previousValue
+                    )
+            ) {
+
+                packageFilter.value =
+                    previousValue;
+
+            }
+
         }
         document
+            .getElementById("packageFilter")
+            .addEventListener(
+                "change",
+                () => {
+
+                    renderArchiveTable();
+
+                }
+            );
+        document
             .getElementById("archiveSearchInput")
-            .addEventListener("input", function () {
-                renderArchiveTable();
-            });
-        document.getElementById("logoutBtn").addEventListener("click", async (e) => {
-            e.preventDefault();
-            await supabaseClient.auth.signOut();
-            window.location.href = "admin_login.html";
-        });
+            .addEventListener(
+                "input",
+                () => {
+
+                    renderArchiveTable();
+
+                }
+            );
     </script>
 </body>
 

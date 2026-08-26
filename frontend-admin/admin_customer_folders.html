@@ -536,8 +536,7 @@
                         ascending: false
                     });
 
-                console.log("COMPLETED BOOKINGS:", data);
-                console.log("COMPLETED BOOKINGS ERROR:", error);
+                console.log("ALL COMPLETED BOOKINGS:", data);
                 console.log("SELECTED PACKAGE:", selectedPackage);
 
                 if (error) {
@@ -555,17 +554,44 @@
                     return;
                 }
 
-                completedClients = data || [];
+                
+                let filteredClients = data || [];
+
+                if (selectedPackage) {
+
+                    filteredClients = filteredClients.filter(
+                        client =>
+                            String(client.session_type || "").trim()
+                                .toLowerCase()
+                            ===
+                            String(selectedPackage).trim()
+                                .toLowerCase()
+                    );
+
+                }
+
+                console.log(
+                    "FILTERED CUSTOMERS:",
+                    filteredClients
+                );
+
+        
+
+                completedClients = filteredClients;
+
+             
 
                 renderCompletedClients(
                     completedClients
                 );
 
+
                 if (selectedPackage) {
 
                     document.querySelector(
                         "#foldersView .page-header h1"
-                    ).textContent = selectedPackage;
+                    ).textContent =
+                        selectedPackage;
 
                     document.querySelector(
                         "#foldersView .page-header p"
@@ -586,6 +612,7 @@
                 );
 
             }
+
         }
         function renderCompletedClients(
             clients
@@ -2481,6 +2508,7 @@
 
                 foldersView.style.display =
                     "grid";
+                window.location.href = "admin_repository.html"
 
 
                 document.getElementById(

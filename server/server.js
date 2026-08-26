@@ -2,36 +2,18 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const { Resend } = require("resend");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-
+/* =========================================================
+   MIDDLEWARE
+========================================================= */
 
 app.use(cors());
 app.use(express.json());
-app.use(
-    "/design",
-    express.static(
-        path.join(__dirname, "../design")
-    )
-);
 
-app.use(
-    "/frontend-customer",
-    express.static(
-        path.join(__dirname, "../frontend-customer")
-    )
-);
-
-app.use(
-    "/frontend-admin",
-    express.static(
-        path.join(__dirname, "../frontend-admin")
-    )
-);
 /* =========================================================
    ENVIRONMENT VARIABLES
 ========================================================= */
@@ -47,7 +29,16 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const MAYA_PUBLIC_KEY = process.env.MAYA_PUBLIC_KEY;
 const MAYA_SECRET_KEY = process.env.MAYA_SECRET_KEY;
 
+/*
+    SANDBOX
+    ---------------------------------------------------------
+    Keep these URLs while developing/testing.
 
+    When you move to production, change:
+        https://pg-sandbox.paymaya.com
+
+    to the production Maya Checkout endpoint.
+*/
 
 const MAYA_CHECKOUT_URL =
     "https://pg-sandbox.paymaya.com/checkout/v1/checkouts";
@@ -67,39 +58,16 @@ const supabase = createClient(
     SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY
 );
+
+/* =========================================================
+   BASIC SERVER CHECK
+========================================================= */
+
 app.get("/", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "../frontend-customer/customer_homepage.html"
-        )
-    );
-});
-app.get("/booking", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "../frontend-customer/customer_booking.html"
-        )
-    );
-});
-
-app.get("/gallery", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "../frontend-customer/customer_gallery_view.html"
-        )
-    );
-});
-
-app.get("/gallery-request", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "../frontend-customer/customer_gallery_request.html"
-        )
-    );
+    res.json({
+        success: true,
+        message: "Captured server is running"
+    });
 });
 
 /* =========================================================
@@ -466,17 +434,17 @@ app.post(
 
                 ],
 
-             redirectUrl: {
+                redirectUrl: {
 
-    success:
-        "https://captured-photo-studio.onrender.com/payment-success",
+                    success:
+                        "https://captured-photo-studio.onrender.com/frontend-customer/payment_successful.html",
 
-    failure:
-        "https://captured-photo-studio.onrender.com/payment-failed",
+                    failure:
+                        "https://captured-photo-studio.onrender.com/frontend-customer/payment_failed.html",
 
-    cancel:
-        "https://captured-photo-studio.onrender.com/payment-cancelled"
-},
+                    cancel:
+                        "https://captured-photo-studio.onrender.com/frontend-customer/payment_cancelled.html"
+                },
 
                 requestReferenceNumber,
 
@@ -1262,6 +1230,11 @@ app.post(
                 });
             }
 
+
+            /* =================================================
+               PAYMENT CANCELLED
+            ================================================= */
+
             if (
                 paymentStatus ===
                 "PAYMENT_CANCELLED"
@@ -1300,6 +1273,10 @@ app.post(
                 });
             }
 
+
+            /* =================================================
+               OTHER MAYA EVENT
+            ================================================= */
 
             console.log(
                 "Unhandled Maya payment status:",
@@ -1426,32 +1403,11 @@ app.get(
     }
 );
 
-app.get("/payment-success", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "../frontend-customer/payment_successful.html"
-        )
-    );
-});
 
-app.get("/payment-failed", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "../frontend-customer/payment_failed.html"
-        )
-    );
-});
+/* =========================================================
+   START SERVER
+========================================================= */
 
-app.get("/payment-cancelled", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "../frontend-customer/payment_cancelled.html"
-        )
-    );
-});
 app.listen(
     PORT,
     () => {

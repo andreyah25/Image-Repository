@@ -765,6 +765,47 @@
                  }
              );
          }*/
+        async function loadTotalPhotos() {
+
+            console.log("Loading ALL repository photos...");
+
+            const totalPhotosElement =
+                document.getElementById("totalPhotos");
+
+            if (!totalPhotosElement) {
+                return;
+            }
+
+            const {
+                count,
+                error
+            } = await supabaseClient
+                .from("repository_photos")
+                .select("id", {
+                    count: "exact",
+                    head: true
+                });
+
+            if (error) {
+
+                console.error(
+                    "Error loading repository photos:",
+                    error
+                );
+
+                totalPhotosElement.textContent = "0";
+
+                return;
+            }
+
+            totalPhotosElement.textContent =
+                Number(count || 0).toLocaleString();
+
+            console.log(
+                "📸 TOTAL PHOTOS ACROSS ALL FOLDERS:",
+                count || 0
+            );
+        }
         async function loadTotalIncome() {
 
             console.log("Loading total income...");
@@ -894,7 +935,7 @@
                         {
                             event: "*",
                             schema: "public",
-                            table: "photos"
+                            table: "repository_photos"
                         },
                         async function (payload) {
 
@@ -1370,11 +1411,13 @@
                     profile.full_name;
 
                 await loadDashboardStats(user.id);
+                await loadTotalPhotos();
                 await loadBookingCalendar();
                 await loadAnalyticsYears();
                 await loadNotifications();
                 setupNotificationRealtime();
                 setupPhotoRealtime();
+
                 if (profile.avatar_url) {
                     document.getElementById("userAvatar").src =
                         profile.avatar_url;
@@ -1388,14 +1431,10 @@
 
         });
 
-
         async function loadDashboardStats() {
 
             console.log("Loading dashboard stats...");
 
-            /* =========================================================
-               TOTAL CUSTOMERS
-               ========================================================= */
 
             const {
                 count: customerCount,
@@ -1419,91 +1458,11 @@
                     customerCount || 0;
             }
 
-
-            /* =========================================================
-               TOTAL PHOTOS
-               ========================================================= */
-
-            /* =========================================================
-    TOTAL PHOTOS
-    ========================================================= */
-
-            console.log("📸 Fetching total photos...");
-
-            const {
-                data: photoData,
-                count: photoCount,
-                error: photoError
-            } = await supabaseClient
-                .from("photos")
-                .select("id", {
-                    count: "exact"
-                });
-
-            console.log("📸 PHOTO DATA:", photoData);
-            console.log("📸 PHOTO COUNT:", photoCount);
-            console.log("📸 PHOTO ERROR:", photoError);
-
-            const totalPhotosElement =
-                document.getElementById("totalPhotos");
-
-            if (photoError) {
-
-                console.error(
-                    "❌ Photos fetch failed:",
-                    photoError
-                );
-
-                if (totalPhotosElement) {
-                    totalPhotosElement.textContent = "ERR";
-                }
-
-            } else {
-
-                if (totalPhotosElement) {
-                    totalPhotosElement.textContent =
-                        photoCount || 0;
-                }
-
-            }
-            /* =========================================================
-               TOTAL INCOME
-               ========================================================= */
+            await loadTotalPhotos();
 
             await loadTotalIncome();
+            await loadActiveSessions();
 
-
-            /* =========================================================
-               ACTIVE ACCESS
-               ========================================================= */
-
-            const {
-                count: activeCount,
-                error: activeError
-            } = await supabaseClient
-                .from("access")
-                .select("*", {
-                    count: "exact",
-                    head: true
-                })
-                .eq("status", "Confirmed");
-
-            if (activeError) {
-                console.error("Active access error:", activeError);
-            }
-
-            const activeElement =
-                document.getElementById("activeSessions");
-
-            if (activeElement) {
-                activeElement.textContent =
-                    activeCount || 0;
-            }
-
-
-            /* =========================================================
-               EXPIRED ACCESS
-               ========================================================= */
 
             const today =
                 new Date().toISOString().split("T")[0];
@@ -1533,14 +1492,75 @@
 
 
             console.log("Dashboard stats loaded:", {
-                customers: customerCount,
-                photos: photoCount,
+                customers: customerCount || 0,
                 income: "loaded",
-                active: activeCount,
-                expired: expiredCount
+                expired: expiredCount || 0
             });
         }
         let calendarInstance = null;
+        async function loadActiveSessions() {
+
+            console.log("Checking currently active customer galleries...");
+
+            const activeElement =
+                document.getElementById("activeSessions");
+
+            if (!activeElement) {
+                return;
+            }
+
+            /*
+             * A customer is considered ACTIVE if they
+             * contacted the gallery within the last 2 minutes.
+             */
+
+            const twoMinutesAgo =
+                new Date(
+                    Date.now() - (2 * 60 * 1000)
+                ).toISOString();
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("gallery_sessions")
+                .select("access_token")
+                .gte(
+                    "last_seen_at",
+                    twoMinutesAgo
+                );
+
+            if (error) {
+
+                console.error(
+                    "Active gallery sessions error:",
+                    error
+                );
+
+                activeElement.textContent = "0";
+
+                return;
+            }
+
+            /*
+             * Count UNIQUE customers/tokens.
+             */
+
+            const uniqueCustomers =
+                new Set(
+                    (data || []).map(
+                        session => session.access_token
+                    )
+                );
+
+            activeElement.textContent =
+                uniqueCustomers.size;
+
+            console.log(
+                "🟢 ACTIVE CUSTOMERS:",
+                uniqueCustomers.size
+            );
+        }
         async function loadBookingCalendar() {
 
             const { data, error } = await supabaseClient
@@ -1644,7 +1664,7 @@
 
                 };
 
-            window.onclick = function (e) {
+            window.addEventListener("click", function (e) {
 
                 if (e.target.id === "bookingModal") {
 
@@ -1654,7 +1674,7 @@
 
                 }
 
-            };
+            });
 
             calendarInstance.render();
 
@@ -1784,11 +1804,6 @@
 
         let notificationChannel = null;
 
-
-        /* =========================================================
-           OPEN / CLOSE NOTIFICATION PANEL
-        ========================================================= */
-
         notificationTrigger.addEventListener("click", function (e) {
 
             e.stopPropagation();
@@ -1905,7 +1920,6 @@
         /* =========================================================
            LOAD EXISTING BOOKING NOTIFICATIONS
         ========================================================= */
-
         async function loadNotifications() {
 
             if (!currentUser) {
@@ -1917,25 +1931,29 @@
 
                 console.log("Loading notifications from database...");
 
+                /*
+                 * =========================================================
+                 * 1. LOAD NOTIFICATIONS
+                 * =========================================================
+                 */
+
                 const {
-                    data,
-                    error
+                    data: notificationRows,
+                    error: notificationError
                 } = await supabaseClient
                     .from("notifications")
-                    .select(`
-                *,
-                bookings (*)
-            `)
+                    .select("*")
+                    .not("booking_id", "is", null)
                     .order("created_at", {
                         ascending: false
                     })
                     .limit(15);
 
-                if (error) {
+                if (notificationError) {
 
                     console.error(
                         "LOAD NOTIFICATIONS ERROR:",
-                        error
+                        notificationError
                     );
 
                     notificationList.innerHTML = `
@@ -1949,25 +1967,67 @@
 
                 notifications = [];
 
-                (data || []).forEach(notificationRow => {
 
-                    const booking =
-                        notificationRow.bookings;
+                /*
+                 * =========================================================
+                 * 2. LOAD THE BOOKING FOR EACH NOTIFICATION
+                 * =========================================================
+                 */
+
+                for (const notificationRow of notificationRows || []) {
+
+                    if (!notificationRow.booking_id) {
+                        continue;
+                    }
+
+                    const {
+                        data: booking,
+                        error: bookingError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .eq("id", notificationRow.booking_id)
+                        .maybeSingle();
+
+
+                    if (bookingError) {
+
+                        console.warn(
+                            "Could not load booking for notification:",
+                            notificationRow.id,
+                            bookingError
+                        );
+
+                        continue;
+                    }
+
 
                     /*
-                     * Ignore notifications whose booking
-                     * no longer exists.
+                     * Booking was deleted.
+                     * Do not display a broken notification.
                      */
+
                     if (!booking) {
-                        return;
+                        continue;
                     }
+
+
+                    /*
+                     * =====================================================
+                     * CREATE FRONTEND NOTIFICATION
+                     * =====================================================
+                     */
 
                     const notification = {
 
-                        id: String(notificationRow.id),
+                        id:
+                            String(notificationRow.id),
 
+                        /*
+                         * Your database does NOT have a type column.
+                         * We define the type here for frontend use only.
+                         */
                         type:
-                            notificationRow.type ||
                             "booking",
 
                         title:
@@ -1984,26 +2044,29 @@
                             new Date().toISOString(),
 
                         unread:
-                            notificationRow.is_read === false ||
-                            notificationRow.is_read === null,
+                            notificationRow.is_read !== true,
 
-                        booking: booking,
+                        booking:
+                            booking,
 
                         databaseId:
                             notificationRow.id
 
                     };
 
+
                     notifications.push(notification);
 
-                });
+                }
 
                 renderNotifications();
+
 
                 console.log(
                     "✅ Notifications loaded:",
                     notifications
                 );
+
 
             } catch (error) {
 
@@ -2015,102 +2078,60 @@
             }
         }
 
-        /* =========================================================
-           OPEN BOOKING MODAL
-        ========================================================= */
-
         async function openNotificationBooking(notification) {
 
-            console.log(
-                "Opening booking notification:",
-                notification
-            );
-
+            console.log("Opening booking notification:", notification);
 
             if (
                 !notification ||
                 !notification.booking ||
                 !notification.booking.id
             ) {
-
                 console.error(
-                    "Notification does not contain booking ID:",
+                    "Notification does not contain booking information:",
                     notification
                 );
 
+                alert("Booking information is unavailable.");
                 return;
-
             }
 
 
-            const bookingId =
-                notification.booking.id;
+            let booking = notification.booking;
 
+            try {
 
-            console.log(
-                "Loading booking ID:",
-                bookingId
-            );
+                const {
+                    data: latestBooking,
+                    error
+                } = await supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .eq("id", booking.id)
+                    .maybeSingle();
 
+                if (error) {
 
-            /* Get latest booking information */
+                    console.warn(
+                        "Could not refresh booking from database. Using notification data instead:",
+                        error
+                    );
 
-            const {
-                data: booking,
-                error
-            } = await supabaseClient
+                } else if (latestBooking) {
 
-                .from("bookings")
+                    booking = latestBooking;
 
-                .select("*")
+                }
 
-                .eq("id", bookingId)
+            } catch (error) {
 
-                .single();
-
-
-            if (error) {
-
-                console.error(
-                    "BOOKING MODAL LOAD ERROR:",
+                console.warn(
+                    "Booking refresh failed. Using existing notification data:",
                     error
                 );
 
-                alert(
-                    "Unable to load booking details."
-                );
-
-                return;
-
             }
-
-
-            if (!booking) {
-
-                console.error(
-                    "Booking not found:",
-                    bookingId
-                );
-
-                alert(
-                    "Booking could not be found."
-                );
-
-                return;
-
-            }
-
-
-            /* Save selected booking */
-
-            selectedNotificationBooking =
-                booking;
-
-
-            /* =====================================================
-               PUT BOOKING INFORMATION INTO MODAL
-            ===================================================== */
-
+            selectedNotificationBooking = booking;
             document.getElementById(
                 "notificationBookingClient"
             ).textContent =
@@ -2167,17 +2188,16 @@
                 "No notes provided.";
 
 
-            /* =====================================================
-               SHOW MODAL
-            ===================================================== */
-
+            /*
+             * Show modal
+             */
             notificationBookingModal.classList.add("show");
 
 
             console.log(
-                "Booking notification modal opened successfully."
+                "Booking notification modal opened successfully:",
+                booking
             );
-
         }
 
 
@@ -2466,24 +2486,22 @@
             }
         );
 
-        /* =========================================================
-           CLOSE BOOKING MODAL
-        ========================================================= */
+        /*  CLOSE BOOKING MODAL  */
 
         closeNotificationBookingModal.addEventListener(
             "click",
-            function () {
+            function (e) {
 
-                notificationBookingModal.classList.remove(
-                    "show"
-                );
+                e.preventDefault();
+                e.stopPropagation();
 
-                selectedNotificationBooking =
-                    null;
+                notificationBookingModal.classList.remove("show");
+
+                // Do NOT destroy the notification data.
+                selectedNotificationBooking = null;
 
             }
         );
-
 
         /* =========================================================
            CLICK OUTSIDE BOOKING MODAL
@@ -2584,211 +2602,295 @@
             await loadAnalyticsYears();
 
         }
-
         function setupNotificationRealtime() {
 
-            console.log(
-                "Starting notification realtime listener..."
-            );
+            console.log("Starting notification realtime listener...");
 
             if (notificationChannel) {
-
-                console.log(
-                    "Realtime notification channel already exists."
-                );
-
+                console.log("Notification realtime channel already exists.");
                 return;
-
             }
 
-            notificationChannel =
-                supabaseClient
-                    .channel(
-                        "staff-notifications-" +
-                        currentUser.id
-                    )
+            notificationChannel = supabaseClient
+                .channel(
+                    "staff-notifications-" + currentUser.id
+                )
 
-                    .on(
-                        "postgres_changes",
-                        {
-                            event: "INSERT",
-                            schema: "public",
-                            table: "notifications"
-                        },
-                        async function (payload) {
+                /*
+                 * =====================================================
+                 * NEW NOTIFICATION
+                 * =====================================================
+                 */
 
-                            console.log(
-                                "🔔 NEW NOTIFICATION:",
-                                payload
-                            );
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "notifications"
+                    },
+                    async function (payload) {
 
-                            const notificationRow =
-                                payload.new;
+                        console.log(
+                            "🔔 NEW NOTIFICATION:",
+                            payload
+                        );
 
-                            if (!notificationRow) {
+                        const notificationRow = payload.new;
+
+                        /*
+                         * Only handle booking notifications
+                         */
+
+                        if (
+                            !notificationRow ||
+                            notificationRow.type !== "booking"
+                        ) {
+                            return;
+                        }
+
+                        /*
+                         * Get the booking connected to
+                         * this notification.
+                         */
+
+                        let booking = null;
+
+                        if (notificationRow.booking_id) {
+
+                            const {
+                                data,
+                                error
+                            } = await supabaseClient
+                                .from("bookings")
+                                .select("*")
+                                .eq(
+                                    "id",
+                                    notificationRow.booking_id
+                                )
+                                .maybeSingle();
+
+                            if (error) {
+
+                                console.error(
+                                    "Unable to load booking for notification:",
+                                    error
+                                );
+
                                 return;
                             }
 
-                            /*
-                             * Get the booking associated
-                             * with this notification.
-                             */
-                            if (notificationRow.booking_id) {
+                            booking = data;
+                        }
 
-                                const {
-                                    data: booking,
-                                    error
-                                } = await supabaseClient
-                                    .from("bookings")
-                                    .select("*")
-                                    .eq(
-                                        "id",
-                                        notificationRow.booking_id
+                        /*
+                         * Prevent duplicate notifications
+                         */
+
+                        const alreadyExists =
+                            notifications.some(
+                                notification =>
+                                    String(
+                                        notification.databaseId
+                                    ) ===
+                                    String(
+                                        notificationRow.id
                                     )
-                                    .single();
-
-                                if (error) {
-
-                                    console.error(
-                                        "Unable to load notification booking:",
-                                        error
-                                    );
-
-                                    return;
-                                }
-
-                                if (!booking) {
-                                    return;
-                                }
-
-                                const notification = {
-
-                                    id:
-                                        String(
-                                            notificationRow.id
-                                        ),
-
-                                    databaseId:
-                                        notificationRow.id,
-
-                                    type:
-                                        notificationRow.type ||
-                                        "booking",
-
-                                    title:
-                                        notificationRow.title ||
-                                        "New Customer Booking",
-
-                                    message:
-                                        notificationRow.message ||
-                                        `${booking.full_name || "A customer"} has a confirmed booking.`,
-
-                                    date:
-                                        notificationRow.created_at ||
-                                        new Date().toISOString(),
-
-                                    unread:
-                                        notificationRow.is_read !== true,
-
-                                    booking:
-                                        booking
-
-                                };
-
-                                /*
-                                 * Prevent duplicate notification
-                                 */
-                                const exists =
-                                    notifications.some(
-                                        n =>
-                                            String(n.databaseId) ===
-                                            String(notificationRow.id)
-                                    );
-
-                                if (!exists) {
-
-                                    notifications.unshift(
-                                        notification
-                                    );
-
-                                    notifications =
-                                        notifications.slice(
-                                            0,
-                                            15
-                                        );
-
-                                    renderNotifications();
-
-                                    console.log(
-                                        "✅ New notification added:",
-                                        notification
-                                    );
-
-                                }
-
-                            }
-
-                            await refreshBookingCalendar();
-                            await loadDashboardStats();
-                            await loadAnalyticsYears();
-
-                        }
-                    )
-
-                    .on(
-                        "postgres_changes",
-                        {
-                            event: "UPDATE",
-                            schema: "public",
-                            table: "notifications"
-                        },
-                        async function (payload) {
-
-                            console.log(
-                                "🔔 NOTIFICATION UPDATED:",
-                                payload
                             );
 
-                            const updated =
-                                payload.new;
-
-                            const index =
-                                notifications.findIndex(
-                                    notification =>
-                                        String(
-                                            notification.databaseId
-                                        ) ===
-                                        String(updated.id)
-                                );
-
-                            if (index !== -1) {
-
-                                notifications[index].unread =
-                                    updated.is_read !== true;
-
-                                renderNotifications();
-
-                            }
-
-                        }
-                    )
-
-                    .subscribe(
-                        function (status) {
+                        if (alreadyExists) {
 
                             console.log(
-                                "SUPABASE NOTIFICATION REALTIME:",
-                                status
+                                "Notification already exists."
                             );
 
+                            return;
                         }
+
+                        /*
+                         * Create frontend notification
+                         */
+
+                        const notification = {
+
+                            id:
+                                String(notificationRow.id),
+
+                            type:
+                                notificationRow.type ||
+                                "booking",
+
+                            title:
+                                notificationRow.title ||
+                                "New Customer Booking",
+
+                            message:
+                                notificationRow.message ||
+                                (
+                                    booking?.full_name ||
+                                    "A customer"
+                                ) +
+                                " has a confirmed booking.",
+
+                            date:
+                                notificationRow.created_at ||
+                                new Date().toISOString(),
+
+                            unread:
+                                notificationRow.is_read !== true,
+
+                            booking:
+                                booking,
+
+                            databaseId:
+                                notificationRow.id
+
+                        };
+
+                        /*
+                         * Add to top of notification list
+                         */
+
+                        notifications.unshift(
+                            notification
+                        );
+
+                        /*
+                         * Keep only latest 15
+                         */
+
+                        notifications =
+                            notifications.slice(
+                                0,
+                                15
+                            );
+
+                        /*
+                         * Render
+                         */
+
+                        renderNotifications();
+
+                        /*
+                         * Refresh calendar
+                         */
+
+                        await refreshBookingCalendar();
+
+                        /*
+                         * Refresh dashboard stats
+                         */
+
+                        await loadDashboardStats();
+
+                        /*
+                         * Refresh analytics
+                         */
+
+                        await loadAnalyticsYears();
+
+                        console.log(
+                            "✅ New notification added:",
+                            notification
+                        );
+
+                    }
+                )
+
+                /*
+                 * =====================================================
+                 * NOTIFICATION UPDATED
+                 * =====================================================
+                 */
+
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "UPDATE",
+                        schema: "public",
+                        table: "notifications"
+                    },
+                    function (payload) {
+
+                        console.log(
+                            "🔔 NOTIFICATION UPDATED:",
+                            payload
+                        );
+
+                        const updated =
+                            payload.new;
+
+                        const index =
+                            notifications.findIndex(
+                                notification =>
+                                    String(
+                                        notification.databaseId
+                                    ) ===
+                                    String(
+                                        updated.id
+                                    )
+                            );
+
+                        if (index === -1) {
+                            return;
+                        }
+
+                        notifications[index].unread =
+                            updated.is_read !== true;
+
+                        renderNotifications();
+
+                    }
+                )
+
+                /*
+                 * =====================================================
+                 * NOTIFICATION DELETED
+                 * =====================================================
+                 */
+
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "DELETE",
+                        schema: "public",
+                        table: "notifications"
+                    },
+                    function (payload) {
+
+                        console.log(
+                            "🔔 NOTIFICATION DELETED:",
+                            payload
+                        );
+
+                        const deletedId =
+                            String(payload.old.id);
+
+                        notifications =
+                            notifications.filter(
+                                notification =>
+                                    String(
+                                        notification.databaseId
+                                    ) !== deletedId
+                            );
+
+                        renderNotifications();
+
+                    }
+                )
+
+                .subscribe(function (status) {
+
+                    console.log(
+                        "SUPABASE NOTIFICATION REALTIME STATUS:",
+                        status
                     );
+
+                });
 
         }
 
-        /* =========================================================
-           ADD REALTIME BOOKING NOTIFICATION
-        ========================================================= */
+        /* 
 
         function addRealtimeBookingNotification(
             booking
@@ -2809,7 +2911,7 @@
                 String(booking.id);
 
 
-            /* Prevent duplicates */
+           
 
             const alreadyExists =
                 notifications.some(
@@ -2885,7 +2987,7 @@
 
         }
 
-
+*/
         /* =========================================================
            FORMAT DATE
         ========================================================= */
