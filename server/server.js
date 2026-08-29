@@ -8,26 +8,24 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-/* =========================================================
-   MIDDLEWARE
-========================================================= */
 
 app.use(cors());
-app.use(express.json());
-
-/* =========================================================
-   ENVIRONMENT VARIABLES
-========================================================= */
+app.use( express.json({
+        verify: (req, res, buf) => {
+            if (req.originalUrl === "/api/paymongo/webhook") {
+                req.rawBody = buf;
+            }
+        }
+    })
+);
 
 const PORT = process.env.PORT || 3000;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY =
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
-
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
-
+const PAYMONGO_WEBHOOK_SECRET = process.env.PAYMONGO_WEBHOOK_SECRET;
 
 
 const resend = RESEND_API_KEY
@@ -219,6 +217,10 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             downpayment_amount
         } = req.body;
 
+
+        /* =====================================================
+           1. VALIDATE BOOKING INFORMATION
+        ===================================================== */
 
         if (
             !customer_id ||
@@ -528,7 +530,9 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                                 ],
 
                                 payment_method_types: [
-                                    "gcash"
+                                    "gcash",
+                                    "grab_pay",
+                                    "paymaya"
                                 ],
 
                                 success_url:
@@ -741,7 +745,67 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
 app.post("/api/paymongo/webhook", async (req, res) => {
 
-    try {
+    try {const signatureHeader = req.headers["paymongo-signature"];
+
+if (!signatureHeader) {
+    console.error("Missing PayMongo signature.");
+    return res.status(400).json({
+        success: false,
+        error: "Missing PayMongo signature."
+    });
+}
+
+const parts = signatureHeader.split(",");
+
+const signatureData = {};
+
+for (const part of parts) {
+    const [key, value] = part.split("=");
+
+    if (key && value) {
+        signatureData[key] = value;
+    }
+}
+
+const timestamp = signatureData.t;
+const testSignature = signatureData.te;
+const liveSignature = signatureData.li;
+
+const signature = liveSignature || testSignature;
+
+if (!timestamp || !signature) {
+    console.error("Invalid PayMongo signature.");
+    return res.status(400).json({
+        success: false,
+        error: "Invalid PayMongo signature."
+    });
+}
+
+const payload = `${timestamp}.${req.rawBody.toString("utf8")}`;
+
+const expectedSignature = crypto
+    .createHmac(
+        "sha256",
+        PAYMONGO_WEBHOOK_SECRET
+    )
+    .update(payload)
+    .digest("hex");
+
+if (
+    !crypto.timingSafeEqual(
+        Buffer.from(expectedSignature),
+        Buffer.from(signature)
+    )
+) {
+    console.error("Invalid PayMongo webhook signature.");
+
+    return res.status(400).json({
+        success: false,
+        error: "Invalid webhook signature."
+    });
+}
+
+console.log("PayMongo webhook signature verified.");
 
         console.log("====================================");
         console.log("PAYMONGO WEBHOOK RECEIVED");
