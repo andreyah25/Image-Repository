@@ -474,73 +474,74 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
                     },
 
-                    body: JSON.stringify({
+                   body: JSON.stringify({
 
-                        data: {
+    data: {
 
-                            attributes: {
+        attributes: {
 
-                                billing: {
+            line_items: [
 
-                                    name:
-                                        full_name,
+                {
+                    currency: "PHP",
 
-                                    email:
-                                        email,
+                    amount: amountInCentavos,
 
-                                    phone:
-                                        contact_number
+                    name:
+                        `Reservation Down Payment - ${session_type}`,
 
-                                },
+                    quantity: 1
+                }
 
-                                send_email_receipt:
-                                    true,
+            ],
 
-                                show_description:
-                                    true,
+            payment_method_types: [
+                "qrph"
+            ],
 
-                              description:
-                                    `Reservation down payment - ${session_type} - ${booking_date} ${booking_time} - Reference: ${bookingReference}`,
-                               metadata: {
-                                    booking_reference: bookingReference,
-                                     booking_id: bookingData.id
-                                    },
+            billing: {
 
-                                    line_items: [
+                name: full_name,
 
-                                    {
+                email: email,
 
-                                        currency:
-                                            "PHP",
+                phone: contact_number
 
-                                        amount:
-                                            amountInCentavos,
+            },
 
-                                        name:
-                                            `Reservation Down Payment - ${session_type}`,
+            description:
+                `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
 
-                                        quantity:
-                                            1
+            reference_number:
+                bookingReference,
 
-                                    }
+            metadata: {
 
-                                ],
+                booking_id:
+                    String(bookingData.id),
 
-                                payment_method_types: [
-                                    "qrph"
-                                ],
+                booking_reference:
+                    bookingReference
 
-                                success_url:
-                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_success.html?reference=${encodeURIComponent(bookingReference)}`,
+            },
 
-                                cancel_url:
-                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(bookingReference)}`
+            send_email_receipt:
+                true,
 
-                            }
+            show_description:
+                true,
 
-                        }
+            success_url:
+                `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_success.html?reference=${encodeURIComponent(bookingReference)}`,
 
-                    })
+            cancel_url:
+                `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(bookingReference)}`
+
+        }
+
+    }
+
+})
 
                 }
             );
@@ -836,11 +837,14 @@ console.log("PayMongo webhook signature verified.");
 
 
        const reference =
+    attributes?.reference_number ||
     attributes?.metadata?.booking_reference ||
-    attributes?.description
-        ?.match(/CAPTURED-[A-Z0-9-]+/i)?.[0] ||
     null;
 
+console.log(
+    "Detected booking reference:",
+    reference
+);
 
         console.log(
             "Detected booking reference:",
@@ -965,24 +969,51 @@ console.log("PayMongo webhook signature verified.");
             );
 
 
-            const {
-                error: updateError
-            } = await supabase
-                .from("bookings")
-                .update({
+            const payment =
+    attributes?.payments?.[0];
 
-                    payment_status:
-                        "Paid",
+const paymentId =
+    payment?.id || null;
 
-                    status:
-                        "Pending"
+const referenceNumber =
+    attributes?.reference_number ||
+    reference ||
+    null;
 
-                })
-                .eq(
-                    "id",
-                    booking.id
-                );
+const paidAt =
+    payment?.attributes?.paid_at
+        ? new Date(
+            payment.attributes.paid_at * 1000
+          ).toISOString()
+        : new Date().toISOString();
 
+
+const {
+    error: updateError
+} = await supabase
+    .from("bookings")
+    .update({
+
+        payment_status:
+            "Paid",
+
+        status:
+            "Pending",
+
+        paymongo_payment_id:
+            paymentId,
+
+        paymongo_reference_number:
+            referenceNumber,
+
+        paymongo_paid_at:
+            paidAt
+
+    })
+    .eq(
+        "id",
+        booking.id
+    );
 
             if (updateError) {
 
