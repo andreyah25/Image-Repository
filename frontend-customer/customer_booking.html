@@ -2242,8 +2242,8 @@
 
 
                 console.log(
-                    "PayMongo response:",
-                    result
+                    "PayMongo response:", JSON.stringify(result, null, 2)
+                
                 );
 
 
@@ -2255,7 +2255,7 @@
 
                     console.error(
                         "PayMongo checkout error:",
-                        result
+                        JSON.stringify(result, null, 2)
                     );
 
                     alert(
