@@ -2198,44 +2198,43 @@
                 });
 
 
-                const response =
-                    await fetch(
-                        "https://captured-photo-studio.onrender.com/frontend-customer/customer_booking.html",
-                        {
-                            method: "POST",
+                const response = await fetch(
+                    "https://captured-photo-studio.onrender.com/api/paymongo/create-checkout",
+                    {
+                        method: "POST",
 
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                            body: JSON.stringify({
+                        body: JSON.stringify({
 
-                                customer_id: user.id,
+                            customer_id: user.id,
 
-                                full_name: fullName,
+                            full_name: fullName,
 
-                                email: email,
+                            email: email,
 
-                                contact_number: contact,
+                            contact_number: contact,
 
-                                booking_date: date,
+                            booking_date: date,
 
-                                booking_time: time,
+                            booking_time: time,
 
-                                session_type: selectedType,
+                            session_type: selectedType,
 
-                                notes: notes,
+                            notes: notes,
 
-                                payment_method: "PayMongo",
+                            payment_method: "PayMongo",
 
-                                total_amount: totalAmount,
+                            total_amount: totalAmount,
 
-                                downpayment_amount: downpaymentAmount
+                            downpayment_amount: downpaymentAmount
 
-                            })
-                        }
-                    );
+                        })
+                    }
+                );
 
 
                 const result =

@@ -201,9 +201,6 @@ function money(value) {
 
     return Number(number.toFixed(2));
 }
-/* =========================================================
-   PAYMONGO CREATE CHECKOUT
-========================================================= */
 
 app.post("/api/paymongo/create-checkout", async (req, res) => {
     try {
@@ -222,10 +219,6 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             downpayment_amount
         } = req.body;
 
-
-        /* =====================================================
-           1. VALIDATE BOOKING INFORMATION
-        ===================================================== */
 
         if (
             !customer_id ||
@@ -535,9 +528,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                                 ],
 
                                 payment_method_types: [
-                                    "gcash",
-                                    "grab_pay",
-                                    "paymaya"
+                                    "gcash"
                                 ],
 
                                 success_url:
