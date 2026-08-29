@@ -2199,9 +2199,8 @@
 
 
                 const response =
-                    await fetch(
-                        "http://localhost:3000/api/paymongo/create-checkout",
-                        {
+                    await
+                        fetch("https://image-repository-1.onrender.com/api/paymongo/create-checkout",                         {
                             method: "POST",
 
                             headers: {
@@ -2235,7 +2234,7 @@
 
                             })
                         }
-                    );
+                        );
 
 
                 const result =
