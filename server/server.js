@@ -454,13 +454,10 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
         );
 
 
-        /* =====================================================
-           7. CREATE PAYMONGO CHECKOUT
-        ===================================================== */
 
         const paymongoResponse =
             await fetch(
-                "https://api.paymongo.com/v1/checkout_sessions",
+                "https://api.paymongo.com/v2/checkout_sessions",
                 {
 
                     method: "POST",
@@ -530,7 +527,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                                 ],
 
                                 payment_method_types: [
-                                    "gcash"
+                                    "qrph"
                                 ],
 
                                 success_url:
@@ -563,20 +560,12 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
         );
 
 
-        /* =====================================================
-           8. HANDLE PAYMONGO ERROR
-        ===================================================== */
-
         if (!paymongoResponse.ok) {
 
             console.error(
                 "PayMongo API error:",
                 paymongoData
             );
-
-
-            // Payment checkout failed.
-            // Cancel the temporary booking.
 
             await supabase
                 .from("bookings")
@@ -611,12 +600,6 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             });
 
         }
-
-
-        /* =====================================================
-           9. GET PAYMONGO CHECKOUT DATA
-        ===================================================== */
-
         const checkoutSession =
             paymongoData?.data;
 
@@ -660,11 +643,6 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
         }
 
-
-        /* =====================================================
-           10. SAVE PAYMONGO CHECKOUT ID
-        ===================================================== */
-
         const {
             error: updateBookingError
         } = await supabase
@@ -690,10 +668,6 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
         }
 
-
-        /* =====================================================
-           11. RETURN CHECKOUT URL TO FRONTEND
-        ===================================================== */
 
         return res.json({
 
@@ -737,9 +711,6 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
     }
 
 });
-/* =========================================================
-   PAYMONGO WEBHOOK
-========================================================= */
 
 app.post("/api/paymongo/webhook", async (req, res) => {
 
@@ -864,13 +835,11 @@ console.log("PayMongo webhook signature verified.");
         }
 
 
-        /* =====================================================
-           3. GET REFERENCE FROM CHECKOUT
-        ===================================================== */
-
-        const reference =
-            attributes?.description
-                ?.match(/CAPTURED-[A-Z0-9-]+/i)?.[0];
+       const reference =
+    attributes?.metadata?.booking_reference ||
+    attributes?.description
+        ?.match(/CAPTURED-[A-Z0-9-]+/i)?.[0] ||
+    null;
 
 
         console.log(
