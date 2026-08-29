@@ -530,7 +530,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                                 ],
 
                                 payment_method_types: [
-                                    "qr_ph"
+                                    "gcash"
                                 ],
 
                                 success_url:
