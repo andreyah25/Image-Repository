@@ -144,7 +144,34 @@ body {
     color: #999;
     font-size: 10px;
 }
+/* =========================================================
+   NOTIFICATION BOOKING BUTTON
+   ========================================================= */
 
+.notification-booking-btn {
+    margin-top: 10px;
+    border: none;
+    background: #639a88;
+    color: white;
+    padding: 8px 13px;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s ease;
+}
+
+.notification-booking-btn:hover {
+    background: #507e6f;
+    transform: translateY(-1px);
+}
+
+.notification-booking-btn i {
+    font-size: 0.78rem;
+}
 /* --- Header Gradient Bar --- */
 .top-navbar {
     height: 70px;

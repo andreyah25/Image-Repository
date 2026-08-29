@@ -348,7 +348,103 @@
             </form>
         </div>
     </div>
+    <!-- =========================================================
+     REJECTION REASON MODAL
+========================================================= -->
 
+    <div class="modal-overlay" id="rejectionModal">
+
+        <div class="modal-card rejection-modal-card">
+
+            <div class="modal-header">
+
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <h2 id="rejectionModalTitle">
+                    Reject Booking
+                </h2>
+
+            </div>
+
+            <form class="modal-form" id="rejectionForm">
+
+                <p class="form-instruction">
+                    Please select a reason for rejecting this request.
+                    The customer will be notified of your decision.
+                </p>
+
+
+                <div class="form-field select-field-wrapper">
+
+                    <select id="rejectionReason" required>
+
+                        <option value="" disabled selected hidden>
+                            Select rejection reason
+                        </option>
+
+                        <option value="The requested date is no longer available.">
+                            Requested date is unavailable
+                        </option>
+
+                        <option value="The requested time slot is no longer available.">
+                            Requested time slot is unavailable
+                        </option>
+
+                        <option value="The selected package or session is unavailable.">
+                            Selected package/session is unavailable
+                        </option>
+
+                        <option value="The booking information provided was incomplete or incorrect.">
+                            Incomplete or incorrect booking information
+                        </option>
+
+                        <option value="The payment could not be verified.">
+                            Payment could not be verified
+                        </option>
+
+                        <option value="The booking does not meet the studio's requirements.">
+                            Booking does not meet studio requirements
+                        </option>
+
+                        <option value="The studio is unavailable on the requested date.">
+                            Studio unavailable
+                        </option>
+
+                        <option value="Other">
+                            Other reason
+                        </option>
+
+                    </select>
+
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+
+                </div>
+
+
+                <div class="form-field" id="customRejectionReasonWrapper" style="display:none;">
+
+                    <textarea id="customRejectionReason" placeholder="Enter the reason..." rows="4"></textarea>
+
+                </div>
+
+
+                <div class="rejection-modal-actions">
+
+                    <button type="button" class="rejection-cancel-btn" id="cancelRejectionBtn">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="rejection-confirm-btn" id="confirmRejectionBtn">
+                        Reject & Notify Customer
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
@@ -395,7 +491,43 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+        function formatBookingTime(timeString) {
 
+            if (!timeString) {
+                return "-";
+            }
+
+            /*
+             * Handles:
+             * 14:30
+             * 14:30:00
+             * 09:00
+             * 09:00:00
+             */
+
+            const parts = String(timeString).split(":");
+
+            if (parts.length < 2) {
+                return timeString;
+            }
+
+            const hours = parseInt(parts[0], 10);
+            const minutes = parts[1];
+
+            if (isNaN(hours)) {
+                return timeString;
+            }
+
+            const date = new Date();
+
+            date.setHours(hours, parseInt(minutes, 10), 0, 0);
+
+            return date.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
+            });
+        }
 
         function formatBookingDate(dateString) {
 
@@ -455,7 +587,812 @@
             }
         }
 
+        /* =========================================================
+           REJECTION REASON SYSTEM
+        ========================================================= */
 
+        let rejectionTargetId = null;
+        let rejectionTargetType = null;
+
+
+        /* =========================================================
+           OPEN REJECTION MODAL
+        ========================================================= */
+
+        document.addEventListener(
+            "click",
+            function (e) {
+
+                /* ---------------------------------------------
+                   BOOKING REJECT
+                --------------------------------------------- */
+
+                const bookingRejectBtn =
+                    e.target.closest(".reject-btn");
+
+                if (bookingRejectBtn) {
+
+                    const bookingId =
+                        bookingRejectBtn.dataset.id;
+
+                    if (!bookingId) {
+                        console.error("Missing booking ID.");
+                        return;
+                    }
+
+                    rejectionTargetId =
+                        bookingId;
+
+                    rejectionTargetType =
+                        "booking";
+
+                    openRejectionModal(
+                        "Reject Booking",
+                        "Reject & Notify Customer"
+                    );
+
+                    return;
+                }
+
+
+                /* ---------------------------------------------
+                   ACCESS REQUEST DECLINE
+                --------------------------------------------- */
+
+                const accessRejectBtn =
+                    e.target.closest(".reject-access-btn");
+
+                if (accessRejectBtn) {
+
+                    const requestId =
+                        accessRejectBtn.dataset.id;
+
+                    if (!requestId) {
+                        console.error(
+                            "Missing access request ID."
+                        );
+
+                        return;
+                    }
+
+                    rejectionTargetId =
+                        requestId;
+
+                    rejectionTargetType =
+                        "access_request";
+
+                    openRejectionModal(
+                        "Decline Gallery Access",
+                        "Decline & Notify Customer"
+                    );
+
+                    return;
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           OPEN MODAL
+        ========================================================= */
+
+        function openRejectionModal(
+            title,
+            buttonText
+        ) {
+
+            const modal =
+                document.getElementById(
+                    "rejectionModal"
+                );
+
+            const titleElement =
+                document.getElementById(
+                    "rejectionModalTitle"
+                );
+
+            const submitButton =
+                document.getElementById(
+                    "confirmRejectionBtn"
+                );
+
+            const form =
+                document.getElementById(
+                    "rejectionForm"
+                );
+
+            const customWrapper =
+                document.getElementById(
+                    "customRejectionReasonWrapper"
+                );
+
+            const customReason =
+                document.getElementById(
+                    "customRejectionReason"
+                );
+
+            if (form) {
+                form.reset();
+            }
+
+            if (titleElement) {
+                titleElement.textContent =
+                    title;
+            }
+
+            if (submitButton) {
+                submitButton.textContent =
+                    buttonText;
+            }
+
+            if (customWrapper) {
+                customWrapper.style.display =
+                    "none";
+            }
+
+            if (customReason) {
+                customReason.required =
+                    false;
+
+                customReason.value =
+                    "";
+            }
+
+            if (modal) {
+
+                modal.classList.add(
+                    "show"
+                );
+
+                document.body.style.overflow =
+                    "hidden";
+            }
+        }
+
+
+        /* =========================================================
+           CLOSE MODAL
+        ========================================================= */
+
+        function closeRejectionModal() {
+
+            const modal =
+                document.getElementById(
+                    "rejectionModal"
+                );
+
+            const form =
+                document.getElementById(
+                    "rejectionForm"
+                );
+
+            const customWrapper =
+                document.getElementById(
+                    "customRejectionReasonWrapper"
+                );
+
+            const customReason =
+                document.getElementById(
+                    "customRejectionReason"
+                );
+
+            if (modal) {
+
+                modal.classList.remove(
+                    "show"
+                );
+            }
+
+            document.body.style.overflow =
+                "";
+
+            if (form) {
+                form.reset();
+            }
+
+            if (customWrapper) {
+                customWrapper.style.display =
+                    "none";
+            }
+
+            if (customReason) {
+                customReason.required =
+                    false;
+            }
+
+            rejectionTargetId =
+                null;
+
+            rejectionTargetType =
+                null;
+        }
+
+
+        /* =========================================================
+           CANCEL
+        ========================================================= */
+
+        const cancelRejectionBtn =
+            document.getElementById(
+                "cancelRejectionBtn"
+            );
+
+        if (cancelRejectionBtn) {
+
+            cancelRejectionBtn.addEventListener(
+                "click",
+                function () {
+
+                    closeRejectionModal();
+
+                }
+            );
+        }
+
+
+        /* =========================================================
+           CLOSE WHEN CLICKING OUTSIDE
+        ========================================================= */
+
+        const rejectionModal =
+            document.getElementById(
+                "rejectionModal"
+            );
+
+        if (rejectionModal) {
+
+            rejectionModal.addEventListener(
+                "click",
+                function (e) {
+
+                    if (
+                        e.target ===
+                        rejectionModal
+                    ) {
+
+                        closeRejectionModal();
+                    }
+
+                }
+            );
+        }
+
+
+        /* =========================================================
+           ESCAPE KEY
+        ========================================================= */
+
+        document.addEventListener(
+            "keydown",
+            function (e) {
+
+                if (
+                    e.key === "Escape" &&
+                    rejectionTargetId
+                ) {
+
+                    closeRejectionModal();
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           CUSTOM "OTHER" REASON
+        ========================================================= */
+
+        const rejectionReason =
+            document.getElementById(
+                "rejectionReason"
+            );
+
+        if (rejectionReason) {
+
+            rejectionReason.addEventListener(
+                "change",
+                function () {
+
+                    const wrapper =
+                        document.getElementById(
+                            "customRejectionReasonWrapper"
+                        );
+
+                    const textarea =
+                        document.getElementById(
+                            "customRejectionReason"
+                        );
+
+
+                    if (
+                        this.value ===
+                        "Other"
+                    ) {
+
+                        if (wrapper) {
+                            wrapper.style.display =
+                                "block";
+                        }
+
+                        if (textarea) {
+                            textarea.required =
+                                true;
+                        }
+
+                    } else {
+
+                        if (wrapper) {
+                            wrapper.style.display =
+                                "none";
+                        }
+
+                        if (textarea) {
+
+                            textarea.required =
+                                false;
+
+                            textarea.value =
+                                "";
+                        }
+                    }
+
+                }
+            );
+        }
+
+
+        /* =========================================================
+           SUBMIT REJECTION
+        ========================================================= */
+
+        const rejectionForm =
+            document.getElementById(
+                "rejectionForm"
+            );
+
+        if (rejectionForm) {
+
+            rejectionForm.addEventListener(
+                "submit",
+                async function (e) {
+
+                    e.preventDefault();
+
+
+                    if (
+                        !rejectionTargetId ||
+                        !rejectionTargetType
+                    ) {
+
+                        alert(
+                            "The request information is missing."
+                        );
+
+                        return;
+                    }
+
+
+                    /* ---------------------------------------------
+                       GET SELECTED REASON
+                    --------------------------------------------- */
+
+                    const selectedReason =
+                        document.getElementById(
+                            "rejectionReason"
+                        )?.value;
+
+
+                    const customReason =
+                        document.getElementById(
+                            "customRejectionReason"
+                        )?.value.trim();
+
+
+                    let finalReason =
+                        selectedReason;
+
+
+                    if (
+                        selectedReason ===
+                        "Other"
+                    ) {
+
+                        if (!customReason) {
+
+                            alert(
+                                "Please enter the rejection reason."
+                            );
+
+                            return;
+                        }
+
+                        finalReason =
+                            customReason;
+                    }
+
+
+                    if (!finalReason) {
+
+                        alert(
+                            "Please select a rejection reason."
+                        );
+
+                        return;
+                    }
+
+
+                    const submitButton =
+                        document.getElementById(
+                            "confirmRejectionBtn"
+                        );
+
+
+                    if (submitButton) {
+
+                        submitButton.disabled =
+                            true;
+
+                        submitButton.textContent =
+                            rejectionTargetType ===
+                                "booking"
+                                ? "Rejecting..."
+                                : "Declining...";
+                    }
+
+
+                    try {
+
+                        /* =================================================
+                           BOOKING REJECTION
+                        ================================================= */
+
+                        if (
+                            rejectionTargetType ===
+                            "booking"
+                        ) {
+
+                            const {
+                                data: booking,
+                                error: bookingError
+                            } =
+                                await supabaseClient
+                                    .from("bookings")
+                                    .select("*")
+                                    .eq(
+                                        "id",
+                                        rejectionTargetId
+                                    )
+                                    .single();
+
+
+                            if (bookingError) {
+                                throw bookingError;
+                            }
+
+
+                            if (!booking) {
+
+                                throw new Error(
+                                    "Booking was not found."
+                                );
+                            }
+
+
+                            /* ---------------------------------------------
+                               UPDATE BOOKING
+                            --------------------------------------------- */
+
+                            const {
+                                error: updateError
+                            } =
+                                await supabaseClient
+                                    .from("bookings")
+                                    .update({
+
+                                        status:
+                                            "Rejected",
+
+                                        rejection_reason:
+                                            finalReason
+
+                                    })
+                                    .eq(
+                                        "id",
+                                        rejectionTargetId
+                                    );
+
+
+                            if (updateError) {
+                                throw updateError;
+                            }
+
+
+                            /* ---------------------------------------------
+                               NOTIFY CUSTOMER
+                            --------------------------------------------- */
+
+                            if (
+                                booking.customer_id
+                            ) {
+
+                                const {
+                                    error:
+                                    notificationError
+                                } =
+                                    await supabaseClient
+                                        .from("notifications")
+                                        .insert({
+
+                                            customer_id:
+                                                booking.customer_id,
+
+                                            booking_id:
+                                                booking.id,
+
+                                            recipient:
+                                                "customer",
+
+                                            title:
+                                                "Booking Request Rejected",
+
+                                            message:
+                                                `Your booking request for ` +
+                                                `${booking.session_type || "your selected session"} ` +
+                                                `on ${formatBookingDate(
+                                                    booking.booking_date
+                                                )} has been rejected.\n\n` +
+                                                `Reason: ${finalReason}\n\n` +
+                                                `If you have any questions, please contact Captured Photography Studio.`,
+
+                                            is_read:
+                                                false,
+
+                                            link:
+                                                null
+
+                                        });
+
+
+                                if (notificationError) {
+
+                                    console.error(
+                                        "Customer notification error:",
+                                        notificationError
+                                    );
+
+                                    /*
+                                     * The booking is already rejected.
+                                     * Do not undo the rejection.
+                                     */
+                                }
+                            }
+
+
+                            showToast(
+                                "Booking Rejected",
+                                `${booking.full_name}'s booking has been rejected and the customer has been notified.`
+                            );
+
+
+                            await loadBookedSessions();
+
+                        }
+
+
+                        /* =================================================
+                           ACCESS REQUEST DECLINE
+                        ================================================= */
+
+                        else if (
+                            rejectionTargetType ===
+                            "access_request"
+                        ) {
+
+                            const {
+                                data: request,
+                                error: requestError
+                            } =
+                                await supabaseClient
+                                    .from(
+                                        "gallery_access_requests"
+                                    )
+                                    .select("*")
+                                    .eq(
+                                        "id",
+                                        rejectionTargetId
+                                    )
+                                    .single();
+
+
+                            if (requestError) {
+                                throw requestError;
+                            }
+
+
+                            if (!request) {
+
+                                throw new Error(
+                                    "Access request was not found."
+                                );
+                            }
+
+
+                            /* ---------------------------------------------
+                               GET BOOKING
+                            --------------------------------------------- */
+
+                            let booking =
+                                null;
+
+
+                            if (
+                                request.booking_id
+                            ) {
+
+                                const {
+                                    data: bookingData,
+                                    error: bookingError
+                                } =
+                                    await supabaseClient
+                                        .from(
+                                            "bookings"
+                                        )
+                                        .select("*")
+                                        .eq(
+                                            "id",
+                                            request.booking_id
+                                        )
+                                        .single();
+
+
+                                if (
+                                    !bookingError
+                                ) {
+
+                                    booking =
+                                        bookingData;
+                                }
+                            }
+
+                            const {
+                                error: updateError
+                            } =
+                                await supabaseClient
+                                    .from(
+                                        "gallery_access_requests"
+                                    )
+                                    .update({
+
+                                        status:
+                                            "declined",
+
+                                        rejection_reason:
+                                            finalReason
+
+                                    })
+                                    .eq(
+                                        "id",
+                                        rejectionTargetId
+                                    );
+
+
+                            if (updateError) {
+                                throw updateError;
+                            }
+
+
+                            /* ---------------------------------------------
+                               CUSTOMER ID
+                            --------------------------------------------- */
+
+                            const customerId =
+                                request.customer_id ||
+                                booking?.customer_id ||
+                                null;
+
+
+                            /* ---------------------------------------------
+                               NOTIFY CUSTOMER
+                            --------------------------------------------- */
+
+                            if (customerId) {
+
+                                const {
+                                    error:
+                                    notificationError
+                                } =
+                                    await supabaseClient
+                                        .from(
+                                            "notifications"
+                                        )
+                                        .insert({
+
+                                            customer_id:
+                                                customerId,
+
+                                            booking_id:
+                                                request.booking_id ||
+                                                null,
+
+                                            recipient:
+                                                "customer",
+
+                                            title:
+                                                "Gallery Access Request Declined",
+
+                                            message:
+                                                `Your gallery access request has been declined.\n\n` +
+                                                `Reason: ${finalReason}\n\n` +
+                                                `You may submit another access request if access is required.`,
+
+                                            is_read:
+                                                false,
+
+                                            link:
+                                                null
+
+                                        });
+
+
+                                if (notificationError) {
+
+                                    console.error(
+                                        "Customer notification error:",
+                                        notificationError
+                                    );
+                                }
+                            }
+
+
+                            showToast(
+                                "Access Declined",
+                                "The customer has been notified of the reason."
+                            );
+
+
+                            await loadAccessRequests();
+                        }
+
+
+                        /* ---------------------------------------------
+                           CLOSE MODAL
+                        --------------------------------------------- */
+
+                        closeRejectionModal();
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "REJECTION ERROR:",
+                            error
+                        );
+
+                        alert(
+                            "The request could not be rejected.\n\n" +
+                            error.message
+                        );
+
+                    } finally {
+
+                        if (submitButton) {
+
+                            submitButton.disabled =
+                                false;
+
+                            submitButton.textContent =
+                                rejectionTargetType ===
+                                    "booking"
+                                    ? "Reject & Notify Customer"
+                                    : "Decline & Notify Customer";
+                        }
+
+                    }
+
+                }
+            );
+        }
         /* =========================================================
            NOTIFICATIONS
         ========================================================= */
@@ -999,18 +1936,6 @@
                     : "";
 
 
-            /* =========================================================
-               SORT BOOKINGS
-               
-               RULE:
-               1. Pending bookings first
-               2. Other non-confirmed bookings next
-               3. Confirmed bookings LAST
-               
-               Within each group:
-               oldest booking first
-               ========================================================= */
-
             const sortedBookings = [...allBookedSessions].sort((a, b) => {
 
                 const statusA =
@@ -1294,8 +2219,8 @@
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                    booking.booking_time || "-"
+                  ${escapeHtml(
+                    formatBookingTime(booking.booking_time)
                 )}
                 </td>
 
@@ -1332,14 +2257,45 @@
                 </td>
 
                 <td>
-                    ${escapeHtml(
+    ${escapeHtml(
                     booking.notes || "-"
                 )}
-                </td>
+</td>
 
-                <td>
-                    ${actionHTML}
-                </td>
+<td>
+    ${booking.rejection_reason
+                        ? `
+                <span
+                    style="
+                        display:inline-block;
+                        max-width:250px;
+                        padding:6px 10px;
+                        border-radius:6px;
+                        background:#f8dddd;
+                        color:black;
+                        font-size:12px;
+                        line-height:1.4;
+                    "
+                    title="${escapeHtml(
+                            booking.rejection_reason
+                        )}"
+                >
+                    ${escapeHtml(
+                            booking.rejection_reason
+                        )}
+                </span>
+            `
+                        : `
+                <span style="color:#999;">
+                    -
+                </span>
+            `
+                    }
+</td>
+
+<td>
+    ${actionHTML}
+</td>
 
             </tr>
         `;
@@ -1414,24 +2370,6 @@
         document.addEventListener("keydown", function (e) {
             if (e.key === "Escape") closePaymentProofModal();
         });
-
-
-        /* =========================================================
-           CREATE CLIENT REPOSITORY
-           
-           This is the important new function.
-    
-           When a booking becomes Confirmed:
-    
-           bookings
-              ↓
-           repository_client_links
-              ↓
-           unique access_token
-              ↓
-           client-gallery.html?token=...
-        ========================================================= */
-
         async function createClientRepository(
             booking
         ) {
@@ -1440,11 +2378,6 @@
                 "Creating repository for:",
                 booking.full_name
             );
-
-
-            /* -----------------------------------------------------
-               CHECK IF REPOSITORY ALREADY EXISTS
-            ----------------------------------------------------- */
 
             const {
                 data: existingRepository,
@@ -1485,11 +2418,6 @@
                 return existingRepository;
             }
 
-
-            /* -----------------------------------------------------
-               GET ADMIN USER
-            ----------------------------------------------------- */
-
             const {
                 data: {
                     user
@@ -1500,17 +2428,8 @@
                     .getUser();
 
 
-            /* -----------------------------------------------------
-               GENERATE UNIQUE TOKEN
-            ----------------------------------------------------- */
-
             const uniqueToken =
                 crypto.randomUUID();
-
-
-            /* -----------------------------------------------------
-               INSERT REPOSITORY
-            ----------------------------------------------------- */
 
             const {
                 data: repository,
@@ -1556,11 +2475,6 @@
             return repository;
         }
 
-
-        /* =========================================================
-           GENERATE CLIENT LINK
-        ========================================================= */
-
         function getClientRepositoryLink(repository) {
 
             if (!repository || !repository.access_token) {
@@ -1575,12 +2489,6 @@
             );
         }
 
-
-        /* =========================================================
-           CONFIRM BOOKING
-           
-           THIS IS WHERE THE REPOSITORY IS CREATED.
-        ========================================================= */
 
         document.addEventListener(
             "click",
@@ -1730,7 +2638,8 @@
                                             day: "numeric"
                                         }
                                     )} at ${updatedBooking.booking_time} has been confirmed. ` +
-                                    `Your photo repository is now ready.`,
+                                    `Your photo repository will be created once the session was done.` +
+                                    `Thank you for choosing Captured Photography Studio!.`,
 
                                 is_read:
                                     false,
@@ -1746,22 +2655,12 @@
                                 "Notification error:",
                                 notificationError
                             );
-
-                            /*
-                             * Don't fail the whole confirmation
-                             * just because notification failed.
-                             */
                         }
                     }
 
-
-                    /* ---------------------------------------------
-                       SUCCESS
-                    --------------------------------------------- */
-
                     showToast(
                         "Booking Confirmed",
-                        `${updatedBooking.full_name}'s booking has been confirmed and the photo repository has been created.`
+                        `${updatedBooking.full_name}'s booking has been confirmed.`
                     );
 
 
@@ -1874,13 +2773,6 @@
             }
         );
 
-        /* =========================================================
-           COMPLETE BOOKING
-        ========================================================= */
-        /* =========================================================
-           COMPLETE BOOKING
-        ========================================================= */
-
         document.addEventListener(
             "click",
             async function (e) {
@@ -1925,15 +2817,18 @@
                     }
 
                     const {
+                        data: updateBooking,
                         error: statusError
                     } =
                         await supabaseClient
                             .from("bookings")
                             .update({
                                 status: "Completed",
-                                is_archived: true
+
                             })
-                            .eq("id", bookingId);
+                            .eq("id", bookingId)
+                            .select()
+                            .single()
 
                     if (statusError) {
                         throw statusError;
@@ -2584,7 +3479,7 @@
                 <th>Status</th>
 
                 <th>Note</th>
-
+                <th> Rejection Reason </th>
                 <th>Action</th>
 
             </tr>

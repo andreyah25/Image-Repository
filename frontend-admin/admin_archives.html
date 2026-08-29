@@ -571,6 +571,7 @@
                 }
 
                 await archiveCompletedBookings();
+                await archiveFoldersOlderThanTwoMonths();
 
                 await loadArchivedItems();
 
@@ -709,11 +710,6 @@
                     }
                 }
 
-
-                // --------------------------------------------
-                // 2. Delete photo database record
-                // --------------------------------------------
-
                 const {
                     error: photoDeleteError
                 } = await supabaseClient
@@ -724,11 +720,6 @@
                 if (photoDeleteError) {
                     throw photoDeleteError;
                 }
-
-
-                // --------------------------------------------
-                // 3. VERIFY deletion
-                // --------------------------------------------
 
                 const {
                     data: remainingPhoto,
@@ -758,17 +749,7 @@
             }
 
 
-            /*
-             ============================================================
-             FOLDER
-             ============================================================
-            */
-
             if (item.category === "folder") {
-
-                // --------------------------------------------
-                // 1. Get photos in folder
-                // --------------------------------------------
 
                 const {
                     data: photos,
@@ -781,11 +762,6 @@
                 if (photoFetchError) {
                     throw photoFetchError;
                 }
-
-
-                // --------------------------------------------
-                // 2. Delete physical files
-                // --------------------------------------------
 
                 const storagePaths =
                     (photos || [])
@@ -806,11 +782,6 @@
                         throw storageError;
                     }
                 }
-
-
-                // --------------------------------------------
-                // 3. Delete photo records
-                // --------------------------------------------
 
                 const {
                     error: photoDeleteError
@@ -1211,6 +1182,142 @@
 
             console.log(
                 "Finished archiving customers, folders, and photos."
+            );
+        }
+
+        async function archiveFoldersOlderThanTwoMonths() {
+
+            console.log("Checking repository folders older than 2 months...");
+
+            // Calculate the date exactly 2 months ago
+            const twoMonthsAgo = new Date();
+            twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+
+            const cutoffDate = twoMonthsAgo.toISOString();
+
+            console.log("Folder archive cutoff:", cutoffDate);
+
+            /*
+            ============================================================
+            FIND REPOSITORY FOLDERS OLDER THAN 2 MONTHS
+            ============================================================
+            Conditions:
+            - created_at is older than 2 months
+            - is_archived = false
+            */
+
+            const {
+                data: folders,
+                error: folderFetchError
+            } = await supabaseClient
+                .from("repository_client_links")
+                .select("id, booking_id, created_at, is_archived")
+                .eq("is_archived", false)
+                .lt("created_at", cutoffDate);
+
+            if (folderFetchError) {
+
+                console.error(
+                    "Error finding folders older than 2 months:",
+                    folderFetchError
+                );
+
+                throw folderFetchError;
+            }
+
+            if (!folders || folders.length === 0) {
+
+                console.log(
+                    "No repository folders are older than 2 months."
+                );
+
+                return;
+            }
+
+            console.log(
+                `${folders.length} folder(s) are older than 2 months.`
+            );
+
+
+            /*
+            ============================================================
+            ARCHIVE EACH FOLDER
+            ============================================================
+            */
+
+            for (const folder of folders) {
+
+                const archiveTime = new Date().toISOString();
+
+                console.log(
+                    `Archiving folder: ${folder.id}`
+                );
+
+
+                /*
+                ========================================================
+                1. ARCHIVE PHOTOS INSIDE THE FOLDER
+                ========================================================
+                */
+
+                const {
+                    error: photoArchiveError
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .update({
+                        is_archived: true,
+                        archived_at: archiveTime
+                    })
+                    .eq("repository_id", folder.id)
+                    .eq("is_archived", false);
+
+                if (photoArchiveError) {
+
+                    console.error(
+                        `Error archiving photos for folder ${folder.id}:`,
+                        photoArchiveError
+                    );
+
+                    throw photoArchiveError;
+                }
+
+
+                /*
+                ========================================================
+                2. ARCHIVE THE FOLDER
+                ========================================================
+                */
+
+                const {
+                    error: folderArchiveError
+                } = await supabaseClient
+                    .from("repository_client_links")
+                    .update({
+                        is_archived: true,
+                        archived_at: archiveTime
+                    })
+                    .eq("id", folder.id)
+                    .eq("is_archived", false);
+
+                if (folderArchiveError) {
+
+                    console.error(
+                        `Error archiving folder ${folder.id}:`,
+                        folderArchiveError
+                    );
+
+                    throw folderArchiveError;
+                }
+
+
+                console.log(
+                    `Folder ${folder.id} successfully archived.`
+                );
+            }
+
+
+            console.log(
+                "Finished automatic 2-month folder archiving."
             );
         }
         async function loadArchivedItems() {

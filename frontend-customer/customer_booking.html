@@ -97,17 +97,29 @@
                                     <label for="bookingDate">Photo Session Date <span
                                             style="color:red;">*</span></label>
                                     <div class="field-wrapper">
-                                        <input type="text" id="bookingDate" placeholder="Select a date"
-                                            onfocus="(this.type='date')" onblur="(this.type='text')" required>
+                                        <input type="date" id="bookingDate" required>
                                         <i class="fa-regular fa-calendar"></i>
                                     </div>
                                 </div>
                                 <div class="form-group icon-input">
-                                    <label for="bookingTime">Preferred Time <span style="color:red;">*</span></label>
+                                    <label for="bookingTime">
+                                        Preferred Time <span style="color:red;">*</span>
+                                    </label>
+
                                     <div class="field-wrapper">
-                                        <input type="text" id="bookingTime" placeholder="Select a time"
-                                            onfocus="(this.type='time')" onblur="(this.type='text')" required>
-                                        <i class="fa-regular fa-clock"></i>
+                                        <select id="bookingTime" required disabled>
+                                            <option value="" selected>
+                                                Select a date first
+                                            </option>
+                                        </select>
+                                        <small id="bookingAvailabilityMessage" style="
+                                                        display:block;
+                                                        margin-top:7px;
+                                                        color:#666;
+                                                        font-size:0.8rem;">
+                                            Please select a date to see available time slots.
+                                        </small>
+
                                     </div>
                                 </div>
                             </div>
@@ -154,22 +166,6 @@
 
                                 <div>
 
-                                    <div class="form-group">
-                                        <label for="paymentMethod">
-                                            Payment Method
-                                            <span style="color:red">*</span>
-                                        </label>
-
-                                        <select id="paymentMethod" required>
-                                            <option value="" selected disabled>
-                                                Select payment method
-                                            </option>
-
-                                            <option value="GCash">
-                                                GCash
-                                            </option>
-                                        </select>
-                                    </div>
 
                                     <div class="form-group">
                                         <label>
@@ -187,49 +183,15 @@
                                                 Payment Policy</a>.
                                         </small>
                                     </div>
+                                    <select id="paymentMethod" required>
+                                        <option value="" selected disabled>
+                                            Select payment method
+                                        </option>
 
-                                </div>
-
-                                <div id="gcashPaymentBox" style="display:none;">
-
-                                    <h4 style="margin-bottom:15px;">
-                                        Scan to Pay via GCash
-                                    </h4>
-
-                                    <img src="/images/gcash_qr.jpeg" alt="GCash QR" style="
-                                        width:230px;
-                                        border-radius:12px;
-                                        border:1px solid #ddd;
-                                        margin-bottom:15px;
-                                    ">
-
-                                    <!-- Warning & Exact Amount Display Box -->
-                                    <div
-                                        style="background-color: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid #ffeeba; line-height: 1.4;">
-                                        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i>
-                                        <strong>Exact Payment Required:</strong> You must transfer exactly <span
-                                            id="requiredAmountText"
-                                            style="font-weight: 700; text-decoration: underline;">₱0.00</span> via
-                                        GCash. Incomplete payments will not be verified.
-                                    </div>
-
-                                    <!-- Amount Sent Input Field -->
-                                    <div class="form-group" style="margin-bottom: 15px;">
-                                        <label for="amountPaid">
-                                            Amount Sent (₱) <span style="color:red">*</span>
-                                        </label>
-                                        <input type="number" id="amountPaid" placeholder="Enter exact amount sent"
-                                            step="0.01" min="1">
-                                    </div>
-
-                                    <!-- Proof Upload Field -->
-                                    <div class="form-group">
-                                        <label>
-                                            Upload Proof of Payment <span style="color:red">*</span>
-                                        </label>
-                                        <input type="file" id="paymentProof" accept="image/png,image/jpeg,image/jpg">
-                                    </div>
-
+                                        <option value="PayMongo">
+                                            PayMongo
+                                        </option>
+                                    </select>
                                 </div>
 
                             </div>
@@ -764,8 +726,7 @@
                             gallery access restriction, and blacklisting.</li>
                         <li><strong>Slot Reservation:</strong> Your selected date and time slot will only be officially
                             reserved once proof of down payment is uploaded and confirmed.</li>
-                        <li><strong>Rescheduling Policy:</strong> Bookings may be rescheduled at least 24 to 48 hours
-                            prior to your scheduled session, subject to time slot availability.</li>
+
                         <li><strong>Cancellation & No-Show:</strong> Failure to show up or cancelling less than 24 hours
                             before your shoot will result in the immediate forfeiture of your down payment.</li>
                         <li><strong>Remaining Balance:</strong> The remaining balance of your total package fee must be
@@ -786,10 +747,53 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
-
         /* =========================================================
-           PACKAGE PRICE MAPPING & DOWN PAYMENT LOGIC
-           ========================================================= */
+   BOOKING SCHEDULE RULES
+   ========================================================= */
+
+        // Maximum number of bookings accepted per day
+        const MAX_BOOKINGS_PER_DAY = 8;
+
+        // Studio booking hours
+        const BOOKING_START_HOUR = 10; // 10:00 AM
+        const BOOKING_END_HOUR = 21;   // 9:00 PM
+
+        // Available booking times.
+        // Add/remove times here if you want a different schedule.
+        const BOOKING_TIME_SLOTS = [
+            "10:00",
+            "11:00",
+            "12:00",
+            "13:00",
+            "14:00",
+            "15:00",
+            "16:00",
+            "17:00",
+            "18:00",
+            "19:00",
+            "20:00",
+            "21:00"
+        ];
+
+        const BOOKING_DURATIONS = {
+
+            // Basic packages
+            basic_1: 15,
+            basic_2: 20,
+            basic_3: 20,
+            group_package: 60,
+
+            // Graduation packages
+            classic_1: 60,
+            classic_2: 60,
+            classic_3: 70,
+
+            // Special sessions
+            kids: 50,
+            pre_birthday: 50,
+            theme_holiday: 35,
+            maternity: 50
+        };
         const packagePrices = {
             "basic_1": 399,
             "basic_2": 599,
@@ -803,40 +807,508 @@
             "theme_holiday": 1699,
             "maternity": 999
         };
+        /* =========================================================
+           BOOKING AVAILABILITY
+           ========================================================= */
 
+        function getSelectedService() {
+
+            const photoPackage =
+                document.getElementById("photoPackage").value;
+
+            const sessionType =
+                document.getElementById("sessionType").value;
+
+            return sessionType || photoPackage || "";
+        }
+
+
+        /* ---------------------------------------------------------
+           GET SERVICE DURATION
+        --------------------------------------------------------- */
+
+        function getSelectedDuration() {
+
+            const selectedService = getSelectedService();
+
+            return BOOKING_DURATIONS[selectedService] || 60;
+        }
+
+
+        /* ---------------------------------------------------------
+           FORMAT TIME FOR DISPLAY
+        --------------------------------------------------------- */
+
+        function formatBookingTime(time) {
+
+            const [hour, minute] = time.split(":");
+
+            const date = new Date();
+
+            date.setHours(
+                Number(hour),
+                Number(minute),
+                0,
+                0
+            );
+
+            return date.toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+            });
+        }
+
+
+        /* ---------------------------------------------------------
+           CHECK WHETHER DATE IS PAST
+        --------------------------------------------------------- */
+
+        function isPastDate(dateString) {
+            if (!dateString) {
+                return false;
+            }
+
+            const today = new Date();
+
+            // Use local date, not UTC
+            const todayYear = today.getFullYear();
+            const todayMonth = String(today.getMonth() + 1).padStart(2, "0");
+            const todayDay = String(today.getDate()).padStart(2, "0");
+
+            const todayString =
+                `${todayYear}-${todayMonth}-${todayDay}`;
+
+            return dateString < todayString;
+        }
+
+
+        /* ---------------------------------------------------------
+           LOAD AVAILABLE TIMES FOR SELECTED DATE
+        --------------------------------------------------------- */
+
+        async function loadAvailableTimeSlots() {
+
+            const dateInput = document.getElementById("bookingDate");
+            const timeSelect = document.getElementById("bookingTime");
+            const message = document.getElementById("bookingAvailabilityMessage");
+
+            const selectedDate = dateInput.value;
+
+            // Reset time selector
+            timeSelect.innerHTML = "";
+            timeSelect.disabled = true;
+
+            if (!selectedDate) {
+
+                timeSelect.innerHTML =
+                    `<option value="">Select a date first</option>`;
+
+                message.textContent =
+                    "Please select a date to see available time slots.";
+
+                return;
+            }
+
+            /* =========================================================
+               PAST DATE CHECK
+               ========================================================= */
+
+            if (isPastDate(selectedDate)) {
+
+                timeSelect.innerHTML =
+                    `<option value="">This date is unavailable</option>`;
+
+                message.textContent =
+                    "Past dates cannot be booked.";
+
+                return;
+            }
+
+            try {
+
+                message.textContent =
+                    "Checking available time slots...";
+
+                /* =====================================================
+                   GET BOOKINGS FOR SELECTED DATE
+                   ===================================================== */
+
+                const {
+                    data: bookings,
+                    error
+                } = await supabaseClient
+                    .from("bookings")
+                    .select(`
+                id,
+                booking_date,
+                booking_time,
+                status,
+                payment_status,
+                session_type
+            `)
+                    .eq("booking_date", selectedDate);
+
+                if (error) {
+
+                    console.error(
+                        "Failed to load bookings:",
+                        error
+                    );
+
+                    timeSelect.innerHTML =
+                        `<option value="">Unable to load times</option>`;
+
+                    message.textContent =
+                        "Unable to check availability. Please try again.";
+
+                    return;
+                }
+
+                /* =====================================================
+                   FILTER ACTIVE BOOKINGS
+                   ===================================================== */
+
+                const activeBookings = (bookings || []).filter(booking => {
+
+                    const status =
+                        (booking.status || "").toLowerCase().trim();
+
+                    const paymentStatus =
+                        (booking.payment_status || "").toLowerCase().trim();
+
+                    // Ignore cancelled/rejected bookings
+                    if (
+                        status === "cancelled" ||
+                        status === "canceled" ||
+                        status === "rejected" ||
+                        status === "declined"
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        paymentStatus === "cancelled" ||
+                        paymentStatus === "rejected"
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                /* =====================================================
+                   MAXIMUM DAILY BOOKINGS
+                   ===================================================== */
+
+                if (activeBookings.length >= MAX_BOOKINGS_PER_DAY) {
+
+                    timeSelect.innerHTML =
+                        `<option value="">
+                    Fully booked for this date
+                </option>`;
+
+                    message.textContent =
+                        `This date is fully booked. Maximum of ${MAX_BOOKINGS_PER_DAY} bookings per day.`;
+
+                    return;
+                }
+
+                /* =====================================================
+                   GET CURRENT SERVICE DURATION
+                   ===================================================== */
+
+                const requestedDuration = getSelectedDuration();
+
+                console.log("Requested service duration:", requestedDuration);
+
+                /* =====================================================
+                   HELPER: CONVERT TIME TO MINUTES
+                   
+                   Handles:
+                   10:00
+                   10:00:00
+                   10:00:00+00
+                   ===================================================== */
+
+                function timeToMinutes(timeString) {
+
+                    if (!timeString) return null;
+
+                    const timePart = String(timeString)
+                        .trim()
+                        .split("+")[0]
+                        .split("Z")[0];
+
+                    const parts = timePart.split(":");
+
+                    const hours = Number(parts[0]);
+                    const minutes = Number(parts[1]);
+
+                    if (
+                        Number.isNaN(hours) ||
+                        Number.isNaN(minutes)
+                    ) {
+                        return null;
+                    }
+
+                    return (hours * 60) + minutes;
+                }
+
+                /* =====================================================
+                   CONVERT ALL EXISTING BOOKINGS TO TIME RANGES
+                   ===================================================== */
+
+                const existingBookingRanges = activeBookings
+                    .map(booking => {
+
+                        const startMinutes =
+                            timeToMinutes(booking.booking_time);
+
+                        if (startMinutes === null) {
+                            return null;
+                        }
+
+                        /*
+                         * Find the duration of the existing booking.
+                         *
+                         * session_type contains either the package
+                         * or special session key.
+                         */
+                        const existingDuration =
+                            BOOKING_DURATIONS[booking.session_type] || 60;
+
+                        const endMinutes =
+                            startMinutes + existingDuration;
+
+                        return {
+                            start: startMinutes,
+                            end: endMinutes,
+                            bookingTime: booking.booking_time,
+                            sessionType: booking.session_type
+                        };
+
+                    })
+                    .filter(Boolean);
+
+                console.log(
+                    "Existing booking ranges:",
+                    existingBookingRanges
+                );
+
+                /* =====================================================
+                   CHECK WHETHER TWO TIME RANGES OVERLAP
+                   ===================================================== */
+
+                function isOverlapping(
+                    requestedStart,
+                    requestedEnd,
+                    existingStart,
+                    existingEnd
+                ) {
+
+                    return (
+                        requestedStart < existingEnd &&
+                        requestedEnd > existingStart
+                    );
+                }
+
+                /* =====================================================
+                   CHECK EACH AVAILABLE SLOT
+                   ===================================================== */
+
+                const availableTimes =
+                    BOOKING_TIME_SLOTS.filter(time => {
+
+                        const requestedStart =
+                            timeToMinutes(time);
+
+                        if (requestedStart === null) {
+                            return false;
+                        }
+
+                        const requestedEnd =
+                            requestedStart + requestedDuration;
+
+                        /*
+                         * Make sure the requested session does not
+                         * overlap ANY existing booking.
+                         */
+                        const hasConflict =
+                            existingBookingRanges.some(existing => {
+
+                                return isOverlapping(
+                                    requestedStart,
+                                    requestedEnd,
+                                    existing.start,
+                                    existing.end
+                                );
+
+                            });
+
+                        return !hasConflict;
+                    });
+
+                /* =====================================================
+                   DISPLAY AVAILABLE TIMES
+                   ===================================================== */
+
+                if (!availableTimes.length) {
+
+                    timeSelect.innerHTML =
+                        `<option value="">
+                    No available times
+                </option>`;
+
+                    message.textContent =
+                        "There are no available time slots for this date.";
+
+                    return;
+                }
+
+                timeSelect.disabled = false;
+
+                timeSelect.innerHTML =
+                    `<option value="">
+                Select an available time
+            </option>`;
+
+                availableTimes.forEach(time => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = time;
+
+                    option.textContent =
+                        formatBookingTime(time);
+
+                    timeSelect.appendChild(option);
+
+                });
+
+                message.textContent =
+                    `${availableTimes.length} time slot(s) available. ${activeBookings.length}/${MAX_BOOKINGS_PER_DAY} daily bookings used.`;
+
+                console.log(
+                    "Available booking times:",
+                    availableTimes
+                );
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Availability error:",
+                    error
+                );
+
+                timeSelect.innerHTML =
+                    `<option value="">
+                Unable to load availability
+            </option>`;
+
+                message.textContent =
+                    "Something went wrong while checking availability.";
+            }
+        }
+        /*HALF THE DOWNPAYMENT*/
+        /*  function getCalculatedDownpayment() {
+              const photoPackageSelect = document.getElementById("photoPackage");
+              const sessionTypeSelect = document.getElementById("sessionType");
+              const selectedKey = sessionTypeSelect.value || photoPackageSelect.value;
+              const totalPrice = packagePrices[selectedKey] || 0;
+  
+              return {
+                  total: totalPrice,
+                  downpayment: totalPrice * 0.50
+              };
+          }
+  
+          function updateDownpaymentUI() {
+              const downpaymentInput = document.getElementById("downpaymentInput");
+              const requiredAmountText = document.getElementById("requiredAmountText");
+              const { total, downpayment } = getCalculatedDownpayment();
+  
+              if (total > 0) {
+                  const formattedAmount = `₱${downpayment.toFixed(2)}`;
+                  downpaymentInput.value = `${formattedAmount} (50% deposit of ₱${total.toFixed(2)} package - Non-refundable)`;
+  
+                  
+                  if (requiredAmountText) {
+                      requiredAmountText.textContent = formattedAmount;
+                  }
+              } else {
+                  downpaymentInput.value = "Select a package or session first";
+                  if (requiredAmountText) {
+                      requiredAmountText.textContent = "₱0.00";
+                  }
+              }
+          }
+  */
         function getCalculatedDownpayment() {
-            const photoPackageSelect = document.getElementById("photoPackage");
-            const sessionTypeSelect = document.getElementById("sessionType");
-            const selectedKey = sessionTypeSelect.value || photoPackageSelect.value;
-            const totalPrice = packagePrices[selectedKey] || 0;
+
+            const photoPackageSelect =
+                document.getElementById("photoPackage");
+
+            const sessionTypeSelect =
+                document.getElementById("sessionType");
+
+            const selectedKey =
+                sessionTypeSelect.value ||
+                photoPackageSelect.value;
+
+            const totalPrice =
+                packagePrices[selectedKey] || 0;
+
+            const FIXED_RESERVATION_FEE = 1;
 
             return {
                 total: totalPrice,
-                downpayment: totalPrice * 0.50
+                downpayment: totalPrice > 0
+                    ? FIXED_RESERVATION_FEE
+                    : 0
             };
         }
-
         function updateDownpaymentUI() {
-            const downpaymentInput = document.getElementById("downpaymentInput");
-            const requiredAmountText = document.getElementById("requiredAmountText");
-            const { total, downpayment } = getCalculatedDownpayment();
+
+            const downpaymentInput =
+                document.getElementById("downpaymentInput");
+
+            const requiredAmountText =
+                document.getElementById("requiredAmountText");
+
+            const {
+                total,
+                downpayment
+            } = getCalculatedDownpayment();
+
 
             if (total > 0) {
-                const formattedAmount = `₱${downpayment.toFixed(2)}`;
-                downpaymentInput.value = `${formattedAmount} (50% deposit of ₱${total.toFixed(2)} package - Non-refundable)`;
 
-                // Update GCash notice text
+                downpaymentInput.value =
+                    `₱${downpayment.toFixed(2)} reservation fee - Non-refundable`;
+
                 if (requiredAmountText) {
-                    requiredAmountText.textContent = formattedAmount;
+
+                    requiredAmountText.textContent =
+                        `₱${downpayment.toFixed(2)}`;
+
                 }
+
             } else {
-                downpaymentInput.value = "Select a package or session first";
+
+                downpaymentInput.value =
+                    "Select a package or session first";
+
                 if (requiredAmountText) {
-                    requiredAmountText.textContent = "₱0.00";
+
+                    requiredAmountText.textContent =
+                        "₱0.00";
+
                 }
+
             }
         }
-
         (async () => {
 
             console.log("=================================");
@@ -1016,38 +1488,116 @@
 
         document.addEventListener("DOMContentLoaded", function () {
 
+            /* =========================================================
+               BOOKING DATE AVAILABILITY
+               ========================================================= */
+
+            const bookingDate =
+                document.getElementById("bookingDate");
+
+            const bookingTime =
+                document.getElementById("bookingTime");
+
+
+            /* =========================================================
+               SET MINIMUM BOOKING DATE
+               
+               Customers can book:
+               - Today
+               - Tomorrow
+               - Any future date
+        
+               Customers CANNOT book:
+               - Yesterday
+               - Any date before today
+               ========================================================= */
+
+            if (bookingDate) {
+
+                const tomorrow = new Date();
+
+                tomorrow.setDate(tomorrow.getDate() + 1);
+
+                const tomorrowYear =
+                    tomorrow.getFullYear();
+
+                const tomorrowMonth =
+                    String(tomorrow.getMonth() + 1).padStart(2, "0");
+
+                const tomorrowDay =
+                    String(tomorrow.getDate()).padStart(2, "0");
+
+                const tomorrowString =
+                    `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
+
+                bookingDate.setAttribute("min", tomorrowString);
+
+                bookingDate.addEventListener(
+                    "change",
+                    async function () {
+
+                        const selectedDate = this.value;
+
+
+                        if (isPastDate(selectedDate)) {
+
+                            alert(
+                                "Past dates cannot be booked. Please select today or a future date."
+                            );
+
+                            this.value = "";
+
+                            await loadAvailableTimeSlots();
+
+                            return;
+                        }
+                        await loadAvailableTimeSlots();
+
+                    }
+                );
+            }
             // LISTENERS TO AUTOMATICALLY UPDATE DOWN PAYMENT ON SELECTION
             const photoPackageSelect = document.getElementById("photoPackage");
             const sessionTypeSelect = document.getElementById("sessionType");
 
             if (photoPackageSelect) {
-                photoPackageSelect.addEventListener("change", function () {
-                    if (this.value) sessionTypeSelect.value = "";
-                    updateDownpaymentUI();
-                });
-            }
 
-            if (sessionTypeSelect) {
-                sessionTypeSelect.addEventListener("change", function () {
-                    if (this.value) photoPackageSelect.value = "";
-                    updateDownpaymentUI();
-                });
-            }
+                photoPackageSelect.addEventListener(
+                    "change",
+                    async function () {
 
-            // AUTOMATICALLY SHOW GCASH QR UPON SELECTION
-            const paymentSelect = document.getElementById("paymentMethod");
-            const gcashBox = document.getElementById("gcashPaymentBox");
+                        if (this.value) {
+                            sessionTypeSelect.value = "";
+                        }
 
-            if (paymentSelect && gcashBox) {
-                paymentSelect.addEventListener("change", function () {
-                    if (this.value === "GCash") {
-                        gcashBox.style.display = "block";
-                    } else {
-                        gcashBox.style.display = "none";
+                        updateDownpaymentUI();
+                        if (bookingDate.value) {
+                            await loadAvailableTimeSlots();
+                        }
+
                     }
-                });
-            }
+                );
+            } if (sessionTypeSelect) {
 
+                sessionTypeSelect.addEventListener(
+                    "change",
+                    async function () {
+
+                        if (this.value) {
+                            photoPackageSelect.value = "";
+                        }
+
+                        updateDownpaymentUI();
+
+                        // Recalculate available times
+                        // because session duration may change
+                        if (bookingDate.value) {
+                            await loadAvailableTimeSlots();
+                        }
+
+                    }
+                );
+            }
             function bindModal(openBtnId, modalId, closeBtnId) {
 
                 const modal = document.getElementById(modalId);
@@ -1208,191 +1758,578 @@
             }
         }
 
+        /* =========================================================
+    PAYMONGO BOOKING SUBMISSION
+    ========================================================= */
+
         const bookingForm = document.getElementById("bookingForm");
 
         bookingForm.addEventListener("submit", async (e) => {
 
             e.preventDefault();
 
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            const submitButton = bookingForm.querySelector(
+                'button[type="submit"]'
+            );
 
-            if (!user) {
-                alert("Please login first.");
-                return;
-            }
+            try {
 
-            const fullName = document.getElementById("fullName").value.trim();
-            const contact = document.getElementById("contactNumber").value.trim();
-            const email = user.email;
-            const date = document.getElementById("bookingDate").value;
-            const time = document.getElementById("bookingTime").value;
-            const photoPackage = document.getElementById("photoPackage").value.trim();
-            const session = document.getElementById("sessionType").value.trim();
+                /* =====================================================
+                   1. GET LOGGED-IN USER
+                ===================================================== */
 
-            // Customer can choose either one
-            const selectedType = session || photoPackage;
-            const paymentMethod = document.getElementById("paymentMethod").value;
-            const notes = document.getElementById("notes").value.trim();
-            const paymentFile = document.getElementById("paymentProof").files[0];
+                const {
+                    data: { user },
+                    error: authError
+                } = await supabaseClient.auth.getUser();
 
-            // Validate contact number 
-            if (!/^09\d{9}$/.test(contact)) {
-                alert("Please enter a valid 11-digit mobile number (e.g. 09123456789).");
-                document.getElementById("contactNumber").focus();
-                return;
-            }
+                if (authError || !user) {
 
-            if (
-                !fullName ||
-                !contact ||
-                !email ||
-                !date ||
-                !time ||
-                !paymentMethod
-            ) {
-                alert("Please complete all required fields.");
-                return;
-            }
+                    alert("Your session has expired. Please log in again.");
 
-            // --- GCASH PAYMENT & AMOUNT VALIDATION ---
-            if (paymentMethod === "GCash") {
-                const requiredDownpayment = getCalculatedDownpayment().downpayment;
-                const amountPaidInput = document.getElementById("amountPaid");
-                const enteredAmount = parseFloat(amountPaidInput.value);
+                    window.location.href =
+                        "/frontend-customer/customer_login.html";
 
-                // 1. Check if user typed an amount
-                if (!enteredAmount || isNaN(enteredAmount)) {
-                    alert("Please enter the exact GCash amount you sent.");
-                    amountPaidInput.focus();
                     return;
                 }
 
-                // 2. Validate typed amount against required deposit
-                if (enteredAmount !== requiredDownpayment) {
-                    alert(`Incorrect payment amount entered. The required down payment is ₱${requiredDownpayment.toFixed(2)}.`);
-                    amountPaidInput.focus();
+
+                /* =====================================================
+                   2. GET FORM VALUES
+                ===================================================== */
+
+                const fullName =
+                    document.getElementById("fullName").value.trim();
+
+                const contact =
+                    document.getElementById("contactNumber").value.trim();
+
+                const email =
+                    user.email;
+
+                const date =
+                    document.getElementById("bookingDate").value;
+
+                const time =
+                    document.getElementById("bookingTime").value;
+
+                const photoPackage =
+                    document.getElementById("photoPackage").value.trim();
+
+                const sessionType =
+                    document.getElementById("sessionType").value.trim();
+
+                const paymentMethod =
+                    document.getElementById("paymentMethod").value;
+
+                const notes =
+                    document.getElementById("notes").value.trim();
+
+
+                /* =====================================================
+                   3. DETERMINE SELECTED SERVICE
+                ===================================================== */
+
+                const selectedType =
+                    sessionType || photoPackage;
+
+                if (!selectedType) {
+
+                    alert(
+                        "Please select a photo package or special session."
+                    );
+
                     return;
                 }
 
-                // 3. Check for proof file
-                if (!paymentFile) {
-                    alert("Please upload your GCash payment proof.");
-                    return;
-                }
-            }
 
-            // ---------------------------------------------
-            // UPLOAD PROOF OF PAYMENT FILE TO SUPABASE
-            // ---------------------------------------------
-            let paymentProofURL = null;
+                /* =====================================================
+                   4. VALIDATE CONTACT NUMBER
+                ===================================================== */
 
-            if (paymentFile) {
-                const fileName = `${user.id}/${Date.now()}-${paymentFile.name}`;
+                if (!/^09\d{9}$/.test(contact)) {
 
-                const { error: uploadError } = await supabaseClient.storage
-                    .from("payment-proofs")
-                    .upload(fileName, paymentFile);
+                    alert(
+                        "Please enter a valid 11-digit mobile number (e.g. 09123456789)."
+                    );
 
-                if (uploadError) {
-                    console.error(uploadError);
-                    alert("Failed to upload payment proof.");
+                    document
+                        .getElementById("contactNumber")
+                        .focus();
+
                     return;
                 }
 
-                const { data: publicUrlData } = supabaseClient.storage
-                    .from("payment-proofs")
-                    .getPublicUrl(fileName);
 
-                paymentProofURL = publicUrlData.publicUrl;
-            }
+                /* =====================================================
+                   5. VALIDATE REQUIRED FIELDS
+                ===================================================== */
 
-            // Calculate actual down payment to save to database
-            const calculatedDownpayment = getCalculatedDownpayment().downpayment;
+                if (
+                    !fullName ||
+                    !contact ||
+                    !email ||
+                    !date ||
+                    !time ||
+                    !paymentMethod
+                ) {
 
-            // ---------------------------------------------
-            // INSERT BOOKING INTO DATABASE
-            // ---------------------------------------------
-            const { data: bookingData, error } = await supabaseClient
-                .from("bookings")
-                .insert([
-                    {
-                        customer_id: user.id,
-                        full_name: fullName,
-                        contact_number: contact,
-                        email: email,
-                        booking_date: date,
-                        booking_time: time,
+                    alert(
+                        "Please complete all required fields."
+                    );
 
-                        // Either Special Session OR Photo Package
-                        session_type: selectedType,
+                    return;
+                }
 
-                        notes: notes,
-                        payment_method: paymentMethod,
-                        payment_proof: paymentProofURL,
-                        downpayment_amount: calculatedDownpayment,
-                        payment_status: "Pending Verification",
-                        status: "Pending"
+
+                /* =====================================================
+                   6. VALIDATE DATE
+                ===================================================== */
+
+                const today = new Date();
+
+                const todayYear =
+                    today.getFullYear();
+
+                const todayMonth =
+                    String(today.getMonth() + 1)
+                        .padStart(2, "0");
+
+                const todayDay =
+                    String(today.getDate())
+                        .padStart(2, "0");
+
+                const todayString =
+                    `${todayYear}-${todayMonth}-${todayDay}`;
+
+
+                if (date < todayString) {
+
+                    alert(
+                        "This date is no longer available for booking. Please select a future date."
+                    );
+
+                    document
+                        .getElementById("bookingDate")
+                        .value = "";
+
+                    document
+                        .getElementById("bookingTime")
+                        .innerHTML =
+                        `<option value="">Select a date first</option>`;
+
+                    document
+                        .getElementById("bookingTime")
+                        .disabled = true;
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   7. MAKE SURE A TIME WAS ACTUALLY SELECTED
+                ===================================================== */
+
+                if (!time) {
+
+                    alert(
+                        "Please select an available booking time."
+                    );
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   8. CALCULATE PAYMENT
+                ===================================================== */
+
+                const payment =
+                    getCalculatedDownpayment();
+
+                const totalAmount =
+                    payment.total;
+
+                const downpaymentAmount =
+                    payment.downpayment;
+
+
+                if (
+                    !totalAmount ||
+                    !downpaymentAmount
+                ) {
+
+                    alert(
+                        "Please select a package or session first."
+                    );
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   9. CHECK PAYMENT METHOD
+                ===================================================== */
+
+                if (paymentMethod !== "PayMongo") {
+
+                    alert(
+                        "Please select PayMongo as your payment method."
+                    );
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   10. DOUBLE-CHECK AVAILABILITY
+                   
+                   Prevents submitting a slot that became occupied
+                   while the customer was filling out the form.
+                ===================================================== */
+
+                submitButton.disabled = true;
+
+                submitButton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Checking availability...
+        `;
+
+
+                const {
+                    data: existingBookings,
+                    error: availabilityError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select(`
+                id,
+                booking_date,
+                booking_time,
+                status,
+                payment_status,
+                session_type
+            `)
+                    .eq("booking_date", date);
+
+
+                if (availabilityError) {
+
+                    console.error(
+                        "Final availability check failed:",
+                        availabilityError
+                    );
+
+                    alert(
+                        "Unable to verify the selected time. Please try again."
+                    );
+
+                    return;
+                }
+
+
+                const activeBookings =
+                    (existingBookings || [])
+                        .filter(booking => {
+
+                            const status =
+                                (booking.status || "")
+                                    .toLowerCase()
+                                    .trim();
+
+                            const paymentStatus =
+                                (booking.payment_status || "")
+                                    .toLowerCase()
+                                    .trim();
+
+
+                            if (
+                                status === "cancelled" ||
+                                status === "canceled" ||
+                                status === "rejected" ||
+                                status === "declined"
+                            ) {
+                                return false;
+                            }
+
+
+                            if (
+                                paymentStatus === "cancelled" ||
+                                paymentStatus === "rejected"
+                            ) {
+                                return false;
+                            }
+
+
+                            return true;
+                        });
+
+
+                if (
+                    activeBookings.length >=
+                    MAX_BOOKINGS_PER_DAY
+                ) {
+
+                    alert(
+                        "Sorry, this date has just become fully booked."
+                    );
+
+                    await loadAvailableTimeSlots();
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   11. CHECK SELECTED TIME AGAINST EXISTING BOOKINGS
+                ===================================================== */
+
+                function timeToMinutes(timeString) {
+
+                    if (!timeString) return null;
+
+                    const timePart =
+                        String(timeString)
+                            .trim()
+                            .split("+")[0]
+                            .split("Z")[0];
+
+                    const parts =
+                        timePart.split(":");
+
+                    const hours =
+                        Number(parts[0]);
+
+                    const minutes =
+                        Number(parts[1]);
+
+                    if (
+                        Number.isNaN(hours) ||
+                        Number.isNaN(minutes)
+                    ) {
+                        return null;
                     }
-                ])
-                .select()
-                .single();
 
-            if (error) {
-                console.error("Booking error:", error);
-                alert(error.message);
-                return;
+                    return (
+                        hours * 60
+                    ) + minutes;
+                }
+
+
+                const requestedStart =
+                    timeToMinutes(time);
+
+                const requestedEnd =
+                    requestedStart +
+                    getSelectedDuration();
+
+
+                const hasConflict =
+                    activeBookings.some(booking => {
+
+                        const existingStart =
+                            timeToMinutes(
+                                booking.booking_time
+                            );
+
+                        if (
+                            existingStart === null
+                        ) {
+                            return false;
+                        }
+
+
+                        const existingDuration =
+                            BOOKING_DURATIONS[
+                            booking.session_type
+                            ] || 60;
+
+
+                        const existingEnd =
+                            existingStart +
+                            existingDuration;
+
+
+                        return (
+                            requestedStart <
+                            existingEnd &&
+                            requestedEnd >
+                            existingStart
+                        );
+
+                    });
+
+
+                if (hasConflict) {
+
+                    alert(
+                        "Sorry, that time slot has just been booked by another customer. Please select another time."
+                    );
+
+                    await loadAvailableTimeSlots();
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   12. CREATE PAYMONGO CHECKOUT
+                ===================================================== */
+
+                submitButton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Creating payment checkout...
+        `;
+
+
+                console.log(
+                    "Creating PayMongo checkout..."
+                );
+
+                console.log({
+                    customer_id: user.id,
+                    full_name: fullName,
+                    email: email,
+                    contact_number: contact,
+                    booking_date: date,
+                    booking_time: time,
+                    session_type: selectedType,
+                    total_amount: totalAmount,
+                    downpayment_amount: downpaymentAmount
+                });
+
+
+                const response =
+                    await fetch(
+                        "http://localhost:3000/api/paymongo/create-checkout",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                customer_id: user.id,
+
+                                full_name: fullName,
+
+                                email: email,
+
+                                contact_number: contact,
+
+                                booking_date: date,
+
+                                booking_time: time,
+
+                                session_type: selectedType,
+
+                                notes: notes,
+
+                                payment_method: "PayMongo",
+
+                                total_amount: totalAmount,
+
+                                downpayment_amount: downpaymentAmount
+
+                            })
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                console.log(
+                    "PayMongo response:",
+                    result
+                );
+
+
+                /* =====================================================
+                   13. HANDLE SERVER ERROR
+                ===================================================== */
+
+                if (!response.ok) {
+
+                    console.error(
+                        "PayMongo checkout error:",
+                        result
+                    );
+
+                    alert(
+                        result.message ||
+                        result.error ||
+                        "Unable to create the payment checkout."
+                    );
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   14. REDIRECT CUSTOMER TO PAYMONGO
+                ===================================================== */
+
+                const checkoutUrl =
+                    result.checkout_url ||
+                    result.checkoutUrl ||
+                    result.url;
+
+
+                if (!checkoutUrl) {
+
+                    console.error(
+                        "No PayMongo checkout URL returned:",
+                        result
+                    );
+
+                    alert(
+                        "Payment checkout was created, but no checkout URL was returned."
+                    );
+
+                    return;
+                }
+
+
+                console.log(
+                    "Redirecting to PayMongo:",
+                    checkoutUrl
+                );
+
+
+                submitButton.innerHTML = `
+            <i class="fa-solid fa-arrow-right"></i>
+            Redirecting to PayMongo...
+        `;
+
+                window.location.href =
+                    checkoutUrl;
+
             }
+            catch (error) {
 
-            // CUSTOMER NOTIFICATION
-            await supabaseClient
-                .from("notifications")
-                .insert({
-                    customer_id: user.id,
-                    booking_id: bookingData.id,
-                    recipient: "customer",
-                    title: "Booking Submitted",
-                    message:
-                        "Your booking request has been submitted successfully. Please wait while the administrator verifies your payment.",
-                    is_read: false
-                });
+                console.error(
+                    "Booking submission error:",
+                    error
+                );
 
-            // ADMIN NOTIFICATION
-            await supabaseClient
-                .from("notifications")
-                .insert({
-                    customer_id: user.id,
-                    booking_id: bookingData.id,
-                    recipient: "admin",
-                    title: "New Booking Reservation",
-                    message:
-                        `${fullName} booked a session on ${date} at ${time}\nWaiting for approval.`,
-                    is_read: false
-                });
+                alert(
+                    "Something went wrong while creating your payment. Please try again."
+                );
 
-            alert("Booking request submitted successfully!");
+            }
+            finally {
 
-            // Reset Form Fields
-            bookingForm.reset();
-            updateDownpaymentUI();
-            document.getElementById("gcashPaymentBox").style.display = "none";
+                submitButton.disabled = false;
 
-            document.getElementById("fullName").value =
-                user.user_metadata?.full_name || customerName || "";
+                submitButton.innerHTML = `
+            <i class="fa-solid fa-calendar-check"></i>
+            Confirm Booking
+        `;
 
-            document.getElementById("emailAddress").value =
-                user.email;
-        });
-
-        const contactInput = document.getElementById("contactNumber");
-
-        contactInput.addEventListener("input", function () {
-
-            // Remove everything except numbers
-            this.value = this.value.replace(/[^0-9]/g, "");
-
-            // Limit to 11 digits
-            if (this.value.length > 11) {
-                this.value = this.value.slice(0, 11);
             }
 
         });

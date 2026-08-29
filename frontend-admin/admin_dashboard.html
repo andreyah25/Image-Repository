@@ -823,7 +823,7 @@
                 error
             } = await supabaseClient
                 .from("bookings")
-                .select("id, total_price, payment_status");
+                .select("id, status, payment_status, downpayment_status, full_payment_amount");
 
             if (error) {
 
@@ -841,26 +841,28 @@
 
             (bookings || []).forEach(booking => {
 
-                const totalPrice =
-                    Number(booking.total_price) || 0;
+                const downpayment =
+                    Number(booking.downpayment_amount) || 0;
 
-                const paymentStatus =
-                    String(booking.payment_status || "")
+                const fullpaymemt =
+                    String(booking.full_payment_amount || "")
                         .trim()
                         .toLowerCase();
 
                 let amountPaid = 0;
+                const paymentStatus = String(booking.paymentStatus || "")
+                    .trim()
+                    .toLocaleLowerCase()
 
-                /*
-                 * FULL PAYMENT
-                 */
                 if (
                     paymentStatus === "paid" ||
-                    paymentStatus === "completed" ||
+                    paymentStatus === "partial" ||
+                    paymentStatus === "partially paid" ||
+                    paymentStatus === "half" ||
+                    paymentStatus === "half paid" ||
                     paymentStatus === "fully paid" ||
-                    paymentStatus === "full"
+                    paymentStatus === "completed"
                 ) {
-
                     amountPaid = totalPrice;
 
                 }
@@ -869,34 +871,25 @@
                  * HALF / PARTIAL PAYMENT
                  */
                 else if (
-                    paymentStatus === "half" ||
-                    paymentStatus === "half paid" ||
-                    paymentStatus === "partial" ||
-                    paymentStatus === "partially paid"
+                    paymentStatus === "fully paid" ||
+                    paymentStatus === "completed"
+
                 ) {
 
-                    amountPaid = totalPrice * 0.50;
+                    amountReceived += fullpayment;
 
                 }
+                totalIncome += amountReceived;
 
-                /*
-                 * UNPAID / PENDING
-                 */
-                else {
-
-                    amountPaid = 0;
-
-                }
-
-                totalIncome += amountPaid;
 
                 console.log(
                     "Booking payment:",
                     {
                         id: booking.id,
-                        totalPrice,
+                        downpayment,
+                        fullpayment,
                         paymentStatus,
-                        amountPaid
+                        amountReceived
                     }
                 );
 
@@ -1430,7 +1423,96 @@
 
 
         });
+        async function updateExpiredGalleryAccess() {
 
+            console.log("Checking for expired gallery access...");
+
+            const now = new Date().toISOString();
+
+            /*
+            ============================================================
+            FIND APPROVED ACCESS THAT HAS EXPIRED
+            ============================================================
+            */
+
+            const {
+                data: expiredAccess,
+                error: fetchError
+            } = await supabaseClient
+                .from("gallery_access_requests")
+                .select(`
+            id,
+            repository_id,
+            access_expires_at,
+            status,
+            is_expired
+        `)
+                .eq("status", "approved")
+                .eq("is_expired", false)
+                .not("access_expires_at", "is", null)
+                .lte("access_expires_at", now);
+
+            if (fetchError) {
+
+                console.error(
+                    "Error finding expired gallery access:",
+                    fetchError
+                );
+
+                return;
+            }
+
+            if (!expiredAccess || expiredAccess.length === 0) {
+
+                console.log(
+                    "No gallery access has expired."
+                );
+
+                return;
+            }
+
+            console.log(
+                `${expiredAccess.length} access record(s) expired.`
+            );
+
+
+            /*
+            ============================================================
+            MARK EACH ACCESS REQUEST AS EXPIRED
+            ============================================================
+            */
+
+            for (const access of expiredAccess) {
+
+                const {
+                    error: updateError
+                } = await supabaseClient
+                    .from("gallery_access_requests")
+                    .update({
+                        is_expired: true,
+                        status: "expired"
+                    })
+                    .eq("id", access.id);
+
+                if (updateError) {
+
+                    console.error(
+                        `Error expiring access ${access.id}:`,
+                        updateError
+                    );
+
+                    continue;
+                }
+
+                console.log(
+                    `Access ${access.id} marked as expired.`
+                );
+            }
+
+            console.log(
+                "Finished updating expired gallery access."
+            );
+        }
         async function loadDashboardStats() {
 
             console.log("Loading dashboard stats...");
@@ -1459,9 +1541,11 @@
             }
 
             await loadTotalPhotos();
-
+            
             await loadTotalIncome();
+            await updateExpiredGalleryAccess()
             await loadActiveSessions();
+            await loadExpiredFolderAccess();
 
 
             const today =
@@ -1500,7 +1584,7 @@
         let calendarInstance = null;
         async function loadActiveSessions() {
 
-            console.log("Checking currently active customer galleries...");
+            console.log("Checking customers with active folder access...");
 
             const activeElement =
                 document.getElementById("activeSessions");
@@ -1509,31 +1593,32 @@
                 return;
             }
 
-            /*
-             * A customer is considered ACTIVE if they
-             * contacted the gallery within the last 2 minutes.
-             */
-
-            const twoMinutesAgo =
-                new Date(
-                    Date.now() - (2 * 60 * 1000)
-                ).toISOString();
+            const now = new Date().toISOString();
 
             const {
-                data,
+                data: accessRecords,
                 error
             } = await supabaseClient
-                .from("gallery_sessions")
-                .select("access_token")
-                .gte(
-                    "last_seen_at",
-                    twoMinutesAgo
-                );
+                .from("gallery_access_requests")
+                .select(`
+            id,
+            customer_id,
+            customer_email,
+            booking_id,
+            repository_id,
+            status,
+            access_expires_at,
+            is_expired
+        `)
+                .eq("status", "approved")
+                .eq("is_expired", false)
+                .not("repository_id", "is", null)
+                .gt("access_expires_at", now);
 
             if (error) {
 
                 console.error(
-                    "Active gallery sessions error:",
+                    "Active folder access error:",
                     error
                 );
 
@@ -1543,22 +1628,104 @@
             }
 
             /*
-             * Count UNIQUE customers/tokens.
-             */
+            ============================================================
+            COUNT UNIQUE FOLDER ACCOUNTS
+            ============================================================
+            */
 
-            const uniqueCustomers =
-                new Set(
-                    (data || []).map(
-                        session => session.access_token
-                    )
-                );
+            const uniqueFolders = new Set();
+
+            (accessRecords || []).forEach(record => {
+
+                /*
+                 * repository_id represents the customer's folder.
+                 * Use this so multiple access records for the same
+                 * folder do not inflate the count.
+                 */
+
+                if (record.repository_id) {
+                    uniqueFolders.add(
+                        String(record.repository_id)
+                    );
+                }
+
+            });
 
             activeElement.textContent =
-                uniqueCustomers.size;
+                uniqueFolders.size.toLocaleString();
 
             console.log(
-                "🟢 ACTIVE CUSTOMERS:",
-                uniqueCustomers.size
+                "ACTIVE FOLDER ACCESS:",
+                uniqueFolders.size
+            );
+        }
+        async function loadExpiredFolderAccess() {
+
+            console.log("Checking expired folder access...");
+
+            const expiredElement =
+                document.getElementById("expiredSessions");
+
+            if (!expiredElement) {
+                return;
+            }
+
+            const now = new Date().toISOString();
+
+
+
+            const {
+                data: expiredRecords,
+                error
+            } = await supabaseClient
+                .from("gallery_access_requests")
+                .select(`
+            id,
+            customer_id,
+            customer_email,
+            booking_id,
+            repository_id,
+            status,
+            access_expires_at,
+            is_expired
+        `)
+                .not("repository_id", "is", null)
+                .lte("access_expires_at", now);
+
+            if (error) {
+
+                console.error(
+                    "Expired folder access error:",
+                    error
+                );
+
+                expiredElement.textContent = "0";
+
+                return;
+            }
+
+
+
+            const uniqueExpiredFolders = new Set();
+
+            (expiredRecords || []).forEach(record => {
+
+                if (record.repository_id) {
+
+                    uniqueExpiredFolders.add(
+                        String(record.repository_id)
+                    );
+
+                }
+
+            });
+
+            expiredElement.textContent =
+                uniqueExpiredFolders.size.toLocaleString();
+
+            console.log(
+                " EXPIRED FOLDER ACCESS:",
+                uniqueExpiredFolders.size
             );
         }
         async function loadBookingCalendar() {
@@ -1901,7 +2068,7 @@
                 title: "New Customer Booking",
 
                 message:
-                    `${booking.full_name || "A customer"} has a confirmed booking.`,
+                    `${booking.full_name || "A customer"} booked a session. Proceed to confirm the session.`,
 
                 date:
                     booking.created_at ||
@@ -1915,11 +2082,6 @@
             };
 
         }
-
-
-        /* =========================================================
-           LOAD EXISTING BOOKING NOTIFICATIONS
-        ========================================================= */
         async function loadNotifications() {
 
             if (!currentUser) {
@@ -1930,12 +2092,6 @@
             try {
 
                 console.log("Loading notifications from database...");
-
-                /*
-                 * =========================================================
-                 * 1. LOAD NOTIFICATIONS
-                 * =========================================================
-                 */
 
                 const {
                     data: notificationRows,
@@ -1967,13 +2123,6 @@
 
                 notifications = [];
 
-
-                /*
-                 * =========================================================
-                 * 2. LOAD THE BOOKING FOR EACH NOTIFICATION
-                 * =========================================================
-                 */
-
                 for (const notificationRow of notificationRows || []) {
 
                     if (!notificationRow.booking_id) {
@@ -2002,31 +2151,13 @@
                     }
 
 
-                    /*
-                     * Booking was deleted.
-                     * Do not display a broken notification.
-                     */
-
                     if (!booking) {
                         continue;
                     }
-
-
-                    /*
-                     * =====================================================
-                     * CREATE FRONTEND NOTIFICATION
-                     * =====================================================
-                     */
-
                     const notification = {
 
                         id:
                             String(notificationRow.id),
-
-                        /*
-                         * Your database does NOT have a type column.
-                         * We define the type here for frontend use only.
-                         */
                         type:
                             "booking",
 
@@ -2200,11 +2331,6 @@
             );
         }
 
-
-        /* =========================================================
-           CLICK NOTIFICATION
-        ========================================================= */
-
         async function handleNotificationClick(
             notification,
             item
@@ -2264,11 +2390,6 @@
             }
 
         }
-
-
-        /* =========================================================
-           RENDER NOTIFICATIONS
-        ========================================================= */
 
         function renderNotifications() {
 
@@ -2385,16 +2506,9 @@
 
                 }
             );
-
-
             updateNotificationBadge();
 
         }
-
-
-        /* =========================================================
-           UPDATE BADGE
-        ========================================================= */
 
         function updateNotificationBadge() {
 
@@ -2433,11 +2547,6 @@
                     : String(unreadCount);
 
         }
-
-
-        /* =========================================================
-           MARK ALL READ
-        ========================================================= */
 
         markNotificationsRead.addEventListener(
             "click",
@@ -2486,8 +2595,6 @@
             }
         );
 
-        /*  CLOSE BOOKING MODAL  */
-
         closeNotificationBookingModal.addEventListener(
             "click",
             function (e) {
@@ -2502,10 +2609,6 @@
 
             }
         );
-
-        /* =========================================================
-           CLICK OUTSIDE BOOKING MODAL
-        ========================================================= */
 
         notificationBookingModal.addEventListener(
             "click",
@@ -2527,11 +2630,6 @@
 
             }
         );
-
-
-        /* =========================================================
-           PROCESS BOOKING
-        ========================================================= */
 
         notificationBookingProcess.addEventListener(
             "click",
@@ -2615,13 +2713,6 @@
                 .channel(
                     "staff-notifications-" + currentUser.id
                 )
-
-                /*
-                 * =====================================================
-                 * NEW NOTIFICATION
-                 * =====================================================
-                 */
-
                 .on(
                     "postgres_changes",
                     {
@@ -2638,21 +2729,13 @@
 
                         const notificationRow = payload.new;
 
-                        /*
-                         * Only handle booking notifications
-                         */
-
+                        
                         if (
                             !notificationRow ||
                             notificationRow.type !== "booking"
                         ) {
                             return;
                         }
-
-                        /*
-                         * Get the booking connected to
-                         * this notification.
-                         */
 
                         let booking = null;
 
@@ -2682,11 +2765,6 @@
 
                             booking = data;
                         }
-
-                        /*
-                         * Prevent duplicate notifications
-                         */
-
                         const alreadyExists =
                             notifications.some(
                                 notification =>
@@ -2706,11 +2784,6 @@
 
                             return;
                         }
-
-                        /*
-                         * Create frontend notification
-                         */
-
                         const notification = {
 
                             id:
@@ -2747,46 +2820,19 @@
 
                         };
 
-                        /*
-                         * Add to top of notification list
-                         */
 
                         notifications.unshift(
                             notification
                         );
-
-                        /*
-                         * Keep only latest 15
-                         */
 
                         notifications =
                             notifications.slice(
                                 0,
                                 15
                             );
-
-                        /*
-                         * Render
-                         */
-
                         renderNotifications();
-
-                        /*
-                         * Refresh calendar
-                         */
-
                         await refreshBookingCalendar();
-
-                        /*
-                         * Refresh dashboard stats
-                         */
-
                         await loadDashboardStats();
-
-                        /*
-                         * Refresh analytics
-                         */
-
                         await loadAnalyticsYears();
 
                         console.log(
@@ -2796,13 +2842,6 @@
 
                     }
                 )
-
-                /*
-                 * =====================================================
-                 * NOTIFICATION UPDATED
-                 * =====================================================
-                 */
-
                 .on(
                     "postgres_changes",
                     {
@@ -2842,12 +2881,6 @@
 
                     }
                 )
-
-                /*
-                 * =====================================================
-                 * NOTIFICATION DELETED
-                 * =====================================================
-                 */
 
                 .on(
                     "postgres_changes",
@@ -2890,108 +2923,7 @@
 
         }
 
-        /* 
-
-        function addRealtimeBookingNotification(
-            booking
-        ) {
-
-            if (
-                !booking ||
-                !booking.id
-            ) {
-
-                return;
-
-            }
-
-
-            const notificationId =
-                "booking-" +
-                String(booking.id);
-
-
-           
-
-            const alreadyExists =
-                notifications.some(
-                    function (notification) {
-
-                        return (
-                            notification.id ===
-                            notificationId
-                        );
-
-                    }
-                );
-
-
-            if (alreadyExists) {
-
-                console.log(
-                    "Notification already exists:",
-                    notificationId
-                );
-
-                return;
-
-            }
-
-
-            const notification = {
-
-                id:
-                    notificationId,
-
-                type:
-                    "booking",
-
-                title:
-                    "New Customer Booking",
-
-                message:
-                    `${booking.full_name || "A customer"} has a confirmed booking.`,
-
-                date:
-                    booking.created_at ||
-                    new Date().toISOString(),
-
-                unread:
-                    true,
-
-                booking:
-                    booking
-
-            };
-
-
-            notifications.unshift(
-                notification
-            );
-
-
-            notifications =
-                notifications.slice(
-                    0,
-                    15
-                );
-
-
-            renderNotifications();
-
-
-            console.log(
-                "✅ NEW BOOKING NOTIFICATION ADDED:",
-                notification
-            );
-
-        }
-
-*/
-        /* =========================================================
-           FORMAT DATE
-        ========================================================= */
-
+      
         function formatNotificationDate(date) {
 
             if (!date) {
@@ -3026,11 +2958,6 @@
             );
 
         }
-
-
-        /* =========================================================
-           ESCAPE HTML
-        ========================================================= */
 
         function escapeNotificationHTML(value) {
 

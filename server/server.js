@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const crypto = require("crypto");
 const express = require("express");
 const cors = require("cors");
 const { Resend } = require("resend");
@@ -25,30 +26,9 @@ const SUPABASE_SERVICE_ROLE_KEY =
     process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
 
-const MAYA_PUBLIC_KEY = process.env.MAYA_PUBLIC_KEY;
-const MAYA_SECRET_KEY = process.env.MAYA_SECRET_KEY;
 
-/*
-    SANDBOX
-    ---------------------------------------------------------
-    Keep these URLs while developing/testing.
-
-    When you move to production, change:
-        https://pg-sandbox.paymaya.com
-
-    to the production Maya Checkout endpoint.
-*/
-
-const MAYA_CHECKOUT_URL =
-    "https://pg-sandbox.paymaya.com/checkout/v1/checkouts";
-
-const MAYA_PAYMENT_URL =
-    "https://pg-sandbox.paymaya.com/payments/v1/payments";
-
-/* =========================================================
-   CLIENTS
-========================================================= */
 
 const resend = RESEND_API_KEY
     ? new Resend(RESEND_API_KEY)
@@ -69,21 +49,12 @@ app.get("/", (req, res) => {
         message: "Captured server is running"
     });
 });
-
-/* =========================================================
-   HEALTH CHECK
-========================================================= */
-
 app.get("/health", (req, res) => {
     res.json({
         success: true,
-        server: "online",
-        maya: MAYA_PUBLIC_KEY
-            ? "configured"
-            : "not configured"
+        server: "online"
     });
 });
-
 /* =========================================================
    OTP
 ========================================================= */
@@ -219,41 +190,7 @@ app.post("/send-otp", async (req, res) => {
     }
 });
 
-/* =========================================================
-   MAYA HELPERS
-========================================================= */
 
-/*
-    Maya Create Checkout uses the PUBLIC API KEY.
-
-    Maya documentation:
-    Create Checkout -> Public Key
-*/
-function mayaPublicAuth() {
-
-    return Buffer
-        .from(`${MAYA_PUBLIC_KEY}:`)
-        .toString("base64");
-}
-
-
-/*
-    Maya payment retrieval uses the SECRET API KEY.
-
-    This is intentionally kept on the server.
-    NEVER put MAYA_SECRET_KEY in your HTML/JavaScript.
-*/
-function mayaSecretAuth() {
-
-    return Buffer
-        .from(`${MAYA_SECRET_KEY}:`)
-        .toString("base64");
-}
-
-
-/*
-    Convert PHP values safely to numbers.
-*/
 function money(value) {
 
     const number = Number(value);
@@ -264,1150 +201,994 @@ function money(value) {
 
     return Number(number.toFixed(2));
 }
-
-
 /* =========================================================
-   CREATE MAYA CHECKOUT
+   PAYMONGO CREATE CHECKOUT
 ========================================================= */
 
-app.post(
-    "/api/maya/create-checkout",
-    async (req, res) => {
+app.post("/api/paymongo/create-checkout", async (req, res) => {
+    try {
 
-        try {
+        const {
+            customer_id,
+            full_name,
+            email,
+            contact_number,
+            booking_date,
+            booking_time,
+            session_type,
+            notes,
+            payment_method,
+            total_amount,
+            downpayment_amount
+        } = req.body;
 
-            const {
-                bookingId,
-                amount,
-                fullName,
-                email,
-                description
-            } = req.body;
 
-            /* -------------------------------------------------
-               VALIDATION
-            ------------------------------------------------- */
+        /* =====================================================
+           1. VALIDATE BOOKING INFORMATION
+        ===================================================== */
 
-            if (
-                !bookingId ||
-                amount === undefined ||
-                amount === null ||
-                !email
-            ) {
+        if (
+            !customer_id ||
+            !full_name ||
+            !email ||
+            !contact_number ||
+            !booking_date ||
+            !booking_time ||
+            !session_type ||
+            !downpayment_amount
+        ) {
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "bookingId, amount, and email are required."
-                });
-            }
+            return res.status(400).json({
+                success: false,
+                error: "Missing required booking information."
+            });
 
-            if (!MAYA_PUBLIC_KEY) {
+        }
 
-                return res.status(500).json({
-                    success: false,
-                    message:
-                        "MAYA_PUBLIC_KEY is not configured."
-                });
-            }
 
-            const paymentAmount = money(amount);
+        /* =====================================================
+           2. VALIDATE PAYMENT METHOD
+        ===================================================== */
 
-            if (
-                paymentAmount === null ||
-                paymentAmount <= 0
-            ) {
+        if (payment_method !== "PayMongo") {
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Invalid payment amount."
-                });
-            }
+            return res.status(400).json({
+                success: false,
+                error: "Invalid payment method."
+            });
 
-            /* -------------------------------------------------
-               VERIFY BOOKING EXISTS
-            ------------------------------------------------- */
+        }
 
-            const {
-                data: booking,
-                error: bookingError
-            } = await supabase
-                .from("bookings")
-                .select("*")
-                .eq("id", bookingId)
-                .maybeSingle();
 
-            if (bookingError) {
+        /* =====================================================
+           3. VALIDATE DOWN PAYMENT
+        ===================================================== */
 
-                console.error(
-                    "Booking lookup error:",
-                    bookingError
-                );
+        const amount = Number(downpayment_amount);
 
-                return res.status(500).json({
-                    success: false,
-                    message:
-                        "Unable to verify booking."
-                });
-            }
+        if (
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
 
-            if (!booking) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid down payment amount."
+            });
 
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Booking not found."
-                });
-            }
+        }
 
-            /* -------------------------------------------------
-               PREVENT PAYMENT DUPLICATION
-            ------------------------------------------------- */
 
-            if (
-                String(
-                    booking.payment_status || ""
-                ).toLowerCase() === "paid"
-            ) {
+        const amountInCentavos =
+            Math.round(amount * 100);
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "This booking has already been paid."
-                });
-            }
 
-            /* -------------------------------------------------
-               CREATE UNIQUE MAYA REFERENCE
-            ------------------------------------------------- */
+        /* =====================================================
+           4. GENERATE INTERNAL PAYMENT REFERENCE
+        ===================================================== */
 
-            const requestReferenceNumber =
-                `CAPTURED-${bookingId}-${Date.now()}`
-                    .slice(0, 36);
+        const bookingReference =
+            `CAPTURED-${Date.now()}-${crypto
+                .randomBytes(4)
+                .toString("hex")
+                .toUpperCase()}`;
 
-            /* -------------------------------------------------
-               MAYA CHECKOUT DATA
-            ------------------------------------------------- */
 
-            const checkoutData = {
+        console.log(
+            "Payment reference:",
+            bookingReference
+        );
 
-                totalAmount: {
-                    value:
-                        paymentAmount.toFixed(2),
-                    currency: "PHP"
-                },
 
-                buyer: {
+        /* =====================================================
+           5. CHECK WHETHER TIME SLOT IS ALREADY BOOKED
+        ===================================================== */
 
-                    firstName:
-                        fullName || "Customer",
+        const {
+            data: existingBookings,
+            error: existingBookingError
+        } = await supabase
+            .from("bookings")
+            .select(`
+                id,
+                booking_date,
+                booking_time,
+                status,
+                payment_status
+            `)
+            .eq("booking_date", booking_date)
+            .eq("booking_time", booking_time);
 
-                    email: email
-                },
 
-                items: [
+        if (existingBookingError) {
 
-                    {
-                        name:
-                            description ||
-                            "Photography Session Reservation",
-
-                        quantity: "1",
-
-                        amount: {
-
-                            value:
-                                paymentAmount.toFixed(2),
-
-                            currency: "PHP"
-                        },
-
-                        totalAmount: {
-
-                            value:
-                                paymentAmount.toFixed(2),
-
-                            currency: "PHP"
-                        }
-                    }
-
-                ],
-
-                redirectUrl: {
-
-                    success:
-                        "https://captured-photo-studio.onrender.com/frontend-customer/payment_successful.html",
-
-                    failure:
-                        "https://captured-photo-studio.onrender.com/frontend-customer/payment_failed.html",
-
-                    cancel:
-                        "https://captured-photo-studio.onrender.com/frontend-customer/payment_cancelled.html"
-                },
-
-                requestReferenceNumber,
-
-                metadata: {
-
-                    bookingId:
-                        String(bookingId)
-                }
-            };
-
-            console.log(
-                "Creating Maya Checkout:",
-                {
-                    bookingId,
-                    amount: paymentAmount,
-                    requestReferenceNumber
-                }
+            console.error(
+                "Existing booking check error:",
+                existingBookingError
             );
 
-            /* -------------------------------------------------
-               CALL MAYA
-            ------------------------------------------------- */
+            return res.status(500).json({
+                success: false,
+                error: "Unable to check booking availability."
+            });
 
-            const mayaResponse = await fetch(
-                MAYA_CHECKOUT_URL,
+        }
+
+
+        const conflictingBooking =
+            (existingBookings || []).find(booking => {
+
+                const status =
+                    (booking.status || "")
+                        .toLowerCase()
+                        .trim();
+
+                const paymentStatus =
+                    (booking.payment_status || "")
+                        .toLowerCase()
+                        .trim();
+
+
+                if (
+                    status === "cancelled" ||
+                    status === "canceled" ||
+                    status === "rejected" ||
+                    status === "declined"
+                ) {
+                    return false;
+                }
+
+
+                if (
+                    paymentStatus === "cancelled" ||
+                    paymentStatus === "rejected"
+                ) {
+                    return false;
+                }
+
+
+                return true;
+
+            });
+
+
+        if (conflictingBooking) {
+
+            return res.status(409).json({
+                success: false,
+                error: "This time slot is no longer available. Please select another time."
+            });
+
+        }
+
+
+        /* =====================================================
+           6. CREATE BOOKING FIRST
+        ===================================================== */
+
+        const {
+            data: bookingData,
+            error: bookingError
+        } = await supabase
+            .from("bookings")
+            .insert({
+
+                customer_id:
+                    customer_id,
+
+                full_name:
+                    full_name,
+
+                contact_number:
+                    contact_number,
+
+                email:
+                    email,
+
+                booking_date:
+                    booking_date,
+
+                booking_time:
+                    booking_time,
+
+                session_type:
+                    session_type,
+
+                notes:
+                    notes || null,
+
+                payment_method:
+                    "PayMongo",
+
+                downpayment_amount:
+                    amount,
+
+                payment_status:
+                    "Pending Payment",
+
+                status:
+                    "Pending",
+
+                paymongo_reference:
+                    bookingReference
+
+            })
+            .select()
+            .single();
+
+
+        if (bookingError) {
+
+            console.error(
+                "Booking creation error:",
+                bookingError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to create booking.",
+                message: bookingError.message
+            });
+
+        }
+
+
+        console.log(
+            "Booking created:",
+            bookingData.id
+        );
+
+
+        /* =====================================================
+           7. CREATE PAYMONGO CHECKOUT
+        ===================================================== */
+
+        const paymongoResponse =
+            await fetch(
+                "https://api.paymongo.com/v1/checkout_sessions",
                 {
 
                     method: "POST",
 
                     headers: {
 
-                        "Authorization":
-                            `Basic ${mayaPublicAuth()}`,
-
                         "Content-Type":
-                            "application/json"
+                            "application/json",
+
+                        "Authorization":
+                            `Basic ${Buffer.from(
+                                process.env.PAYMONGO_SECRET_KEY + ":"
+                            ).toString("base64")}`
+
                     },
 
-                    body:
-                        JSON.stringify(
-                            checkoutData
-                        )
+                    body: JSON.stringify({
+
+                        data: {
+
+                            attributes: {
+
+                                billing: {
+
+                                    name:
+                                        full_name,
+
+                                    email:
+                                        email,
+
+                                    phone:
+                                        contact_number
+
+                                },
+
+                                send_email_receipt:
+                                    true,
+
+                                show_description:
+                                    true,
+
+                              description:
+                                    `Reservation down payment - ${session_type} - ${booking_date} ${booking_time} - Reference: ${bookingReference}`,
+                               metadata: {
+                                    booking_reference: bookingReference,
+                                     booking_id: bookingData.id
+                                    },
+
+                                    line_items: [
+
+                                    {
+
+                                        currency:
+                                            "PHP",
+
+                                        amount:
+                                            amountInCentavos,
+
+                                        name:
+                                            `Reservation Down Payment - ${session_type}`,
+
+                                        quantity:
+                                            1
+
+                                    }
+
+                                ],
+
+                                payment_method_types: [
+                                    "gcash",
+                                    "grab_pay",
+                                    "paymaya"
+                                ],
+
+                                success_url:
+                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_success.html?reference=${encodeURIComponent(bookingReference)}`,
+
+                                cancel_url:
+                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(bookingReference)}`
+
+                            }
+
+                        }
+
+                    })
+
                 }
             );
 
-            const mayaData =
-                await mayaResponse.json();
 
-            console.log(
-                "Maya Checkout Response:",
-                mayaData
+        const paymongoData =
+            await paymongoResponse.json();
+
+
+        console.log(
+            "PayMongo response:",
+            JSON.stringify(
+                paymongoData,
+                null,
+                2
+            )
+        );
+
+
+        /* =====================================================
+           8. HANDLE PAYMONGO ERROR
+        ===================================================== */
+
+        if (!paymongoResponse.ok) {
+
+            console.error(
+                "PayMongo API error:",
+                paymongoData
             );
 
-            /* -------------------------------------------------
-               MAYA ERROR
-            ------------------------------------------------- */
 
-            if (!mayaResponse.ok) {
+            // Payment checkout failed.
+            // Cancel the temporary booking.
 
-                return res.status(
-                    mayaResponse.status
-                ).json({
+            await supabase
+                .from("bookings")
+                .update({
 
-                    success: false,
+                    status:
+                        "Cancelled",
 
-                    message:
-                        "Maya Checkout creation failed.",
+                    payment_status:
+                        "Payment Failed"
 
-                    maya:
-                        mayaData
-                });
-            }
-
-            /* -------------------------------------------------
-               GET MAYA CHECKOUT ID
-            ------------------------------------------------- */
-
-            const checkoutId =
-                mayaData.checkoutId ||
-                mayaData.id;
-
-            const redirectUrl =
-                mayaData.redirectUrl;
-
-            if (!checkoutId) {
-
-                console.error(
-                    "Maya did not return checkoutId:",
-                    mayaData
+                })
+                .eq(
+                    "id",
+                    bookingData.id
                 );
 
-                return res.status(500).json({
 
-                    success: false,
+            return res.status(
+                paymongoResponse.status
+            ).json({
 
-                    message:
-                        "Maya did not return a checkout ID.",
+                success: false,
 
-                    maya:
-                        mayaData
-                });
-            }
+                error:
+                    "PayMongo checkout creation failed.",
 
-            if (!redirectUrl) {
+                message:
+                    paymongoData?.errors?.[0]?.detail ||
+                    "Unable to create PayMongo checkout."
 
-                console.error(
-                    "Maya did not return redirectUrl:",
-                    mayaData
+            });
+
+        }
+
+
+        /* =====================================================
+           9. GET PAYMONGO CHECKOUT DATA
+        ===================================================== */
+
+        const checkoutSession =
+            paymongoData?.data;
+
+
+        const checkoutUrl =
+            checkoutSession?.attributes?.checkout_url;
+
+
+        if (!checkoutUrl) {
+
+            console.error(
+                "PayMongo did not return checkout URL."
+            );
+
+
+            await supabase
+                .from("bookings")
+                .update({
+
+                    status:
+                        "Cancelled",
+
+                    payment_status:
+                        "Payment Failed"
+
+                })
+                .eq(
+                    "id",
+                    bookingData.id
                 );
 
-                return res.status(500).json({
 
-                    success: false,
+            return res.status(500).json({
 
-                    message:
-                        "Maya did not return a checkout URL.",
+                success: false,
 
-                    maya:
-                        mayaData
-                });
-            }
+                error:
+                    "PayMongo did not return a checkout URL."
 
-            /* -------------------------------------------------
-               SAVE MAYA REFERENCES TO BOOKING
-               
-               These columns need to exist:
-                   maya_checkout_id
-                   maya_request_reference
-            ------------------------------------------------- */
+            });
+
+        }
+
+
+        /* =====================================================
+           10. SAVE PAYMONGO CHECKOUT ID
+        ===================================================== */
+
+        const {
+            error: updateBookingError
+        } = await supabase
+            .from("bookings")
+            .update({
+
+                paymongo_checkout_id:
+                    checkoutSession.id
+
+            })
+            .eq(
+                "id",
+                bookingData.id
+            );
+
+
+        if (updateBookingError) {
+
+            console.error(
+                "Failed to save PayMongo checkout ID:",
+                updateBookingError
+            );
+
+        }
+
+
+        /* =====================================================
+           11. RETURN CHECKOUT URL TO FRONTEND
+        ===================================================== */
+
+        return res.json({
+
+            success:
+                true,
+
+            booking_id:
+                bookingData.id,
+
+            checkout_url:
+                checkoutUrl,
+
+            checkout_session_id:
+                checkoutSession.id,
+
+            reference:
+                bookingReference
+
+        });
+
+    }
+    catch (error) {
+
+        console.error(
+            "Create PayMongo checkout error:",
+            error
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            error:
+                "Internal server error.",
+
+            message:
+                error.message
+
+        });
+
+    }
+
+});
+/* =========================================================
+   PAYMONGO WEBHOOK
+========================================================= */
+
+app.post("/api/paymongo/webhook", async (req, res) => {
+
+    try {
+
+        console.log("====================================");
+        console.log("PAYMONGO WEBHOOK RECEIVED");
+        console.log("====================================");
+
+        const event = req.body;
+
+        console.log(
+            "PayMongo webhook:",
+            JSON.stringify(event, null, 2)
+        );
+
+        /* =====================================================
+           1. GET EVENT INFORMATION
+        ===================================================== */
+
+        const eventType = event?.data?.attributes?.type;
+
+        const resource =
+            event?.data?.attributes?.data;
+
+        const checkoutSessionId =
+            resource?.id;
+
+        const attributes =
+            resource?.attributes || {};
+
+        console.log(
+            "Event type:",
+            eventType
+        );
+
+        console.log(
+            "Checkout session ID:",
+            checkoutSessionId
+        );
+
+
+        /* =====================================================
+           2. ONLY PROCESS PAYMENT EVENTS
+        ===================================================== */
+
+        if (
+            eventType !== "checkout_session.payment.paid" &&
+            eventType !== "checkout_session.payment.failed"
+        ) {
+
+            console.log(
+                "Webhook event ignored:",
+                eventType
+            );
+
+            return res.json({
+                success: true,
+                message: "Event ignored."
+            });
+
+        }
+
+
+        /* =====================================================
+           3. GET REFERENCE FROM CHECKOUT
+        ===================================================== */
+
+        const reference =
+            attributes?.description
+                ?.match(/CAPTURED-[A-Z0-9-]+/i)?.[0];
+
+
+        console.log(
+            "Detected booking reference:",
+            reference
+        );
+
+
+        /* =====================================================
+           4. FIND BOOKING
+        ===================================================== */
+
+        let booking = null;
+
+
+        if (reference) {
 
             const {
-                error: updateReferenceError
+                data,
+                error
+            } = await supabase
+                .from("bookings")
+                .select("*")
+                .eq(
+                    "paymongo_reference",
+                    reference
+                )
+                .maybeSingle();
+
+
+            if (error) {
+
+                console.error(
+                    "Booking lookup error:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Unable to find booking."
+                });
+
+            }
+
+            booking = data;
+
+        }
+
+
+        /* =====================================================
+           5. FALLBACK: FIND BY CHECKOUT SESSION ID
+        ===================================================== */
+
+        if (!booking && checkoutSessionId) {
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("bookings")
+                .select("*")
+                .eq(
+                    "paymongo_checkout_id",
+                    checkoutSessionId
+                )
+                .maybeSingle();
+
+
+            if (error) {
+
+                console.error(
+                    "Checkout ID lookup error:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Unable to find booking."
+                });
+
+            }
+
+            booking = data;
+
+        }
+
+
+        /* =====================================================
+           6. BOOKING NOT FOUND
+        ===================================================== */
+
+        if (!booking) {
+
+            console.error(
+                "No booking found for PayMongo webhook."
+            );
+
+            return res.status(404).json({
+                success: false,
+                error: "Booking not found."
+            });
+
+        }
+
+
+        console.log(
+            "Booking found:",
+            booking.id
+        );
+
+
+        /* =====================================================
+           7. PAYMENT SUCCESS
+        ===================================================== */
+
+        if (
+            eventType ===
+            "checkout_session.payment.paid"
+        ) {
+
+            console.log(
+                "PAYMENT SUCCESSFUL"
+            );
+
+
+            const {
+                error: updateError
             } = await supabase
                 .from("bookings")
                 .update({
 
-                    maya_checkout_id:
-                        checkoutId,
-
-                    maya_request_reference:
-                        requestReferenceNumber,
-
                     payment_status:
-                        "Pending",
+                        "Paid",
+
+                    status:
+                        "Pending"
 
                 })
-                .eq("id", bookingId);
-
-            if (updateReferenceError) {
-
-                console.error(
-                    "Unable to save Maya references:",
-                    updateReferenceError
+                .eq(
+                    "id",
+                    booking.id
                 );
 
-                /*
-                    IMPORTANT:
-                    The Maya checkout was created, but the
-                    booking reference could not be saved.
 
-                    We stop here rather than redirecting the
-                    customer into a payment that we cannot
-                    reliably associate with the booking.
-                */
+            if (updateError) {
+
+                console.error(
+                    "Failed to update paid booking:",
+                    updateError
+                );
 
                 return res.status(500).json({
-
                     success: false,
-
-                    message:
-                        "Maya checkout was created, but the booking could not be linked to the payment.",
-
-                    error:
-                        updateReferenceError.message
+                    error: "Failed to update booking."
                 });
-            }
 
-            /* -------------------------------------------------
-               RETURN CHECKOUT INFORMATION
-            ------------------------------------------------- */
-
-            return res.json({
-
-                success: true,
-
-                checkoutId,
-
-                redirectUrl,
-
-                requestReferenceNumber
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Maya Checkout Error:",
-                error
-            );
-
-            return res.status(500).json({
-
-                success: false,
-
-                message:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/* =========================================================
-   MAYA PAYMENT WEBHOOK
-========================================================= */
-
-/*
-    IMPORTANT:
-
-    Register this URL in Maya Manager:
-
-    https://captured-photo-studio.onrender.com/api/maya/webhook
-
-    Subscribe to:
-
-        PAYMENT_SUCCESS
-        PAYMENT_FAILED
-        PAYMENT_EXPIRED
-        PAYMENT_CANCELLED
-*/
-app.post(
-    "/api/maya/webhook",
-    async (req, res) => {
-
-        /*
-            Maya expects a quick 2xx response.
-
-            We still process the payload here, but we return
-            only after basic processing begins.
-        */
-
-        try {
-
-            const payload = req.body || {};
-
-            console.log(
-                "===================================="
-            );
-
-            console.log(
-                "MAYA WEBHOOK RECEIVED"
-            );
-
-            console.log(
-                JSON.stringify(
-                    payload,
-                    null,
-                    2
-                )
-            );
-
-            console.log(
-                "===================================="
-            );
-
-            /* -------------------------------------------------
-               BASIC PAYLOAD VALUES
-            ------------------------------------------------- */
-
-            const paymentStatus =
-                payload.paymentStatus ||
-                payload.status;
-
-            const paymentId =
-                payload.id;
-
-            const requestReferenceNumber =
-                payload.requestReferenceNumber;
-
-            const receiptNumber =
-                payload.receiptNumber || null;
-
-            /* -------------------------------------------------
-               CHECK EVENT TYPE
-            ------------------------------------------------- */
-
-            if (!paymentStatus) {
-
-                console.warn(
-                    "Maya webhook has no paymentStatus."
-                );
-
-                return res.status(200).json({
-
-                    success: true,
-
-                    message:
-                        "Webhook received without payment status."
-                });
-            }
-
-            /* -------------------------------------------------
-               FIND BOOKING
-            ------------------------------------------------- */
-
-            let booking = null;
-            let bookingError = null;
-
-            /*
-                Primary lookup:
-                Maya requestReferenceNumber
-            */
-
-            if (requestReferenceNumber) {
-
-                const result =
-                    await supabase
-                        .from("bookings")
-                        .select("*")
-                        .eq(
-                            "maya_request_reference",
-                            requestReferenceNumber
-                        )
-                        .maybeSingle();
-
-                booking =
-                    result.data;
-
-                bookingError =
-                    result.error;
-            }
-
-            /*
-                Fallback:
-                Maya checkout/payment ID
-            */
-
-            if (
-                !booking &&
-                paymentId
-            ) {
-
-                const result =
-                    await supabase
-                        .from("bookings")
-                        .select("*")
-                        .eq(
-                            "maya_checkout_id",
-                            paymentId
-                        )
-                        .maybeSingle();
-
-                booking =
-                    result.data;
-
-                bookingError =
-                    result.error;
-            }
-
-            if (bookingError) {
-
-                console.error(
-                    "Webhook booking lookup error:",
-                    bookingError
-                );
-
-                return res.status(200).json({
-
-                    success: false,
-
-                    message:
-                        "Webhook received but booking lookup failed."
-                });
-            }
-
-            if (!booking) {
-
-                console.error(
-                    "No booking found for Maya payment:",
-                    {
-                        paymentId,
-                        requestReferenceNumber
-                    }
-                );
-
-                /*
-                    Return 200 so Maya doesn't keep retrying an
-                    event that your system cannot correlate.
-                */
-
-                return res.status(200).json({
-
-                    success: false,
-
-                    message:
-                        "No matching booking found."
-                });
-            }
-
-            console.log(
-                "Matched booking:",
-                booking.id
-            );
-
-            /* =================================================
-               PAYMENT SUCCESS
-            ================================================= */
-
-            if (
-                paymentStatus ===
-                "PAYMENT_SUCCESS"
-            ) {
-
-                /* ---------------------------------------------
-                   CHECK ALREADY PAID
-                --------------------------------------------- */
-
-                if (
-                    String(
-                        booking.payment_status || ""
-                    ).toLowerCase() === "paid"
-                ) {
-
-                    console.log(
-                        "Booking already marked Paid:",
-                        booking.id
-                    );
-
-                    return res.status(200).json({
-
-                        success: true,
-
-                        message:
-                            "Payment already processed."
-                    });
-                }
-
-                /* ---------------------------------------------
-                   VERIFY PAYMENT AMOUNT
-                --------------------------------------------- */
-
-                const webhookAmount =
-                    money(
-                        payload.amount ??
-                        payload.totalAmount?.value ??
-                        payload.paymentDetails
-                            ?.amount
-                            ?.total
-                            ?.value
-                    );
-
-                const bookingAmount =
-                    money(
-                        booking.downpayment_amount
-                    );
-
-                /*
-                    If both amounts are available,
-                    they must match.
-                */
-
-                if (
-                    webhookAmount !== null &&
-                    bookingAmount !== null &&
-                    webhookAmount !== bookingAmount
-                ) {
-
-                    console.error(
-                        "PAYMENT AMOUNT MISMATCH:",
-                        {
-                            bookingId:
-                                booking.id,
-
-                            expected:
-                                bookingAmount,
-
-                            received:
-                                webhookAmount
-                        }
-                    );
-
-                    return res.status(200).json({
-
-                        success: false,
-
-                        message:
-                            "Payment amount mismatch."
-                    });
-                }
-
-                /* ---------------------------------------------
-                   UPDATE BOOKING AS PAID
-                --------------------------------------------- */
-
-                const {
-                    data: updatedBooking,
-                    error: updateError
-                } = await supabase
-                    .from("bookings")
-                    .update({
-
-                        payment_status:
-                            "Paid",
-
-                        /*
-                            Keep admin approval separate.
-                            Payment successful does NOT
-                            automatically approve the booking.
-                        */
-
-                        status:
-                            "Pending",
-
-                        maya_payment_id:
-                            paymentId,
-
-                        maya_receipt_number:
-                            receiptNumber,
-
-                        payment_reference:
-                            requestReferenceNumber
-
-                    })
-                    .eq(
-                        "id",
-                        booking.id
-                    )
-                    .select()
-                    .single();
-
-                if (updateError) {
-
-                    console.error(
-                        "Failed to mark booking Paid:",
-                        updateError
-                    );
-
-                    return res.status(200).json({
-
-                        success: false,
-
-                        message:
-                            "Payment received but booking update failed."
-                    });
-                }
-
-                console.log(
-                    "BOOKING MARKED AS PAID:",
-                    updatedBooking.id
-                );
-
-                /* ---------------------------------------------
-                   ADMIN NOTIFICATION
-                   
-                   THIS IS THE IMPORTANT PART.
-
-                   The admin only receives the booking AFTER
-                   PAYMENT_SUCCESS.
-                --------------------------------------------- */
-
-                const {
-                    data: existingAdminNotification,
-                    error:
-                        notificationLookupError
-                } = await supabase
-                    .from("notifications")
-                    .select("id")
-                    .eq(
-                        "booking_id",
-                        booking.id
-                    )
-                    .eq(
-                        "recipient",
-                        "admin"
-                    )
-                    .eq(
-                        "title",
-                        "New Paid Booking Reservation"
-                    )
-                    .limit(1);
-
-                if (notificationLookupError) {
-
-                    console.error(
-                        "Notification lookup error:",
-                        notificationLookupError
-                    );
-                }
-
-                /*
-                    Only create notification if one doesn't
-                    already exist.
-
-                    This prevents duplicate notifications
-                    if Maya sends the webhook more than once.
-                */
-
-                if (
-                    !existingAdminNotification ||
-                    existingAdminNotification.length === 0
-                ) {
-
-                    const {
-                        error:
-                            adminNotificationError
-                    } = await supabase
-                        .from("notifications")
-                        .insert({
-
-                            customer_id:
-                                booking.customer_id,
-
-                            booking_id:
-                                booking.id,
-
-                            recipient:
-                                "admin",
-
-                            title:
-                                "New Paid Booking Reservation",
-
-                            message:
-                                `${booking.full_name} booked a session on ${booking.booking_date} at ${booking.booking_time}. Payment of ₱${bookingAmount?.toFixed(2) || "0.00"} was successful. Waiting for admin approval.`,
-
-                            is_read:
-                                false
-                        });
-
-                    if (adminNotificationError) {
-
-                        console.error(
-                            "Admin notification error:",
-                            adminNotificationError
-                        );
-
-                    } else {
-
-                        console.log(
-                            "ADMIN NOTIFICATION CREATED"
-                        );
-                    }
-                }
-
-                /* ---------------------------------------------
-                   CUSTOMER NOTIFICATION
-                --------------------------------------------- */
-
-                const {
-                    error:
-                        customerNotificationError
-                } = await supabase
-                    .from("notifications")
-                    .insert({
-
-                        customer_id:
-                            booking.customer_id,
-
-                        booking_id:
-                            booking.id,
-
-                        recipient:
-                            "customer",
-
-                        title:
-                            "Payment Successful",
-
-                        message:
-                            `Your ₱${bookingAmount?.toFixed(2) || "0.00"} reservation payment was successful. Your booking is now waiting for administrator approval.`,
-
-                        is_read:
-                            false
-                    });
-
-                if (
-                    customerNotificationError
-                ) {
-
-                    console.error(
-                        "Customer notification error:",
-                        customerNotificationError
-                    );
-                }
-
-                console.log(
-                    "PAYMENT SUCCESSFULLY PROCESSED:",
-                    booking.id
-                );
-
-                return res.status(200).json({
-
-                    success: true,
-
-                    message:
-                        "PAYMENT_SUCCESS processed.",
-
-                    bookingId:
-                        booking.id
-                });
             }
 
 
             /* =================================================
-               PAYMENT FAILED
+               CUSTOMER NOTIFICATION
             ================================================= */
-
-            if (
-                paymentStatus ===
-                "PAYMENT_FAILED"
-            ) {
-
-                console.log(
-                    "Payment failed:",
-                    booking.id
-                );
-
-                await supabase
-                    .from("bookings")
-                    .update({
-
-                        payment_status:
-                            "Failed",
-
-                        maya_payment_id:
-                            paymentId,
-
-                        payment_reference:
-                            requestReferenceNumber
-
-                    })
-                    .eq(
-                        "id",
-                        booking.id
-                    );
-
-                return res.status(200).json({
-
-                    success: true,
-
-                    message:
-                        "PAYMENT_FAILED processed."
-                });
-            }
-
-
-            /* =================================================
-               PAYMENT EXPIRED
-            ================================================= */
-
-            if (
-                paymentStatus ===
-                "PAYMENT_EXPIRED"
-            ) {
-
-                console.log(
-                    "Payment expired:",
-                    booking.id
-                );
-
-                await supabase
-                    .from("bookings")
-                    .update({
-
-                        payment_status:
-                            "Expired",
-
-                        maya_payment_id:
-                            paymentId,
-
-                        payment_reference:
-                            requestReferenceNumber
-
-                    })
-                    .eq(
-                        "id",
-                        booking.id
-                    );
-
-                return res.status(200).json({
-
-                    success: true,
-
-                    message:
-                        "PAYMENT_EXPIRED processed."
-                });
-            }
-
-
-            /* =================================================
-               PAYMENT CANCELLED
-            ================================================= */
-
-            if (
-                paymentStatus ===
-                "PAYMENT_CANCELLED"
-            ) {
-
-                console.log(
-                    "Payment cancelled:",
-                    booking.id
-                );
-
-                await supabase
-                    .from("bookings")
-                    .update({
-
-                        payment_status:
-                            "Cancelled",
-
-                        maya_payment_id:
-                            paymentId,
-
-                        payment_reference:
-                            requestReferenceNumber
-
-                    })
-                    .eq(
-                        "id",
-                        booking.id
-                    );
-
-                return res.status(200).json({
-
-                    success: true,
-
-                    message:
-                        "PAYMENT_CANCELLED processed."
-                });
-            }
-
-
-            /* =================================================
-               OTHER MAYA EVENT
-            ================================================= */
-
-            console.log(
-                "Unhandled Maya payment status:",
-                paymentStatus
-            );
-
-            return res.status(200).json({
-
-                success: true,
-
-                message:
-                    `Webhook received: ${paymentStatus}`
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Maya Webhook Error:",
-                error
-            );
-
-            /*
-                Maya retries failed webhook deliveries.
-                For unexpected errors, return 500 so Maya can
-                retry.
-            */
-
-            return res.status(500).json({
-
-                success: false,
-
-                message:
-                    error.message
-            });
-        }
-    }
-);
-
-
-app.get(
-    "/api/maya/payment/:paymentId",
-    async (req, res) => {
-
-        try {
 
             const {
-                paymentId
-            } = req.params;
+                error: customerNotificationError
+            } = await supabase
+                .from("notifications")
+                .insert({
 
-            if (!paymentId) {
+                    customer_id:
+                        booking.customer_id,
 
-                return res.status(400).json({
+                    recipient:
+                        "customer",
 
-                    success: false,
-
-                    message:
-                        "Payment ID is required."
-                });
-            }
-
-            if (!MAYA_SECRET_KEY) {
-
-                return res.status(500).json({
-
-                    success: false,
+                    title:
+                        "Payment Successful",
 
                     message:
-                        "MAYA_SECRET_KEY is not configured."
+                        `Your ₱${Number(
+                            booking.downpayment_amount
+                        ).toFixed(2)} reservation payment was successful. Your booking is now awaiting admin confirmation.`,
+
+                    is_read:
+                        false
+
                 });
-            }
 
-            const response =
-                await fetch(
-                    `${MAYA_PAYMENT_URL}/${encodeURIComponent(paymentId)}`,
-                    {
 
-                        method: "GET",
+            if (customerNotificationError) {
 
-                        headers: {
-
-                            "Authorization":
-                                `Basic ${mayaSecretAuth()}`,
-
-                            "Content-Type":
-                                "application/json"
-                        }
-                    }
+                console.error(
+                    "Customer notification error:",
+                    customerNotificationError
                 );
 
-            const data =
-                await response.json();
+            }
+
+
+            /* =================================================
+               ADMIN NOTIFICATION
+            ================================================= */
+
+            const {
+                error: adminNotificationError
+            } = await supabase
+                .from("notifications")
+                .insert({
+
+                    recipient:
+                        "admin",
+
+                    title:
+                        "New Paid Booking Reservation",
+
+                    message:
+                        `${booking.full_name} has successfully paid the ₱${Number(
+                            booking.downpayment_amount
+                        ).toFixed(2)} reservation fee for ${booking.booking_date} at ${booking.booking_time}.`,
+
+                    is_read:
+                        false
+
+                });
+
+
+            if (adminNotificationError) {
+
+                console.error(
+                    "Admin notification error:",
+                    adminNotificationError
+                );
+
+            }
+
 
             console.log(
-                "Maya payment inquiry:",
-                data
+                "Booking marked as PAID."
             );
 
-            return res.status(
-                response.status
-            ).json({
-
-                success:
-                    response.ok,
-
-                maya:
-                    data
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Maya payment inquiry error:",
-                error
-            );
-
-            return res.status(500).json({
-
-                success: false,
-
-                message:
-                    error.message
-            });
         }
+
+
+        /* =====================================================
+           8. PAYMENT FAILED
+        ===================================================== */
+
+        if (
+            eventType ===
+            "checkout_session.payment.failed"
+        ) {
+
+            console.log(
+                "PAYMENT FAILED"
+            );
+
+
+            const {
+                error: updateError
+            } = await supabase
+                .from("bookings")
+                .update({
+
+                    payment_status:
+                        "Payment Failed",
+
+                    status:
+                        "Cancelled"
+
+                })
+                .eq(
+                    "id",
+                    booking.id
+                );
+
+
+            if (updateError) {
+
+                console.error(
+                    "Failed to update failed booking:",
+                    updateError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Failed to update booking."
+                });
+
+            }
+
+
+            /* =================================================
+               CUSTOMER NOTIFICATION
+            ================================================= */
+
+            const {
+                error: notificationError
+            } = await supabase
+                .from("notifications")
+                .insert({
+
+                    customer_id:
+                        booking.customer_id,
+
+                    recipient:
+                        "customer",
+
+                    title:
+                        "Payment Failed",
+
+                    message:
+                        "Your reservation payment was not completed. Please create a new booking if you would like to reserve another schedule.",
+
+                    is_read:
+                        false
+
+                });
+
+
+            if (notificationError) {
+
+                console.error(
+                    "Payment failed notification error:",
+                    notificationError
+                );
+
+            }
+
+
+            console.log(
+                "Booking marked as PAYMENT FAILED."
+            );
+
+        }
+
+
+        /* =====================================================
+           9. TELL PAYMONGO WEBHOOK WAS RECEIVED
+        ===================================================== */
+
+        return res.json({
+
+            success:
+                true,
+
+            message:
+                "Webhook processed successfully."
+
+        });
+
     }
-);
+    catch (error) {
 
+        console.error(
+            "PayMongo webhook error:",
+            error
+        );
 
-/* =========================================================
-   START SERVER
-========================================================= */
+        return res.status(500).json({
 
+            success:
+                false,
+
+            error:
+                error.message
+
+        });
+
+    }
+
+});
 app.listen(
     PORT,
     () => {
@@ -1420,26 +1201,7 @@ app.listen(
             "CAPTURED SERVER RUNNING"
         );
 
-        console.log(
-            `Server is running on port ${PORT}`
-        );
-
-        console.log(
-            `Maya Public Key: ${
-                MAYA_PUBLIC_KEY
-                    ? "CONFIGURED"
-                    : "NOT CONFIGURED"
-            }`
-        );
-
-        console.log(
-            `Maya Secret Key: ${
-                MAYA_SECRET_KEY
-                    ? "CONFIGURED"
-                    : "NOT CONFIGURED"
-            }`
-        );
-
+       
         console.log(
             `Resend API Key: ${
                 RESEND_API_KEY
@@ -1447,15 +1209,6 @@ app.listen(
                     : "NOT CONFIGURED"
             }`
         );
-
-        console.log(
-            "Maya Webhook:"
-        );
-
-        console.log(
-            "https://captured-photo-studio.onrender.com/api/maya/webhook"
-        );
-
         console.log(
             "===================================="
         );

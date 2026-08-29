@@ -839,9 +839,205 @@ span.notification-badge,
 .ui-data-grid .status-badge {
     white-space: nowrap;
 }
+.payment-proof-btn {
+            border: 0;
+            background: #639A88;
+            color: #fff;
+            border-radius: 6px;
+            padding: 7px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
 
-/* Mobile */
-@media (max-width: 900px) {
+        .payment-proof-btn:hover {
+            opacity: .88;
+        }
+
+        .payment-proof-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, .72);
+        }
+
+        .payment-proof-modal.show {
+            display: flex;
+        }
+
+        .payment-proof-card {
+            width: min(920px, 96vw);
+            max-height: 94vh;
+            overflow: auto;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+            position: relative;
+            padding: 20px;
+        }
+
+        .payment-proof-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 50%;
+            background: #f1f1f1;
+            color: #333;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .payment-proof-header {
+            padding: 0 48px 14px 4px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 16px;
+        }
+
+        .payment-proof-header h2 {
+            margin: 0 0 5px;
+            font-size: 20px;
+            color: #353535;
+        }
+
+        .payment-proof-details {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 20px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .payment-proof-image-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .payment-proof-image {
+            display: block;
+            max-width: 100%;
+            max-height: 68vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        body.payment-proof-modal-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 700px) {
+            .payment-proof-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+.rejection-modal-card {
+    width: min(500px, 92vw);
+    max-width: 500px;
+}
+
+.rejection-modal-card .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rejection-modal-card .modal-header i {
+    color: #c95c5c;
+    font-size: 20px;
+}
+
+.rejection-modal-card .modal-header h2 {
+    margin: 0;
+}
+
+.rejection-modal-card .form-instruction {
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.rejection-modal-card select,
+.rejection-modal-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.rejection-modal-card textarea {
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    resize: vertical;
+    outline: none;
+}
+
+.rejection-modal-card textarea:focus {
+    border-color: #c95c5c;
+}
+
+.rejection-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.rejection-cancel-btn {
+    border: 0;
+    border-radius: 6px;
+    padding: 9px 16px;
+    background: #eee;
+    color: #0f0d0d;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.rejection-cancel-btn:hover {
+    background: #e2e2e2;
+}
+
+.rejection-confirm-btn {
+    border: 0;
+    border-radius: 6px;
+    padding: 9px 16px;
+    background: #c95c5c;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.rejection-confirm-btn:hover {
+    opacity: .9;
+}
+
+.rejection-confirm-btn:disabled,
+.rejection-cancel-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+        @media (max-width: 900px) {
     .ui-table-card-panel {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;

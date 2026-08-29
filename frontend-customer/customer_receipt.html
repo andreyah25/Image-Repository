@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Bookings - Captured Photography Studio</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/design/customer_receipt.css?v=1.0"
+    >
+
+</head>
+
+
+<body>
+
+
+<header class="top-navbar">
+
+    <div class="logo-section">
+
+        <img
+            src="/images/captured.png"
+            alt="Logo"
+            class="logo-img"
+        >
+
+        <span>
+            Captured Photography Studio
+        </span>
+
+    </div>
+
+
+    <div class="navbar-right">
+
+        <div class="notification-container">
+
+            <button
+                id="notificationBtn"
+                class="notification-btn"
+            >
+
+                <i class="fa-solid fa-bell"></i>
+
+                <span id="notificationCount">
+                    0
+                </span>
+
+            </button>
+
+
+            <div
+                id="notificationDropdown"
+                class="notification-dropdown"
+            >
+
+                <div id="notificationList"></div>
+
+            </div>
+
+        </div>
+
+
+        <div class="user-profile">
+
+            <img
+                id="profile-image"
+                src="/images/default-profile.png"
+                alt="Profile"
+                class="profile-img"
+            >
+
+            <span id="customer-name"></span>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<div class="dashboard-wrapper">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <nav>
+
+            <a href="customer_booking.html">
+
+                <i class="fa-regular fa-calendar-check"></i>
+
+                <span>
+                    Book a Session
+                </span>
+
+            </a>
+
+
+            <a
+                href="customer_receipt.html"
+                class="active"
+            >
+
+                <i class="fa-regular fa-file-lines"></i>
+
+                <span>
+                    My Bookings
+                </span>
+
+            </a>
+
+
+            <a href="customer_gallery_request.html">
+
+                <i class="fa-regular fa-image"></i>
+
+                <span>
+                    My Gallery
+                </span>
+
+            </a>
+
+
+            <a href="customer_profile.html">
+
+                <i class="fa-regular fa-user"></i>
+
+                <span>
+                    Profile
+                </span>
+
+            </a>
+
+        </nav>
+
+
+        <a
+            href="customer_homepage.html"
+            class="logout-btn"
+        >
+
+            <i
+                class="fa-solid fa-arrow-right-from-bracket logout-icon"
+            ></i>
+
+            <span>
+                Log out
+            </span>
+
+        </a>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+
+    <main class="content">
+
+
+        <div class="page-header">
+
+            <h1>
+                My Bookings
+            </h1>
+
+            <p>
+                View your confirmed and previous studio bookings.
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             LOADING
+             ================================================= -->
+
+        <div
+            id="loadingState"
+            class="loading-state"
+        >
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            <p>
+                Loading your bookings...
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             NO BOOKINGS
+             ================================================= -->
+
+        <div
+            id="emptyState"
+            class="empty-state"
+            style="display:none;"
+        >
+
+            <div class="empty-icon">
+
+                <i class="fa-regular fa-calendar-xmark"></i>
+
+            </div>
+
+            <h2>
+                No Bookings Yet
+            </h2>
+
+            <p>
+                You don't have any bookings yet.
+            </p>
+
+            <a
+                href="customer_booking.html"
+                class="primary-btn"
+            >
+
+                <i class="fa-solid fa-calendar-plus"></i>
+
+                Book a Session
+
+            </a>
+
+        </div>
+
+
+
+        <!-- =================================================
+             BOOKING LIST
+             ================================================= -->
+
+        <div
+            id="bookingList"
+            class="booking-list"
+        ></div>
+
+
+    </main>
+
+</div>
+
+
+
+<!-- =========================================================
+     RECEIPT MODAL
+     ========================================================= -->
+
+<div
+    id="receiptModal"
+    class="receipt-modal"
+>
+
+    <div class="receipt-modal-card">
+
+
+        <button
+            id="closeReceiptModal"
+            class="receipt-close-btn"
+        >
+            &times;
+        </button>
+
+
+        <div id="receiptContent"></div>
+
+
+        <div class="receipt-actions">
+
+            <button
+                id="printReceiptBtn"
+                class="print-btn"
+            >
+
+                <i class="fa-solid fa-print"></i>
+
+                Print Receipt
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<script>
+
+
+/* =========================================================
+   SUPABASE
+   ========================================================= */
+
+const SUPABASE_URL =
+    "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+
+const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+
+const supabaseClient =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
+
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+let currentUser = null;
+
+let allBookings = [];
+
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+
+/* =========================================================
+   FORMAT DATE
+   ========================================================= */
+
+function formatDate(dateString) {
+
+    if (!dateString) {
+        return "—";
+    }
+
+    const date =
+        new Date(`${dateString}T00:00:00`);
+
+    return date.toLocaleDateString(
+        "en-US",
+        {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   FORMAT TIME
+   ========================================================= */
+
+function formatTime(timeString) {
+
+    if (!timeString) {
+        return "—";
+    }
+
+    const parts =
+        String(timeString)
+            .split(":");
+
+    const hour =
+        Number(parts[0]);
+
+    const minute =
+        Number(parts[1]);
+
+    if (
+        Number.isNaN(hour) ||
+        Number.isNaN(minute)
+    ) {
+
+        return timeString;
+
+    }
+
+    const date =
+        new Date();
+
+    date.setHours(
+        hour,
+        minute,
+        0,
+        0
+    );
+
+    return date.toLocaleTimeString(
+        "en-US",
+        {
+            hour: "numeric",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   FORMAT MONEY
+   ========================================================= */
+
+function formatMoney(amount) {
+
+    const number =
+        Number(amount || 0);
+
+    return `₱${number.toLocaleString(
+        "en-PH",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    )}`;
+
+}
+
+
+
+/* =========================================================
+   DISPLAY STATUS
+   ========================================================= */
+
+function statusClass(status) {
+
+    const value =
+        String(status || "")
+            .toLowerCase();
+
+    if (value === "confirmed") {
+        return "status-confirmed";
+    }
+
+    if (
+        value === "cancelled" ||
+        value === "canceled" ||
+        value === "rejected" ||
+        value === "declined"
+    ) {
+
+        return "status-cancelled";
+
+    }
+
+    return "status-pending";
+
+}
+
+
+
+/* =========================================================
+   LOAD CUSTOMER
+   ========================================================= */
+
+async function loadCustomer() {
+
+    const {
+        data: {
+            user
+        },
+        error
+    } =
+        await supabaseClient.auth.getUser();
+
+
+    if (error) {
+
+        console.error(
+            "Authentication error:",
+            error
+        );
+
+        return false;
+
+    }
+
+
+    if (!user) {
+
+        window.location.href =
+            "/frontend-customer/customer_login.html";
+
+        return false;
+
+    }
+
+
+    currentUser = user;
+
+
+    const {
+        data: customer
+    } =
+        await supabaseClient
+            .from("customers")
+            .select(`
+                id,
+                full_name,
+                email,
+                profile_image,
+                phone
+            `)
+            .eq("id", user.id)
+            .maybeSingle();
+
+
+    const customerName =
+        customer?.full_name ||
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.email ||
+        "Customer";
+
+
+    document.getElementById(
+        "customer-name"
+    ).textContent =
+        customerName;
+
+
+    const profileImage =
+        customer?.profile_image ||
+        user.user_metadata?.avatar_url ||
+        user.user_metadata?.picture ||
+        "/images/default-profile.png";
+
+
+    const profileImageElement =
+        document.getElementById(
+            "profile-image"
+        );
+
+
+    profileImageElement.src =
+        profileImage;
+
+
+    profileImageElement.onerror =
+        function () {
+
+            this.onerror = null;
+
+            this.src =
+                "/images/default-profile.png";
+
+        };
+
+
+    return true;
+
+}
+
+
+
+/* =========================================================
+   LOAD BOOKINGS
+   ========================================================= */
+
+async function loadBookings() {
+
+    const loading =
+        document.getElementById(
+            "loadingState"
+        );
+
+    const empty =
+        document.getElementById(
+            "emptyState"
+        );
+
+    const list =
+        document.getElementById(
+            "bookingList"
+        );
+
+
+    loading.style.display =
+        "flex";
+
+    empty.style.display =
+        "none";
+
+    list.innerHTML =
+        "";
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("bookings")
+            .select(`
+                id,
+                customer_id,
+                full_name,
+                contact_number,
+                email,
+                booking_date,
+                booking_time,
+                session_type,
+                notes,
+                payment_method,
+                payment_proof,
+                downpayment_amount,
+                payment_status,
+                status,
+                created_at,
+                confirmed_at,
+                confirmed_by
+            `)
+            .eq(
+                "customer_id",
+                currentUser.id
+            )
+            .order(
+                "booking_date",
+                {
+                    ascending: false
+                }
+            );
+
+
+    loading.style.display =
+        "none";
+
+
+    if (error) {
+
+        console.error(
+            "Booking loading error:",
+            error
+        );
+
+
+        list.innerHTML = `
+
+            <div class="error-state">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <h2>
+                    Unable to load bookings
+                </h2>
+
+                <p>
+                    ${escapeHTML(error.message)}
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    allBookings =
+        data || [];
+
+
+    if (!allBookings.length) {
+
+        empty.style.display =
+            "flex";
+
+        return;
+
+    }
+
+
+    allBookings.forEach(
+        booking => {
+
+            renderBookingCard(
+                booking
+            );
+
+        }
+    );
+
+
+    /*
+     * If URL contains:
+     *
+     * ?booking=UUID
+     *
+     * automatically open it.
+     */
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const bookingId =
+        params.get("booking");
+
+
+    if (bookingId) {
+
+        const booking =
+            allBookings.find(
+                item =>
+                    item.id === bookingId
+            );
+
+
+        if (booking) {
+
+            openReceipt(
+                booking
+            );
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================================
+   RENDER BOOKING CARD
+   ========================================================= */
+
+function renderBookingCard(
+    booking
+) {
+
+    const list =
+        document.getElementById(
+            "bookingList"
+        );
+
+
+    const status =
+        booking.status ||
+        "Pending";
+
+
+    const paymentStatus =
+        booking.payment_status ||
+        "Pending";
+
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+
+    card.className =
+        "booking-card";
+
+
+    card.innerHTML = `
+
+        <div class="booking-card-header">
+
+            <div>
+
+                <span class="booking-label">
+                    BOOKING
+                </span>
+
+                <h2>
+                    ${escapeHTML(
+                        booking.session_type ||
+                        "Studio Session"
+                    )}
+                </h2>
+
+            </div>
+
+
+            <span
+                class="status-badge ${statusClass(status)}"
+            >
+                ${escapeHTML(status)}
+            </span>
+
+        </div>
+
+
+        <div class="booking-card-body">
+
+
+            <div class="booking-info">
+
+                <span>
+                    <i class="fa-regular fa-calendar"></i>
+                    Date
+                </span>
+
+                <strong>
+                    ${formatDate(
+                        booking.booking_date
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-info">
+
+                <span>
+                    <i class="fa-regular fa-clock"></i>
+                    Time
+                </span>
+
+                <strong>
+                    ${formatTime(
+                        booking.booking_time
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-info">
+
+                <span>
+                    <i class="fa-solid fa-peso-sign"></i>
+                    Down Payment
+                </span>
+
+                <strong>
+                    ${formatMoney(
+                        booking.downpayment_amount
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-info">
+
+                <span>
+                    <i class="fa-solid fa-money-check"></i>
+                    Payment
+                </span>
+
+                <strong>
+                    ${escapeHTML(
+                        paymentStatus
+                    )}
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="booking-card-footer">
+
+            <small>
+
+                Booking ID:
+                ${escapeHTML(
+                    booking.id
+                )}
+
+            </small>
+
+
+            <button
+                type="button"
+                class="view-booking-btn"
+                onclick="openReceiptById('${booking.id}')"
+            >
+
+                <i class="fa-regular fa-file-lines"></i>
+
+                View Receipt
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    list.appendChild(
+        card
+    );
+
+}
+
+
+
+/* =========================================================
+   OPEN RECEIPT BY ID
+   ========================================================= */
+
+function openReceiptById(
+    bookingId
+) {
+
+    const booking =
+        allBookings.find(
+            item =>
+                item.id === bookingId
+        );
+
+
+    if (!booking) {
+
+        alert(
+            "Booking could not be found."
+        );
+
+        return;
+
+    }
+
+
+    openReceipt(
+        booking
+    );
+
+}
+
+
+
+/* =========================================================
+   OPEN RECEIPT
+   ========================================================= */
+
+function openReceipt(
+    booking
+) {
+
+    const modal =
+        document.getElementById(
+            "receiptModal"
+        );
+
+
+    const content =
+        document.getElementById(
+            "receiptContent"
+        );
+
+
+    const totalPrice =
+        Number(
+            booking.downpayment_amount || 0
+        ) * 2;
+
+
+    const downpayment =
+        Number(
+            booking.downpayment_amount || 0
+        );
+
+
+    const remainingBalance =
+        Math.max(
+            totalPrice - downpayment,
+            0
+        );
+
+
+    let confirmationBlock =
+        "";
+
+
+    if (
+        String(
+            booking.status || ""
+        ).toLowerCase() ===
+        "confirmed"
+    ) {
+
+        confirmationBlock = `
+
+            <div class="confirmed-message">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                <div>
+
+                    <strong>
+                        Booking Confirmed
+                    </strong>
+
+                    <span>
+                        Your booking has been confirmed by the studio.
+                    </span>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    content.innerHTML = `
+
+        <div class="receipt">
+
+
+            <!-- =========================================
+                 RECEIPT HEADER
+                 ========================================= -->
+
+            <div class="receipt-header">
+
+                <div class="receipt-logo">
+
+                    <img
+                        src="/images/captured.png"
+                        alt="Captured Photography Studio"
+                    >
+
+                </div>
+
+
+                <div class="receipt-company">
+
+                    <h1>
+                        Captured Photography Studio
+                    </h1>
+
+                    <p>
+                        BOOKING RECEIPT
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="receipt-divider"></div>
+
+
+            <!-- =========================================
+                 BOOKING NUMBER
+                 ========================================= -->
+
+            <div class="receipt-reference">
+
+                <div>
+
+                    <span>
+                        Booking Reference
+                    </span>
+
+                    <strong>
+                        ${escapeHTML(
+                            booking.id
+                        )}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Booking Created
+                    </span>
+
+                    <strong>
+                        ${
+                            booking.created_at
+                                ? new Date(
+                                    booking.created_at
+                                ).toLocaleString()
+                                : "—"
+                        }
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            ${confirmationBlock}
+
+
+            <!-- =========================================
+                 CUSTOMER
+                 ========================================= -->
+
+            <section class="receipt-section">
+
+                <h3>
+                    <i class="fa-regular fa-user"></i>
+                    Customer Information
+                </h3>
+
+
+                <div class="receipt-grid">
+
+                    <div>
+
+                        <span>
+                            Full Name
+                        </span>
+
+                        <strong>
+                            ${escapeHTML(
+                                booking.full_name
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Contact Number
+                        </span>
+
+                        <strong>
+                            ${escapeHTML(
+                                booking.contact_number
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Email Address
+                        </span>
+
+                        <strong>
+                            ${escapeHTML(
+                                booking.email
+                            )}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================================
+                 SESSION
+                 ========================================= -->
+
+            <section class="receipt-section">
+
+                <h3>
+                    <i class="fa-regular fa-calendar-check"></i>
+                    Session Details
+                </h3>
+
+
+                <div class="receipt-grid">
+
+                    <div>
+
+                        <span>
+                            Package / Session
+                        </span>
+
+                        <strong>
+                            ${escapeHTML(
+                                booking.session_type
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Session Date
+                        </span>
+
+                        <strong>
+                            ${formatDate(
+                                booking.booking_date
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Preferred Time
+                        </span>
+
+                        <strong>
+                            ${formatTime(
+                                booking.booking_time
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Booking Status
+                        </span>
+
+                        <strong
+                            class="receipt-status"
+                        >
+                            ${escapeHTML(
+                                booking.status
+                            )}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================================
+                 PAYMENT
+                 ========================================= -->
+
+            <section class="receipt-section">
+
+                <h3>
+                    <i class="fa-solid fa-peso-sign"></i>
+                    Payment Information
+                </h3>
+
+
+                <div class="payment-summary">
+
+
+                    <div class="payment-row">
+
+                        <span>
+                            Estimated Package Total
+                        </span>
+
+                        <strong>
+                            ${formatMoney(
+                                totalPrice
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="payment-row">
+
+                        <span>
+                            Down Payment
+                        </span>
+
+                        <strong>
+                            ${formatMoney(
+                                downpayment
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="payment-row">
+
+                        <span>
+                            Payment Method
+                        </span>
+
+                        <strong>
+                            ${escapeHTML(
+                                booking.payment_method
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="payment-row">
+
+                        <span>
+                            Payment Status
+                        </span>
+
+                        <strong>
+                            ${escapeHTML(
+                                booking.payment_status
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="payment-row total-row">
+
+                        <span>
+                            Remaining Balance
+                        </span>
+
+                        <strong>
+                            ${formatMoney(
+                                remainingBalance
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================================
+                 NOTES
+                 ========================================= -->
+
+            ${
+                booking.notes
+                    ? `
+
+                    <section class="receipt-section">
+
+                        <h3>
+                            <i class="fa-regular fa-note-sticky"></i>
+                            Notes / Special Request
+                        </h3>
+
+                        <div class="receipt-notes">
+
+                            ${escapeHTML(
+                                booking.notes
+                            )}
+
+                        </div>
+
+                    </section>
+
+                    `
+                    : ""
+            }
+
+
+            <!-- =========================================
+                 CONFIRMATION
+                 ========================================= -->
+
+            ${
+                booking.confirmed_at
+                    ? `
+
+                    <div class="receipt-confirmed-date">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                        Confirmed on
+
+                        <strong>
+                            ${
+                                new Date(
+                                    booking.confirmed_at
+                                ).toLocaleString()
+                            }
+                        </strong>
+
+                    </div>
+
+                    `
+                    : ""
+            }
+
+
+            <!-- =========================================
+                 FOOTER
+                 ========================================= -->
+
+            <div class="receipt-footer">
+
+                <p>
+                    Please keep this receipt for your records.
+                </p>
+
+                <p>
+                    Please present your booking information
+                    when you arrive at the studio.
+                </p>
+
+                <strong>
+                    Thank you for choosing Captured Photography Studio.
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    `;
+
+
+    modal.classList.add(
+        "active"
+    );
+
+}
+
+
+
+/* =========================================================
+   CLOSE RECEIPT
+   ========================================================= */
+
+function closeReceipt() {
+
+    document
+        .getElementById(
+            "receiptModal"
+        )
+        .classList.remove(
+            "active"
+        );
+
+}
+
+
+
+document
+    .getElementById(
+        "closeReceiptModal"
+    )
+    .addEventListener(
+        "click",
+        closeReceipt
+    );
+
+
+document
+    .getElementById(
+        "receiptModal"
+    )
+    .addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target ===
+                this
+            ) {
+
+                closeReceipt();
+
+            }
+
+        }
+    );
+
+
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+document
+    .getElementById(
+        "printReceiptBtn"
+    )
+    .addEventListener(
+        "click",
+        function () {
+
+            window.print();
+
+        }
+    );
+
+
+
+/* =========================================================
+   NOTIFICATIONS
+   ========================================================= */
+
+async function loadNotifications() {
+
+    if (!currentUser) {
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("notifications")
+            .select("*")
+            .eq(
+                "customer_id",
+                currentUser.id
+            )
+            .eq(
+                "recipient",
+                "customer"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Notification error:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    const list =
+        document.getElementById(
+            "notificationList"
+        );
+
+
+    list.innerHTML =
+        "";
+
+
+    let unread = 0;
+
+
+    (data || []).forEach(
+        notification => {
+
+            if (!notification.is_read) {
+                unread++;
+            }
+
+
+            const title =
+                notification.title ||
+                "";
+
+
+            let icon =
+                "fa-circle-info";
+
+
+            if (
+                title
+                    .toLowerCase()
+                    .includes("confirmed") ||
+                title
+                    .toLowerCase()
+                    .includes("approved")
+            ) {
+
+                icon =
+                    "fa-circle-check";
+
+            }
+
+
+            let button =
+                "";
+
+
+            if (
+                notification.booking_id &&
+                title
+                    .toLowerCase()
+                    .includes("confirmed")
+            ) {
+
+                button = `
+
+                    <button
+                        class="notification-booking-btn"
+                        onclick="openBookingFromNotification('${notification.booking_id}')"
+                    >
+
+                        <i class="fa-regular fa-file-lines"></i>
+
+                        View Booking
+
+                    </button>
+
+                `;
+
+            }
+
+
+            list.innerHTML += `
+
+                <div
+                    class="notification-item ${
+                        notification.is_read
+                            ? ""
+                            : "unread"
+                    }"
+                >
+
+                    <div class="notification-icon">
+
+                        <i
+                            class="fa-solid ${icon}"
+                        ></i>
+
+                    </div>
+
+
+                    <div class="notification-content">
+
+                        <h4>
+                            ${escapeHTML(
+                                notification.title
+                            )}
+                        </h4>
+
+
+                        <p class="notification-message">
+
+                            ${escapeHTML(
+                                notification.message
+                            )}
+
+                        </p>
+
+
+                        <small>
+
+                            ${
+                                notification.created_at
+                                    ? new Date(
+                                        notification.created_at
+                                    ).toLocaleString()
+                                    : ""
+                            }
+
+                        </small>
+
+
+                        ${button}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    const badge =
+        document.getElementById(
+            "notificationCount"
+        );
+
+
+    if (unread > 0) {
+
+        badge.textContent =
+            unread;
+
+        badge.style.display =
+            "inline-flex";
+
+    } else {
+
+        badge.style.display =
+            "none";
+
+    }
+
+}
+
+
+
+/* =========================================================
+   OPEN BOOKING FROM NOTIFICATION
+   ========================================================= */
+
+async function openBookingFromNotification(
+    bookingId
+) {
+
+    if (!bookingId) {
+        return;
+    }
+
+
+    /*
+     * If the booking isn't currently loaded,
+     * retrieve it directly.
+     */
+
+    let booking =
+        allBookings.find(
+            item =>
+                item.id === bookingId
+        );
+
+
+    if (!booking) {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("bookings")
+                .select(`
+                    id,
+                    customer_id,
+                    full_name,
+                    contact_number,
+                    email,
+                    booking_date,
+                    booking_time,
+                    session_type,
+                    notes,
+                    payment_method,
+                    payment_proof,
+                    downpayment_amount,
+                    payment_status,
+                    status,
+                    created_at,
+                    confirmed_at,
+                    confirmed_by
+                `)
+                .eq(
+                    "id",
+                    bookingId
+                )
+                .eq(
+                    "customer_id",
+                    currentUser.id
+                )
+                .maybeSingle();
+
+
+        if (error || !data) {
+
+            alert(
+                "Unable to find this booking."
+            );
+
+            return;
+
+        }
+
+
+        booking =
+            data;
+
+    }
+
+
+    openReceipt(
+        booking
+    );
+
+}
+
+
+
+/* =========================================================
+   NOTIFICATION BUTTON
+   ========================================================= */
+
+document
+    .getElementById(
+        "notificationBtn"
+    )
+    .addEventListener(
+        "click",
+        async function () {
+
+            const dropdown =
+                document.getElementById(
+                    "notificationDropdown"
+                );
+
+
+            if (
+                dropdown.style.display ===
+                "block"
+            ) {
+
+                dropdown.style.display =
+                    "none";
+
+                return;
+
+            }
+
+
+            dropdown.style.display =
+                "block";
+
+
+            /*
+             * Mark unread notifications as read.
+             */
+
+            const {
+                error
+            } =
+                await supabaseClient
+                    .from("notifications")
+                    .update({
+                        is_read: true
+                    })
+                    .eq(
+                        "customer_id",
+                        currentUser.id
+                    )
+                    .eq(
+                        "recipient",
+                        "customer"
+                    )
+                    .eq(
+                        "is_read",
+                        false
+                    );
+
+
+            if (error) {
+
+                console.error(
+                    "Notification update error:",
+                    error
+                );
+
+            }
+
+
+            await loadNotifications();
+
+        }
+    );
+
+
+
+/* =========================================================
+   CLOSE NOTIFICATION DROPDOWN
+   ========================================================= */
+
+document.addEventListener(
+    "click",
+    function (event) {
+
+        const button =
+            document.getElementById(
+                "notificationBtn"
+            );
+
+
+        const dropdown =
+            document.getElementById(
+                "notificationDropdown"
+            );
+
+
+        if (
+            !button.contains(event.target) &&
+            !dropdown.contains(event.target)
+        ) {
+
+            dropdown.style.display =
+                "none";
+
+        }
+
+    }
+);
+
+
+
+/* =========================================================
+   REALTIME CUSTOMER NOTIFICATIONS
+   ========================================================= */
+
+supabaseClient
+    .channel(
+        "customer_booking_notifications"
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications"
+        },
+        async payload => {
+
+            if (
+                !currentUser
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                payload.new.recipient ===
+                    "customer" &&
+                payload.new.customer_id ===
+                    currentUser.id
+            ) {
+
+                await loadNotifications();
+
+            }
+
+        }
+    )
+    .subscribe();
+
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+(async function () {
+
+    const customerLoaded =
+        await loadCustomer();
+
+
+    if (!customerLoaded) {
+        return;
+    }
+
+
+    await loadBookings();
+
+    await loadNotifications();
+
+})();
+
+</script>
+
+
+</body>
+
+</html>

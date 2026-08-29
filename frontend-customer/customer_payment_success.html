@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Payment Successful | Captured Photography Studio</title>
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #f5f7f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-card {
+            width: 100%;
+            max-width: 520px;
+            background: white;
+            border-radius: 18px;
+            padding: 45px 35px;
+            text-align: center;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .success-icon {
+            width: 85px;
+            height: 85px;
+            margin: 0 auto 25px;
+            border-radius: 50%;
+            background: #639a88;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            color: #353535;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .payment-info {
+            background: #f5f8f6;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .payment-info p {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .payment-info strong {
+            color: #353535;
+        }
+
+        .notice {
+            font-size: 14px;
+            color: #777;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 10px;
+            background: #639a88;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="success-card">
+
+        <div class="success-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h1>Payment Successful!</h1>
+
+        <p class="subtitle">
+            Your reservation payment has been successfully submitted.
+        </p>
+
+        <div class="payment-info">
+
+            <p>
+                <strong>Status:</strong>
+                Payment Received
+            </p>
+
+            <p>
+                <strong>Booking:</strong>
+                Submitted for Confirmation
+            </p>
+
+        </div>
+
+        <p class="notice">
+            Your payment will be verified through PayMongo.
+            Once your payment is confirmed, the administrator will
+            review your booking and notify you of the booking status.
+        </p>
+
+        <a href="customer_booking.html" class="btn">
+            <i class="fa-solid fa-calendar-check"></i>
+            Back to Booking
+        </a>
+
+    </div>
+
+</body>
+
+</html>
