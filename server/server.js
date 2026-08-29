@@ -457,7 +457,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
         const paymongoResponse =
             await fetch(
-                "https://api.paymongo.com/v2/checkout_sessions",
+                "https://api.paymongo.com/v1/checkout_sessions",
                 {
 
                     method: "POST",
