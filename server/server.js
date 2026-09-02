@@ -146,7 +146,6 @@ app.post("/send-otp", async (req, res) => {
                         <h2>Captured Photo Studio</h2>
 
                         <p>Your verification code is:</p>
-
                         <h1>${otp}</h1>
 
                         <p>
@@ -201,6 +200,7 @@ function money(value) {
 }
 
 app.post("/api/paymongo/create-checkout", async (req, res) => {
+
     try {
 
         const {
@@ -214,31 +214,74 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             notes,
             payment_method,
             total_amount,
-            downpayment_amount
+            downpayment_amount,
+            backdrops,
+            addons,
+            booking_duration
         } = req.body;
+
+
+        console.log("====================================");
+        console.log("CREATE PAYMONGO CHECKOUT");
+        console.log("====================================");
+
+        console.log("Received booking data:", {
+            customer_id,
+            full_name,
+            email,
+            contact_number,
+            booking_date,
+            booking_time,
+            session_type,
+            payment_method,
+            total_amount,
+            downpayment_amount,
+            backdrops,
+            addons,
+            booking_duration
+        });
 
 
         /* =====================================================
            1. VALIDATE BOOKING INFORMATION
         ===================================================== */
 
-        if (
-            !customer_id ||
-            !full_name ||
-            !email ||
-            !contact_number ||
-            !booking_date ||
-            !booking_time ||
-            !session_type ||
-            !downpayment_amount
-        ) {
+ const missingFields = [];
 
-            return res.status(400).json({
-                success: false,
-                error: "Missing required booking information."
-            });
+if (!full_name || !String(full_name).trim()) {
+    missingFields.push("full_name");
+}
 
-        }
+if (!email || !String(email).trim()) {
+    missingFields.push("email");
+}
+
+if (!contact_number || !String(contact_number).trim()) {
+    missingFields.push("contact_number");
+}
+
+if (!booking_date || !String(booking_date).trim()) {
+    missingFields.push("booking_date");
+}
+
+if (!booking_time || !String(booking_time).trim()) {
+    missingFields.push("booking_time");
+}
+
+if (!session_type || !String(session_type).trim()) {
+    missingFields.push("session_type");
+}
+
+if (missingFields.length > 0) {
+    console.log("❌ Missing required fields:", missingFields);
+    console.log("📦 Received request body:", req.body);
+
+    return res.status(400).json({
+        success: false,
+        error: "Missing required booking information.",
+        missing_fields: missingFields
+    });
+}
 
 
         /* =====================================================
@@ -279,7 +322,30 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
 
         /* =====================================================
-           4. GENERATE INTERNAL PAYMENT REFERENCE
+           4. NORMALIZE ADD-ONS / BACKDROPS / DURATION
+        ===================================================== */
+
+        const selectedBackdrops =
+            Array.isArray(backdrops)
+                ? backdrops
+                : [];
+
+        const selectedAddons =
+            Array.isArray(addons)
+                ? addons
+                : [];
+
+        const duration =
+            Number(booking_duration) || 60;
+
+
+        console.log("Selected backdrops:", selectedBackdrops);
+        console.log("Selected add-ons:", selectedAddons);
+        console.log("Booking duration:", duration);
+
+
+        /* =====================================================
+           5. GENERATE INTERNAL PAYMENT REFERENCE
         ===================================================== */
 
         const bookingReference =
@@ -296,7 +362,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
 
         /* =====================================================
-           5. CHECK WHETHER TIME SLOT IS ALREADY BOOKED
+           6. CHECK WHETHER TIME SLOT IS ALREADY BOOKED
         ===================================================== */
 
         const {
@@ -309,10 +375,12 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                 booking_date,
                 booking_time,
                 status,
-                payment_status
+                payment_status,
+                session_type,
+                addons,
+                booking_duration
             `)
-            .eq("booking_date", booking_date)
-            .eq("booking_time", booking_time);
+            .eq("booking_date", booking_date);
 
 
         if (existingBookingError) {
@@ -330,6 +398,29 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
         }
 
 
+        /* =====================================================
+           7. CHECK TIME OVERLAP
+        ===================================================== */
+
+        function timeToMinutes(time) {
+
+            const [hours, minutes] =
+                String(time)
+                    .slice(0, 5)
+                    .split(":")
+                    .map(Number);
+
+            return (hours * 60) + minutes;
+        }
+
+
+        const requestedStart =
+            timeToMinutes(booking_time);
+
+        const requestedEnd =
+            requestedStart + duration;
+
+
         const conflictingBooking =
             (existingBookings || []).find(booking => {
 
@@ -344,6 +435,10 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                         .trim();
 
 
+                /* ---------------------------------------------
+                   Ignore cancelled/rejected bookings
+                --------------------------------------------- */
+
                 if (
                     status === "cancelled" ||
                     status === "canceled" ||
@@ -356,29 +451,61 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
                 if (
                     paymentStatus === "cancelled" ||
-                    paymentStatus === "rejected"
+                    paymentStatus === "rejected" ||
+                    paymentStatus === "payment failed"
                 ) {
                     return false;
                 }
 
 
-                return true;
+                /* ---------------------------------------------
+                   Existing booking duration
+                --------------------------------------------- */
+
+                const existingDuration =
+                    Number(booking.booking_duration) || 60;
+
+
+                const existingStart =
+                    timeToMinutes(
+                        booking.booking_time
+                    );
+
+
+                const existingEnd =
+                    existingStart + existingDuration;
+
+
+                /* ---------------------------------------------
+                   Detect overlap
+                --------------------------------------------- */
+
+                return (
+                    requestedStart < existingEnd &&
+                    requestedEnd > existingStart
+                );
 
             });
 
 
         if (conflictingBooking) {
 
+            console.log(
+                "Booking conflict:",
+                conflictingBooking.id
+            );
+
             return res.status(409).json({
                 success: false,
-                error: "This time slot is no longer available. Please select another time."
+                error:
+                    "This time slot is no longer available. Please select another time."
             });
 
         }
 
 
         /* =====================================================
-           6. CREATE BOOKING FIRST
+           8. CREATE BOOKING
         ===================================================== */
 
         const {
@@ -388,8 +515,12 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             .from("bookings")
             .insert({
 
+                /*
+                 * Guest booking:
+                 * customer_id can be NULL.
+                 */
                 customer_id:
-                    customer_id,
+                    customer_id || null,
 
                 full_name:
                     full_name,
@@ -425,7 +556,20 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                     "Pending",
 
                 paymongo_reference:
-                    bookingReference
+                    bookingReference,
+
+                /* ---------------------------------------------
+                   NEW FIELDS
+                --------------------------------------------- */
+
+                backdrops:
+                    selectedBackdrops,
+
+                addons:
+                    selectedAddons,
+
+                booking_duration:
+                    duration
 
             })
             .select()
@@ -453,7 +597,10 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             bookingData.id
         );
 
-
+    
+        /* =====================================================
+           9. CREATE PAYMONGO CHECKOUT
+        ===================================================== */
 
         const paymongoResponse =
             await fetch(
@@ -474,74 +621,84 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
                     },
 
-                   body: JSON.stringify({
+                    body: JSON.stringify({
 
-    data: {
+                        data: {
 
-        attributes: {
+                            attributes: {
 
-            line_items: [
+                                line_items: [
 
-                {
-                    currency: "PHP",
+                                    {
+                                        currency: "PHP",
 
-                    amount: amountInCentavos,
+                                        amount:
+                                            amountInCentavos,
 
-                    name:
-                        `Reservation Down Payment - ${session_type}`,
+                                        name:
+                                            `Reservation Down Payment - ${session_type}`,
 
-                    quantity: 1
-                }
+                                        quantity: 1
+                                    }
 
-            ],
+                                ],
 
-            payment_method_types: [
-                "qrph"
-            ],
+                                payment_method_types: [
+                                    "qrph"
+                                ],
 
-            billing: {
+                                billing: {
 
-                name: full_name,
+                                    name:
+                                        full_name,
 
-                email: email,
+                                    email:
+                                        email,
 
-                phone: contact_number
+                                    phone:
+                                        contact_number
 
-            },
+                                },
 
-            description:
-                `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
+                                description:
+                                    `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
 
-            reference_number:
-                bookingReference,
+                                reference_number:
+                                    bookingReference,
 
-            metadata: {
+                                metadata: {
 
-                booking_id:
-                    String(bookingData.id),
+                                    booking_id:
+                                        String(
+                                            bookingData.id
+                                        ),
 
-                booking_reference:
-                    bookingReference
+                                    booking_reference:
+                                        bookingReference
 
-            },
+                                },
 
-            send_email_receipt:
-                true,
+                                send_email_receipt:
+                                    true,
 
-            show_description:
-                true,
+                                show_description:
+                                    true,
 
-            success_url:
-                `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_success.html?reference=${encodeURIComponent(bookingReference)}`,
+                                success_url:
+                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_success.html?reference=${encodeURIComponent(
+                                        bookingReference
+                                    )}`,
 
-            cancel_url:
-                `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(bookingReference)}`
+                                cancel_url:
+                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(
+                                        bookingReference
+                                    )}`
 
-        }
+                            }
 
-    }
+                        }
 
-})
+                    })
 
                 }
             );
@@ -560,6 +717,10 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             )
         );
 
+    
+        /* =====================================================
+           10. PAYMONGO ERROR
+        ===================================================== */
 
         if (!paymongoResponse.ok) {
 
@@ -567,6 +728,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
                 "PayMongo API error:",
                 paymongoData
             );
+
 
             await supabase
                 .from("bookings")
@@ -601,6 +763,12 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             });
 
         }
+
+
+        /* =====================================================
+           11. GET CHECKOUT URL
+        ===================================================== */
+
         const checkoutSession =
             paymongoData?.data;
 
@@ -644,6 +812,11 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
         }
 
+
+        /* =====================================================
+           12. SAVE PAYMONGO CHECKOUT ID
+        ===================================================== */
+
         const {
             error: updateBookingError
         } = await supabase
@@ -670,6 +843,20 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
         }
 
 
+        /* =====================================================
+           13. RETURN CHECKOUT INFORMATION
+        ===================================================== */
+
+        console.log(
+            "PayMongo checkout successfully created."
+        );
+
+        console.log(
+            "Checkout URL:",
+            checkoutUrl
+        );
+
+
         return res.json({
 
             success:
@@ -689,6 +876,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
         });
 
+
     }
     catch (error) {
 
@@ -699,7 +887,8 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
         return res.status(500).json({
 
-            success: false,
+            success:
+                false,
 
             error:
                 "Internal server error.",
@@ -712,7 +901,6 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
     }
 
 });
-
 app.post("/api/paymongo/webhook", async (req, res) => {
 
     try {const signatureHeader = req.headers["paymongo-signature"];
@@ -1033,42 +1221,50 @@ const {
             /* =================================================
                CUSTOMER NOTIFICATION
             ================================================= */
+if (booking.customer_id) {
 
-            const {
-                error: customerNotificationError
-            } = await supabase
-                .from("notifications")
-                .insert({
+    const {
+        error: customerNotificationError
+    } = await supabase
+        .from("notifications")
+        .insert({
 
-                    customer_id:
-                        booking.customer_id,
+            customer_id:
+                booking.customer_id,
 
-                    recipient:
-                        "customer",
+            recipient:
+                "customer",
 
-                    title:
-                        "Payment Successful",
+            title:
+                "Payment Successful",
 
-                    message:
-                        `Your ₱${Number(
-                            booking.downpayment_amount
-                        ).toFixed(2)} reservation payment was successful. Your booking is now awaiting admin confirmation.`,
+            message:
+                `Your ₱${Number(
+                    booking.downpayment_amount
+                ).toFixed(2)} reservation payment was successful. Your booking is now awaiting admin confirmation.`,
 
-                    is_read:
-                        false
+            is_read:
+                false
 
-                });
+        });
 
 
-            if (customerNotificationError) {
+    if (customerNotificationError) {
 
-                console.error(
-                    "Customer notification error:",
-                    customerNotificationError
-                );
+        console.error(
+            "Customer notification error:",
+            customerNotificationError
+        );
 
-            }
+    }
 
+} else {
+
+    console.log(
+        "Guest booking detected. Customer notification skipped."
+    );
+
+}
 
             /* =================================================
                ADMIN NOTIFICATION
@@ -1166,47 +1362,49 @@ const {
                CUSTOMER NOTIFICATION
             ================================================= */
 
-            const {
-                error: notificationError
-            } = await supabase
-                .from("notifications")
-                .insert({
+            if (booking.customer_id) {
 
-                    customer_id:
-                        booking.customer_id,
+    const {
+        error: notificationError
+    } = await supabase
+        .from("notifications")
+        .insert({
 
-                    recipient:
-                        "customer",
+            customer_id:
+                booking.customer_id,
 
-                    title:
-                        "Payment Failed",
+            recipient:
+                "customer",
 
-                    message:
-                        "Your reservation payment was not completed. Please create a new booking if you would like to reserve another schedule.",
+            title:
+                "Payment Failed",
 
-                    is_read:
-                        false
+            message:
+                "Your reservation payment was not completed. Please create a new booking if you would like to reserve another schedule.",
 
-                });
+            is_read:
+                false
 
-
-            if (notificationError) {
-
-                console.error(
-                    "Payment failed notification error:",
-                    notificationError
-                );
-
-            }
+        });
 
 
-            console.log(
-                "Booking marked as PAYMENT FAILED."
-            );
+    if (notificationError) {
 
+        console.error(
+            "Payment failed notification error:",
+            notificationError
+        );
+
+    }
+
+} else {
+
+    console.log(
+        "Guest booking detected. Payment-failed customer notification skipped."
+    );
+
+}
         }
-
-
         /* =====================================================
            9. TELL PAYMONGO WEBHOOK WAS RECEIVED
         ===================================================== */

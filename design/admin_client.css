@@ -839,6 +839,34 @@ span.notification-badge,
 .ui-data-grid .status-badge {
     white-space: nowrap;
 }
+.payment-status-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.payment-paid {
+    background: #dff3ea;
+    color: #35745f;
+}
+
+.payment-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-processing {
+    background: #e7f0ff;
+    color: #4169a1;
+}
+
+.payment-failed {
+    background: #f8dddd;
+    color: #a84b4b;
+}
 .payment-proof-btn {
             border: 0;
             background: #639A88;

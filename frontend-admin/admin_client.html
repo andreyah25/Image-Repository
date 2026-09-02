@@ -1515,45 +1515,76 @@
         async function loadBookedSessions() {
 
             console.log(
-                "Loading bookings..."
+                "Loading ALL bookings..."
             );
 
-            const {
-                data,
-                error,
-                count
-            } = await supabaseClient
-                .from("bookings")
-                .select("*", { count: "exact" })
-                .eq("is_archived", false)
-                .order("created_at", {
-                    ascending: false
-                });
+            /*
+             * Load every booking from the bookings table.
+             *
+             * No payment-status filter is applied.
+             * No is_archived filter is applied.
+             *
+             * Supabase normally returns up to 1,000 rows per request,
+             * so bookings are loaded in batches to avoid silently
+             * missing older records when the table grows.
+             */
+            const pageSize = 1000;
+            let from = 0;
+            let allBookings = [];
 
-            if (error) {
+            try {
+                while (true) {
+                    const {
+                        data,
+                        error
+                    } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .order("created_at", {
+                            ascending: false
+                        })
+                        .range(
+                            from,
+                            from + pageSize - 1
+                        );
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    const rows = data || [];
+
+                    allBookings.push(...rows);
+
+                    if (rows.length < pageSize) {
+                        break;
+                    }
+
+                    from += pageSize;
+                }
+
+                console.log(
+                    "Total bookings loaded:",
+                    allBookings.length
+                );
+
+                allBookedSessions =
+                    allBookings;
+
+                renderBookedSessions();
+
+            } catch (error) {
 
                 console.error(
                     "Error loading bookings:",
                     error
                 );
 
-                return;
+                showToast(
+                    "Loading Error",
+                    "Unable to load bookings."
+                );
             }
-
-            console.log(
-                "Returned rows:",
-                data?.length || 0
-            );
-
-            console.log(
-                "Total rows:",
-                count
-            );
-
-            allBookedSessions =
-                data || [];
-
-            renderBookedSessions();
         }
         /* =========================================================
            LOAD ACCESS REQUESTS
@@ -1745,7 +1776,7 @@
 
                                 message:
                                     `Your gallery access request has been approved. ` +
-                                    `Your gallery link is available for 2 days. ` +
+                                    `Your gallery link is available for 7 days. ` +
                                     `Please copy the gallery link below and paste it into the My Gallery page.\n\n` +
                                     clientLink,
                                 is_read:
@@ -1809,112 +1840,34 @@
         );
 
 
-        document.addEventListener(
-            "click",
-            async function (e) {
 
-                const btn =
-                    e.target.closest(".reject-btn");
+async function sendPaymentConfirmationEmail(booking) {
+            try {
+                const response = await fetch("/send-payment-confirmation", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: booking.email,
+                        name: booking.full_name,
+                        bookingDate: booking.booking_date,
+                        bookingTime: booking.booking_time,
+                        sessionType: booking.session_type
+                    })
+                });
 
-                if (!btn) {
-                    return;
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || "Failed to send email.");
                 }
 
-                const bookingId =
-                    btn.dataset.id;
-
-                const rejected =
-                    confirm(
-                        "Are you sure you want to reject this booking?"
-                    );
-
-                if (!rejected) {
-                    return;
-                }
-
-                btn.disabled = true;
-                btn.textContent = "Rejecting...";
-
-                try {
-
-                    /* ---------------------------------------------
-                       GET BOOKING FIRST
-                    --------------------------------------------- */
-
-                    const {
-                        data: booking,
-                        error: bookingError
-                    } = await supabaseClient
-                        .from("bookings")
-                        .select("*")
-                        .eq("id", bookingId)
-                        .single();
-
-                    if (bookingError) {
-                        throw bookingError;
-                    }
-
-                    if (!booking) {
-                        throw new Error(
-                            "Booking was not found."
-                        );
-                    }
-
-
-                    /* ---------------------------------------------
-                       UPDATE BOOKING STATUS
-                    --------------------------------------------- */
-
-                    const {
-                        error: updateError
-                    } = await supabaseClient
-                        .from("bookings")
-                        .update({
-                            status: "Rejected"
-                        })
-                        .eq("id", bookingId);
-
-                    if (updateError) {
-                        throw updateError;
-                    }
-
-
-
-                    /* ---------------------------------------------
-                       SUCCESS
-                    --------------------------------------------- */
-
-                    showToast(
-                        "Booking Rejected",
-                        `${booking.full_name}'s booking has been rejected.`
-                    );
-
-
-                    /* ---------------------------------------------
-                       REFRESH TABLE
-                    --------------------------------------------- */
-
-                    await loadBookedSessions();
-
-                } catch (error) {
-
-                    console.error(
-                        "REJECT BOOKING ERROR:",
-                        error
-                    );
-
-                    alert(
-                        "The booking could not be rejected.\n\n" +
-                        error.message
-                    );
-
-                } finally {
-
-                    btn.disabled = false;
-                    btn.textContent = "Reject";
-                }
+                console.log("Confirmation email sent.");
+            } catch (error) {
+                console.error("Email Error:", error);
             }
-        );
+        }
         function renderBookedSessions() {
 
             const tbody = document.getElementById("clientTableBody");
@@ -2005,6 +1958,9 @@
                             booking.booking_date,
                             booking.booking_time,
                             booking.session_type,
+                            Array.isArray(booking.backdrops)
+                                ? booking.backdrops.join(" ")
+                                : booking.backdrops,
                             booking.payment_method,
                             booking.payment_status,
                             booking.status,
@@ -2068,7 +2024,7 @@
                 tbody.innerHTML = `
             <tr>
                 <td
-                    colspan="13"
+                    colspan="16"
                     style="
                         text-align:center;
                         padding:30px;
@@ -2105,8 +2061,27 @@
 
                 if (status === "pending") {
 
-                    actionHTML = `
+                    const paymentStatus =
+                        String(
+                            booking.payment_status || ""
+                        ).trim().toLowerCase();
+
+                    const paymentIsPaid =
+                        paymentStatus === "paid" ||
+                        paymentStatus === "succeeded" ||
+                        paymentStatus === "success";
+
+                    if (paymentIsPaid) {
+
+                        actionHTML = `
+            <div style="
+                display:flex;
+                gap:6px;
+                flex-wrap:wrap;
+            ">
+
                 <button
+                    type="button"
                     class="confirm-btn"
                     data-id="${escapeHtml(booking.id)}"
                 >
@@ -2114,25 +2089,75 @@
                 </button>
 
                 <button
+                    type="button"
                     class="reject-btn"
                     data-id="${escapeHtml(booking.id)}"
                 >
                     Reject
                 </button>
-            `;
+
+            </div>
+        `;
+
+                    } else {
+
+                        actionHTML = `
+            <div style="
+                display:flex;
+                flex-direction:column;
+                gap:5px;
+                align-items:flex-start;
+            ">
+
+                <button
+                    type="button"
+                    disabled
+                    style="
+                        border:0;
+                        border-radius:6px;
+                        padding:7px 12px;
+                        background:#d6d6d6;
+                        color:#777;
+                        cursor:not-allowed;
+                        font-family:inherit;
+                        font-size:12px;
+                        font-weight:600;
+                    "
+                >
+                    Confirm
+                </button>
+
+                <span style="
+                    font-size:11px;
+                    color:#999;
+                ">
+                    Waiting for payment
+                </span>
+
+                <button
+                    type="button"
+                    class="reject-btn"
+                    data-id="${escapeHtml(booking.id)}"
+                >
+                    Reject
+                </button>
+
+            </div>
+        `;
+                    }
 
                 } else if (status === "confirmed") {
 
                     actionHTML = `
-                <button
-                    class="complete-btn"
-                    data-id="${escapeHtml(booking.id)}"
-                >
-                    Complete
-                </button>
-            `;
+        <button
+            type="button"
+            class="complete-btn"
+            data-id="${escapeHtml(booking.id)}"
+        >
+            Complete
+        </button>
+    `;
                 }
-
 
                 /* ---------------------------------------------
                    PAYMENT PROOF
@@ -2179,6 +2204,47 @@
                             }
                         )}`
                         : "-";
+
+
+                /* ---------------------------------------------
+                   PAYMENT STATUS
+                --------------------------------------------- */
+
+                const paymentStatusText =
+                    String(
+                        booking.payment_status || "Pending"
+                    ).trim();
+
+                const paymentStatusLower =
+                    paymentStatusText.toLowerCase();
+
+                let paymentStatusHTML = "";
+
+                if (
+                    paymentStatusLower === "paid" ||
+                    paymentStatusLower === "succeeded" ||
+                    paymentStatusLower === "success"
+                ) {
+                    paymentStatusHTML = `
+                        <span class="status-badge paid">
+                            ${escapeHtml(paymentStatusText)}
+                        </span>
+                    `;
+                } else if (
+                    paymentStatusLower === "pending"
+                ) {
+                    paymentStatusHTML = `
+                        <span class="status-badge pending">
+                            ${escapeHtml(paymentStatusText)}
+                        </span>
+                    `;
+                } else {
+                    paymentStatusHTML = `
+                        <span class="status-badge">
+                            ${escapeHtml(paymentStatusText)}
+                        </span>
+                    `;
+                }
 
 
                 /* =====================================================
@@ -2232,18 +2298,31 @@
 
                 <td>
                     ${escapeHtml(
+                    Array.isArray(booking.backdrops)
+                        ? (booking.backdrops.length
+                            ? booking.backdrops.join(", ")
+                            : "-")
+                        : (booking.backdrops || "-")
+                )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
                     booking.payment_method || "-"
                 )}
                 </td>
 
                 <td>
-                    ${paymentAmount}
-                </td>
+              ${paymentAmount}
+                    </td>
+
+                    <td>
+               ${paymentStatusHTML}
+                    </td>
 
                 <td>
-                    ${proofHTML}
+                 ${proofHTML}
                 </td>
-
                 <td>
 
                     <span
@@ -2301,10 +2380,7 @@
         `;
             });
         }
-        /* =========================================================
-           PAYMENT PROOF FLOATING PREVIEW
-           Click "View Proof" to inspect the uploaded receipt.
-        ========================================================= */
+        
         function openPaymentProofModal(booking) {
             const modal = document.getElementById("paymentProofModal");
             const image = document.getElementById("paymentProofImage");
@@ -2547,7 +2623,27 @@
                         throw new Error("Booking was not found.");
                     }
 
+                    const paymentStatus =
+                        String(
+                            booking.payment_status || ""
+                        ).trim().toLowerCase();
 
+                    const paymentIsPaid =
+                        paymentStatus === "paid" ||
+                        paymentStatus === "succeeded" ||
+                        paymentStatus === "success";
+
+                    if (!paymentIsPaid) {
+
+                        showToast(
+                            "Payment Not Verified",
+                            "This booking cannot be confirmed because the payment has not been verified by PayMongo."
+                        );
+
+                        await loadBookedSessions();
+
+                        return;
+                    }
                     /* ---------------------------------------------
                        UPDATE BOOKING STATUS
                     --------------------------------------------- */
@@ -2600,6 +2696,29 @@
                         "Client repository link:",
                         clientLink
                     );
+
+
+                    /* ---------------------------------------------
+                       SEND BOOKING CONFIRMATION EMAIL
+                    --------------------------------------------- */
+
+                    /*
+                     * The email helper is already defined above.
+                     * Call it only after the booking has successfully
+                     * changed to Confirmed.
+                     *
+                     * The helper handles its own errors so a failed
+                     * email will not undo the confirmed booking.
+                     */
+                    if (updatedBooking.email) {
+                        await sendPaymentConfirmationEmail(
+                            updatedBooking
+                        );
+                    } else {
+                        console.warn(
+                            "Booking confirmed, but no customer email was found."
+                        );
+                    }
 
 
                     /* ---------------------------------------------
@@ -2694,84 +2813,9 @@
                 }
             }
         );
-        /* =========================================================
-           REJECT BOOKING
+                /* =========================================================
+           COMPLETE BOOKING
         ========================================================= */
-
-        document.addEventListener(
-            "click",
-            async function (e) {
-
-                const btn =
-                    e.target.closest(
-                        ".reject-btn"
-                    );
-
-                if (!btn) {
-                    return;
-                }
-
-
-                const bookingId =
-                    btn.dataset.id;
-
-
-                const rejected =
-                    confirm(
-                        "Are you sure you want to reject this booking?"
-                    );
-
-
-                if (!rejected) {
-                    return;
-                }
-
-
-                btn.disabled = true;
-
-
-                const {
-                    error
-                } =
-                    await supabaseClient
-                        .from("bookings")
-                        .update({
-
-                            status:
-                                "Rejected"
-
-                        })
-                        .eq(
-                            "id",
-                            bookingId
-                        );
-
-
-                if (error) {
-
-                    console.error(
-                        error
-                    );
-
-                    alert(
-                        error.message
-                    );
-
-                    btn.disabled = false;
-
-                    return;
-                }
-
-
-                showToast(
-                    "Booking Rejected",
-                    "The booking has been rejected."
-                );
-
-
-                await loadBookedSessions();
-            }
-        );
 
         document.addEventListener(
             "click",
@@ -3117,6 +3161,45 @@
 
             renderAccessRequests();
         }
+        function getPaymentStatusHTML(booking) {
+
+            const paymentStatus =
+                String(booking.payment_status || "Pending")
+                    .trim()
+                    .toLowerCase();
+
+            let label = booking.payment_status || "Pending";
+            let className = "payment-pending";
+
+            if (
+                paymentStatus === "paid" ||
+                paymentStatus === "succeeded" ||
+                paymentStatus === "success"
+            ) {
+                label = "Paid";
+                className = "payment-paid";
+
+            } else if (
+                paymentStatus === "failed" ||
+                paymentStatus === "cancelled" ||
+                paymentStatus === "canceled"
+            ) {
+                label = "Failed";
+                className = "payment-failed";
+
+            } else if (
+                paymentStatus === "processing"
+            ) {
+                label = "Processing";
+                className = "payment-processing";
+            }
+
+            return `
+        <span class="payment-status-badge ${className}">
+            ${escapeHtml(label)}
+        </span>
+    `;
+        }
         function renderAccessRequests() {
 
             const tbody =
@@ -3455,35 +3538,25 @@
             ) {
 
                 tableHeader.innerHTML = `
-            <tr>
-                <th>#</th>
-
-                <th>Full Name</th>
-
-                <th>Contact Number</th>
-
-                <th>Email Address</th>
-
-                <th>Date</th>
-
-                <th>Time</th>
-
-                <th>Session Type</th>
-
-                <th>Payment Method</th>
-
-                <th>Down Payment Amount</th>
-
-                <th>Proof of Payment</th>
-
-                <th>Status</th>
-
-                <th>Note</th>
-                <th> Rejection Reason </th>
-                <th>Action</th>
-
-            </tr>
-        `;
+    <tr>
+        <th>#</th>
+        <th>Full Name</th>
+        <th>Contact Number</th>
+        <th>Email Address</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Session Type</th>
+        <th>Backdrop</th>
+        <th>Payment Method</th>
+        <th>Down Payment</th>
+        <th>Payment Status</th>
+        <th>Proof of Payment</th>
+        <th>Booking Status</th>
+        <th>Note</th>
+        <th>Rejection Reason</th>
+        <th>Action</th>
+    </tr>
+`;
 
                 if (addNewClientBtn) {
                     addNewClientBtn.style.display =
@@ -3555,84 +3628,6 @@
             }
         );
 
-        /* =========================================================
-           DECLINE ACCESS REQUEST
-        ========================================================= */
-
-        document.addEventListener(
-            "click",
-            async function (e) {
-
-                const btn =
-                    e.target.closest(
-                        ".reject-access-btn"
-                    );
-
-                if (!btn) {
-                    return;
-                }
-
-                const requestId =
-                    btn.dataset.id;
-
-                if (!requestId) {
-                    console.error(
-                        "Missing access request ID."
-                    );
-                    return;
-                }
-
-                const confirmed =
-                    confirm(
-                        "Decline this customer's gallery access request?"
-                    );
-
-                if (!confirmed) {
-                    return;
-                }
-
-                btn.disabled = true;
-                btn.textContent = "Declining...";
-
-                try {
-
-                    const {
-                        error
-                    } = await supabaseClient
-                        .from("gallery_access_requests")
-                        .update({
-                            status: "declined"
-                        })
-                        .eq("id", requestId);
-
-                    if (error) {
-                        throw error;
-                    }
-
-                    showToast(
-                        "Access Declined",
-                        "The customer's gallery access request has been declined."
-                    );
-
-                    await loadAccessRequests();
-
-                } catch (error) {
-
-                    console.error(
-                        "DECLINE ACCESS ERROR:",
-                        error
-                    );
-
-                    alert(
-                        "The access request could not be declined.\n\n" +
-                        error.message
-                    );
-
-                    btn.disabled = false;
-                    btn.textContent = "Decline";
-                }
-            }
-        );
         /* =========================================================
            FILTER
         ========================================================= */

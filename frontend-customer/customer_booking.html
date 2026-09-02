@@ -18,21 +18,12 @@
         </div>
 
         <div class="navbar-right">
-            <div class="notification-container">
-                <button id="notificationBtn" class="notification-btn">
-                    <i class="fa-solid fa-bell"></i>
-                    <span id="notificationCount">0</span>
-                </button>
-                <div id="notificationDropdown" class="notification-dropdown">
-                    <div id="notificationList"></div>
-                </div>
-            </div>
-
-            <div class="user-profile">
-                <img id="profile-image" src="/images/default-profile.png" alt="Profile" class="profile-img">
-                <span id="customer-name"></span>
-            </div>
+            <a href="customer_homepage.html" class="public-home-link">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
         </div>
+
     </header>
 
     <div class="dashboard-wrapper">
@@ -43,19 +34,11 @@
                     <i class="fa-regular fa-calendar-check"></i>
                     <span>Book a Session</span>
                 </a>
-                <a href="customer_gallery_request.html">
-                    <i class="fa-regular fa-image"></i>
-                    <span>My Gallery</span>
-                </a>
-                <a href="customer_profile.html">
-                    <i class="fa-regular fa-user"></i>
-                    <span>Profile</span>
-                </a>
             </nav>
 
             <a href="customer_homepage.html" class="logout-btn">
-                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
-                <span>Log out</span>
+                <i class="fa-solid fa-house logout-icon"></i>
+                <span>Back to Home</span>
             </a>
         </aside>
 
@@ -84,7 +67,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="emailAddress">Email Address</label>
-                                    <input type="email" id="emailAddress" placeholder="Enter your email" readonly>
+                                    <input type="email" id="emailAddress" placeholder="Enter your email"
+                                        autocomplete="email" required>
                                 </div>
                             </div>
                         </div>
@@ -134,9 +118,9 @@
                                         <option value="basic_2">BASIC 2 (2 persons) - ₱599</option>
                                         <option value="basic_3">BASIC 3 (3 persons) - ₱799</option>
                                         <option value="group_package">GROUP PACKAGE (4-8 persons) - ₱1,999</option>
-                                        <option value="classic_1">Classic 1 - ₱1,199</option>
-                                        <option value="classic_2">Classic 2 - ₱1,799</option>
-                                        <option value="classic_3">Classic 3 - ₱3,499</option>
+                                        <option value="classic_1">Classic 1 - ₱1,199 (Graduation)</option>
+                                        <option value="classic_2">Classic 2 - ₱1,799 (Graduation)</option>
+                                        <option value="classic_3">Classic 3 - ₱3,499 (Graduation)</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -152,8 +136,185 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label>
+                                Add-Ons
+                                <span style="font-weight: normal; color: #777;">
+                                    (Optional)
+                                </span>
+                            </label>
 
-                        <!-- Section 3: Reservation Down Payment -->
+                            <p style="font-size: 13px; color: #777; margin-bottom: 12px;">
+                                Select an add-on only if you would like to include it in your booking.
+                            </p>
+
+                            <div id="addonContainer">
+
+                                <!-- Add-on dropdown -->
+                                <div class="addon-row">
+                                    <select class="addon-select">
+                                        <option value="">-- Select Add-On --</option>
+                                        <option value="additional_person">
+                                            Additional Person — ₱200/head
+                                        </option>
+                                        <option value="additional_pet">
+                                            Additional Pet — ₱100/head
+                                        </option>
+                                        <option value="additional_4r_print">
+                                            Additional 4R Print — ₱50
+                                        </option>
+                                        <option value="frame_8r">
+                                            8R Frame — ₱600
+                                        </option>
+                                        <option value="refrigerator_magnet">
+                                            3 pcs Refrigerator Magnet — ₱150
+                                        </option>
+                                        <option value="backdrop_request">
+                                            Backdrop Request — ₱300
+                                        </option>
+                                        <option value="photographer_15">
+                                            With Photographer — 15 minutes — ₱500
+                                        </option>
+                                        <option value="photographer_30">
+                                            With Photographer — 30 minutes — ₱800
+                                        </option>
+                                    </select>
+
+                                    <!-- Quantity field appears after selecting -->
+                                    <input type="number" class="addon-quantity" min="1" value="1" placeholder="Quantity"
+                                        style="display: none;">
+
+                                    <button type="button" class="remove-addon" style="display: none;">
+                                        ×
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <button type="button" id="addAddonBtn" class="btn-secondary" style="margin-top: 10px;">
+                                + Add Another Add-On
+                            </button>
+                        </div>
+                        <div class="form-section" id="backdropSection">
+
+                            <div class="section-header-flex">
+                                <h3 class="section-title-form">
+                                    Choose Your Backdrop
+                                </h3>
+
+                                <span id="backdropRequirement" style="
+                font-size: 0.85rem;
+                color: #639A88;
+                font-weight: 600;
+            ">
+                                    Select a package first
+                                </span>
+                            </div>
+
+                            <p style="
+        margin-top: 5px;
+        margin-bottom: 18px;
+        color: #666;
+        font-size: 0.88rem;
+    ">
+                                Choose the backdrop color(s) you want to use during your
+                                photo session.
+                            </p>
+
+                            <div id="backdropGrid" class="backdrop-grid">
+
+                                <!-- WHITE -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="White">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-white"></div>
+                                        <span>White</span>
+                                    </div>
+                                </label>
+
+                                <!-- LAVENDER -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="Lavender Purple">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-lavender"></div>
+                                        <span>Lavender Purple</span>
+                                    </div>
+                                </label>
+
+                                <!-- SKY BLUE -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="Sky Blue">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-sky"></div>
+                                        <span>Sky Blue</span>
+                                    </div>
+                                </label>
+
+                                <!-- SAGE GREEN -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="Sage Green">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-sage"></div>
+                                        <span>Sage Green</span>
+                                    </div>
+                                </label>
+
+                                <!-- RED -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="Red">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-red"></div>
+                                        <span>Red</span>
+                                    </div>
+                                </label>
+
+                                <!-- CAMEL BROWN -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="Camel Brown">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-camel"></div>
+                                        <span>Camel Brown</span>
+                                    </div>
+                                </label>
+
+                                <!-- BEIGE -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="Beige / Nude">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-beige"></div>
+                                        <span>Beige / Nude</span>
+                                    </div>
+                                </label>
+
+                                <!-- GRAY -->
+                                <label class="backdrop-option">
+                                    <input type="checkbox" name="backdrop" value="Gray">
+
+                                    <div class="backdrop-card">
+                                        <div class="backdrop-color backdrop-gray"></div>
+                                        <span>Gray</span>
+                                    </div>
+                                </label>
+
+                            </div>
+
+                            <small id="backdropMessage" style="
+            display:block;
+            margin-top:10px;
+            color:#666;
+            font-size:0.8rem;
+        ">
+                                Please select a package or session first.
+                            </small>
+
+                        </div>
                         <div class="form-section">
 
                             <div class="section-header-flex">
@@ -747,34 +908,63 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
-        /* =========================================================
-   BOOKING SCHEDULE RULES
-   ========================================================= */
 
-        // Maximum number of bookings accepted per day
-        const MAX_BOOKINGS_PER_DAY = 8;
+        const MAX_BOOKINGS_PER_DAY = 6;
 
-        // Studio booking hours
-        const BOOKING_START_HOUR = 10; // 10:00 AM
-        const BOOKING_END_HOUR = 21;   // 9:00 PM
+        const BOOKING_START_MINUTES = 10 * 60;
+        const BOOKING_END_MINUTES = 19 * 60;
+        const BOOKING_INTERVAL = 15;
 
-        // Available booking times.
-        // Add/remove times here if you want a different schedule.
-        const BOOKING_TIME_SLOTS = [
-            "10:00",
-            "11:00",
-            "12:00",
-            "13:00",
-            "14:00",
-            "15:00",
-            "16:00",
-            "17:00",
-            "18:00",
-            "19:00",
-            "20:00",
-            "21:00"
-        ];
+        const BOOKING_PREPARATION_TIME = 5;
+        const ADDON_OPTIONS = {
+            additional_person: {
+                name: "Additional Person",
+                price: 200,
+                duration: 0
+            },
 
+            additional_pet: {
+                name: "Additional Pet",
+                price: 100,
+                duration: 0
+            },
+
+            additional_4r_print: {
+                name: "Additional 4R Print",
+                price: 50,
+                duration: 0
+            },
+
+            frame_8r: {
+                name: "8R Frame",
+                price: 600,
+                duration: 0
+            },
+
+            refrigerator_magnet: {
+                name: "3 pcs Refrigerator Magnet",
+                price: 150,
+                duration: 0
+            },
+
+            backdrop_request: {
+                name: "Backdrop Request",
+                price: 300,
+                duration: 0
+            },
+
+            photographer_15: {
+                name: "With Photographer for 15 minutes",
+                price: 500,
+                duration: 15
+            },
+
+            photographer_30: {
+                name: "With Photographer for 30 minutes",
+                price: 800,
+                duration: 30
+            }
+        };
         const BOOKING_DURATIONS = {
 
             // Basic packages
@@ -807,10 +997,113 @@
             "theme_holiday": 1699,
             "maternity": 999
         };
-        /* =========================================================
-           BOOKING AVAILABILITY
-           ========================================================= */
 
+
+        const BACKDROP_REQUIREMENTS = {
+
+            // Basic Packages
+            basic_1: 1,
+            basic_2: 1,
+            basic_3: 1,
+            group_package: 3,
+
+            // Graduation Packages
+            classic_1: 1,
+            classic_2: 1,
+            classic_3: 1,
+
+            // Special Sessions
+            kids: 1,
+            pre_birthday: 1,
+            theme_holiday: 1,
+            maternity: 1
+        };
+        function getSelectedAddons() {
+            const addons = [];
+
+            document.querySelectorAll(".addon-row").forEach(row => {
+
+                const select = row.querySelector(".addon-select");
+                const quantityInput = row.querySelector(".addon-quantity");
+
+                if (!select || !select.value) {
+                    return;
+                }
+
+                const quantity =
+                    parseInt(quantityInput.value, 10) || 1;
+
+                addons.push({
+                    key: select.value,
+                    quantity: quantity
+                });
+            });
+
+            return addons;
+        }
+        function getSelectedAddonTotal() {
+            const selectedAddons = getSelectedAddons();
+
+            return selectedAddons.reduce((total, addonItem) => {
+
+                const addon =
+                    ADDON_OPTIONS[addonItem.key];
+
+                if (!addon) {
+                    return total;
+                }
+
+                return total +
+                    (addon.price * addonItem.quantity);
+
+            }, 0);
+        }
+
+        function getAddonDurationFromKeys(addons) {
+
+            if (!Array.isArray(addons)) {
+                return 0;
+            }
+
+            return addons.reduce((total, addonItem) => {
+
+                const addon =
+                    ADDON_OPTIONS[addonItem.key];
+
+                if (!addon) {
+                    return total;
+                }
+
+                return total +
+                    ((addon.duration || 0) * addonItem.quantity);
+
+            }, 0);
+        }
+        function normalizeAddonKeys(addons) {
+
+            if (Array.isArray(addons)) {
+                return addons;
+            }
+
+            if (typeof addons === "string") {
+
+                try {
+
+                    const parsed = JSON.parse(addons);
+
+                    return Array.isArray(parsed)
+                        ? parsed
+                        : [];
+
+                } catch (error) {
+
+                    return [];
+
+                }
+            }
+
+            return [];
+        }
         function getSelectedService() {
 
             const photoPackage =
@@ -821,23 +1114,130 @@
 
             return sessionType || photoPackage || "";
         }
+        /* =========================================================
+           BACKDROP SELECTION
+           ========================================================= */
+
+        function getRequiredBackdropCount() {
+
+            const selectedService = getSelectedService();
+
+            return BACKDROP_REQUIREMENTS[selectedService] || 0;
+        }
 
 
-        /* ---------------------------------------------------------
-           GET SERVICE DURATION
-        --------------------------------------------------------- */
+        function getSelectedBackdrops() {
+
+            return Array.from(
+                document.querySelectorAll(
+                    'input[name="backdrop"]:checked'
+                )
+            ).map(input => input.value);
+        }
+
+
+        function updateBackdropUI() {
+
+            const requiredCount =
+                getRequiredBackdropCount();
+
+            const requirement =
+                document.getElementById("backdropRequirement");
+
+            const message =
+                document.getElementById("backdropMessage");
+
+            const backdropOptions =
+                document.querySelectorAll(
+                    'input[name="backdrop"]'
+                );
+
+            const selectedBackdrops =
+                getSelectedBackdrops();
+
+
+
+            if (!requiredCount) {
+
+                requirement.textContent =
+                    "Select a package first";
+
+                message.textContent =
+                    "Please select a package or session first.";
+
+                backdropOptions.forEach(input => {
+
+                    input.checked = false;
+
+                    input.disabled = true;
+
+                    input
+                        .closest(".backdrop-option")
+                        .classList.add("disabled");
+
+                });
+
+                return;
+            }
+
+            requirement.textContent =
+                `Select ${requiredCount} backdrop${requiredCount > 1 ? "s" : ""}`;
+
+
+            message.textContent =
+                `${selectedBackdrops.length}/${requiredCount} backdrop${requiredCount > 1 ? "s" : ""} selected.`;
+
+
+            backdropOptions.forEach(input => {
+
+                input.disabled = false;
+
+                input
+                    .closest(".backdrop-option")
+                    .classList.remove("disabled");
+
+            });
+
+
+
+
+            if (selectedBackdrops.length >= requiredCount) {
+
+                backdropOptions.forEach(input => {
+
+                    if (!input.checked) {
+
+                        input.disabled = true;
+
+                        input
+                            .closest(".backdrop-option")
+                            .classList.add("disabled");
+
+                    }
+
+                });
+
+            }
+        }
+
 
         function getSelectedDuration() {
 
             const selectedService = getSelectedService();
 
-            return BOOKING_DURATIONS[selectedService] || 60;
+            const baseDuration = BOOKING_DURATIONS[selectedService] || 60;
+            const selectedAddons = getSelectedAddons();
+            const addonDuration = getAddonDurationFromKeys(selectedAddons);
+            return baseDuration + addonDuration;
         }
 
+        function minutesToTime(minutes) {
 
-        /* ---------------------------------------------------------
-           FORMAT TIME FOR DISPLAY
-        --------------------------------------------------------- */
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+
+            return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+        }
 
         function formatBookingTime(time) {
 
@@ -880,11 +1280,6 @@
 
             return dateString < todayString;
         }
-
-
-        /* ---------------------------------------------------------
-           LOAD AVAILABLE TIMES FOR SELECTED DATE
-        --------------------------------------------------------- */
 
         async function loadAvailableTimeSlots() {
 
@@ -944,7 +1339,9 @@
                 booking_time,
                 status,
                 payment_status,
-                session_type
+                session_type, 
+                addons,
+                booking_duration
             `)
                     .eq("booking_date", selectedDate);
 
@@ -1021,14 +1418,7 @@
 
                 console.log("Requested service duration:", requestedDuration);
 
-                /* =====================================================
-                   HELPER: CONVERT TIME TO MINUTES
-                   
-                   Handles:
-                   10:00
-                   10:00:00
-                   10:00:00+00
-                   ===================================================== */
+
 
                 function timeToMinutes(timeString) {
 
@@ -1075,10 +1465,18 @@
                          * or special session key.
                          */
                         const existingDuration =
-                            BOOKING_DURATIONS[booking.session_type] || 60;
+                            Number(booking.booking_duration) ||
+                            (
+                                (BOOKING_DURATIONS[booking.session_type] || 60) +
+                                getAddonDurationFromKeys(
+                                    normalizeAddonKeys(booking.addons)
+                                )
+                            );
 
                         const endMinutes =
-                            startMinutes + existingDuration;
+                            startMinutes +
+                            existingDuration +
+                            BOOKING_PREPARATION_TIME;
 
                         return {
                             start: startMinutes,
@@ -1095,9 +1493,6 @@
                     existingBookingRanges
                 );
 
-                /* =====================================================
-                   CHECK WHETHER TWO TIME RANGES OVERLAP
-                   ===================================================== */
 
                 function isOverlapping(
                     requestedStart,
@@ -1115,39 +1510,50 @@
                 /* =====================================================
                    CHECK EACH AVAILABLE SLOT
                    ===================================================== */
+                /* =====================================================
+                   CHECK EACH AVAILABLE SLOT
+                   10:00 AM - 7:00 PM
+                   15-minute intervals
+                ===================================================== */
 
-                const availableTimes =
-                    BOOKING_TIME_SLOTS.filter(time => {
+                const availableTimes = [];
 
-                        const requestedStart =
-                            timeToMinutes(time);
+                for (
+                    let startMinutes = BOOKING_START_MINUTES;
+                    startMinutes < BOOKING_END_MINUTES;
+                    startMinutes += BOOKING_INTERVAL
+                ) {
 
-                        if (requestedStart === null) {
-                            return false;
-                        }
+                    const requestedStart = startMinutes;
 
-                        const requestedEnd =
-                            requestedStart + requestedDuration;
+                    const requestedEnd =
+                        requestedStart + requestedDuration + BOOKING_PREPARATION_TIME;
 
-                        /*
-                         * Make sure the requested session does not
-                         * overlap ANY existing booking.
-                         */
-                        const hasConflict =
-                            existingBookingRanges.some(existing => {
+                    if (requestedEnd > BOOKING_END_MINUTES) {
+                        continue;
+                    }
 
-                                return isOverlapping(
-                                    requestedStart,
-                                    requestedEnd,
-                                    existing.start,
-                                    existing.end
-                                );
 
-                            });
+                    const hasConflict =
+                        existingBookingRanges.some(existing => {
 
-                        return !hasConflict;
-                    });
+                            return isOverlapping(
+                                requestedStart,
+                                requestedEnd,
+                                existing.start,
+                                existing.end
+                            );
 
+                        });
+
+                    if (!hasConflict) {
+
+                        availableTimes.push(
+                            minutesToTime(requestedStart)
+                        );
+
+                    }
+                }
                 /* =====================================================
                    DISPLAY AVAILABLE TIMES
                    ===================================================== */
@@ -1246,7 +1652,6 @@
           }
   */
         function getCalculatedDownpayment() {
-
             const photoPackageSelect =
                 document.getElementById("photoPackage");
 
@@ -1257,16 +1662,26 @@
                 sessionTypeSelect.value ||
                 photoPackageSelect.value;
 
-            const totalPrice =
+            const packageTotal =
                 packagePrices[selectedKey] || 0;
 
+            const addonTotal =
+                getSelectedAddonTotal();
+
+            const totalPrice =
+                packageTotal + addonTotal;
+
+            // Fixed ₱1 reservation fee
             const FIXED_RESERVATION_FEE = 1;
 
             return {
+                packageTotal,
+                addonTotal,
                 total: totalPrice,
-                downpayment: totalPrice > 0
-                    ? FIXED_RESERVATION_FEE
-                    : 0
+                downpayment:
+                    totalPrice > 0
+                        ? FIXED_RESERVATION_FEE
+                        : 0
             };
         }
         function updateDownpaymentUI() {
@@ -1309,183 +1724,147 @@
 
             }
         }
-        (async () => {
 
-            console.log("=================================");
-            console.log("LOADING CUSTOMER INFORMATION");
-            console.log("=================================");
+        document.addEventListener("DOMContentLoaded", function () {
+            const emailInput = document.getElementById("emailAddress");
+            const nameInput = document.getElementById("fullName");
+            const contactInput = document.getElementById("contactNumber");
 
-            /* =========================================================
-               1. GET LOGGED-IN SUPABASE USER
-               ========================================================= */
+            if (emailInput) emailInput.readOnly = false;
+            if (nameInput) nameInput.readOnly = false;
+            if (contactInput) contactInput.readOnly = false;
 
-            const {
-                data: { user },
-                error: authError
-            } = await supabaseClient.auth.getUser();
+            updateDownpaymentUI();
+        });
+        const addonContainer =
+            document.getElementById("addonContainer");
+
+        const addAddonBtn =
+            document.getElementById("addAddonBtn");
 
 
-            if (authError) {
+        function updateAddonRow(row) {
 
-                console.error(
-                    "Authentication error:",
-                    authError
-                );
+            const select =
+                row.querySelector(".addon-select");
 
-                return;
+            const quantityInput =
+                row.querySelector(".addon-quantity");
+
+            const removeButton =
+                row.querySelector(".remove-addon");
+
+            if (select.value) {
+
+                quantityInput.style.display = "block";
+
+                quantityInput.value =
+                    quantityInput.value || 1;
+
+                removeButton.style.display = "block";
+
+            } else {
+
+                quantityInput.style.display = "none";
+
+                removeButton.style.display = "none";
+
+                quantityInput.value = 1;
             }
+        }
 
 
-            if (!user) {
+        function setupAddonRow(row) {
 
-                console.warn(
-                    "No logged-in user."
-                );
+            const select =
+                row.querySelector(".addon-select");
 
-                window.location.href =
-                    "/frontend-customer/customer_login.html";
+            const removeButton =
+                row.querySelector(".remove-addon");
 
-                return;
-            }
+            select.addEventListener("change", async () => {
 
+                updateAddonRow(row);
 
-            console.log("AUTH USER ID:", user.id);
-            console.log("AUTH EMAIL:", user.email);
+                updateDownpaymentUI();
 
+                // Recalculate available time because
+                // photographer add-ons can add duration
+                const bookingDate =
+                    document.getElementById("bookingDate");
 
-            /* =========================================================
-               2. GET CUSTOMER USING AUTH USER ID
-               ========================================================= */
-
-            const {
-                data: customer,
-                error: customerError
-            } = await supabaseClient
-                .from("customers")
-                .select(`
-            id,
-            email,
-            full_name,
-            profile_image,
-            phone
-        `)
-                .eq("id", user.id)
-                .maybeSingle();
+                if (bookingDate && bookingDate.value) {
+                    await loadAvailableTimeSlots();
+                }
+            });
 
 
-            if (customerError) {
+            removeButton.addEventListener("click", async () => {
 
-                console.error(
-                    "Customer profile error:",
-                    customerError
-                );
+                row.remove();
 
-            }
+                updateDownpaymentUI();
 
+                const bookingDate =
+                    document.getElementById("bookingDate");
 
-            console.log("CUSTOMER RECORD:", customer);
-
-
-            /* =========================================================
-               3. CUSTOMER NAME
-               ========================================================= */
-
-            const customerName =
-                customer?.full_name ||
-                user.user_metadata?.full_name ||
-                user.user_metadata?.name ||
-                user.email ||
-                "Customer";
+                if (bookingDate && bookingDate.value) {
+                    await loadAvailableTimeSlots();
+                }
+            });
+        }
 
 
-            document.getElementById(
-                "customer-name"
-            ).textContent = customerName;
+        setupAddonRow(
+            addonContainer.querySelector(".addon-row")
+        );
 
 
-            /* =========================================================
-               4. CUSTOMER PROFILE IMAGE
-               ========================================================= */
+        addAddonBtn.addEventListener("click", () => {
 
-            const profileImage =
-                customer?.profile_image ||
-                user.user_metadata?.avatar_url ||
-                user.user_metadata?.picture ||
-                "/images/default-profile.png";
+            const firstRow =
+                addonContainer.querySelector(".addon-row");
 
+            const newRow =
+                firstRow.cloneNode(true);
 
-            console.log(
-                "CUSTOMER PROFILE IMAGE:",
-                profileImage
-            );
+            const select =
+                newRow.querySelector(".addon-select");
 
+            const quantityInput =
+                newRow.querySelector(".addon-quantity");
 
-            const profileImageElement =
-                document.getElementById(
-                    "profile-image"
-                );
+            select.value = "";
 
+            quantityInput.value = 1;
 
-            profileImageElement.src =
-                profileImage;
+            quantityInput.style.display = "none";
 
+            const removeButton =
+                newRow.querySelector(".remove-addon");
 
-            profileImageElement.onerror =
-                function () {
+            removeButton.style.display = "none";
 
-                    console.warn(
-                        "Profile image failed:",
-                        this.src
-                    );
+            addonContainer.appendChild(newRow);
 
-                    this.onerror = null;
+            setupAddonRow(newRow);
+        });
+        document
+            .querySelectorAll('input[name="backdrop"]')
+            .forEach(input => {
 
-                    this.src =
-                        "/images/default-profile.png";
+                input.addEventListener("change", function () {
 
-                };
+                    updateBackdropUI();
 
+                });
 
-            /* =========================================================
-               5. FILL BOOKING FORM
-               ========================================================= */
-
-            document.getElementById(
-                "fullName"
-            ).value =
-                customer?.full_name ||
-                user.user_metadata?.full_name ||
-                user.user_metadata?.name ||
-                "";
+            });
 
 
-            document.getElementById(
-                "emailAddress"
-            ).value =
-                user.email || "";
+        /* Initial state */
 
-
-            document.getElementById(
-                "emailAddress"
-            ).readOnly = true;
-
-
-            /* =========================================================
-               6. LOAD NOTIFICATIONS
-               ========================================================= */
-
-            await loadNotifications();
-
-
-            console.log("=================================");
-            console.log("CUSTOMER INFORMATION LOADED");
-            console.log("Name:", customerName);
-            console.log("Email:", user.email);
-            console.log("Customer ID:", customer?.id);
-            console.log("=================================");
-
-        })();
-
+        updateBackdropUI();
         document.addEventListener("DOMContentLoaded", function () {
 
             /* =========================================================
@@ -1559,7 +1938,6 @@
             // LISTENERS TO AUTOMATICALLY UPDATE DOWN PAYMENT ON SELECTION
             const photoPackageSelect = document.getElementById("photoPackage");
             const sessionTypeSelect = document.getElementById("sessionType");
-
             if (photoPackageSelect) {
 
                 photoPackageSelect.addEventListener(
@@ -1571,13 +1949,17 @@
                         }
 
                         updateDownpaymentUI();
+
+                        updateBackdropUI();
+
                         if (bookingDate.value) {
                             await loadAvailableTimeSlots();
                         }
 
                     }
                 );
-            } if (sessionTypeSelect) {
+            }
+            if (sessionTypeSelect) {
 
                 sessionTypeSelect.addEventListener(
                     "change",
@@ -1589,8 +1971,8 @@
 
                         updateDownpaymentUI();
 
-                        // Recalculate available times
-                        // because session duration may change
+                        updateBackdropUI();
+
                         if (bookingDate.value) {
                             await loadAvailableTimeSlots();
                         }
@@ -1675,89 +2057,6 @@
 
         });
 
-        async function loadNotifications() {
-
-            const { data: { user } } = await supabaseClient.auth.getUser();
-
-            const { data, error } = await supabaseClient
-                .from("notifications")
-                .select("*")
-                .eq("customer_id", user.id)
-                .eq("recipient", "customer")
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.log(error);
-                return;
-            }
-
-            const list = document.getElementById("notificationList");
-
-            list.innerHTML = "";
-
-            let unread = 0;
-
-            data.forEach(notification => {
-                console.log(notification.message);
-                if (!notification.is_read) {
-                    unread++;
-                }
-                let notificationIcon = "fa-circle-info";
-
-                if (
-                    notification.title?.toLowerCase().includes("accepted") ||
-                    notification.title?.toLowerCase().includes("approved") ||
-                    notification.message?.toLowerCase().includes("accepted") ||
-                    notification.message?.toLowerCase().includes("approved")
-                ) {
-                    notificationIcon = "fa-circle-check";
-                }
-                else if (
-                    notification.title?.toLowerCase().includes("rejected") ||
-                    notification.title?.toLowerCase().includes("declined") ||
-                    notification.message?.toLowerCase().includes("rejected") ||
-                    notification.message?.toLowerCase().includes("declined")
-                ) {
-                    notificationIcon = "fa-circle-xmark";
-                }
-
-                list.innerHTML += `
-<div class="notification-item ${notification.is_read ? "" : "unread"}"> 
-
-    <div class="notification-icon"> 
-        <i class="fa-solid ${notificationIcon}"></i> 
-    </div> 
-
-    <div class="notification-content"> 
-        <h4>${notification.title}</h4> 
-
-        <p class="notification-message"> 
-            ${notification.message} 
-        </p> 
-
-        <small> 
-            ${notification.created_at
-                        ? new Date(notification.created_at).toLocaleString()
-                        : ""
-                    } 
-        </small> 
-    </div> 
-
-</div> 
-`;
-
-            });
-
-            const badge = document.getElementById("notificationCount");
-
-            if (unread > 0) {
-                badge.textContent = unread;
-                badge.style.display = "inline-flex";
-            } else {
-                badge.style.display = "none";
-            }
-        }
-
         /* =========================================================
     PAYMONGO BOOKING SUBMISSION
     ========================================================= */
@@ -1775,24 +2074,11 @@
             try {
 
                 /* =====================================================
-                   1. GET LOGGED-IN USER
+                   1. GUEST BOOKING - NO LOGIN REQUIRED
                 ===================================================== */
-
-                const {
-                    data: { user },
-                    error: authError
-                } = await supabaseClient.auth.getUser();
-
-                if (authError || !user) {
-
-                    alert("Your session has expired. Please log in again.");
-
-                    window.location.href =
-                        "/frontend-customer/customer_login.html";
-
-                    return;
-                }
-
+                // The customer is identified by the information entered
+                // in the booking form. No Supabase Auth user is required.
+                const customerId = null;
 
                 /* =====================================================
                    2. GET FORM VALUES
@@ -1805,7 +2091,7 @@
                     document.getElementById("contactNumber").value.trim();
 
                 const email =
-                    user.email;
+                    document.getElementById("emailAddress").value.trim();
 
                 const date =
                     document.getElementById("bookingDate").value;
@@ -1825,7 +2111,15 @@
                 const notes =
                     document.getElementById("notes").value.trim();
 
+                /* =====================================================
+                   GET BACKDROP SELECTION
+                   ===================================================== */
 
+                const selectedBackdrops =
+                    getSelectedBackdrops();
+
+                const requiredBackdrops =
+                    getRequiredBackdropCount();
                 /* =====================================================
                    3. DETERMINE SELECTED SERVICE
                 ===================================================== */
@@ -1838,6 +2132,28 @@
                     alert(
                         "Please select a photo package or special session."
                     );
+
+                    return;
+                }
+                /* =====================================================
+   VALIDATE BACKDROP SELECTION
+   ===================================================== */
+
+                if (
+                    requiredBackdrops > 0 &&
+                    selectedBackdrops.length !== requiredBackdrops
+                ) {
+
+                    alert(
+                        `Please select exactly ${requiredBackdrops} backdrop${requiredBackdrops > 1 ? "s" : ""} for this package.`
+                    );
+
+                    document
+                        .getElementById("backdropSection")
+                        .scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
 
                     return;
                 }
@@ -1865,22 +2181,83 @@
                    5. VALIDATE REQUIRED FIELDS
                 ===================================================== */
 
-                if (
-                    !fullName ||
-                    !contact ||
-                    !email ||
-                    !date ||
-                    !time ||
-                    !paymentMethod
-                ) {
+                /* =====================================================
+    REQUIRED INFORMATION VALIDATION
+    ===================================================== */
 
-                    alert(
-                        "Please complete all required fields."
-                    );
+                if (!fullName) {
+
+                    alert("Please enter your full name.");
+
+                    document
+                        .getElementById("fullName")
+                        .focus();
 
                     return;
                 }
 
+
+                if (!email) {
+
+                    alert("Please enter your email address.");
+
+                    document
+                        .getElementById("emailAddress")
+                        .focus();
+
+                    return;
+                }
+
+
+                if (!contact) {
+
+                    alert("Please enter your contact number.");
+
+                    document
+                        .getElementById("contactNumber")
+                        .focus();
+
+                    return;
+                }
+
+
+                if (!date) {
+
+                    alert("Please select a booking date.");
+
+                    return;
+                }
+
+
+                if (!time) {
+
+                    alert("Please select an available booking time.");
+
+                    return;
+                }
+
+
+                if (!paymentMethod) {
+
+                    alert("Please select a payment method.");
+
+                    return;
+                }
+                const emailPattern =
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!emailPattern.test(email)) {
+
+                    alert(
+                        "Please enter a valid email address."
+                    );
+
+                    document
+                        .getElementById("emailAddress")
+                        .focus();
+
+                    return;
+                }
 
                 /* =====================================================
                    6. VALIDATE DATE
@@ -2120,7 +2497,7 @@
 
                 const requestedEnd =
                     requestedStart +
-                    getSelectedDuration();
+                    getSelectedDuration() + BOOKING_PREPARATION_TIME;
 
 
                 const hasConflict =
@@ -2139,14 +2516,17 @@
 
 
                         const existingDuration =
-                            BOOKING_DURATIONS[
-                            booking.session_type
-                            ] || 60;
-
+                            Number(booking.booking_duration) ||
+                            (
+                                (BOOKING_DURATIONS[booking.session_type] || 60) +
+                                getAddonDurationFromKeys(
+                                    normalizeAddonKeys(booking.addons)
+                                )
+                            );
 
                         const existingEnd =
                             existingStart +
-                            existingDuration;
+                            existingDuration + BOOKING_PREPARATION_TIME;
 
 
                         return (
@@ -2171,9 +2551,7 @@
                 }
 
 
-                /* =====================================================
-                   12. CREATE PAYMONGO CHECKOUT
-                ===================================================== */
+
 
                 submitButton.innerHTML = `
             <i class="fa-solid fa-spinner fa-spin"></i>
@@ -2185,56 +2563,72 @@
                     "Creating PayMongo checkout..."
                 );
 
-                console.log({
-                    customer_id: user.id,
-                    full_name: fullName,
-                    email: email,
-                    contact_number: contact,
-                    booking_date: date,
-                    booking_time: time,
-                    session_type: selectedType,
-                    total_amount: totalAmount,
-                    downpayment_amount: downpaymentAmount
+                console.log("BOOKING DATA BEFORE PAYMONGO:", {
+                    fullName,
+                    email,
+                    contact,
+                    date,
+                    time,
+                    selectedType,
+                    notes,
+                    totalAmount,
+                    downpaymentAmount,
+                    selectedBackdrops,
+                    addons: getSelectedAddons(),
+                    booking_duration: getSelectedDuration()
                 });
+                console.log("========== BOOKING DATA ==========");
+                console.log("fullName:", fullName);
+                console.log("email:", email);
+                console.log("contact:", contact);
+                console.log("date:", date);
+                console.log("time:", time);
+                console.log("selectedType:", selectedType);
+                console.log("notes:", notes);
+                console.log("totalAmount:", totalAmount);
+                console.log("downpaymentAmount:", downpaymentAmount);
+                console.log("backdrops:", selectedBackdrops);
+                console.log("addons:", getSelectedAddons());
+                console.log("booking_duration:", getSelectedDuration());
+                console.log("==================================");
 
+                const response = await fetch("http://localhost:3000/api/paymongo/create-checkout",
+                    {
+                        method: "POST",
 
-                const response =
-                    await
-                        fetch("https://image-repository-1.onrender.com/api/paymongo/create-checkout",                         {
-                            method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
 
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
+                        body: JSON.stringify({
 
-                            body: JSON.stringify({
+                            customer_id: null,
 
-                                customer_id: user.id,
+                            full_name: fullName,
 
-                                full_name: fullName,
+                            email: email,
 
-                                email: email,
+                            contact_number: contact,
 
-                                contact_number: contact,
+                            booking_date: date,
 
-                                booking_date: date,
+                            booking_time: time,
 
-                                booking_time: time,
+                            session_type: selectedType,
 
-                                session_type: selectedType,
+                            notes: notes,
 
-                                notes: notes,
+                            payment_method: "PayMongo",
 
-                                payment_method: "PayMongo",
+                            total_amount: totalAmount,
+                            downpayment_amount: downpaymentAmount,
+                            backdrops: selectedBackdrops,
+                            addons: getSelectedAddons(),
+                            booking_duration: getSelectedDuration()
 
-                                total_amount: totalAmount,
-
-                                downpayment_amount: downpaymentAmount
-
-                            })
-                        }
-                        );
+                        })
+                    }
+                );
 
 
                 const result =
@@ -2243,13 +2637,10 @@
 
                 console.log(
                     "PayMongo response:", JSON.stringify(result, null, 2)
-                
+
                 );
 
 
-                /* =====================================================
-                   13. HANDLE SERVER ERROR
-                ===================================================== */
 
                 if (!response.ok) {
 
@@ -2268,9 +2659,7 @@
                 }
 
 
-                /* =====================================================
-                   14. REDIRECT CUSTOMER TO PAYMONGO
-                ===================================================== */
+
 
                 const checkoutUrl =
                     result.checkout_url ||
@@ -2333,83 +2722,23 @@
 
         });
 
-        const notificationBtn = document.getElementById("notificationBtn");
-
-        notificationBtn.addEventListener("click", async () => {
-
-            const dropdown = document.getElementById("notificationDropdown");
-
-            // If already open, just close it
-            if (dropdown.style.display === "block") {
-                dropdown.style.display = "none";
-                return;
-            }
-
-            // Open dropdown
-            dropdown.style.display = "block";
-
-            const { data: { user } } = await supabaseClient.auth.getUser();
-
-            if (!user) return;
-
-            // Mark all unread notifications as read
-            const { data, error } = await supabaseClient
-                .from("notifications")
-                .update({ is_read: true })
-                .eq("customer_id", user.id)
-                .eq("recipient", "customer")
-                .eq("is_read", false)
-                .select();
-
-            console.log("Updated notifications:", data);
-
-            if (error) {
-                console.error("Update error:", error);
-                alert(error.message);
-                return;
-            }
-
-            // Reload notifications and update badge
-            await loadNotifications();
-
-        });
-
-        document.addEventListener("click", (e) => {
-
-            const dropdown = document.getElementById("notificationDropdown");
-
-            if (
-                !notificationBtn.contains(e.target) &&
-                !dropdown.contains(e.target)
-            ) {
-                dropdown.style.display = "none";
-            }
-
-        });
-
-        supabaseClient
-            .channel("customer_notifications")
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "notifications"
-                },
-                async (payload) => {
-
-                    const { data: { user } } = await supabaseClient.auth.getUser();
-
-                    if (
-                        payload.new.recipient === "customer" &&
-                        payload.new.customer_id === user.id
-                    ) {
-                        loadNotifications();
-                    }
-                }
-            )
-            .subscribe();
     </script>
+    <style>
+        .public-home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: inherit;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .public-home-link:hover {
+            opacity: 0.8;
+        }
+    </style>
 </body>
 
 </html>

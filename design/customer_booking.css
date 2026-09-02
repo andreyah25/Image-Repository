@@ -144,9 +144,6 @@ body {
     color: #999;
     font-size: 10px;
 }
-/* =========================================================
-   NOTIFICATION BOOKING BUTTON
-   ========================================================= */
 
 .notification-booking-btn {
     margin-top: 10px;
@@ -544,6 +541,157 @@ body {
 #gcashPaymentBox h4 {
     color: #353535;
     font-size: 0.9rem;
+}
+/* =========================================================
+   BACKDROP SELECTION
+   ========================================================= */
+
+.backdrop-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.backdrop-option {
+    cursor: pointer;
+    display: block;
+}
+
+.backdrop-option input {
+    display: none;
+}
+
+.backdrop-card {
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.backdrop-card:hover {
+    border-color: #639A88;
+    transform: translateY(-2px);
+}
+
+.backdrop-option input:checked + .backdrop-card {
+    border-color: #639A88;
+    box-shadow: 0 0 0 2px rgba(99, 154, 136, 0.15);
+    background: #f5faf8;
+}
+
+.backdrop-color {
+    height: 80px;
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ddd;
+}
+
+.backdrop-card span {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #353535;
+}
+
+/* Backdrop colors */
+
+.backdrop-white {
+    background: #ffffff;
+}
+
+.backdrop-lavender {
+    background: #9b79b7;
+}
+
+.backdrop-sky {
+    background: #82b6c9;
+}
+
+.backdrop-sage {
+    background: #a8b783;
+}
+
+.backdrop-red {
+    background: #c81720;
+}
+
+.backdrop-camel {
+    background: #a87543;
+}
+
+.backdrop-beige {
+    background: #d9bd98;
+}
+
+.backdrop-gray {
+    background: #777b80;
+}
+
+/* Disabled backdrop card */
+
+.backdrop-option.disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.backdrop-option.disabled .backdrop-card {
+    pointer-events: none;
+}
+
+.addon-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.addon-row select {
+    flex: 1;
+}
+
+.addon-quantity {
+    width: 100px;
+}
+
+.remove-addon {
+    width: 35px;
+    height: 35px;
+    border: none;
+    background: #dc3545;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.remove-addon:hover {
+    opacity: 0.85;
+}
+
+#addAddonBtn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+@media (max-width: 900px) {
+    .backdrop-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .backdrop-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .backdrop-color {
+        height: 70px;
+    }
 }
 
 /* Field Wrappers */
