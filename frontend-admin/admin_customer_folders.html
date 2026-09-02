@@ -146,7 +146,7 @@
                     <div class="table-search-box">
 
                         <input type="text" id="repoFolderSearchInput"
-                            placeholder="Search object, keywords or filename.." autocomplete="off">
+                            placeholder="Search object, keywords or filename..." autocomplete="off">
 
                         <i class="fa-solid fa-magnifying-glass"></i>
 
@@ -254,21 +254,6 @@
                     <div id="photoSearchInfo"></div>
 
                 </div>
-
-
-                <!-- EVENT TITLE -->
-                <div class="repository-heading">
-
-                    <h2 id="eventTitle">
-                        Customer Folder
-                    </h2>
-
-                    <p id="repositoryDescription">
-                        Manage photos for this customer.
-                    </p>
-
-                </div>
-
 
                 <!-- UPLOAD STATUS -->
 
@@ -1201,20 +1186,6 @@
 
                 photosView.style.display =
                     "block";
-
-
-                document.getElementById(
-                    "eventTitle"
-                ).textContent =
-                    client.full_name ||
-                    "Customer Folder";
-
-
-                document.getElementById(
-                    "repositoryDescription"
-                ).textContent =
-                    "Manage photos for this customer.";
-
 
                 await loadPhotos(
                     selectedRepository.id
@@ -2509,19 +2480,6 @@
                 foldersView.style.display =
                     "grid";
                 window.location.href = "admin_repository.html"
-
-
-                document.getElementById(
-                    "eventTitle"
-                ).textContent =
-                    "Customer Folders";
-
-
-                document.getElementById(
-                    "repositoryDescription"
-                ).textContent =
-                    "Completed clients appear here. Open a customer to upload and manage photos.";
-
 
                 await loadCompletedClients();
 

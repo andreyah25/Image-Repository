@@ -36,11 +36,537 @@ const supabase = createClient(
     SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY
 );
-
 /* =========================================================
-   BASIC SERVER CHECK
+   ADMIN AUTHORIZATION
 ========================================================= */
 
+async function requireAdmin(req, res, next) {
+
+    try {
+
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                error: "Missing authorization token."
+            });
+        }
+
+        const token = authHeader.replace("Bearer ", "").trim();
+
+        const {
+            data: { user },
+            error: userError
+        } = await supabase.auth.getUser(token);
+
+        if (userError || !user) {
+
+            console.error(
+                "Authentication error:",
+                userError
+            );
+
+            return res.status(401).json({
+                success: false,
+                error: "Invalid or expired session."
+            });
+        }
+
+        const {
+            data: profile,
+            error: profileError
+        } = await supabase
+            .from("staff_profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+
+        if (profileError) {
+
+            console.error(
+                "Staff profile lookup error:",
+                profileError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify staff profile."
+            });
+        }
+
+        if (!profile) {
+
+            return res.status(403).json({
+                success: false,
+                error: "Staff profile not found."
+            });
+        }
+
+        if (profile.role !== "admin") {
+
+            return res.status(403).json({
+                success: false,
+                error: "Administrator access required."
+            });
+        }
+
+        if (
+            profile.status &&
+            profile.status.toLowerCase() !== "active"
+        ) {
+
+            return res.status(403).json({
+                success: false,
+                error: "This account is not active."
+            });
+        }
+
+        req.authUser = user;
+        req.profile = profile;
+
+        next();
+
+    } catch (error) {
+
+        console.error(
+            "Admin authorization error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: "Authorization check failed."
+        });
+    }
+}
+app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
+    try {
+        const { fullName, password } = req.body;
+        const email = String(req.body.email || "").trim().toLowerCase();
+
+        if (!fullName || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                error: "Full name, email, and password are required."
+            });
+        }
+
+        // Check if this email already exists in staff_profiles
+        const { data: existingProfile, error: existingProfileError } =
+            await supabase
+                .from("staff_profiles")
+                .select("id, email")
+                .ilike("email", email)
+                .maybeSingle();
+
+        if (existingProfileError) {
+            console.error("Existing profile check error:", existingProfileError);
+
+            return res.status(500).json({
+                success: false,
+                error: existingProfileError.message
+            });
+        }
+
+        if (existingProfile) {
+            return res.status(400).json({
+                success: false,
+                error: "A staff profile with this email already exists."
+            });
+        }
+
+        // Create Supabase Auth account
+        const {
+            data: authData,
+            error: authError
+        } = await supabase.auth.admin.createUser({
+                 email,
+                 password,
+                 email_confirm: true,
+                    user_metadata: {
+                       full_name: fullName
+    }
+});
+
+        if (authError) {
+            console.error("Auth user creation error:", authError);
+
+            return res.status(400).json({
+                success: false,
+                error: authError.message
+            });
+        }
+
+        const staffUser = authData.user;
+
+        console.log("Created Auth user:", staffUser.id);
+
+        // ----------------------------------------------------
+        // IMPORTANT:
+        // handle_new_user() may have already created the profile
+        // ----------------------------------------------------
+
+        const {
+            data: autoCreatedProfile,
+            error: profileCheckError
+        } = await supabase
+            .from("staff_profiles")
+            .select("id, email, full_name, role, status")
+            .eq("id", staffUser.id)
+            .maybeSingle();
+
+        if (profileCheckError) {
+            console.error("Profile check error:", profileCheckError);
+
+            // Roll back Auth account
+            await supabase.auth.admin.deleteUser(staffUser.id);
+
+            return res.status(500).json({
+                success: false,
+                error: profileCheckError.message
+            });
+        }
+
+        let profileError = null;
+
+        if (autoCreatedProfile) {
+            
+            console.log(
+                "Profile was automatically created by handle_new_user(). Updating it..."
+            );
+
+            const { error } = await supabase
+                .from("staff_profiles")
+                .update({
+                    full_name: fullName,
+                    email,
+                    role: "staff",
+                    verified: true,
+                    status: "Active",
+                    updated_at: new Date().toISOString()
+                })
+                .eq("id", staffUser.id);
+
+            profileError = error;
+
+        } else {
+            // No trigger-created profile exists,
+            // so create it manually.
+            console.log(
+                "No automatic profile found. Creating staff profile manually..."
+            );
+
+         const { error: profileError } = await supabase
+    .from("staff_profiles")
+    .update({
+        full_name: fullName,
+        email: email,
+        role: "staff",
+        status: "Active",
+        updated_at: new Date().toISOString()
+    })
+    .eq("id", staffUser.id);
+
+if (profileError) {
+    console.error("Staff profile update error:", profileError);
+
+    // Roll back Auth account if profile update fails
+    await supabase.auth.admin.deleteUser(staffUser.id);
+
+    return res.status(500).json({
+        success: false,
+        error: profileError.message
+    });
+}   
+
+            profileError = error;
+        }
+
+        // ----------------------------------------------------
+        // Handle profile failure
+        // ----------------------------------------------------
+
+        if (profileError) {
+            console.error("Staff profile error:", profileError);
+
+            // Roll back Auth account
+            await supabase.auth.admin.deleteUser(staffUser.id);
+
+            return res.status(500).json({
+                success: false,
+                error: profileError.message
+            });
+        }
+
+        console.log("Staff account created successfully:", staffUser.id);
+
+        return res.status(201).json({
+            success: true,
+            message: "Staff account created successfully.",
+            staff: {
+                id: staffUser.id,
+                full_name: fullName,
+                email,
+                role: "staff",
+                status: "Active"
+            }
+        });
+
+    } catch (error) {
+        console.error("Create staff unexpected error:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: error.message || "Failed to create staff account."
+        });
+    }
+});
+app.get(
+    "/api/admin/staff",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const {
+                data: staffList,
+                error
+            } = await supabase
+                .from("staff_profiles")
+                .select(`
+                    id,
+                    full_name,
+                    email,
+                    role,
+                    status,
+                    avatar_url
+                `)
+                .order("full_name", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                console.error(
+                    "Staff list error:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load staff list."
+                });
+            }
+
+            return res.json({
+
+                success:
+                    true,
+
+                staff:
+                    staffList || []
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get staff error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Server error while loading staff."
+            });
+        }
+    }
+);
+/* =========================================================
+   DELETE STAFF ACCOUNT
+   ADMIN ONLY
+========================================================= */
+
+app.delete(
+    "/api/admin/staff/:staffId",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const {
+                staffId
+            } = req.params;
+
+            if (!staffId) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "Staff ID is required."
+                });
+            }
+
+            /* ---------------------------------------------
+               GET TARGET STAFF
+            --------------------------------------------- */
+
+            const {
+                data: staff,
+                error: staffError
+            } =
+                await supabase
+                    .from("staff_profiles")
+                    .select("*")
+                    .eq("id", staffId)
+                    .maybeSingle();
+
+            if (staffError) {
+
+                console.error(
+                    "Staff lookup error:",
+                    staffError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to find staff account."
+                });
+            }
+
+            if (!staff) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "Staff account not found."
+                });
+            }
+
+            /* ---------------------------------------------
+               NEVER DELETE ADMIN THROUGH STAFF ROUTE
+            --------------------------------------------- */
+
+            if (staff.role === "admin") {
+
+                return res.status(403).json({
+                    success: false,
+                    error:
+                        "The administrator account cannot be deleted here."
+                });
+            }
+
+            /* ---------------------------------------------
+               DELETE LOGIN HISTORY FIRST
+            --------------------------------------------- */
+
+            const {
+                error: historyError
+            } =
+                await supabase
+                    .from("login_history")
+                    .delete()
+                    .eq("staff_id", staffId);
+
+            if (historyError) {
+
+                console.error(
+                    "Login history deletion error:",
+                    historyError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to remove staff login history."
+                });
+            }
+
+            /* ---------------------------------------------
+               DELETE AUTH USER
+            --------------------------------------------- */
+
+            const {
+                error: authError
+            } =
+                await supabase.auth.admin.deleteUser(
+                    staffId
+                );
+
+            if (authError) {
+
+                console.error(
+                    "Auth user deletion error:",
+                    authError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to delete staff authentication account."
+                });
+            }
+
+            /* ---------------------------------------------
+               DELETE STAFF PROFILE
+            --------------------------------------------- */
+
+            const {
+                error: profileError
+            } =
+                await supabase
+                    .from("staff_profiles")
+                    .delete()
+                    .eq("id", staffId);
+
+            if (profileError) {
+
+                console.error(
+                    "Staff profile deletion error:",
+                    profileError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Auth account deleted, but staff profile could not be removed."
+                });
+            }
+
+            console.log(
+                "Staff account deleted:",
+                staff.email
+            );
+
+            return res.json({
+
+                success:
+                    true,
+
+                message:
+                    "Staff account deleted successfully."
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Delete staff error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Server error while deleting staff."
+            });
+        }
+    }
+);
 app.get("/", (req, res) => {
     res.json({
         success: true,
@@ -188,6 +714,7 @@ app.post("/send-otp", async (req, res) => {
 });
 
 
+
 function money(value) {
 
     const number = Number(value);
@@ -198,7 +725,302 @@ function money(value) {
 
     return Number(number.toFixed(2));
 }
+/* =========================================================
+   BOOKING CONFIRMATION EMAIL
+========================================================= */
 
+app.post("/send-payment-confirmation", async (req, res) => {
+    try {
+        const {
+            email,
+            name,
+            bookingDate,
+            bookingTime,
+            sessionType,
+            totalPrice,
+            downpaymentAmount,
+            remainingBalance
+        } = req.body;
+
+        console.log("====================================");
+        console.log("BOOKING CONFIRMATION EMAIL");
+        console.log("====================================");
+
+        console.log("Email:", email);
+        console.log("Name:", name);
+        console.log("Booking Date:", bookingDate);
+        console.log("Booking Time:", bookingTime);
+        console.log("Session Type:", sessionType);
+        console.log("Total Price:", totalPrice);
+        console.log("Down Payment:", downpaymentAmount);
+        console.log("Remaining Balance:", remainingBalance);
+
+        if (!email || !String(email).trim()) {
+            return res.status(400).json({
+                success: false,
+                error: "Customer email is required."
+            });
+        }
+
+        if (!resend) {
+            return res.status(500).json({
+                success: false,
+                error: "RESEND_API_KEY is not configured."
+            });
+        }
+
+        const fromEmail =
+            process.env.RESEND_FROM_EMAIL ||
+            "onboarding@resend.dev";
+
+        /*
+         * Use the values already stored in the database.
+         */
+        const total = Number(totalPrice) || 0;
+        const downpayment = Number(downpaymentAmount) || 0;
+        const balance = Number(remainingBalance) || 0;
+
+        const formatPeso = (amount) =>
+            `₱${amount.toLocaleString("en-PH", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`;
+
+        const { data, error } =
+            await resend.emails.send({
+
+                from: fromEmail,
+
+                to: [String(email).trim()],
+
+                subject:
+                    "Booking Confirmed - Captured Photography Studio",
+
+                html: `
+                    <div style="
+                        font-family: Arial, sans-serif;
+                        max-width: 600px;
+                        margin: auto;
+                        padding: 30px;
+                        color: #333;
+                        line-height: 1.6;
+                    ">
+
+                        <h2 style="
+                            margin-bottom: 20px;
+                            color: #222;
+                        ">
+                            Captured Photography Studio
+                        </h2>
+
+                        <h3 style="
+                            color: #222;
+                        ">
+                            Your Booking Has Been Confirmed!
+                        </h3>
+
+                        <p>
+                            Hi ${name || "Customer"},
+                        </p>
+
+                        <p>
+                            Your photography session booking has
+                            been successfully confirmed by our admin.
+                        </p>
+
+                        <!-- BOOKING DETAILS -->
+
+                        <div style="
+                            background: #f5f5f5;
+                            padding: 20px;
+                            margin: 20px 0;
+                            border-radius: 8px;
+                        ">
+
+                            <h3 style="
+                                margin-top: 0;
+                            ">
+                                Booking Details
+                            </h3>
+
+                            <p>
+                                <strong>Session:</strong>
+                                ${sessionType || "Photography Session"}
+                            </p>
+
+                            <p>
+                                <strong>Date:</strong>
+                                ${bookingDate || "N/A"}
+                            </p>
+
+                            <p>
+                                <strong>Time:</strong>
+                                ${bookingTime || "N/A"}
+                            </p>
+
+                        </div>
+
+                        <!-- PAYMENT DETAILS -->
+
+                        <div style="
+                            border: 1px solid #ddd;
+                            padding: 20px;
+                            margin: 20px 0;
+                            border-radius: 8px;
+                        ">
+
+                            <h3 style="
+                                margin-top: 0;
+                            ">
+                                Payment Details
+                            </h3>
+
+                            <p>
+                                <strong>Total Booking Amount:</strong>
+                                ${formatPeso(total)}
+                            </p>
+
+                            <p>
+                                <strong>Down Payment Paid:</strong>
+                                ${formatPeso(downpayment)}
+                            </p>
+
+                            <hr style="
+                                border: none;
+                                border-top: 1px solid #ddd;
+                                margin: 15px 0;
+                            ">
+
+                            <p style="
+                                font-size: 20px;
+                                margin-bottom: 0;
+                            ">
+                                <strong>Remaining Balance:</strong>
+                                ${formatPeso(balance)}
+                            </p>
+
+                        </div>
+
+                        ${
+                            balance > 0
+                                ? `
+                                    <div style="
+                                        background: #fff8e1;
+                                        border-left: 4px solid #f0ad00;
+                                        padding: 15px;
+                                        margin: 20px 0;
+                                    ">
+                                        <strong>
+                                            Remaining Balance
+                                        </strong>
+
+                                        <p style="margin-bottom: 0;">
+                                            Please settle your remaining
+                                            balance of
+                                            <strong>
+                                                ${formatPeso(balance)}
+                                            </strong>
+                                            according to the payment
+                                            instructions provided by
+                                            Captured Photography Studio.
+                                        </p>
+                                    </div>
+                                `
+                                : `
+                                    <div style="
+                                        background: #e8f5e9;
+                                        border-left: 4px solid #43a047;
+                                        padding: 15px;
+                                        margin: 20px 0;
+                                    ">
+                                        <strong>
+                                            Fully Paid
+                                        </strong>
+
+                                        <p style="margin-bottom: 0;">
+                                            Your booking has been fully paid.
+                                            No remaining balance is due.
+                                        </p>
+                                    </div>
+                                `
+                        }
+
+                        <p>
+                            Please make sure to arrive on time for
+                            your scheduled photography session.
+                        </p>
+
+                        <p>
+                            Thank you for choosing
+                            <strong>
+                                Captured Photography Studio
+                            </strong>.
+                        </p>
+
+                        <p>
+                            We look forward to seeing you!
+                        </p>
+
+                        <hr style="
+                            border: none;
+                            border-top: 1px solid #ddd;
+                            margin-top: 30px;
+                        ">
+
+                        <p style="
+                            font-size: 12px;
+                            color: #777;
+                        ">
+                            This is an automated booking confirmation
+                            email from Captured Photography Studio.
+                        </p>
+
+                    </div>
+                `
+            });
+
+        if (error) {
+
+            console.error(
+                "Resend booking confirmation error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Failed to send confirmation email.",
+                message:
+                    error.message || "Resend failed."
+            });
+        }
+
+        console.log(
+            "Confirmation email successfully sent:",
+            data?.id
+        );
+
+        return res.json({
+            success: true,
+            message:
+                "Booking confirmation email sent successfully.",
+            email_id:
+                data?.id || null
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Booking confirmation email error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: "Internal server error.",
+            message: error.message
+        });
+    }
+});
 app.post("/api/paymongo/create-checkout", async (req, res) => {
 
     try {
@@ -297,11 +1119,6 @@ if (missingFields.length > 0) {
 
         }
 
-
-        /* =====================================================
-           3. VALIDATE DOWN PAYMENT
-        ===================================================== */
-
         const amount = Number(downpayment_amount);
 
         if (
@@ -321,9 +1138,6 @@ if (missingFields.length > 0) {
             Math.round(amount * 100);
 
 
-        /* =====================================================
-           4. NORMALIZE ADD-ONS / BACKDROPS / DURATION
-        ===================================================== */
 
         const selectedBackdrops =
             Array.isArray(backdrops)
@@ -344,10 +1158,6 @@ if (missingFields.length > 0) {
         console.log("Booking duration:", duration);
 
 
-        /* =====================================================
-           5. GENERATE INTERNAL PAYMENT REFERENCE
-        ===================================================== */
-
         const bookingReference =
             `CAPTURED-${Date.now()}-${crypto
                 .randomBytes(4)
@@ -360,10 +1170,6 @@ if (missingFields.length > 0) {
             bookingReference
         );
 
-
-        /* =====================================================
-           6. CHECK WHETHER TIME SLOT IS ALREADY BOOKED
-        ===================================================== */
 
         const {
             data: existingBookings,
@@ -398,10 +1204,6 @@ if (missingFields.length > 0) {
         }
 
 
-        /* =====================================================
-           7. CHECK TIME OVERLAP
-        ===================================================== */
-
         function timeToMinutes(time) {
 
             const [hours, minutes] =
@@ -434,11 +1236,6 @@ if (missingFields.length > 0) {
                         .toLowerCase()
                         .trim();
 
-
-                /* ---------------------------------------------
-                   Ignore cancelled/rejected bookings
-                --------------------------------------------- */
-
                 if (
                     status === "cancelled" ||
                     status === "canceled" ||
@@ -458,9 +1255,6 @@ if (missingFields.length > 0) {
                 }
 
 
-                /* ---------------------------------------------
-                   Existing booking duration
-                --------------------------------------------- */
 
                 const existingDuration =
                     Number(booking.booking_duration) || 60;
@@ -475,10 +1269,6 @@ if (missingFields.length > 0) {
                 const existingEnd =
                     existingStart + existingDuration;
 
-
-                /* ---------------------------------------------
-                   Detect overlap
-                --------------------------------------------- */
 
                 return (
                     requestedStart < existingEnd &&
@@ -597,10 +1387,7 @@ if (missingFields.length > 0) {
             bookingData.id
         );
 
-    
-        /* =====================================================
-           9. CREATE PAYMONGO CHECKOUT
-        ===================================================== */
+  
 
         const paymongoResponse =
             await fetch(
@@ -717,10 +1504,6 @@ if (missingFields.length > 0) {
             )
         );
 
-    
-        /* =====================================================
-           10. PAYMONGO ERROR
-        ===================================================== */
 
         if (!paymongoResponse.ok) {
 
@@ -764,10 +1547,6 @@ if (missingFields.length > 0) {
 
         }
 
-
-        /* =====================================================
-           11. GET CHECKOUT URL
-        ===================================================== */
 
         const checkoutSession =
             paymongoData?.data;
@@ -813,9 +1592,6 @@ if (missingFields.length > 0) {
         }
 
 
-        /* =====================================================
-           12. SAVE PAYMONGO CHECKOUT ID
-        ===================================================== */
 
         const {
             error: updateBookingError
@@ -842,10 +1618,6 @@ if (missingFields.length > 0) {
 
         }
 
-
-        /* =====================================================
-           13. RETURN CHECKOUT INFORMATION
-        ===================================================== */
 
         console.log(
             "PayMongo checkout successfully created."
@@ -1218,9 +1990,6 @@ const {
             }
 
 
-            /* =================================================
-               CUSTOMER NOTIFICATION
-            ================================================= */
 if (booking.customer_id) {
 
     const {

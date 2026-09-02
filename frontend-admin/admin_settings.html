@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Security & Settings</title>
+    <title>Settings</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,20 +24,9 @@
         </div>
 
         <div class="navbar-right">
-            <div class="notification-container">
-                <button id="notificationBtn" class="notification-btn">
-                    <i class="fa-solid fa-bell"></i>
-                    <span id="notificationCount">0</span>
-                </button>
-
-                <div id="notificationDropdown" class="notification-dropdown">
-                    <div id="notificationList"></div>
-                </div>
-            </div>
-
             <div class="user-profile">
-                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
-                <span id="userName">Loading...</span>
+                <img id="userAvatar" class="avatar" src="/images/captured.png" alt="Profile"> <span
+                    id="userName">Loading...</span>
             </div>
         </div>
     </header>
@@ -85,8 +74,8 @@
         <main class="content">
 
             <div class="settings-header">
-                <h1>Account Security</h1>
-                <p>Manage your account preferences and security</p>
+                <h1>Settings</h1>
+                <p>Manage your account, staff, and security settings.</p>
             </div>
 
             <div class="settings-grid">
@@ -94,15 +83,20 @@
                 <!-- LEFT COLUMN -->
                 <div class="settings-column">
                     <!-- CHANGE PASSWORD CARD -->
-                    <div class="settings-card">
+                    <div class="settings-card" id="passwordCard">
                         <div class="card-header-with-icon">
                             <div class="header-icon-circle">
                                 <i class="fa-solid fa-lock"></i>
                             </div>
                             <div>
                                 <h2>Change Password</h2>
-                                <p>Manage your account preferences and security</p>
+                                <p>Update your password and account security.</p>
                             </div>
+                        </div>
+
+                        <div id="googlePasswordMessage" style="display: none;">
+                            <p style="color: #888888; font-size: 13.5px;">Google accounts must change their password
+                                through Google.</p>
                         </div>
 
                         <form id="changePasswordForm" class="settings-form">
@@ -111,7 +105,7 @@
                                 <div class="input-password-wrapper">
                                     <input type="password" id="currentPassword"
                                         placeholder="Enter your current password">
-                                    <i class="fa-regular fa-eye-slash toggle-password"></i>
+                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
                                 </div>
                             </div>
 
@@ -119,7 +113,7 @@
                                 <label for="newPassword">New Password</label>
                                 <div class="input-password-wrapper">
                                     <input type="password" id="newPassword" placeholder="Enter your new password">
-                                    <i class="fa-regular fa-eye-slash toggle-password"></i>
+                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
                                 </div>
                             </div>
 
@@ -127,120 +121,239 @@
                                 <label for="confirmPassword">Confirm New Password</label>
                                 <div class="input-password-wrapper">
                                     <input type="password" id="confirmPassword" placeholder="Confirm your new password">
-                                    <i class="fa-regular fa-eye-slash toggle-password"></i>
+                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn-primary">Update Password</button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fa-solid fa-key btn-icon"></i> Update Password
+                            </button>
                         </form>
-                    </div>
-
-                    <!-- TWO-FACTOR AUTHENTICATION CARD -->
-                    <div class="settings-card compact-card">
-                        <div class="toggle-item single-row">
-                            <div class="toggle-info">
-                                <h3>Two-Factor Authentication</h3>
-                                <p>Enable additional account protection.</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="toggle2FA">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
                     </div>
                 </div>
 
                 <!-- RIGHT COLUMN -->
                 <div class="settings-column">
-                    <!-- NOTIFICATIONS CARD -->
-                    <div class="settings-card">
-                        <div class="card-header-with-icon">
-                            <div class="header-icon-circle">
-                                <i class="fa-regular fa-bell"></i>
+                    <!-- STAFF MANAGEMENT CARD -->
+                    <div class="settings-card" id="staffManagementCard">
+                        <div class="card-header-with-icon header-with-action">
+                            <div class="header-left">
+                                <div class="header-icon-circle">
+                                    <i class="fa-solid fa-users-gear"></i>
+                                </div>
+                                <div>
+                                    <h2>Staff Management</h2>
+                                    <p>Add and manage staff accounts for your studio.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2>Notifications</h2>
-                                <p>Choose your preferred updates and alerts.</p>
-                            </div>
+                            <button type="button" class="btn-dark btn-with-icon" id="viewStaffListBtn">
+                                <i class="fa-solid fa-list-check"></i> View Staff List
+                            </button>
                         </div>
 
-                        <div class="toggle-list-wrapper">
-                            <div class="toggle-item">
-                                <div class="toggle-info">
-                                    <h3>Email Notifications</h3>
-                                    <p>Stay informed with important system updates and announcements via email.</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="toggleEmailNotif" checked>
-                                    <span class="slider"></span>
-                                </label>
+                        <form id="staffManagementForm" class="settings-form">
+                            <div class="form-group">
+                                <label for="staffName">Staff Name</label>
+                                <input type="text" id="staffName" class="input-text" placeholder="Enter staff name">
                             </div>
 
-                            <div class="toggle-item">
-                                <div class="toggle-info">
-                                    <h3>Access Requests</h3>
-                                    <p>Be notified by email of new access requests and customer inquiries.</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="toggleAccessRequests" checked>
-                                    <span class="slider"></span>
-                                </label>
+                            <div class="form-group">
+                                <label for="emailAddress">Email Address</label>
+                                <input type="email" id="emailAddress" class="input-text"
+                                    placeholder="Enter staff email">
                             </div>
 
-                            <div class="toggle-item">
-                                <div class="toggle-info">
-                                    <h3>Payment Alerts</h3>
-                                    <p>Stay informed of completed, pending, and failed transactions.</p>
+                            <div class="form-group">
+                                <label for="staffPassword">Password</label>
+                                <div class="input-password-wrapper">
+                                    <input type="password" id="staffPassword" placeholder="Create a password">
+                                    <i class="fa-regular fa-eye-slash toggle-password-visibility"></i>
                                 </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="togglePaymentAlerts" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ACCOUNT ACTIONS CARD -->
-                    <div class="settings-card">
-                        <div class="card-simple-header">
-                            <h2>Account Actions</h2>
-                            <p>Manage important actions related to your account.</p>
-                        </div>
-
-                        <div class="action-list-wrapper">
-                            <div class="action-item">
-                                <div class="action-info">
-                                    <h3>Sign Out of All Devices</h3>
-                                    <p>End all active sessions across your devices.</p>
-                                </div>
-                                <button type="button" class="btn-dark" id="signOutDevicesBtn">Sign Out</button>
                             </div>
 
-                            <div class="action-item">
-                                <div class="action-info">
-                                    <h3>Delete Account</h3>
-                                    <p>Permanently remove your account and all stored data.</p>
-                                </div>
-                                <button type="button" class="btn-danger" id="deleteAccountBtn">Delete</button>
-                            </div>
-                        </div>
+                            <button type="submit" class="btn-primary">
+                                <i class="fa-solid fa-user-plus btn-icon"></i> Create Staff Account
+                            </button>
+                        </form>
                     </div>
                 </div>
 
             </div>
 
+            <!-- BOTTOM FULL-WIDTH ACCOUNT ACTIONS CARD -->
+            <div class="settings-card account-actions-card">
+                <div class="card-header-with-icon">
+                    <div class="header-icon-circle">
+                        <i class="fa-solid fa-gear"></i>
+                    </div>
+                    <div>
+                        <h2>Account Actions</h2>
+                        <p>Control important actions for your account.</p>
+                    </div>
+                </div>
+
+                <div class="action-list-wrapper">
+                    <div class="action-item">
+                        <div class="action-info">
+                            <h3>Sign Out of All Devices</h3>
+                            <p>End all active sessions across your devices.</p>
+                        </div>
+                        <button type="button" class="btn-dark" id="signOutDevicesBtn">Sign Out</button>
+                    </div>
+
+                    <div class="action-item">
+                        <div class="action-info">
+                            <h3>Delete Account</h3>
+                            <p>Permanently delete your account and associated data.</p>
+                        </div>
+                        <button type="button" class="btn-danger" id="deleteAccountBtn">Delete</button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
+
+    <!-- STAFF LIST MODAL -->
+    <div class="modal-overlay" id="staffModal">
+        <div class="staff-modal-container">
+            <div class="staff-modal-header">
+                <i class="fa-solid fa-users-gear"></i>
+                <h2>Staff List</h2>
+            </div>
+            <div class="staff-modal-body">
+                <p class="modal-subtitle">View your studio staff and their status.</p>
+                <div class="staff-table-wrapper">
+                    <table class="staff-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
-
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
-        const supabaseClient = supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_ANON_KEY
-        );
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document
+            .getElementById("staffManagementForm")
+            .addEventListener("submit", async (e) => {
+
+                e.preventDefault();
+
+                const staffName =
+                    document.getElementById("staffName").value.trim();
+
+                const email =
+                    document.getElementById("emailAddress").value.trim();
+
+                const password =
+                    document.getElementById("staffPassword").value;
+
+                if (!staffName || !email || !password) {
+                    alert("Please complete all fields.");
+                    return;
+                }
+
+                const strongPassword =
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+                if (!strongPassword.test(password)) {
+
+                    alert(
+                        "Password must contain:\n\n" +
+                        "• At least 8 characters\n" +
+                        "• One uppercase letter\n" +
+                        "• One lowercase letter\n" +
+                        "• One number"
+                    );
+
+                    return;
+                }
+
+                try {
+
+                    const {
+                        data: { session }
+                    } = await supabaseClient.auth.getSession();
+
+                    if (!session) {
+
+                        alert(
+                            "Your session has expired. Please log in again."
+                        );
+
+                        window.location.href =
+                            "admin_login.html";
+
+                        return;
+                    }
+
+                    const response = await fetch(
+                        "http://localhost:3000/api/admin/staff/create",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization":
+                                    `Bearer ${session.access_token}`
+                            },
+
+                            body: JSON.stringify({
+                                fullName: staffName,
+                                email: email,
+                                password: password
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+
+                        alert(
+                            result.error ||
+                            "Failed to create staff account."
+                        );
+
+                        return;
+                    }
+
+                    alert(
+                        "Staff account created successfully!"
+                    );
+
+                    document
+                        .getElementById("staffManagementForm")
+                        .reset();
+
+                } catch (error) {
+
+                    console.error(
+                        "Create staff error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to connect to the server."
+                    );
+                }
+            });
+        // Password Visibility Toggle
         document.querySelectorAll('.toggle-password-visibility').forEach(icon => {
             icon.addEventListener('click', function () {
                 const targetInputField = this.previousElementSibling;
@@ -254,13 +367,229 @@
             });
         });
 
+        // Modal Elements
+        const staffModal = document.getElementById("staffModal");
+        const viewStaffListBtn = document.getElementById("viewStaffListBtn");
 
+        // Open Modal
+        viewStaffListBtn.addEventListener("click", () => {
+            staffModal.classList.add("active");
+            fetchStaffList();
+        });
+
+        // Close Modal when clicking outside container
+        staffModal.addEventListener("click", (e) => {
+            if (e.target === staffModal) {
+                staffModal.classList.remove("active");
+            }
+        });
+
+        async function fetchStaffList() {
+
+            try {
+
+                const {
+                    data: { session }
+                } = await supabaseClient.auth.getSession();
+
+                if (!session) {
+
+                    alert("Your session has expired.");
+
+                    window.location.href =
+                        "admin_login.html";
+
+                    return;
+                }
+
+                const response = await fetch(
+                    "http://localhost:3000/api/admin/staff",
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Authorization":
+                                `Bearer ${session.access_token}`
+                        }
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+
+                    console.error(
+                        "Staff list error:",
+                        result
+                    );
+
+                    alert(
+                        result.error ||
+                        "Unable to load staff list."
+                    );
+
+                    return;
+                }
+
+                const staffList =
+                    result.staff || [];
+
+                const tbody =
+                    document.getElementById(
+                        "staffTableBody"
+                    );
+
+                tbody.innerHTML = "";
+
+                if (staffList.length === 0) {
+
+                    tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center;">
+                        No staff accounts found.
+                    </td>
+                </tr>
+            `;
+
+                    return;
+                }
+
+                staffList.forEach(staff => {
+
+                    const tr =
+                        document.createElement("tr");
+
+                    const statusClass =
+                        staff.status === "Inactive"
+                            ? "status-inactive"
+                            : "status-active";
+
+                    const statusText =
+                        staff.status || "Active";
+
+                    const deleteButton =
+                        staff.role === "admin"
+                            ? ""
+                            : `
+                        <button
+                            class="btn-table-delete"
+                            onclick="deleteStaff('${staff.id}')">
+                            Delete
+                        </button>
+                    `;
+
+                    tr.innerHTML = `
+                <td>${staff.full_name || "N/A"}</td>
+
+                <td>${staff.email || "N/A"}</td>
+
+                <td>
+                    <span class="role-badge">
+                        ${staff.role || "staff"}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="status-badge ${statusClass}">
+                        ${statusText}
+                    </span>
+                </td>
+
+                <td>
+                    ${deleteButton}
+                </td>
+            `;
+
+                    tbody.appendChild(tr);
+
+                });
+
+            } catch (error) {
+
+                console.error(
+                    "Fetch staff error:",
+                    error
+                );
+
+                alert(
+                    "Unable to connect to the server."
+                );
+
+            }
+        }
+        async function deleteStaff(staffId) {
+
+            if (!confirm(
+                "Are you sure you want to delete this staff account?"
+            )) {
+                return;
+            }
+
+            try {
+
+                const {
+                    data: { session }
+                } = await supabaseClient.auth.getSession();
+
+                if (!session) {
+
+                    alert("Your session has expired.");
+
+                    window.location.href =
+                        "admin_login.html";
+
+                    return;
+                }
+
+
+                const response = await fetch(
+                    `http://localhost:3000/api/admin/staff/${staffId}`,
+                    {
+                        method: "DELETE",
+
+                        headers: {
+                            "Authorization":
+                                `Bearer ${session.access_token}`
+                        }
+                    }
+                );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok || !result.success) {
+
+                    alert(
+                        result.error ||
+                        "Failed to delete staff account."
+                    );
+
+                    return;
+                }
+
+                alert(
+                    "Staff account deleted successfully."
+                );
+
+                fetchStaffList();
+
+            } catch (error) {
+
+                console.error(
+                    "Delete staff error:",
+                    error
+                );
+
+                alert(
+                    "Unable to connect to the server."
+                );
+
+            }
+        }
+        // Change Password Form logic
         document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
-
             e.preventDefault();
-            const {
-                data: { user }
-            } = await supabaseClient.auth.getUser();
+            const { data: { user } } = await supabaseClient.auth.getUser();
 
             if (user.app_metadata?.provider === "google") {
                 alert("Google accounts must change their password through Google.");
@@ -270,16 +599,12 @@
             const newPassword = document.getElementById("newPassword").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
 
-            // Passwords must match
             if (newPassword !== confirmPassword) {
                 alert("New passwords do not match.");
                 return;
             }
 
-            // Minimum length
-            const strongPassword =
-                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-
+            const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
             if (!strongPassword.test(newPassword)) {
                 alert(
                     "Password must contain:\n\n" +
@@ -296,116 +621,101 @@
                 return;
             }
 
-            /*
-              Verify current password
-              Supabase requires signing in again before changing the password.
-            */
-
-            const { error: loginError } =
-                await supabaseClient.auth.signInWithPassword({
-
-                    email: user.email,
-                    password: currentPassword
-
-                });
+            const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+                email: user.email,
+                password: currentPassword
+            });
 
             if (loginError) {
                 alert("Current password is incorrect.");
                 return;
             }
 
-            // Update password
-            const { error } =
-                await supabaseClient.auth.updateUser({
-
-                    password: newPassword
-
-                });
-
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
             if (error) {
                 alert(error.message);
                 return;
             }
 
             alert("Password updated successfully!");
-
             document.getElementById("changePasswordForm").reset();
-
         });
+
         window.addEventListener("load", async () => {
-
-            const {
-                data: { session }
-            } = await supabaseClient.auth.getSession();
-
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
-
                 window.location.href = "admin_login.html";
                 return;
-
             }
 
             const user = session.user;
-            //detect google sign in
             const provider = user.app_metadata?.provider;
 
             if (provider === "google") {
-
-                document.getElementById("passwordCard").style.display = "none";
-                document.getElementById("googlePasswordMessage").style.display = "block";
-
+                const passwordForm = document.getElementById("changePasswordForm");
+                if (passwordForm) passwordForm.style.display = "none";
+                const googleMsg = document.getElementById("googlePasswordMessage");
+                if (googleMsg) googleMsg.style.display = "block";
             }
 
-
-            const { data: profile, error } = await supabaseClient
+            const {
+                data: profile,
+                error: profileError
+            } = await supabaseClient
                 .from("staff_profiles")
                 .select("*")
                 .eq("id", user.id)
-                .single();
+                .maybeSingle();
 
-            if (error) {
+            if (profileError) {
 
-                console.error(error);
+                console.error(
+                    "Profile lookup error:",
+                    profileError
+                );
+
+                alert(
+                    "Unable to load your staff profile."
+                );
+
                 return;
-
             }
 
-            document.getElementById("userName").textContent =
-                profile.full_name;
+            if (!profile) {
 
+                console.error(
+                    "No staff profile found for:",
+                    user.id
+                );
+
+                alert(
+                    "Your account does not have a staff profile."
+                );
+
+                await supabaseClient.auth.signOut();
+
+                window.location.href =
+                    "admin_login.html";
+
+                return;
+            }
+
+            document.getElementById("userName").textContent = profile.full_name;
             if (profile.avatar_url) {
-
-                document.getElementById("userAvatar").src =
-                    profile.avatar_url;
-
+                document.getElementById("userAvatar").src = profile.avatar_url;
             }
-            console.log(profile);
-            document.getElementById("twoFactorToggle").checked =
-                profile.two_factor_enabled || false;
+            const staffManagementCard =
+                document.getElementById("staffManagementCard");
+
+            if (
+                profile.role !== "admin" &&
+                staffManagementCard
+            ) {
+                staffManagementCard.style.display = "none";
+            }
 
         });
-        document.getElementById("twoFactorToggle").addEventListener("change", async function () {
 
-            console.log("Switch:", this.checked);
-
-            const {
-                data: { user }
-            } = await supabaseClient.auth.getUser();
-
-            console.log(user);
-
-            const { data, error } = await supabaseClient
-                .from("staff_profiles")
-                .update({
-                    two_factor_enabled: this.checked
-                })
-                .eq("id", user.id)
-                .select();
-
-            console.log(data);
-            console.log(error);
-
-        });
     </script>
 </body>
 

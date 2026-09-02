@@ -273,87 +273,300 @@
 
                 <div class="booking-card">
 
+                    <!-- =========================
+             BOOKING HEADER
+        ========================== -->
                     <div class="booking-header">
 
                         <div class="booking-header-left">
+
                             <div class="booking-icon">
                                 <i class="fa-solid fa-calendar-check"></i>
                             </div>
 
                             <div>
-                                <h2 id="modalClient">Client Name</h2>
+                                <h2 id="modalClient">
+                                    Client Name
+                                </h2>
+
                                 <span id="modalStatus" class="booking-status">
                                     Confirmed
                                 </span>
                             </div>
+
                         </div>
 
-                        <button class="close-booking-modal">
+                        <button type="button" class="close-booking-modal" aria-label="Close booking details">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
 
                     </div>
 
+
+                    <!-- =========================
+             BOOKING BODY
+        ========================== -->
                     <div class="booking-body">
+
+                        <!-- CUSTOMER INFORMATION -->
+                        <h3 class="calendar-section-title">
+                            <i class="fa-solid fa-user"></i>
+                            Customer Information
+                        </h3>
 
                         <div class="booking-info">
 
+                            <!-- EMAIL -->
                             <div class="info-card">
+
                                 <i class="fa-solid fa-envelope"></i>
 
                                 <div>
                                     <label>Email</label>
-                                    <span id="modalEmail"></span>
+                                    <span id="modalEmail">
+                                        —
+                                    </span>
                                 </div>
+
                             </div>
 
+
+                            <!-- CONTACT -->
                             <div class="info-card">
+
                                 <i class="fa-solid fa-phone"></i>
 
                                 <div>
                                     <label>Contact Number</label>
-                                    <span id="modalContact"></span>
+                                    <span id="modalContact">
+                                        —
+                                    </span>
                                 </div>
-                            </div>
 
-                            <div class="info-card">
-                                <i class="fa-solid fa-box"></i>
-
-                                <div>
-                                    <label>Package</label>
-                                    <span id="modalPackage"></span>
-                                </div>
-                            </div>
-
-                            <div class="info-card">
-                                <i class="fa-solid fa-camera"></i>
-
-                                <div>
-                                    <label>Session Type</label>
-                                    <span id="modalSession"></span>
-                                </div>
-                            </div>
-
-                            <div class="info-card">
-                                <i class="fa-solid fa-calendar-days"></i>
-
-                                <div>
-                                    <label>Booking Date</label>
-                                    <span id="modalDate"></span>
-                                </div>
-                            </div>
-
-                            <div class="info-card">
-                                <i class="fa-solid fa-clock"></i>
-
-                                <div>
-                                    <label>Booking Time</label>
-                                    <span id="modalTime"></span>
-                                </div>
                             </div>
 
                         </div>
 
+
+                        <!-- BOOKING INFORMATION -->
+                        <h3 class="calendar-section-title">
+
+                            <i class="fa-solid fa-calendar-days"></i>
+
+                            Booking Information
+
+                        </h3>
+
+                        <div class="booking-info">
+
+                            <!-- PACKAGE -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-box"></i>
+
+                                <div>
+                                    <label>Package</label>
+
+                                    <span id="modalPackage">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- SESSION TYPE -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-camera"></i>
+
+                                <div>
+                                    <label>Session Type</label>
+
+                                    <span id="modalSession">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- DATE -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-calendar"></i>
+
+                                <div>
+                                    <label>Booking Date</label>
+
+                                    <span id="modalDate">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- TIME -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-clock"></i>
+
+                                <div>
+                                    <label>Booking Time</label>
+
+                                    <span id="modalTime">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- DURATION -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-hourglass-half"></i>
+
+                                <div>
+                                    <label>Duration</label>
+
+                                    <span id="modalDuration">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- BACKDROP -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-image"></i>
+
+                                <div>
+                                    <label>Backdrop</label>
+
+                                    <span id="modalBackdrop">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- ADD-ONS -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-plus"></i>
+
+                                <div>
+                                    <label>Add-ons</label>
+
+                                    <span id="modalAddons">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PAYMENT INFORMATION -->
+                        <h3 class="calendar-section-title">
+
+                            <i class="fa-solid fa-peso-sign"></i>
+
+                            Payment Information
+
+                        </h3>
+
+                        <div class="booking-info">
+
+                            <!-- PAYMENT METHOD -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-credit-card"></i>
+
+                                <div>
+                                    <label>Payment Method</label>
+
+                                    <span id="modalPaymentMethod">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- TOTAL PRICE -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-money-bill"></i>
+
+                                <div>
+                                    <label>Total Price</label>
+
+                                    <span id="modalTotal">
+                                        ₱0.00
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- DOWN PAYMENT -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+
+                                <div>
+                                    <label>Down Payment</label>
+
+                                    <span id="modalDownpayment">
+                                        ₱0.00
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- REMAINING BALANCE -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-wallet"></i>
+
+                                <div>
+                                    <label>Remaining Balance</label>
+
+                                    <span id="modalRemaining">
+                                        ₱0.00
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- PAYMENT STATUS -->
+                            <div class="info-card">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                                <div>
+                                    <label>Payment Status</label>
+
+                                    <span id="modalPaymentStatus">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CLIENT NOTES -->
                         <div class="notes-section">
 
                             <h3>
@@ -362,10 +575,26 @@
                             </h3>
 
                             <div id="modalNotes" class="notes-box">
-                                No notes.
+                                No notes provided.
                             </div>
 
                         </div>
+
+                    </div>
+
+
+                    <!-- =========================
+             FOOTER
+        ========================== -->
+                    <div class="booking-footer">
+
+                        <button type="button" id="bookingProcess" class="process-booking-btn">
+
+                            <i class="fa-solid fa-arrow-right"></i>
+
+                            Process Booking
+
+                        </button>
 
                     </div>
 
@@ -377,9 +606,11 @@
 
                 <div class="notification-booking-card">
 
+                    <!-- HEADER -->
                     <div class="notification-booking-header">
 
                         <div class="notification-booking-title">
+
                             <div class="notification-booking-icon">
                                 <i class="fa-solid fa-calendar-check"></i>
                             </div>
@@ -389,85 +620,267 @@
                                     Customer Booking
                                 </h2>
 
-                                <span class="notification-booking-status">
-                                    Confirmed
+                                <span id="notificationBookingStatus" class="notification-booking-status">
+                                    Pending
                                 </span>
                             </div>
+
                         </div>
 
                         <button type="button" id="closeNotificationBookingModal" class="notification-booking-close">
+
                             <i class="fa-solid fa-xmark"></i>
+
                         </button>
 
                     </div>
 
 
+                    <!-- BODY -->
                     <div class="notification-booking-body">
+
+
+                        <!-- CUSTOMER INFORMATION -->
+                        <h3 class="notification-section-title">
+                            <i class="fa-solid fa-user"></i>
+                            Customer Information
+                        </h3>
 
                         <div class="notification-booking-grid">
 
+                            <!-- EMAIL -->
                             <div class="notification-info-card">
+
                                 <i class="fa-solid fa-envelope"></i>
 
                                 <div>
                                     <label>Email</label>
-                                    <span id="notificationBookingEmail"></span>
+                                    <span id="notificationBookingEmail">
+                                        —
+                                    </span>
                                 </div>
+
                             </div>
 
 
+                            <!-- CONTACT -->
                             <div class="notification-info-card">
+
                                 <i class="fa-solid fa-phone"></i>
 
                                 <div>
                                     <label>Contact Number</label>
-                                    <span id="notificationBookingContact"></span>
+                                    <span id="notificationBookingContact">
+                                        —
+                                    </span>
                                 </div>
-                            </div>
 
-
-                            <div class="notification-info-card">
-                                <i class="fa-solid fa-box"></i>
-
-                                <div>
-                                    <label>Package</label>
-                                    <span id="notificationBookingPackage"></span>
-                                </div>
-                            </div>
-
-
-                            <div class="notification-info-card">
-                                <i class="fa-solid fa-camera"></i>
-
-                                <div>
-                                    <label>Session Type</label>
-                                    <span id="notificationBookingSession"></span>
-                                </div>
-                            </div>
-
-
-                            <div class="notification-info-card">
-                                <i class="fa-solid fa-calendar-days"></i>
-
-                                <div>
-                                    <label>Booking Date</label>
-                                    <span id="notificationBookingDate"></span>
-                                </div>
-                            </div>
-
-
-                            <div class="notification-info-card">
-                                <i class="fa-solid fa-clock"></i>
-
-                                <div>
-                                    <label>Booking Time</label>
-                                    <span id="notificationBookingTime"></span>
-                                </div>
                             </div>
 
                         </div>
 
 
+                        <!-- BOOKING INFORMATION -->
+                        <h3 class="notification-section-title">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            Booking Information
+                        </h3>
+
+                        <div class="notification-booking-grid">
+
+                            <!-- SESSION TYPE -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-camera"></i>
+
+                                <div>
+                                    <label>Session Type</label>
+                                    <span id="notificationBookingSession">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- DATE -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-calendar"></i>
+
+                                <div>
+                                    <label>Booking Date</label>
+                                    <span id="notificationBookingDate">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- TIME -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-clock"></i>
+
+                                <div>
+                                    <label>Booking Time</label>
+                                    <span id="notificationBookingTime">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- DURATION -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-hourglass-half"></i>
+
+                                <div>
+                                    <label>Duration</label>
+                                    <span id="notificationBookingDuration">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- BACKDROP -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-image"></i>
+
+                                <div>
+                                    <label>Backdrop</label>
+                                    <span id="notificationBookingBackdrop">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- ADD-ONS -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-plus"></i>
+
+                                <div>
+                                    <label>Add-ons</label>
+                                    <span id="notificationBookingAddons">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PAYMENT INFORMATION -->
+                        <h3 class="notification-section-title">
+                            <i class="fa-solid fa-peso-sign"></i>
+                            Payment Information
+                        </h3>
+
+                        <div class="notification-booking-grid">
+
+                            <!-- PAYMENT METHOD -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-credit-card"></i>
+
+                                <div>
+                                    <label>Payment Method</label>
+                                    <span id="notificationBookingPaymentMethod">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- TOTAL PRICE -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-money-bill"></i>
+
+                                <div>
+                                    <label>Total Price</label>
+                                    <span id="notificationBookingTotal">
+                                        ₱0.00
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- DOWN PAYMENT -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+
+                                <div>
+                                    <label>Down Payment</label>
+                                    <span id="notificationBookingDownpayment">
+                                        ₱0.00
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- REMAINING BALANCE -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-wallet"></i>
+
+                                <div>
+                                    <label>Remaining Balance</label>
+                                    <span id="notificationBookingRemaining">
+                                        ₱0.00
+                                    </span>
+                                </div>
+
+                            </div>
+
+
+                            <!-- PAYMENT STATUS -->
+                            <div class="notification-info-card">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                                <div>
+                                    <label>Payment Status</label>
+                                    <span id="notificationBookingPaymentStatus">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PAYMENT PROOF -->
+                        <div id="notificationPaymentProofSection" class="notification-payment-proof">
+
+                            <h3 class="notification-section-title">
+                                <i class="fa-solid fa-receipt"></i>
+                                Payment Proof
+                            </h3>
+
+                            <div id="notificationBookingProof">
+                                No payment proof provided.
+                            </div>
+
+                        </div>
+
+
+                        <!-- CLIENT NOTES -->
                         <div class="notification-booking-notes">
 
                             <h3>
@@ -481,14 +894,33 @@
 
                         </div>
 
+
+                        <!-- REJECTION REASON -->
+                        <div id="notificationRejectionSection" class="notification-booking-notes" style="display:none;">
+
+                            <h3>
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                Rejection Reason
+                            </h3>
+
+                            <div id="notificationBookingRejection">
+                                —
+                            </div>
+
+                        </div>
+
                     </div>
 
 
+                    <!-- FOOTER -->
                     <div class="notification-booking-footer">
 
                         <button type="button" id="notificationBookingProcess" class="process-booking-btn">
+
                             <i class="fa-solid fa-arrow-right"></i>
+
                             Process Booking
+
                         </button>
 
                     </div>
@@ -496,7 +928,6 @@
                 </div>
 
             </div>
-
 
 
         </main>
@@ -1541,7 +1972,7 @@
             }
 
             await loadTotalPhotos();
-            
+
             await loadTotalIncome();
             await updateExpiredGalleryAccess()
             await loadActiveSessions();
@@ -1730,118 +2161,456 @@
         }
         async function loadBookingCalendar() {
 
-            const { data, error } = await supabaseClient
+            const {
+                data,
+                error
+            } = await supabaseClient
                 .from("bookings")
                 .select("*")
                 .eq("status", "Confirmed");
 
             if (error) {
-                console.error(error);
+
+                console.error(
+                    "Calendar booking load error:",
+                    error
+                );
+
                 return;
             }
 
-            const events = data.map(booking => ({
 
-                title: booking.full_name,
+            function formatArrayValue(value) {
 
-                start: booking.booking_date + "T" + booking.booking_time,
+                if (Array.isArray(value)) {
 
-                extendedProps: {
+                    if (value.length === 0) {
+                        return "None";
+                    }
 
-                    email: booking.email,
-
-                    contact: booking.contact_number,
-
-                    package: booking.package,
-
-                    session: booking.session_type,
-
-                    notes: booking.notes,
-
-                    bookingDate: booking.booking_date,
-
-                    bookingTime: booking.booking_time
+                    return value.join(", ");
 
                 }
 
-            }));
-            calendarInstance = new FullCalendar.Calendar(
-                document.getElementById("calendar"),
-                {
 
-                    initialView: "dayGridMonth",
+                if (
+                    typeof value === "string" &&
+                    value.trim() !== ""
+                ) {
 
-                    height: 700,
+                    try {
 
-                    events: events,
+                        const parsed =
+                            JSON.parse(value);
 
-                    headerToolbar: {
+                        if (Array.isArray(parsed)) {
 
-                        left: "prev,next today",
+                            return parsed.length
+                                ? parsed.join(", ")
+                                : "None";
 
-                        center: "title",
-
-                        right: "dayGridMonth,timeGridWeek,timeGridDay"
-
-                    },
-
-                    eventColor: "#5C3BFE",
-
-                    eventClick(info) {
-
-                        document.getElementById("modalClient").textContent =
-                            info.event.title;
-
-                        document.getElementById("modalEmail").textContent =
-                            info.event.extendedProps.email;
-
-                        document.getElementById("modalContact").textContent =
-                            info.event.extendedProps.contact;
-
-                        document.getElementById("modalPackage").textContent =
-                            info.event.extendedProps.package;
-
-                        document.getElementById("modalSession").textContent =
-                            info.event.extendedProps.session;
-
-                        document.getElementById("modalDate").textContent =
-                            info.event.extendedProps.bookingDate;
-
-                        document.getElementById("modalTime").textContent =
-                            info.event.extendedProps.bookingTime;
-
-                        document.getElementById("modalNotes").textContent =
-                            info.event.extendedProps.notes || "No notes provided.";
-
-                        document
-                            .getElementById("bookingModal")
-                            .classList.add("show");
+                        }
 
                     }
+                    catch (error) {
+                        // Not JSON
+                    }
+
+                    return value;
+
+                }
 
 
-                });
-            document
-                .querySelector(".close-booking-modal")
-                .onclick = function () {
+                return "None";
+
+            }
+
+
+            function formatCurrency(value) {
+
+                const amount =
+                    Number(value) || 0;
+
+                return `₱${amount.toLocaleString(
+                    "en-PH",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                )}`;
+
+            }
+
+
+            const events = data.map(
+                booking => {
+
+                    const totalPrice =
+                        Number(
+                            booking.total_price
+                        ) || 0;
+
+                    const downpayment =
+                        Number(
+                            booking.downpayment_amount
+                        ) || 0;
+
+                    const remainingBalance =
+                        booking.remaining_balance !== null &&
+                            booking.remaining_balance !== undefined
+
+                            ? Number(
+                                booking.remaining_balance
+                            ) || 0
+
+                            : Math.max(
+                                0,
+                                totalPrice - downpayment
+                            );
+
+
+                    return {
+
+                        id:
+                            String(booking.id),
+
+                        title:
+                            booking.full_name || "Customer",
+
+                        start:
+                            booking.booking_date +
+                            "T" +
+                            booking.booking_time,
+
+                        extendedProps: {
+
+                            bookingId:
+                                booking.id,
+
+                            email:
+                                booking.email,
+
+                            contact:
+                                booking.contact_number,
+
+                            /*
+                             * PACKAGE
+                             */
+                            package:
+                                booking.package ||
+                                booking.photo_package ||
+                                booking.photoPackage ||
+                                "Not specified",
+
+                            /*
+                             * SESSION TYPE
+                             */
+                            session:
+                                booking.session_type ||
+                                "Not specified",
+
+                            bookingDate:
+                                booking.booking_date,
+
+                            bookingTime:
+                                booking.booking_time,
+
+                            duration:
+                                booking.booking_duration,
+
+                            backdrop:
+                                booking.backdrops,
+
+                            addons:
+                                booking.addons,
+
+                            paymentMethod:
+                                booking.payment_method,
+
+                            totalPrice:
+                                totalPrice,
+
+                            downpayment:
+                                downpayment,
+
+                            remainingBalance:
+                                remainingBalance,
+
+                            paymentStatus:
+                                booking.payment_status,
+
+                            notes:
+                                booking.notes
+
+                        }
+
+                    };
+
+                }
+            );
+
+
+            calendarInstance =
+                new FullCalendar.Calendar(
+                    document.getElementById("calendar"),
+                    {
+
+                        initialView:
+                            "dayGridMonth",
+
+                        height:
+                            700,
+
+                        events:
+                            events,
+
+                        headerToolbar: {
+
+                            left:
+                                "prev,next today",
+
+                            center:
+                                "title",
+
+                            right:
+                                "dayGridMonth,timeGridWeek,timeGridDay"
+
+                        },
+
+                        eventColor:
+                            "#5C3BFE",
+
+
+                        eventClick(info) {
+
+                            const props =
+                                info.event.extendedProps;
+
+
+                            /*
+                             * Save selected booking
+                             */
+                            selectedCalendarBooking =
+                                props.bookingId;
+
+
+                            /*
+                             * CUSTOMER
+                             */
+
+                            document.getElementById(
+                                "modalClient"
+                            ).textContent =
+                                info.event.title;
+
+
+                            document.getElementById(
+                                "modalEmail"
+                            ).textContent =
+                                props.email ||
+                                "Not provided";
+
+
+                            document.getElementById(
+                                "modalContact"
+                            ).textContent =
+                                props.contact ||
+                                "Not provided";
+
+
+                            /*
+                             * BOOKING
+                             */
+
+                            document.getElementById(
+                                "modalPackage"
+                            ).textContent =
+                                props.package ||
+                                "Not specified";
+
+
+                            document.getElementById(
+                                "modalSession"
+                            ).textContent =
+                                props.session ||
+                                "Not specified";
+
+
+                            document.getElementById(
+                                "modalDate"
+                            ).textContent =
+                                props.bookingDate ||
+                                "Not specified";
+
+
+                            document.getElementById(
+                                "modalTime"
+                            ).textContent =
+                                props.bookingTime ||
+                                "Not specified";
+
+
+                            const duration =
+                                Number(
+                                    props.duration
+                                ) || 0;
+
+
+                            document.getElementById(
+                                "modalDuration"
+                            ).textContent =
+                                duration > 0
+                                    ? `${duration} minutes`
+                                    : "Not specified";
+
+
+                            document.getElementById(
+                                "modalBackdrop"
+                            ).textContent =
+                                formatArrayValue(
+                                    props.backdrop
+                                );
+
+
+                            document.getElementById(
+                                "modalAddons"
+                            ).textContent =
+                                formatArrayValue(
+                                    props.addons
+                                );
+
+
+                            /*
+                             * PAYMENT
+                             */
+
+                            document.getElementById(
+                                "modalPaymentMethod"
+                            ).textContent =
+                                props.paymentMethod ||
+                                "Not specified";
+
+
+                            document.getElementById(
+                                "modalTotal"
+                            ).textContent =
+                                formatCurrency(
+                                    props.totalPrice
+                                );
+
+
+                            document.getElementById(
+                                "modalDownpayment"
+                            ).textContent =
+                                formatCurrency(
+                                    props.downpayment
+                                );
+
+
+                            document.getElementById(
+                                "modalRemaining"
+                            ).textContent =
+                                formatCurrency(
+                                    props.remainingBalance
+                                );
+
+
+                            document.getElementById(
+                                "modalPaymentStatus"
+                            ).textContent =
+                                props.paymentStatus ||
+                                "Pending";
+
+
+                            /*
+                             * NOTES
+                             */
+
+                            document.getElementById(
+                                "modalNotes"
+                            ).textContent =
+                                props.notes ||
+                                "No notes provided.";
+
+
+                            /*
+                             * STATUS
+                             */
+
+                            document.getElementById(
+                                "modalStatus"
+                            ).textContent =
+                                "Confirmed";
+
+
+                            /*
+                             * SHOW MODAL
+                             */
+
+                            document
+                                .getElementById(
+                                    "bookingModal"
+                                )
+                                .classList.add(
+                                    "show"
+                                );
+
+                        }
+
+                    }
+                );
+
+
+            /*
+             * CLOSE MODAL
+             */
+
+            const closeButton =
+                document.querySelector(
+                    ".close-booking-modal"
+                );
+
+
+            closeButton.onclick =
+                function () {
 
                     document
-                        .getElementById("bookingModal")
-                        .classList.remove("show");
+                        .getElementById(
+                            "bookingModal"
+                        )
+                        .classList.remove(
+                            "show"
+                        );
 
                 };
 
-            window.addEventListener("click", function (e) {
 
-                if (e.target.id === "bookingModal") {
+            /*
+             * CLOSE WHEN CLICKING OUTSIDE
+             */
 
-                    document
-                        .getElementById("bookingModal")
-                        .classList.remove("show");
+            window.addEventListener(
+                "click",
+                function (e) {
+
+                    if (
+                        e.target.id ===
+                        "bookingModal"
+                    ) {
+
+                        document
+                            .getElementById(
+                                "bookingModal"
+                            )
+                            .classList.remove(
+                                "show"
+                            );
+
+                    }
 
                 }
+            );
 
-            });
 
             calendarInstance.render();
 
@@ -2211,24 +2980,36 @@
 
         async function openNotificationBooking(notification) {
 
-            console.log("Opening booking notification:", notification);
+            console.log(
+                "Opening booking notification:",
+                notification
+            );
 
             if (
                 !notification ||
                 !notification.booking ||
                 !notification.booking.id
             ) {
+
                 console.error(
                     "Notification does not contain booking information:",
                     notification
                 );
 
                 alert("Booking information is unavailable.");
+
                 return;
             }
 
 
             let booking = notification.booking;
+
+
+            /*
+            ============================================================
+            REFRESH BOOKING FROM DATABASE
+            ============================================================
+            */
 
             try {
 
@@ -2241,28 +3022,113 @@
                     .eq("id", booking.id)
                     .maybeSingle();
 
+
                 if (error) {
 
                     console.warn(
-                        "Could not refresh booking from database. Using notification data instead:",
+                        "Could not refresh booking:",
                         error
                     );
 
-                } else if (latestBooking) {
+                }
+                else if (latestBooking) {
 
                     booking = latestBooking;
 
                 }
 
-            } catch (error) {
+            }
+            catch (error) {
 
                 console.warn(
-                    "Booking refresh failed. Using existing notification data:",
+                    "Booking refresh failed:",
                     error
                 );
 
             }
+
+
             selectedNotificationBooking = booking;
+
+
+            /*
+            ============================================================
+            HELPER FUNCTIONS
+            ============================================================
+            */
+
+            function formatCurrency(value) {
+
+                const amount =
+                    Number(value) || 0;
+
+                return `₱${amount.toLocaleString(
+                    "en-PH",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                )}`;
+
+            }
+
+
+            function formatArrayValue(value) {
+
+                if (Array.isArray(value)) {
+
+                    if (value.length === 0) {
+                        return "None";
+                    }
+
+                    return value.join(", ");
+
+                }
+
+
+                /*
+                Handle JSON string just in case
+                */
+
+                if (
+                    typeof value === "string" &&
+                    value.trim() !== ""
+                ) {
+
+                    try {
+
+                        const parsed =
+                            JSON.parse(value);
+
+                        if (Array.isArray(parsed)) {
+
+                            return parsed.length
+                                ? parsed.join(", ")
+                                : "None";
+
+                        }
+
+                    }
+                    catch (error) {
+                        // Not JSON, use original value
+                    }
+
+                    return value;
+
+                }
+
+
+                return "None";
+
+            }
+
+
+            /*
+            ============================================================
+            CUSTOMER INFORMATION
+            ============================================================
+            */
+
             document.getElementById(
                 "notificationBookingClient"
             ).textContent =
@@ -2284,12 +3150,69 @@
                 "Not provided";
 
 
-            document.getElementById(
-                "notificationBookingPackage"
-            ).textContent =
-                booking.package ||
-                "Not specified";
+            /*
+            ============================================================
+            BOOKING STATUS
+            ============================================================
+            */
 
+            const statusElement =
+                document.getElementById(
+                    "notificationBookingStatus"
+                );
+
+
+            if (statusElement) {
+
+                statusElement.textContent =
+                    booking.status ||
+                    "Pending";
+
+                statusElement.className =
+                    "notification-booking-status";
+
+
+                const status =
+                    String(
+                        booking.status || ""
+                    ).toLowerCase();
+
+
+                if (status === "confirmed") {
+
+                    statusElement.classList.add(
+                        "status-confirmed"
+                    );
+
+                }
+                else if (
+                    status === "cancelled" ||
+                    status === "canceled" ||
+                    status === "rejected" ||
+                    status === "declined"
+                ) {
+
+                    statusElement.classList.add(
+                        "status-cancelled"
+                    );
+
+                }
+                else {
+
+                    statusElement.classList.add(
+                        "status-pending"
+                    );
+
+                }
+
+            }
+
+
+            /*
+            ============================================================
+            BOOKING INFORMATION
+            ============================================================
+            */
 
             document.getElementById(
                 "notificationBookingSession"
@@ -2312,6 +3235,253 @@
                 "Not specified";
 
 
+            /*
+            ============================================================
+            DURATION
+            ============================================================
+            */
+
+            const duration =
+                Number(
+                    booking.booking_duration
+                ) || 0;
+
+
+            document.getElementById(
+                "notificationBookingDuration"
+            ).textContent =
+                duration > 0
+                    ? `${duration} minutes`
+                    : "Not specified";
+
+
+            /*
+            ============================================================
+            BACKDROP
+            ============================================================
+            */
+
+            document.getElementById(
+                "notificationBookingBackdrop"
+            ).textContent =
+                formatArrayValue(
+                    booking.backdrops
+                );
+
+
+            /*
+            ============================================================
+            ADD-ONS
+            ============================================================
+            */
+
+            document.getElementById(
+                "notificationBookingAddons"
+            ).textContent =
+                formatArrayValue(
+                    booking.addons
+                );
+
+
+            /*
+            ============================================================
+            PAYMENT INFORMATION
+            ============================================================
+            */
+
+            document.getElementById(
+                "notificationBookingPaymentMethod"
+            ).textContent =
+                booking.payment_method ||
+                "Not specified";
+
+
+            document.getElementById(
+                "notificationBookingTotal"
+            ).textContent =
+                formatCurrency(
+                    booking.total_price
+                );
+
+
+            document.getElementById(
+                "notificationBookingDownpayment"
+            ).textContent =
+                formatCurrency(
+                    booking.downpayment_amount
+                );
+
+
+            /*
+            ============================================================
+            REMAINING BALANCE
+            ============================================================
+            */
+
+            let remainingBalance;
+
+            if (
+                booking.remaining_balance !== null &&
+                booking.remaining_balance !== undefined
+            ) {
+
+                remainingBalance =
+                    Number(
+                        booking.remaining_balance
+                    ) || 0;
+
+            }
+            else {
+
+                remainingBalance =
+                    Math.max(
+                        0,
+                        (Number(booking.total_price) || 0) -
+                        (Number(booking.downpayment_amount) || 0)
+                    );
+
+            }
+
+
+            document.getElementById(
+                "notificationBookingRemaining"
+            ).textContent =
+                formatCurrency(
+                    remainingBalance
+                );
+
+
+            /*
+            ============================================================
+            PAYMENT STATUS
+            ============================================================
+            */
+
+            document.getElementById(
+                "notificationBookingPaymentStatus"
+            ).textContent =
+                booking.payment_status ||
+                "Pending";
+
+
+            /*
+            ============================================================
+            PAYMENT PROOF
+            ============================================================
+            */
+
+            const proofElement =
+                document.getElementById(
+                    "notificationBookingProof"
+                );
+
+
+            const proofSection =
+                document.getElementById(
+                    "notificationPaymentProofSection"
+                );
+
+
+            if (
+                booking.payment_proof &&
+                String(
+                    booking.payment_proof
+                ).trim() !== ""
+            ) {
+
+                const proof =
+                    String(
+                        booking.payment_proof
+                    ).trim();
+
+
+                /*
+                If payment_proof is an image URL,
+                display it as an image.
+                */
+
+                const isImage =
+                    /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i
+                        .test(proof);
+
+
+                if (isImage) {
+
+                    proofElement.innerHTML = `
+
+                <img
+                    src="${proof}"
+                    alt="Payment Proof"
+                    style="
+                        max-width:100%;
+                        max-height:300px;
+                        object-fit:contain;
+                        border-radius:10px;
+                        margin-top:10px;
+                    "
+                >
+
+                <br>
+
+                <a
+                    href="${proof}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    View Full Payment Proof
+                </a>
+
+            `;
+
+                }
+                else {
+
+                    proofElement.innerHTML = `
+
+                <a
+                    href="${proof}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    View Payment Proof
+                </a>
+
+            `;
+
+                }
+
+
+                if (proofSection) {
+
+                    proofSection.style.display =
+                        "block";
+
+                }
+
+            }
+            else {
+
+                proofElement.textContent =
+                    "No payment proof provided.";
+
+
+                if (proofSection) {
+
+                    proofSection.style.display =
+                        "block";
+
+                }
+
+            }
+
+
+            /*
+            ============================================================
+            CLIENT NOTES
+            ============================================================
+            */
+
             document.getElementById(
                 "notificationBookingNotes"
             ).textContent =
@@ -2320,15 +3490,66 @@
 
 
             /*
-             * Show modal
-             */
-            notificationBookingModal.classList.add("show");
+            ============================================================
+            REJECTION REASON
+            ============================================================
+            */
+
+            const rejectionSection =
+                document.getElementById(
+                    "notificationRejectionSection"
+                );
+
+
+            const rejectionElement =
+                document.getElementById(
+                    "notificationBookingRejection"
+                );
+
+
+            if (
+                booking.rejection_reason &&
+                String(
+                    booking.rejection_reason
+                ).trim() !== ""
+            ) {
+
+                rejectionElement.textContent =
+                    booking.rejection_reason;
+
+
+                rejectionSection.style.display =
+                    "block";
+
+            }
+            else {
+
+                rejectionElement.textContent =
+                    "—";
+
+
+                rejectionSection.style.display =
+                    "none";
+
+            }
+
+
+            /*
+            ============================================================
+            SHOW MODAL
+            ============================================================
+            */
+
+            notificationBookingModal.classList.add(
+                "show"
+            );
 
 
             console.log(
-                "Booking notification modal opened successfully:",
+                "Booking notification modal opened:",
                 booking
             );
+
         }
 
         async function handleNotificationClick(
@@ -2729,7 +3950,7 @@
 
                         const notificationRow = payload.new;
 
-                        
+
                         if (
                             !notificationRow ||
                             notificationRow.type !== "booking"
@@ -2923,7 +4144,7 @@
 
         }
 
-      
+
         function formatNotificationDate(date) {
 
             if (!date) {

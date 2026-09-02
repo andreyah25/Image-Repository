@@ -1518,16 +1518,7 @@
                 "Loading ALL bookings..."
             );
 
-            /*
-             * Load every booking from the bookings table.
-             *
-             * No payment-status filter is applied.
-             * No is_archived filter is applied.
-             *
-             * Supabase normally returns up to 1,000 rows per request,
-             * so bookings are loaded in batches to avoid silently
-             * missing older records when the table grows.
-             */
+
             const pageSize = 1000;
             let from = 0;
             let allBookings = [];
@@ -1841,19 +1832,23 @@
 
 
 
-async function sendPaymentConfirmationEmail(booking) {
+        async function sendPaymentConfirmationEmail(booking) {
             try {
-                const response = await fetch("/send-payment-confirmation", {
+                const response = await fetch("http://localhost:3000/send-payment-confirmation", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        email: booking.email,
-                        name: booking.full_name,
-                        bookingDate: booking.booking_date,
-                        bookingTime: booking.booking_time,
-                        sessionType: booking.session_type
+                        email: updatedBooking.email,
+                        name: updatedBooking.full_name,
+                        bookingDate: updatedBooking.booking_date,
+                        bookingTime: updatedBooking.booking_time,
+                        sessionType: updatedBooking.session_type,
+
+                        totalPrice: updatedBooking.total_price,
+                        downpaymentAmount: updatedBooking.downpayment_amount,
+                        remainingBalance: updatedBooking.remaining_balance
                     })
                 });
 
@@ -1951,21 +1946,28 @@ async function sendPaymentConfirmationEmail(booking) {
                     if (searchTerm) {
 
                         const searchableText = [
-
                             booking.full_name,
                             booking.contact_number,
                             booking.email,
                             booking.booking_date,
                             booking.booking_time,
                             booking.session_type,
+
                             Array.isArray(booking.backdrops)
                                 ? booking.backdrops.join(" ")
                                 : booking.backdrops,
+
+                            Array.isArray(booking.addons)
+                                ? booking.addons.join(" ")
+                                : booking.addons,
+
                             booking.payment_method,
+                            booking.total_price,
+                            booking.downpayment_amount,
+                            booking.remaining_balance,
                             booking.payment_status,
                             booking.status,
                             booking.notes
-
                         ]
                             .filter(value =>
                                 value !== null &&
@@ -2024,7 +2026,7 @@ async function sendPaymentConfirmationEmail(booking) {
                 tbody.innerHTML = `
             <tr>
                 <td
-                    colspan="16"
+                    colspan="19"
                     style="
                         text-align:center;
                         padding:30px;
@@ -2061,90 +2063,31 @@ async function sendPaymentConfirmationEmail(booking) {
 
                 if (status === "pending") {
 
-                    const paymentStatus =
-                        String(
-                            booking.payment_status || ""
-                        ).trim().toLowerCase();
+                    actionHTML = `
+        <div style="
+            display:flex;
+            gap:6px;
+            flex-wrap:wrap;
+        ">
 
-                    const paymentIsPaid =
-                        paymentStatus === "paid" ||
-                        paymentStatus === "succeeded" ||
-                        paymentStatus === "success";
+            <button
+                type="button"
+                class="confirm-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                Confirm
+            </button>
 
-                    if (paymentIsPaid) {
+            <button
+                type="button"
+                class="reject-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                Reject
+            </button>
 
-                        actionHTML = `
-            <div style="
-                display:flex;
-                gap:6px;
-                flex-wrap:wrap;
-            ">
-
-                <button
-                    type="button"
-                    class="confirm-btn"
-                    data-id="${escapeHtml(booking.id)}"
-                >
-                    Confirm
-                </button>
-
-                <button
-                    type="button"
-                    class="reject-btn"
-                    data-id="${escapeHtml(booking.id)}"
-                >
-                    Reject
-                </button>
-
-            </div>
-        `;
-
-                    } else {
-
-                        actionHTML = `
-            <div style="
-                display:flex;
-                flex-direction:column;
-                gap:5px;
-                align-items:flex-start;
-            ">
-
-                <button
-                    type="button"
-                    disabled
-                    style="
-                        border:0;
-                        border-radius:6px;
-                        padding:7px 12px;
-                        background:#d6d6d6;
-                        color:#777;
-                        cursor:not-allowed;
-                        font-family:inherit;
-                        font-size:12px;
-                        font-weight:600;
-                    "
-                >
-                    Confirm
-                </button>
-
-                <span style="
-                    font-size:11px;
-                    color:#999;
-                ">
-                    Waiting for payment
-                </span>
-
-                <button
-                    type="button"
-                    class="reject-btn"
-                    data-id="${escapeHtml(booking.id)}"
-                >
-                    Reject
-                </button>
-
-            </div>
-        `;
-                    }
+        </div>
+    `;
 
                 } else if (status === "confirmed") {
 
@@ -2191,20 +2134,86 @@ async function sendPaymentConfirmationEmail(booking) {
                    PAYMENT AMOUNT
                 --------------------------------------------- */
 
-                const paymentAmount =
+                /* ---------------------------------------------
+     ADD-ONS
+  --------------------------------------------- */
+
+                let addonsText = "-";
+
+                if (Array.isArray(booking.addons)) {
+                    addonsText = booking.addons.length
+                        ? booking.addons.join(", ")
+                        : "-";
+                } else if (
+                    booking.addons !== null &&
+                    booking.addons !== undefined &&
+                    String(booking.addons).trim() !== ""
+                ) {
+                    addonsText = String(booking.addons);
+                }
+
+
+                /* ---------------------------------------------
+                   TOTAL PRICE
+                --------------------------------------------- */
+
+                const totalPriceValue =
+                    booking.total_price !== null &&
+                        booking.total_price !== undefined
+                        ? Number(booking.total_price)
+                        : 0;
+
+                const totalPrice =
+                    `₱${totalPriceValue.toLocaleString(
+                        "en-PH",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}`;
+
+
+                /* ---------------------------------------------
+                   DOWN PAYMENT
+                --------------------------------------------- */
+
+                const downpaymentValue =
                     booking.downpayment_amount !== null &&
                         booking.downpayment_amount !== undefined
-                        ? `₱${Number(
-                            booking.downpayment_amount
-                        ).toLocaleString(
-                            "en-PH",
-                            {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }
-                        )}`
-                        : "-";
+                        ? Number(booking.downpayment_amount)
+                        : 0;
 
+                const paymentAmount =
+                    `₱${downpaymentValue.toLocaleString(
+                        "en-PH",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}`;
+
+
+                /* ---------------------------------------------
+                   REMAINING BALANCE
+                --------------------------------------------- */
+
+                const remainingBalanceValue =
+                    booking.remaining_balance !== null &&
+                        booking.remaining_balance !== undefined
+                        ? Number(booking.remaining_balance)
+                        : Math.max(
+                            0,
+                            totalPriceValue - downpaymentValue
+                        );
+
+                const remainingBalance =
+                    `₱${remainingBalanceValue.toLocaleString(
+                        "en-PH",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}`;
 
                 /* ---------------------------------------------
                    PAYMENT STATUS
@@ -2307,14 +2316,23 @@ async function sendPaymentConfirmationEmail(booking) {
                 </td>
 
                 <td>
+                    ${escapeHtml(addonsText)}
+                </td>
+                <td>
                     ${escapeHtml(
                     booking.payment_method || "-"
                 )}
                 </td>
+                <td>
+                       ${totalPrice}
+                </td>
 
                 <td>
-              ${paymentAmount}
-                    </td>
+                     ${paymentAmount}
+                </td>
+                <td>
+                        ${remainingBalance}
+                </td>   
 
                     <td>
                ${paymentStatusHTML}
@@ -2380,7 +2398,7 @@ async function sendPaymentConfirmationEmail(booking) {
         `;
             });
         }
-        
+
         function openPaymentProofModal(booking) {
             const modal = document.getElementById("paymentProofModal");
             const image = document.getElementById("paymentProofImage");
@@ -2623,27 +2641,7 @@ async function sendPaymentConfirmationEmail(booking) {
                         throw new Error("Booking was not found.");
                     }
 
-                    const paymentStatus =
-                        String(
-                            booking.payment_status || ""
-                        ).trim().toLowerCase();
 
-                    const paymentIsPaid =
-                        paymentStatus === "paid" ||
-                        paymentStatus === "succeeded" ||
-                        paymentStatus === "success";
-
-                    if (!paymentIsPaid) {
-
-                        showToast(
-                            "Payment Not Verified",
-                            "This booking cannot be confirmed because the payment has not been verified by PayMongo."
-                        );
-
-                        await loadBookedSessions();
-
-                        return;
-                    }
                     /* ---------------------------------------------
                        UPDATE BOOKING STATUS
                     --------------------------------------------- */
@@ -2813,9 +2811,9 @@ async function sendPaymentConfirmationEmail(booking) {
                 }
             }
         );
-                /* =========================================================
-           COMPLETE BOOKING
-        ========================================================= */
+        /* =========================================================
+   COMPLETE BOOKING
+========================================================= */
 
         document.addEventListener(
             "click",
@@ -3538,24 +3536,27 @@ async function sendPaymentConfirmationEmail(booking) {
             ) {
 
                 tableHeader.innerHTML = `
-    <tr>
-        <th>#</th>
-        <th>Full Name</th>
-        <th>Contact Number</th>
-        <th>Email Address</th>
-        <th>Date</th>
-        <th>Time</th>
-        <th>Session Type</th>
-        <th>Backdrop</th>
-        <th>Payment Method</th>
-        <th>Down Payment</th>
-        <th>Payment Status</th>
-        <th>Proof of Payment</th>
-        <th>Booking Status</th>
-        <th>Note</th>
-        <th>Rejection Reason</th>
-        <th>Action</th>
-    </tr>
+ <tr>
+    <th>#</th>
+    <th>Full Name</th>
+    <th>Contact Number</th>
+    <th>Email Address</th>
+    <th>Date</th>
+    <th>Time</th>
+    <th>Session Type</th>
+    <th>Backdrop</th>
+    <th>Add-ons</th>
+    <th>Payment Method</th>
+    <th>Total Price</th>
+    <th>Down Payment</th>
+    <th>Remaining Balance</th>
+    <th>Payment Status</th>
+    <th>Proof of Payment</th>
+    <th>Booking Status</th>
+    <th>Note</th>
+    <th>Rejection Reason</th>
+    <th>Action</th>
+</tr>
 `;
 
                 if (addNewClientBtn) {
@@ -4061,10 +4062,6 @@ async function sendPaymentConfirmationEmail(booking) {
                         }
                     }
 
-
-                    /* ---------------------------------------------
-                       LOAD PAGE DATA
-                    --------------------------------------------- */
 
                     await loadAdminNotifications();
 
