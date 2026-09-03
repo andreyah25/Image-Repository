@@ -251,8 +251,7 @@ app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
             profileError = error;
 
         } else {
-            // No trigger-created profile exists,
-            // so create it manually.
+           
             console.log(
                 "No automatic profile found. Creating staff profile manually..."
             );
@@ -271,7 +270,6 @@ app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
 if (profileError) {
     console.error("Staff profile update error:", profileError);
 
-    // Roll back Auth account if profile update fails
     await supabase.auth.admin.deleteUser(staffUser.id);
 
     return res.status(500).json({
@@ -283,10 +281,7 @@ if (profileError) {
             profileError = error;
         }
 
-        // ----------------------------------------------------
-        // Handle profile failure
-        // ----------------------------------------------------
-
+    
         if (profileError) {
             console.error("Staff profile error:", profileError);
 
@@ -385,10 +380,7 @@ app.get(
         }
     }
 );
-/* =========================================================
-   DELETE STAFF ACCOUNT
-   ADMIN ONLY
-========================================================= */
+
 
 app.delete(
     "/api/admin/staff/:staffId",
@@ -730,27 +722,47 @@ function money(value) {
 ========================================================= */
 
 app.post("/send-payment-confirmation", async (req, res) => {
+
     try {
+
         const {
+            customer_id,
+            full_name,
             email,
-            name,
-            bookingDate,
-            bookingTime,
-            sessionType,
-            totalPrice,
-            downpaymentAmount,
-            remainingBalance
+            contact_number,
+            booking_date,
+            booking_time,
+            session_type,
+            notes,
+            payment_method,
+            total_price,
+            downpayment_amount,
+            backdrops,
+            addons,
+            booking_duration
         } = req.body;
+
+        const totalPrice =
+            Number(total_price) || 0;
+
+        const downpaymentAmount =
+            Number(downpayment_amount) || 0;
+
+        const remainingBalance =
+            Math.max(
+                0,
+                totalPrice - downpaymentAmount
+            );
 
         console.log("====================================");
         console.log("BOOKING CONFIRMATION EMAIL");
         console.log("====================================");
 
         console.log("Email:", email);
-        console.log("Name:", name);
-        console.log("Booking Date:", bookingDate);
-        console.log("Booking Time:", bookingTime);
-        console.log("Session Type:", sessionType);
+        console.log("Name:", full_name);
+        console.log("Booking Date:", booking_date);
+        console.log("Booking Time:", booking_time);
+        console.log("Session Type:", session_type);
         console.log("Total Price:", totalPrice);
         console.log("Down Payment:", downpaymentAmount);
         console.log("Remaining Balance:", remainingBalance);
@@ -820,7 +832,7 @@ app.post("/send-payment-confirmation", async (req, res) => {
                         </h3>
 
                         <p>
-                            Hi ${name || "Customer"},
+                            Hi ${full_name || "Customer"},
                         </p>
 
                         <p>
@@ -845,17 +857,17 @@ app.post("/send-payment-confirmation", async (req, res) => {
 
                             <p>
                                 <strong>Session:</strong>
-                                ${sessionType || "Photography Session"}
+                                ${session_type || "Photography Session"}
                             </p>
 
                             <p>
                                 <strong>Date:</strong>
-                                ${bookingDate || "N/A"}
+                                ${booking_date || "N/A"}
                             </p>
 
                             <p>
                                 <strong>Time:</strong>
-                                ${bookingTime || "N/A"}
+                                ${booking_time || "N/A"}
                             </p>
 
                         </div>
@@ -1025,24 +1037,24 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
     try {
 
-        const {
-            customer_id,
-            full_name,
-            email,
-            contact_number,
-            booking_date,
-            booking_time,
-            session_type,
-            notes,
-            payment_method,
-            total_amount,
-            downpayment_amount,
-            backdrops,
-            addons,
-            booking_duration
-        } = req.body;
+   const {
+    customer_id,
+    full_name,
+    email,
+    contact_number,
+    booking_date,
+    booking_time,
+    session_type,
+    notes,
+    payment_method,
 
+    total_price,
+    downpayment_amount,
 
+    backdrops,
+    addons,
+    booking_duration
+} = req.body;
         console.log("====================================");
         console.log("CREATE PAYMONGO CHECKOUT");
         console.log("====================================");
@@ -1056,7 +1068,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             booking_time,
             session_type,
             payment_method,
-            total_amount,
+            total_price,
             downpayment_amount,
             backdrops,
             addons,
@@ -1118,24 +1130,45 @@ if (missingFields.length > 0) {
             });
 
         }
+const totalPrice = Number(total_price);
+const downpayment = Number(downpayment_amount);
 
-        const amount = Number(downpayment_amount);
+if (
+    !Number.isFinite(totalPrice) ||
+    totalPrice <= 0
+) {
+    return res.status(400).json({
+        success: false,
+        error: "Invalid total booking price."
+    });
+}
 
-        if (
-            !Number.isFinite(amount) ||
-            amount <= 0
-        ) {
+if (
+    !Number.isFinite(downpayment) ||
+    downpayment <= 0 ||
+    downpayment > totalPrice
+) {
+    return res.status(400).json({
+        success: false,
+        error: "Invalid down payment amount."
+    });
+}
 
-            return res.status(400).json({
-                success: false,
-                error: "Invalid down payment amount."
-            });
+const remainingBalance = Number(
+    (totalPrice - downpayment).toFixed(2)
+);
 
-        }
+const amountInCentavos =
+    Math.round(downpayment * 100);
 
-
-        const amountInCentavos =
-            Math.round(amount * 100);
+console.log("====================================");
+console.log("PAYMENT CALCULATION");
+console.log("====================================");
+console.log("Total Price:", totalPrice);
+console.log("Down Payment:", downpayment);
+console.log("Remaining Balance:", remainingBalance);
+console.log("PayMongo Amount:", amountInCentavos);
+console.log("====================================");
 
 
 
@@ -1149,8 +1182,14 @@ if (missingFields.length > 0) {
                 ? addons
                 : [];
 
-        const duration =
-            Number(booking_duration) || 60;
+        const duration = Number(booking_duration);
+
+            if (!Number.isFinite(duration) || duration <= 0) {
+             return res.status(400).json({
+              success: false,
+              error: "Invalid booking duration."
+              });         
+            }           
 
 
         console.log("Selected backdrops:", selectedBackdrops);
@@ -1219,9 +1258,10 @@ if (missingFields.length > 0) {
         const requestedStart =
             timeToMinutes(booking_time);
 
-        const requestedEnd =
-            requestedStart + duration;
+       const BOOKING_PREPARATION_TIME = 5;
 
+const requestedEnd =
+    requestedStart + duration + BOOKING_PREPARATION_TIME;
 
         const conflictingBooking =
             (existingBookings || []).find(booking => {
@@ -1247,8 +1287,10 @@ if (missingFields.length > 0) {
 
 
                 if (
-                    paymentStatus === "cancelled" ||
-                    paymentStatus === "rejected" ||
+                    status === "cancelled" ||
+                    status === "canceled" ||
+                    status === "rejected" ||
+                    status === "declined" ||
                     paymentStatus === "payment failed"
                 ) {
                     return false;
@@ -1256,8 +1298,12 @@ if (missingFields.length > 0) {
 
 
 
-                const existingDuration =
-                    Number(booking.booking_duration) || 60;
+              const existingDuration =
+    Number(booking.booking_duration);
+
+if (!Number.isFinite(existingDuration) || existingDuration <= 0) {
+    return false;
+}
 
 
                 const existingStart =
@@ -1266,8 +1312,10 @@ if (missingFields.length > 0) {
                     );
 
 
-                const existingEnd =
-                    existingStart + existingDuration;
+              const existingEnd =
+    existingStart +
+    existingDuration +
+    BOOKING_PREPARATION_TIME;
 
 
                 return (
@@ -1333,14 +1381,16 @@ if (missingFields.length > 0) {
                 notes:
                     notes || null,
 
-                payment_method:
-                    "PayMongo",
+               payment_method: "PayMongo",
+total_price: Number(totalPrice.toFixed(2)),
 
-                downpayment_amount:
-                    amount,
+downpayment_amount:
+    Number(downpayment.toFixed(2)),
 
-                payment_status:
-                    "Pending Payment",
+remaining_balance:
+    Number(remainingBalance.toFixed(2)),
+
+payment_status: "Pending Payment",
 
                 status:
                     "Pending",
@@ -2202,6 +2252,374 @@ if (booking.customer_id) {
                 false,
 
             error:
+                error.message
+
+        });
+
+    }
+
+});
+/* =========================================================
+   BOOKING AVAILABILITY
+   CUSTOMER-SAFE AVAILABILITY CHECK
+========================================================= */
+
+app.get("/api/bookings/availability", async (req, res) => {
+
+    try {
+
+        const bookingDate =
+            String(req.query.date || "").trim();
+
+
+        if (!bookingDate) {
+
+            return res.status(400).json({
+                success: false,
+                error: "Booking date is required."
+            });
+
+        }
+
+
+        /* =====================================================
+           GET BOOKINGS FOR SELECTED DATE
+           
+           Server uses SUPABASE SERVICE ROLE KEY,
+           so this is not blocked by customer RLS.
+        ===================================================== */
+
+        const {
+            data: bookings,
+            error
+        } = await supabase
+            .from("bookings")
+            .select(`
+                booking_time,
+                booking_duration,
+                session_type,
+                addons,
+                status,
+                payment_status
+            `)
+            .eq(
+                "booking_date",
+                bookingDate
+            );
+
+
+        if (error) {
+
+            console.error(
+                "Availability booking query error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to check booking availability.",
+                message: error.message
+            });
+
+        }
+
+
+        /* =====================================================
+           ONLY RETURN ACTIVE BOOKINGS
+
+           We do NOT return customer names, emails,
+           phone numbers, payment references, etc.
+        ===================================================== */
+
+        const activeBookings =
+            (bookings || []).filter(
+                booking => {
+
+                    const status =
+                        String(
+                            booking.status || ""
+                        )
+                        .toLowerCase()
+                        .trim();
+
+
+                    const paymentStatus =
+                        String(
+                            booking.payment_status || ""
+                        )
+                        .toLowerCase()
+                        .trim();
+
+
+                    if (
+                        status === "cancelled" ||
+                        status === "canceled" ||
+                        status === "rejected" ||
+                        status === "declined"
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    if (
+                        paymentStatus === "cancelled" ||
+                        paymentStatus === "canceled" ||
+                        paymentStatus === "rejected" ||
+                        paymentStatus === "declined" ||
+                        paymentStatus === "payment failed"
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    return true;
+
+                }
+            );
+
+
+        /* =====================================================
+           PACKAGE DURATIONS
+           
+           Used only for older bookings where
+           booking_duration is NULL.
+        ===================================================== */
+
+        const PACKAGE_DURATIONS = {
+
+            basic_1: 15,
+
+            basic_2: 20,
+
+            basic_3: 20,
+
+            group_package: 60,
+
+            classic_1: 60,
+
+            classic_2: 60,
+
+            classic_3: 70,
+
+            kids: 50,
+
+            pre_birthday: 50,
+
+            theme_holiday: 35,
+
+            maternity: 50
+
+        };
+
+
+        /* =====================================================
+           CALCULATE LEGACY BOOKING DURATION
+        ===================================================== */
+
+        function getBookingDuration(booking) {
+
+            const savedDuration =
+                Number(
+                    booking.booking_duration
+                );
+
+
+            if (
+                Number.isFinite(savedDuration) &&
+                savedDuration > 0
+            ) {
+
+                return savedDuration;
+
+            }
+
+
+            const sessionType =
+                String(
+                    booking.session_type || ""
+                )
+                .trim()
+                .toLowerCase();
+
+
+            let duration =
+                PACKAGE_DURATIONS[
+                    sessionType
+                ] || 0;
+
+
+            /* =================================================
+               ADD PHOTOGRAPHER ADD-ON TIME
+            ================================================= */
+
+            const addons =
+                Array.isArray(
+                    booking.addons
+                )
+                    ? booking.addons
+                    : [];
+
+
+            for (
+                const addon
+                of addons
+            ) {
+
+                if (!addon) {
+                    continue;
+                }
+
+
+                const key =
+                    String(
+                        addon.key || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                const quantity =
+                    Number(
+                        addon.quantity
+                    ) || 1;
+
+
+                if (
+                    key ===
+                    "photographer_15"
+                ) {
+
+                    duration +=
+                        15 *
+                        quantity;
+
+                }
+
+
+                if (
+                    key ===
+                    "photographer_30"
+                ) {
+
+                    duration +=
+                        30 *
+                        quantity;
+
+                }
+
+            }
+
+
+            return duration;
+
+        }
+
+
+        /* =====================================================
+           RETURN ONLY DATA NEEDED BY CUSTOMER BOOKING PAGE
+        ===================================================== */
+
+        const availability =
+            activeBookings
+                .map(
+                    booking => {
+
+                        const duration =
+                            getBookingDuration(
+                                booking
+                            );
+
+
+                        if (
+                            !booking.booking_time ||
+                            duration <= 0
+                        ) {
+
+                            return null;
+
+                        }
+
+
+                        return {
+
+                            booking_time:
+                                booking.booking_time,
+
+                            booking_duration:
+                                duration
+
+                        };
+
+                    }
+                )
+                .filter(
+                    Boolean
+                );
+
+
+        console.log(
+            "===================================="
+        );
+
+        console.log(
+            "BOOKING AVAILABILITY API"
+        );
+
+        console.log(
+            "Date:",
+            bookingDate
+        );
+
+        console.log(
+            "Total bookings:",
+            availability.length
+        );
+
+        console.log(
+            "Availability:",
+            availability
+        );
+
+        console.log(
+            "===================================="
+        );
+
+
+        return res.json({
+
+            success:
+                true,
+
+            booking_date:
+                bookingDate,
+
+            bookings:
+                availability
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Booking availability API error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success:
+                false,
+
+            error:
+                "Internal server error.",
+
+            message:
                 error.message
 
         });
