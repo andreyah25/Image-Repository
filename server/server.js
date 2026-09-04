@@ -1439,107 +1439,77 @@ payment_status: "Pending Payment",
 
   
 
-        const paymongoResponse =
-            await fetch(
-                "https://api.paymongo.com/v1/checkout_sessions",
-                {
+    const paymongoResponse = await fetch(
+    "https://api.paymongo.com/v2/checkout_sessions",
+    {
+        method: "POST",
 
-                    method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization":
+                `Basic ${Buffer.from(
+                    process.env.PAYMONGO_SECRET_KEY + ":"
+                ).toString("base64")}`
+        },
 
-                    headers: {
+        body: JSON.stringify({
+            data: {
+                attributes: {
+                    line_items: [
+                        {
+                            currency: "PHP",
 
-                        "Content-Type":
-                            "application/json",
+                            amount: amountInCentavos,
 
-                        "Authorization":
-                            `Basic ${Buffer.from(
-                                process.env.PAYMONGO_SECRET_KEY + ":"
-                            ).toString("base64")}`
+                            name:
+                                `Reservation Down Payment - ${session_type}`,
 
+                            quantity: 1
+                        }
+                    ],
+
+                    payment_method_types: [
+                        "qrph"
+                    ],
+
+                    billing: {
+                        name: full_name,
+                        email: email,
+                        phone: contact_number
                     },
 
-                    body: JSON.stringify({
+                    description:
+                        `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
 
-                        data: {
+                    reference_number:
+                        bookingReference,
 
-                            attributes: {
+                    metadata: {
+                        booking_id:
+                            String(bookingData.id),
 
-                                line_items: [
+                        booking_reference:
+                            bookingReference
+                    },
 
-                                    {
-                                        currency: "PHP",
+                    send_email_receipt: true,
 
-                                        amount:
-                                            amountInCentavos,
+                    show_description: true,
 
-                                        name:
-                                            `Reservation Down Payment - ${session_type}`,
+                    success_url:
+                        `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_success.html?reference=${encodeURIComponent(
+                            bookingReference
+                        )}`,
 
-                                        quantity: 1
-                                    }
-
-                                ],
-
-                                payment_method_types: [
-                                    "qrph"
-                                ],
-
-                                billing: {
-
-                                    name:
-                                        full_name,
-
-                                    email:
-                                        email,
-
-                                    phone:
-                                        contact_number
-
-                                },
-
-                                description:
-                                    `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
-
-                                reference_number:
-                                    bookingReference,
-
-                                metadata: {
-
-                                    booking_id:
-                                        String(
-                                            bookingData.id
-                                        ),
-
-                                    booking_reference:
-                                        bookingReference
-
-                                },
-
-                                send_email_receipt:
-                                    true,
-
-                                show_description:
-                                    true,
-
-                                success_url:
-                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_success.html?reference=${encodeURIComponent(
-                                        bookingReference
-                                    )}`,
-
-                                cancel_url:
-                                    `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(
-                                        bookingReference
-                                    )}`
-
-                            }
-
-                        }
-
-                    })
-
+                    cancel_url:
+                        `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(
+                            bookingReference
+                        )}`
                 }
-            );
-
+            }
+        })
+    }
+);
 
         const paymongoData =
             await paymongoResponse.json();
