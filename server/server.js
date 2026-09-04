@@ -1342,78 +1342,72 @@ if (!Number.isFinite(existingDuration) || existingDuration <= 0) {
         }
 
 
-        /* =====================================================
-           8. CREATE BOOKING
-        ===================================================== */
+     const {
+    data: bookingData,
+    error: bookingError
+} = await supabase
+    .from("bookings")
+    .insert({
 
-        const {
-            data: bookingData,
-            error: bookingError
-        } = await supabase
-            .from("bookings")
-            .insert({
+        customer_id:
+            customer_id || null,
 
-                /*
-                 * Guest booking:
-                 * customer_id can be NULL.
-                 */
-                customer_id:
-                    customer_id || null,
+        full_name:
+            full_name,
 
-                full_name:
-                    full_name,
+        contact_number:
+            contact_number,
 
-                contact_number:
-                    contact_number,
+        email:
+            email,
 
-                email:
-                    email,
+        booking_date:
+            booking_date,
 
-                booking_date:
-                    booking_date,
+        booking_time:
+            booking_time,
 
-                booking_time:
-                    booking_time,
+        session_type:
+            session_type,
 
-                session_type:
-                    session_type,
+        notes:
+            notes || null,
 
-                notes:
-                    notes || null,
+        payment_method:
+            "PayMongo",
 
-               payment_method: "PayMongo",
-total_price: Number(totalPrice.toFixed(2)),
+        total_price:
+            Number(totalPrice.toFixed(2)),
 
-downpayment_amount:
-    Number(downpayment.toFixed(2)),
+        downpayment_amount:
+            Number(downpayment.toFixed(2)),
 
-remaining_balance:
-    Number(remainingBalance.toFixed(2)),
+        remaining_balance:
+            Number(remainingBalance.toFixed(2)),
 
-payment_status: "Pending Payment",
+        // IMPORTANT: correct column name
+        payment_status:
+            "Pending Payment",
 
-                status:
-                    "Payment Pending",
+        // Booking is NOT visible to Admin yet
+        status:
+            "Pending Payment",
 
-                paymongo_reference:
-                    bookingReference,
+        paymongo_reference:
+            bookingReference,
 
-                /* ---------------------------------------------
-                   NEW FIELDS
-                --------------------------------------------- */
+        backdrops:
+            selectedBackdrops,
 
-                backdrops:
-                    selectedBackdrops,
+        addons:
+            selectedAddons,
 
-                addons:
-                    selectedAddons,
+        booking_duration:
+            duration
 
-                booking_duration:
-                    duration
-
-            })
-            .select()
-            .single();
+    })
+    .select()
+    .single();
 
 
         if (bookingError) {
@@ -1789,23 +1783,38 @@ app.post("/api/paymongo/webhook", async (req, res) => {
                 .digest("hex");
 
 
-        if (
-            !crypto.timingSafeEqual(
-                Buffer.from(receivedSignature),
-                Buffer.from(expectedSignature)
-            )
-        ) {
+       const receivedBuffer =
+    Buffer.from(
+        receivedSignature,
+        "utf8"
+    );
 
-            console.error(
-                "Invalid PayMongo webhook signature."
-            );
+const expectedBuffer =
+    Buffer.from(
+        expectedSignature,
+        "utf8"
+    );
 
-            return res.status(400).json({
-                success: false,
-                error: "Invalid webhook signature."
-            });
+if (
+    receivedBuffer.length !==
+        expectedBuffer.length ||
+    !crypto.timingSafeEqual(
+        receivedBuffer,
+        expectedBuffer
+    )
+) {
 
-        }
+    console.error(
+        "Invalid PayMongo webhook signature."
+    );
+
+    return res.status(400).json({
+        success: false,
+        error:
+            "Invalid webhook signature."
+    });
+
+}
 
 
         console.log(
@@ -2006,7 +2015,42 @@ app.post("/api/paymongo/webhook", async (req, res) => {
             "Booking found:",
             booking.id
         );
+/* =====================================================
+   VERIFY CHECKOUT SESSION BELONGS TO THIS BOOKING
+===================================================== */
 
+if (
+    booking.paymongo_checkout_id &&
+    checkoutSessionId &&
+    booking.paymongo_checkout_id !== checkoutSessionId
+) {
+
+    console.error(
+        "❌ PAYMONGO CHECKOUT SESSION DOES NOT MATCH BOOKING."
+    );
+
+    console.error({
+        bookingId:
+            booking.id,
+
+        databaseCheckoutId:
+            booking.paymongo_checkout_id,
+
+        webhookCheckoutId:
+            checkoutSessionId
+    });
+
+    return res.status(400).json({
+        success: false,
+        error:
+            "PayMongo checkout session does not match this booking."
+    });
+
+}
+
+console.log(
+    "PayMongo checkout session verified for booking."
+);
 
         /* =====================================================
            8. PAYMENT SUCCESS
@@ -2025,15 +2069,60 @@ app.post("/api/paymongo/webhook", async (req, res) => {
             /* =================================================
                PAYMENT INFORMATION
             ================================================= */
-
-            const payment =
-                attributes?.payments?.[0];
-
-
-            const paymentId =
-                payment?.id || null;
 /* =================================================
-   VERIFY PAYMONGO PAYMENT AMOUNT
+   PAYMENT INFORMATION
+================================================= */
+
+const payment =
+    Array.isArray(attributes?.payments)
+        ? attributes.payments[0]
+        : null;
+
+const paymentId =
+    payment?.id || null;
+
+console.log("====================================");
+console.log("PAYMONGO PAYMENT INFORMATION");
+console.log("====================================");
+
+console.log(
+    "Payment ID:",
+    paymentId
+);
+
+console.log(
+    "Payment object:",
+    JSON.stringify(
+        payment,
+        null,
+        2
+    )
+);
+
+console.log("====================================");
+
+
+/* =================================================
+   VERIFY PAYMENT EXISTS
+================================================= */
+
+if (!paymentId) {
+
+    console.error(
+        "❌ PAYMONGO WEBHOOK HAS NO PAYMENT ID."
+    );
+
+    return res.status(400).json({
+        success: false,
+        error:
+            "No PayMongo payment was found in the webhook."
+    });
+
+}
+
+
+/* =================================================
+   VERIFY PAYMENT AMOUNT
 ================================================= */
 
 const paymongoPaidAmountCentavos =
@@ -2043,150 +2132,284 @@ const paymongoPaidAmountCentavos =
 
 const requiredDownpaymentCentavos =
     Math.round(
-        Number(booking.downpayment_amount) * 100
+        Number(
+            booking.downpayment_amount
+        ) * 100
     );
 
 console.log("====================================");
 console.log("PAYMENT AMOUNT VERIFICATION");
 console.log("====================================");
+
+console.log(
+    "Booking ID:",
+    booking.id
+);
+
 console.log(
     "Required downpayment:",
     requiredDownpaymentCentavos,
     "centavos"
 );
+
 console.log(
     "PayMongo paid amount:",
     paymongoPaidAmountCentavos,
     "centavos"
 );
+
 console.log("====================================");
 
 
 if (
-    !Number.isFinite(paymongoPaidAmountCentavos) ||
-    paymongoPaidAmountCentavos < requiredDownpaymentCentavos
+    !Number.isFinite(
+        paymongoPaidAmountCentavos
+    )
 ) {
 
     console.error(
-        "❌ PAYMENT AMOUNT DOES NOT MATCH REQUIRED DOWNPAYMENT."
+        "❌ INVALID PAYMONGO PAYMENT AMOUNT."
+    );
+
+    return res.status(400).json({
+        success: false,
+        error:
+            "Invalid PayMongo payment amount."
+    });
+
+}
+
+
+if (
+    paymongoPaidAmountCentavos <
+    requiredDownpaymentCentavos
+) {
+
+    console.error(
+        "❌ PAYMENT AMOUNT IS LESS THAN REQUIRED DOWNPAYMENT."
     );
 
     console.error({
-        bookingId: booking.id,
+        bookingId:
+            booking.id,
+
         requiredDownpaymentCentavos,
+
         paymongoPaidAmountCentavos
     });
 
     return res.status(400).json({
         success: false,
-        error: "Payment amount does not match the required downpayment."
+        error:
+            "Payment amount is less than the required downpayment."
     });
+
 }
 
-            const referenceNumber =
-                attributes?.reference_number ||
-                reference ||
-                null;
+
+/* =================================================
+   GET PAYMENT REFERENCE
+================================================= */
+
+const referenceNumber =
+    attributes?.reference_number ||
+    reference ||
+    null;
 
 
-            const paidAt =
-                payment?.attributes?.paid_at
-                    ? new Date(
-                        payment.attributes.paid_at * 1000
-                    ).toISOString()
-                    : new Date().toISOString();
+/* =================================================
+   GET PAYMENT DATE
+================================================= */
+
+const paidAt =
+    payment?.attributes?.paid_at
+        ? new Date(
+            payment.attributes.paid_at * 1000
+        ).toISOString()
+        : new Date().toISOString();
 
 
-            /* =================================================
-               CALCULATE PAYMENT AMOUNTS
-            ================================================= */
+/* =================================================
+   CALCULATE PAYMENT AMOUNTS
+================================================= */
 
-            const totalBookingAmount =
-                Number(
-                    booking.total_price
-                ) || 0;
+const totalBookingAmount =
+    Number(
+        booking.total_price
+    ) || 0;
 
+const downPaymentAmount =
+    Number(
+        booking.downpayment_amount
+    ) || 0;
 
-            const downPaymentAmount =
-                Number(
-                    booking.downpayment_amount
-                ) || 0;
-
-
-            const remainingBalance =
-                booking.remaining_balance !== null &&
-                booking.remaining_balance !== undefined
-                    ? Number(
-                        booking.remaining_balance
-                    ) || 0
-                    : Math.max(
-                        0,
-                        totalBookingAmount -
-                        downPaymentAmount
-                    );
+const remainingBalance =
+    Math.max(
+        0,
+        Number(
+            (
+                totalBookingAmount -
+                downPaymentAmount
+            ).toFixed(2)
+        )
+    );
 
 
-            /* =================================================
-               UPDATE BOOKING
-            ================================================= */
+console.log("====================================");
+console.log("FINAL PAYMENT CALCULATION");
+console.log("====================================");
 
-            const {
-                error: updateError
-            } = await supabase
-                .from("bookings")
-                .update({
+console.log(
+    "Total booking amount:",
+    totalBookingAmount
+);
 
-                    payment_status:
-                        "Paid",
+console.log(
+    "Downpayment:",
+    downPaymentAmount
+);
 
-                    status:
-                        "Pending",
+console.log(
+    "Remaining balance:",
+    remainingBalance
+);
 
-                    paymongo_payment_id:
-                        paymentId,
-
-                    paymongo_reference_number:
-                        referenceNumber,
-
-                    paymongo_paid_at:
-                        paidAt,
-
-                    remaining_balance:
-                        Number(
-                            remainingBalance.toFixed(2)
-                        )
-
-                })
-                .eq(
-                    "id",
-                    booking.id
-                );
+console.log("====================================");
 
 
-            if (updateError) {
+/* =================================================
+   PREVENT DUPLICATE PAYMENT PROCESSING
+================================================= */
 
-                console.error(
-                    "Failed to update paid booking:",
-                    updateError
-                );
+if (
+    String(
+        booking.payment_status || ""
+    )
+        .trim()
+        .toLowerCase() === "paid"
+) {
 
-                return res.status(500).json({
-                    success: false,
-                    error: "Failed to update booking."
-                });
+    console.log(
+        "Booking is already marked as Paid."
+    );
 
-            }
+    return res.json({
+        success: true,
+        message:
+            "Payment was already processed."
+    });
+
+}
 
 
-            console.log(
-                "Booking payment status updated to Paid."
-            );
+/* =================================================
+   UPDATE BOOKING TO PAID
+================================================= */
+
+const {
+    data: updatedBooking,
+    error: updateError
+} = await supabase
+    .from("bookings")
+    .update({
+
+        payment_status:
+            "Paid",
+
+        status:
+            "Pending",
+
+        paymongo_payment_id:
+            paymentId,
+
+        paymongo_reference_number:
+            referenceNumber,
+
+        paymongo_paid_at:
+            paidAt,
+
+        remaining_balance:
+            remainingBalance
+
+    })
+    .eq(
+        "id",
+        booking.id
+    )
+    .select()
+    .single();
 
 
-            /* =================================================
-               CUSTOMER NOTIFICATION
-            ================================================= */
+/* =================================================
+   VERIFY DATABASE UPDATE
+================================================= */
 
+if (updateError) {
+
+    console.error(
+        "❌ FAILED TO UPDATE BOOKING AFTER PAYMENT."
+    );
+
+    console.error(
+        updateError
+    );
+
+    return res.status(500).json({
+        success: false,
+        error:
+            "Payment was received but booking could not be updated."
+    });
+
+}
+
+
+if (!updatedBooking) {
+
+    console.error(
+        "❌ BOOKING UPDATE RETURNED NO RECORD."
+    );
+
+    return res.status(500).json({
+        success: false,
+        error:
+            "Booking update could not be verified."
+    });
+
+}
+
+
+console.log("====================================");
+console.log("✅ BOOKING PAYMENT VERIFIED");
+console.log("====================================");
+
+console.log(
+    "Booking ID:",
+    updatedBooking.id
+);
+
+console.log(
+    "Payment Status:",
+    updatedBooking.payment_status
+);
+
+console.log(
+    "Booking Status:",
+    updatedBooking.status
+);
+
+console.log(
+    "PayMongo Payment ID:",
+    updatedBooking.paymongo_payment_id
+);
+
+console.log(
+    "Paid At:",
+    updatedBooking.paymongo_paid_at
+);
+
+console.log("====================================");
+
+     
             if (booking.customer_id) {
 
                 const {
