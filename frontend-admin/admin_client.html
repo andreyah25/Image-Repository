@@ -1830,39 +1830,87 @@
             }
         );
 
-
-
         async function sendPaymentConfirmationEmail(booking) {
             try {
-                const response = await fetch("http://localhost:3000/send-payment-confirmation", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        email: updatedBooking.email,
-                        name: updatedBooking.full_name,
-                        bookingDate: updatedBooking.booking_date,
-                        bookingTime: updatedBooking.booking_time,
-                        sessionType: updatedBooking.session_type,
 
-                        totalPrice: updatedBooking.total_price,
-                        downpaymentAmount: updatedBooking.downpayment_amount,
-                        remainingBalance: updatedBooking.remaining_balance
-                    })
-                });
+                if (!booking) {
+                    throw new Error("Booking information is missing.");
+                }
+
+                console.log("========== PAYMENT CONFIRMATION DATA ==========");
+                console.log("email:", booking.email);
+                console.log("name:", booking.full_name);
+                console.log("booking_date:", booking.booking_date);
+                console.log("booking_time:", booking.booking_time);
+                console.log("session_type:", booking.session_type);
+                console.log("total_price:", booking.total_price);
+                console.log("downpayment_amount:", booking.downpayment_amount);
+                console.log("remaining_balance:", booking.remaining_balance);
+                console.log("===============================================");
+
+                const response = await fetch(
+                    "http://localhost:3000/send-payment-confirmation",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            email: booking.email,
+
+                            name: booking.full_name,
+
+                            booking_date: booking.booking_date,
+
+                            booking_time: booking.booking_time,
+
+                            session_type: booking.session_type,
+
+                            total_price: Number(booking.total_price) || 0,
+
+                            downpayment_amount:
+                                Number(booking.downpayment_amount) || 0,
+
+                            remaining_balance:
+                                Number(booking.remaining_balance) || 0
+
+                        })
+                    }
+                );
 
                 const result = await response.json();
 
+                console.log(
+                    "Payment confirmation email response:",
+                    result
+                );
+
                 if (!response.ok) {
-                    throw new Error(result.message || "Failed to send email.");
+                    throw new Error(
+                        result.error ||
+                        result.message ||
+                        "Failed to send payment confirmation email."
+                    );
                 }
 
-                console.log("Confirmation email sent.");
+                console.log(
+                    "Payment confirmation email sent successfully."
+                );
+
             } catch (error) {
-                console.error("Email Error:", error);
+
+                console.error(
+                    "Payment confirmation email error:",
+                    error
+                );
+
             }
         }
+
+
         function renderBookedSessions() {
 
             const tbody = document.getElementById("clientTableBody");
@@ -2141,18 +2189,54 @@
                 let addonsText = "-";
 
                 if (Array.isArray(booking.addons)) {
-                    addonsText = booking.addons.length
-                        ? booking.addons.join(", ")
-                        : "-";
+
+                    if (booking.addons.length > 0) {
+
+                        addonsText = booking.addons
+                            .map(addon => {
+
+                                if (typeof addon === "string") {
+                                    return addon;
+                                }
+
+                                if (addon && typeof addon === "object") {
+
+                                    const name =
+                                        addon.name ||
+                                        addon.key ||
+                                        "Add-on";
+
+                                    const quantity =
+                                        Number(addon.quantity) || 1;
+
+                                    if (quantity > 1) {
+                                        return `${name} x${quantity}`;
+                                    }
+
+                                    return name;
+                                }
+
+                                return "";
+
+                            })
+                            .filter(Boolean)
+                            .join(", ");
+
+                    } else {
+
+                        addonsText = "-";
+
+                    }
+
                 } else if (
                     booking.addons !== null &&
                     booking.addons !== undefined &&
                     String(booking.addons).trim() !== ""
                 ) {
+
                     addonsText = String(booking.addons);
+
                 }
-
-
                 /* ---------------------------------------------
                    TOTAL PRICE
                 --------------------------------------------- */
@@ -3536,7 +3620,7 @@
             ) {
 
                 tableHeader.innerHTML = `
- <tr>
+<tr>
     <th>#</th>
     <th>Full Name</th>
     <th>Contact Number</th>
@@ -3547,10 +3631,13 @@
     <th>Backdrop</th>
     <th>Add-ons</th>
     <th>Payment Method</th>
+
+    <!-- PAYMENT DETAILS -->
     <th>Total Price</th>
     <th>Down Payment</th>
     <th>Remaining Balance</th>
     <th>Payment Status</th>
+
     <th>Proof of Payment</th>
     <th>Booking Status</th>
     <th>Note</th>
@@ -3558,7 +3645,6 @@
     <th>Action</th>
 </tr>
 `;
-
                 if (addNewClientBtn) {
                     addNewClientBtn.style.display =
                         "none";

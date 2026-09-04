@@ -4,10 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Payments</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="/design/admin_client.css">
@@ -15,123 +19,359 @@
     <link rel="stylesheet" href="/design/admin_payment.css">
 </head>
 
+
 <body>
 
+    <!-- =====================================================
+         TOP NAVBAR
+    ====================================================== -->
+
     <header class="top-navbar">
+
         <div class="logo-section">
+
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
+
             <span>Captured Admin Studio</span>
+
         </div>
-        <div class="navbar-right">
-            <button class="notification-btn" aria-label="Notifications">
-                <i class="fa-solid fa-bell"></i>
-            </button>
-            <div class="user-profile">
-                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Avatar">
-                <span id="userName">Loading...</span>
+
+
+        <div class="header-right">
+
+            <div class="notification-wrapper">
+                <button class="notification-btn" id="notificationBtn" type="button" aria-label="Notifications">
+                    <i class="fa-solid fa-bell"></i>
+
+                    <span id="notificationBadge" class="notification-badge" style="display: none;">
+                        0
+                    </span>
+                </button>
+
+                <div id="notificationPanel" class="notification-panel">
+                    ...
+                </div>
             </div>
+
+            <!-- Your existing Captured Admin profile -->
+            <div class="profile-section">
+                ...
+            </div>
+
         </div>
+
+        <div class="user-profile">
+
+            <img id="userAvatar" class="avatar" src="" alt="Avatar">
+
+            <span id="userName">
+                Loading...
+            </span>
+
+        </div>
+
+        </div>
+
     </header>
 
     <div class="dashboard-wrapper">
+
+
         <aside class="sidebar">
+
             <nav>
-                <a href="admin_dashboard.html"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
-                <a href="admin_client.html"><i class="fa-solid fa-users"></i> Clients</a>
-                <a href="admin_repository.html"><i class="fa-solid fa-book"></i> Repository</a>
-                <a href="admin_payment.html" class="active"><i class="fa-solid fa-credit-card"></i> Payments</a>
-                <a href="admin_archives.html"><i class="fa-solid fa-box-archive"></i> Archives</a>
-                <a href="admin_profile.html"><i class="fa-solid fa-user"></i> Profile</a>
-                <a href="admin_settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+
+                <a href="admin_dashboard.html">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Dashboard
+                </a>
+
+
+                <a href="admin_client.html">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+
+
+                <a href="admin_repository.html">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+
+
+                <a href="admin_payment.html" class="active">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+
+
+                <a href="admin_archives.html">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+
+
+                <a href="admin_profile.html">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+
+
+                <a href="admin_settings.html">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+
             </nav>
+
+
             <a href="landing_page.html" class="logout-btn" id="logoutBtn">
+
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+
                 <span>Log out</span>
+
             </a>
+
         </aside>
 
         <main class="content">
+
+
             <div class="client-header-container">
+
+
                 <div class="page-header">
-                    <h1>Payments</h1>
-                    <p>Track and manage transaction records.</p>
+
+                    <h1>
+                        Payments
+                    </h1>
+
+                    <p>
+                        Track and manage transaction records.
+                    </p>
+
                 </div>
 
                 <div class="client-actions-row">
                     <div class="filter-dropdown-wrapper">
-                        <button class="table-filter-btn" id="statusFilterBtn">
-                            All status <i class="fa-solid fa-chevron-down"></i>
+
+                        <button class="table-filter-btn" id="statusFilterBtn" type="button">
+
+                            All status
+
+                            <i class="fa-solid fa-chevron-down"></i>
+
                         </button>
+
+
                         <div class="filter-dropdown-menu" id="statusDropdown">
-                            <a href="#" data-filter="paid">Paid</a>
-                            <a href="#" data-filter="pending">Pending</a>
+
+                            <a href="#" data-filter="paid">
+                                Paid
+                            </a>
+
+
+                            <a href="#" data-filter="pending">
+                                Pending
+                            </a>
+
+
                             <div class="dropdown-divider"></div>
-                            <a href="#" data-filter="all" class="clear-filter">Clear Filter</a>
+
+
+                            <a href="#" data-filter="all" class="clear-filter">
+                                Clear Filter
+                            </a>
+
                         </div>
+
                     </div>
 
                     <div class="filter-dropdown-wrapper">
-                        <button class="table-filter-btn" id="methodFilterBtn">
-                            All payment methods <i class="fa-solid fa-chevron-down"></i>
+
+                        <button class="table-filter-btn" id="methodFilterBtn" type="button">
+
+                            All payment methods
+
+                            <i class="fa-solid fa-chevron-down"></i>
+
                         </button>
+
+
                         <div class="filter-dropdown-menu" id="methodDropdown">
-                            <a href="#" data-filter="card">Credit Card</a>
-                            <a href="#" data-filter="gcash">GCash</a>
-                            <a href="#" data-filter="maya">Maya</a>
-                            <a href="#" data-filter="paypal">PayPal</a>
+
+                            <a href="#" data-filter="card">
+                                Credit Card
+                            </a>
+
+
+                            <a href="#" data-filter="gcash">
+                                GCash
+                            </a>
+
+
+                            <a href="#" data-filter="maya">
+                                Maya
+                            </a>
+
+                            <a href="#" data-filter="paypal">
+                                PayPal
+                            </a>
+
+
+                            <a href="#" data-filter="qrph">
+                                QR Ph
+                            </a>
+
+
                             <div class="dropdown-divider"></div>
-                            <a href="#" data-filter="all" class="clear-filter">Clear Filter</a>
+
+
+                            <a href="#" data-filter="all" class="clear-filter">
+                                Clear Filter
+                            </a>
+
                         </div>
+
                     </div>
 
                     <div class="table-search-box">
-                        <input type="text" placeholder="Search a customer or email">
+
+                        <input type="text" id="paymentSearchInput" placeholder="Search a customer or email"
+                            autocomplete="off">
+
                         <i class="fa-solid fa-magnifying-glass"></i>
+
                     </div>
+
                 </div>
+
             </div>
 
             <div class="ui-table-card-panel">
+
                 <table class="ui-data-grid">
+
                     <thead>
+
                         <tr>
-                            <th>Order ID</th>
-                            <th>Client</th>
-                            <th>Access</th>
-                            <th>Amount</th>
-                            <th>Payment Method</th>
+
+                            <th> Order ID</th>
+
+                            <th> Client </th>
+
+                            <th>Access </th>
+
+                            <th> Amount  </th>
+
+                            <th>Payment Method </th>
+
                             <th>Status</th>
-                            <th>Payment Date</th>
+
+                            <th> Payment Date</th>
+
                         </tr>
+
                     </thead>
-                    <tbody id="paymentTableBody"></tbody>
+
+
+                    <tbody id="paymentTableBody">
+
+                        <tr>
+
+                            <td colspan="7" style="text-align:center;">
+                                Loading payments...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
                 </table>
+
             </div>
+
         </main>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
     <script>
 
         function setupDropdown(btnId, dropdownId) {
-            const btn = document.getElementById(btnId);
-            const menu = document.getElementById(dropdownId);
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                menu.classList.toggle('show');
-            });
-            document.addEventListener('click', () => menu.classList.remove('show'));
-        }
-        setupDropdown('statusFilterBtn', 'statusDropdown');
-        setupDropdown('methodFilterBtn', 'methodDropdown');
-        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+            const btn =
+                document.getElementById(btnId);
+
+            const menu =
+                document.getElementById(dropdownId);
+
+
+            if (!btn || !menu) {
+                return;
+            }
+
+
+            btn.addEventListener("click", function (event) {
+
+                event.stopPropagation();
+
+                menu.classList.toggle("show");
+
+            });
+
+
+            menu.addEventListener("click", function (event) {
+
+                event.stopPropagation();
+
+            });
+
+
+            document.addEventListener("click", function () {
+
+                menu.classList.remove("show");
+
+            });
+
+        }
+
+
+        setupDropdown(
+            "statusFilterBtn",
+            "statusDropdown"
+        );
+
+
+        setupDropdown(
+            "methodFilterBtn",
+            "methodDropdown"
+        );
+
+
+        const SUPABASE_URL =
+            "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
         const supabaseClient = supabase.createClient(
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
+
+        let allPayments = [];
+
+        let currentStatusFilter = "all";
+
+        let currentMethodFilter = "all";
+
+        let currentSearch = "";
+
+
         async function loadLoggedInUser() {
             try {
                 const {
@@ -170,34 +410,1743 @@
 
                 console.log("STAFF PROFILE:", profile);
 
+                // =========================
+                // DISPLAY STAFF NAME
+                // =========================
                 const fullName =
-                    profile.full_name ||
+                    profile?.full_name ||
                     user.user_metadata?.full_name ||
                     "Staff";
 
-                const email =
-                    profile.email ||
-                    user.email ||
-                    "";
+                const userNameElement = document.getElementById("userName");
 
-                console.log("Full Name:", fullName);
-                console.log("Email:", email);
-                console.log("Avatar URL:", profile.avatar_url);
-
-                document.getElementById("userName").textContent = fullName;
-
-                if (profile.avatar_url) {
-                    document.getElementById("userAvatar").src =
-                        profile.avatar_url;
+                if (userNameElement) {
+                    userNameElement.textContent = fullName;
                 }
 
+                const avatar = document.getElementById("userAvatar");
+
+                if (!avatar) {
+                    console.error("userAvatar element was not found.");
+                    return;
+                }
+
+                const avatarUrl =
+                    profile?.avatar_url ||
+                    user.user_metadata?.avatar_url ||
+                    user.user_metadata?.picture ||
+                    null;
+
+                console.log("Avatar URL from database:", profile?.avatar_url);
+                console.log("Avatar URL from metadata:", user.user_metadata?.avatar_url);
+                console.log("Final Avatar URL:", avatarUrl);
+
+                if (avatarUrl && avatarUrl.trim() !== "") {
+
+                    avatar.src = avatarUrl;
+
+                    avatar.onerror = function () {
+                        console.error(
+                            "The saved avatar URL could not be loaded:",
+                            avatarUrl
+                        );
+
+                        // Remove broken image instead of repeatedly
+                        // loading the same placeholder.
+                        this.removeAttribute("src");
+                        this.style.display = "none";
+                    };
+
+                } else {
+
+                    console.warn("No avatar URL was found for this staff account.");
+
+                    // Don't use via.placeholder.com
+                    avatar.removeAttribute("src");
+                    avatar.style.display = "none";
+                }
             } catch (error) {
                 console.error("Profile loading error:", error);
             }
         }
 
+        async function loadPayments() {
+
+            const tableBody =
+                document.getElementById("paymentTableBody");
+
+            tableBody.innerHTML = `
+        <tr>
+            <td colspan="7" style="text-align:center;">
+                Loading payments...
+            </td>
+        </tr>
+    `;
+
+            try {
+
+                console.log("====================================");
+                console.log("LOADING PAYMENT RECORDS");
+                console.log("====================================");
+
+
+
+                const {
+                    data: paymentRecords,
+                    error: paymentsError
+                } = await supabaseClient
+                    .from("payments")
+                    .select("*")
+                    .order("payment_date", {
+                        ascending: false
+                    });
+
+
+                if (paymentsError) {
+
+                    console.error(
+                        "Payments table error:",
+                        paymentsError
+                    );
+
+                }
+
+                const {
+                    data: bookingRecords,
+                    error: bookingsError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select(`
+                id,
+                customer_id,
+                full_name,
+                email,
+                downpayment_amount,
+                payment_method,
+                payment_status,
+                created_at,
+                paymongo_payment_id,
+                paymongo_reference,
+                paymongo_reference_number,
+                paymongo_paid_at
+            `)
+                    .not(
+                        "downpayment_amount",
+                        "is",
+                        null
+                    )
+                    .gt(
+                        "downpayment_amount",
+                        0
+                    )
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    );
+
+
+                if (bookingsError) {
+
+                    console.error(
+                        "Bookings payment lookup error:",
+                        bookingsError
+                    );
+
+                }
+
+
+                const combinedPayments = [];
+
+                const recordedBookingIds = new Set();
+
+
+                (paymentRecords || []).forEach(
+                    payment => {
+
+                        combinedPayments.push(
+                            payment
+                        );
+
+
+
+                        if (
+                            payment.booking_id
+                        ) {
+
+                            recordedBookingIds.add(
+                                String(
+                                    payment.booking_id
+                                )
+                            );
+
+                        }
+
+                    }
+                );
+                (bookingRecords || []).forEach(
+                    booking => {
+
+                        const bookingId =
+                            String(
+                                booking.id
+                            );
+
+                        if (
+                            recordedBookingIds.has(
+                                bookingId
+                            )
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const downpayment =
+                            Number(
+                                booking.downpayment_amount
+                            ) || 0;
+
+
+                        if (
+                            downpayment <= 0
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        /* =================================================
+                           DETERMINE PAYMENT STATUS
+                        ================================================= */
+
+                        const databasePaymentStatus =
+                            String(
+                                booking.payment_status || ""
+                            )
+                                .trim()
+                                .toLowerCase();
+
+
+                        let paymentStatus =
+                            "Pending";
+
+
+                        if (
+                            databasePaymentStatus === "paid"
+                        ) {
+
+                            paymentStatus =
+                                "Paid";
+
+                        }
+
+                        else if (
+                            databasePaymentStatus.includes(
+                                "fail"
+                            )
+                        ) {
+
+                            paymentStatus =
+                                "Payment Failed";
+
+                        }
+
+                        else if (
+                            databasePaymentStatus.includes(
+                                "cancel"
+                            )
+                        ) {
+
+                            paymentStatus =
+                                "Cancelled";
+
+                        }
+
+                        else if (
+                            databasePaymentStatus ===
+                            "pending payment"
+                        ) {
+
+                            paymentStatus =
+                                "Pending";
+
+                        }
+
+
+                        let paymentMethod =
+                            booking.payment_method ||
+                            "PayMongo";
+
+                        if (
+                            String(
+                                paymentMethod
+                            )
+                                .toLowerCase()
+                                .trim() === "paymongo"
+                        ) {
+
+                            paymentMethod =
+                                "qrph";
+
+                        }
+
+                        const paymentDate =
+                            booking.paymongo_paid_at ||
+                            booking.created_at ||
+                            new Date().toISOString();
+
+                        combinedPayments.push({
+
+                            id:
+                                `booking-${bookingId}`,
+
+                            customer_id:
+                                booking.customer_id ||
+                                null,
+
+                            booking_id:
+                                booking.id,
+
+                            gallery_access_request_id:
+                                null,
+
+                            client_name:
+                                booking.full_name ||
+                                "Unknown",
+
+                            email:
+                                booking.email ||
+                                null,
+
+                            amount:
+                                downpayment,
+
+                            payment_method:
+                                paymentMethod,
+
+                            status:
+                                paymentStatus,
+
+                            payment_type:
+                                "Booking",
+
+                            payment_date:
+                                paymentDate,
+
+                            paymongo_payment_id:
+                                booking.paymongo_payment_id ||
+                                null,
+
+                            paymongo_checkout_id:
+                                null,
+
+                            payment_reference:
+                                booking.paymongo_reference_number ||
+                                booking.paymongo_reference ||
+                                null,
+
+                            created_at:
+                                booking.created_at ||
+                                null
+
+                        });
+
+                    }
+                );
+
+                combinedPayments.sort(
+                    (a, b) => {
+
+                        const dateA =
+                            new Date(
+                                a.payment_date ||
+                                a.created_at ||
+                                0
+                            ).getTime();
+
+                        const dateB =
+                            new Date(
+                                b.payment_date ||
+                                b.created_at ||
+                                0
+                            ).getTime();
+
+                        return dateB - dateA;
+
+                    }
+                );
+
+                allPayments =
+                    combinedPayments;
+
+
+                console.log(
+                    "===================================="
+                );
+
+                console.log(
+                    "PAYMENTS TABLE RECORDS:",
+                    paymentRecords || []
+                );
+
+                console.log(
+                    "BOOKINGS WITH DOWNPAYMENTS:",
+                    bookingRecords || []
+                );
+
+                console.log(
+                    "COMBINED PAYMENT RECORDS:",
+                    allPayments
+                );
+
+                console.log(
+                    "TOTAL PAYMENT RECORDS:",
+                    allPayments.length
+                );
+
+                console.log(
+                    "===================================="
+                );
+
+                renderPayments();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading payments:",
+                    error
+                );
+
+
+                tableBody.innerHTML = `
+            <tr>
+                <td
+                    colspan="7"
+                    style="text-align:center;"
+                >
+                    Unable to load payments.
+                </td>
+            </tr>
+        `;
+
+            }
+
+        }
+
+        function renderPayments() {
+
+            const tableBody =
+                document.getElementById(
+                    "paymentTableBody"
+                );
+
+
+            let payments =
+                [...allPayments];
+
+
+            if (
+                currentStatusFilter !== "all"
+            ) {
+
+                payments =
+                    payments.filter(
+                        payment => {
+
+                            return String(
+                                payment.status || ""
+                            ).toLowerCase() ===
+                                currentStatusFilter
+                                    .toLowerCase();
+
+                        }
+                    );
+
+            }
+
+            if (
+                currentMethodFilter !== "all"
+            ) {
+
+                payments =
+                    payments.filter(
+                        payment => {
+
+                            const method =
+                                String(
+                                    payment.payment_method || ""
+                                ).toLowerCase();
+
+
+                            return method ===
+                                currentMethodFilter
+                                    .toLowerCase();
+
+                        }
+                    );
+
+            }
+            if (
+                currentSearch.trim() !== ""
+            ) {
+
+                const search =
+                    currentSearch
+                        .toLowerCase()
+                        .trim();
+
+
+                payments =
+                    payments.filter(
+                        payment => {
+
+                            const clientName =
+                                String(
+                                    payment.client_name || ""
+                                ).toLowerCase();
+
+
+                            const email =
+                                String(
+                                    payment.email || ""
+                                ).toLowerCase();
+
+
+                            return (
+                                clientName.includes(search) ||
+                                email.includes(search)
+                            );
+
+                        }
+                    );
+
+            }
+
+            if (
+                payments.length === 0
+            ) {
+
+                tableBody.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            style="text-align:center;"
+                        >
+                            No payment records found.
+                        </td>
+
+                    </tr>
+
+                `;
+
+                return;
+
+            }
+
+            tableBody.innerHTML =
+                payments
+                    .map(
+                        payment => {
+
+                            // =================================
+                            // ORDER ID
+                            // =================================
+
+                            const orderId =
+                                payment.booking_id ||
+                                payment.gallery_access_request_id ||
+                                payment.id;
+
+
+                            // =================================
+                            // CLIENT
+                            // =================================
+
+                            const clientName =
+                                payment.client_name ||
+                                "Unknown";
+
+
+                            // =================================
+                            // AMOUNT
+                            // =================================
+
+                            const amount =
+                                Number(
+                                    payment.amount || 0
+                                ).toLocaleString(
+                                    "en-PH",
+                                    {
+                                        style: "currency",
+                                        currency: "PHP"
+                                    }
+                                );
+
+
+                            // =================================
+                            // PAYMENT METHOD
+                            // =================================
+
+                            const method =
+                                formatPaymentMethod(
+                                    payment.payment_method
+                                );
+
+
+                            // =================================
+                            // STATUS
+                            // =================================
+
+                            const status =
+                                payment.status ||
+                                "Pending";
+
+
+                            // =================================
+                            // PAYMENT DATE
+                            // =================================
+
+                            const paymentDate =
+                                formatPaymentDate(
+                                    payment.payment_date
+                                );
+
+
+                            // =================================
+                            // PAYMENT TYPE
+                            // =================================
+
+                            let accessType =
+                                "Booking";
+
+
+                            if (
+                                String(
+                                    payment.payment_type || ""
+                                )
+                                    .toLowerCase()
+                                    .includes("gallery")
+                            ) {
+
+                                accessType =
+                                    "Gallery Access";
+
+                            }
+
+
+                            return `
+
+                                <tr>
+
+                                    <td>
+                                        ${escapeHtml(
+                                String(orderId)
+                            )}
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                clientName
+                            )}
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                accessType
+                            )}
+                                    </td>
+
+
+                                    <td>
+                                        ${amount}
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                method
+                            )}
+                                    </td>
+
+
+                                    <td>
+
+                                        <span
+                                            class="payment-status ${getStatusClass(status)}"
+                                        >
+                                            ${escapeHtml(
+                                status
+                            )}
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+                                        ${paymentDate}
+                                    </td>
+
+                                </tr>
+
+                            `;
+
+                        }
+                    )
+                    .join("");
+
+        }
+
+        function formatPaymentMethod(method) {
+
+            if (!method) {
+
+                return "—";
+
+            }
+
+
+            const value =
+                String(method)
+                    .toLowerCase()
+                    .trim();
+
+
+            if (value === "gcash") {
+
+                return "GCash";
+
+            }
+
+
+            if (value === "maya") {
+
+                return "Maya";
+
+            }
+
+
+            if (
+                value === "card" ||
+                value === "credit_card" ||
+                value === "credit card"
+            ) {
+
+                return "Credit Card";
+
+            }
+
+
+            if (value === "paypal") {
+
+                return "PayPal";
+
+            }
+
+
+            if (
+                value === "qrph" ||
+                value === "qr_ph"
+            ) {
+
+                return "QR Ph";
+
+            }
+
+
+            return method;
+
+        }
+
+        function getStatusClass(status) {
+
+            return String(
+                status || "pending"
+            )
+                .toLowerCase()
+                .replace(/\s+/g, "-");
+
+        }
+
+        function formatPaymentDate(date) {
+
+            if (!date) {
+
+                return "—";
+
+            }
+
+
+            const parsedDate =
+                new Date(date);
+
+
+            if (
+                isNaN(
+                    parsedDate.getTime()
+                )
+            ) {
+
+                return "—";
+
+            }
+
+
+            return parsedDate.toLocaleDateString(
+                "en-PH",
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric"
+                }
+            );
+
+        }
+
+        function escapeHtml(value) {
+
+            return String(value)
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+        //status filter
+        document
+            .querySelectorAll(
+                "#statusDropdown a[data-filter]"
+            )
+            .forEach(item => {
+
+                item.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.preventDefault();
+
+
+                        currentStatusFilter =
+                            this.dataset.filter;
+
+
+                        const button =
+                            document.getElementById(
+                                "statusFilterBtn"
+                            );
+
+
+                        if (
+                            currentStatusFilter === "all"
+                        ) {
+
+                            button.innerHTML = `
+
+                                All status
+
+                                <i
+                                    class="fa-solid fa-chevron-down"
+                                ></i>
+
+                            `;
+
+                        }
+
+                        else {
+
+                            button.innerHTML = `
+
+                                ${escapeHtml(
+                                this.textContent.trim()
+                            )}
+
+                                <i
+                                    class="fa-solid fa-chevron-down"
+                                ></i>
+
+                            `;
+
+                        }
+
+
+                        document
+                            .getElementById(
+                                "statusDropdown"
+                            )
+                            .classList.remove("show");
+
+
+                        renderPayments();
+
+                    }
+                );
+
+            });
+        //payment filter
+
+        document
+            .querySelectorAll(
+                "#methodDropdown a[data-filter]"
+            )
+            .forEach(item => {
+
+                item.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.preventDefault();
+
+
+                        currentMethodFilter =
+                            this.dataset.filter;
+
+
+                        const button =
+                            document.getElementById(
+                                "methodFilterBtn"
+                            );
+
+
+                        if (
+                            currentMethodFilter === "all"
+                        ) {
+
+                            button.innerHTML = `
+
+                                All payment methods
+
+                                <i
+                                    class="fa-solid fa-chevron-down"
+                                ></i>
+
+                            `;
+
+                        }
+
+                        else {
+
+                            button.innerHTML = `
+
+                                ${escapeHtml(
+                                this.textContent.trim()
+                            )}
+
+                                <i
+                                    class="fa-solid fa-chevron-down"
+                                ></i>
+
+                            `;
+
+                        }
+
+
+                        document
+                            .getElementById(
+                                "methodDropdown"
+                            )
+                            .classList.remove("show");
+
+
+                        renderPayments();
+
+                    }
+                );
+
+            });
+
+        //search
+
+        const searchInput =
+            document.getElementById(
+                "paymentSearchInput"
+            );
+
+
+        searchInput.addEventListener(
+            "input",
+            function () {
+
+                currentSearch =
+                    this.value;
+
+
+                renderPayments();
+
+            }
+        );
+
+
+
+        // LOGOUT
+
+        document
+            .getElementById("logoutBtn")
+            .addEventListener(
+                "click",
+                async function (event) {
+
+                    event.preventDefault();
+
+
+                    try {
+
+                        const {
+                            error
+                        } =
+                            await supabaseClient.auth.signOut();
+
+
+                        if (error) {
+
+                            console.error(
+                                "Logout error:",
+                                error
+                            );
+
+                            return;
+
+                        }
+
+
+                        window.location.href =
+                            "landing_page.html";
+
+                    }
+
+                    catch (error) {
+
+                        console.error(
+                            "Logout error:",
+                            error
+                        );
+
+                    }
+
+                }
+            );
+
+
+
+        // =====================================================
+        // NOTIFICATION SYSTEM
+        // =====================================================
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // =================================================
+            // FIX HEADER NOTIFICATION POSITION
+            // Put notification beside the actual user profile
+            // =================================================
+
+            const topNavbar =
+                document.querySelector(".top-navbar");
+
+            const headerRight =
+                document.querySelector(".header-right");
+
+            const notificationWrapper =
+                document.querySelector(".notification-wrapper");
+
+            const userProfile =
+                document.querySelector(".user-profile");
+
+
+            if (
+                headerRight &&
+                notificationWrapper &&
+                userProfile
+            ) {
+
+                // Remove the incorrect duplicate profile container
+                const fakeProfile =
+                    headerRight.querySelector(".profile-section");
+
+                if (fakeProfile) {
+                    fakeProfile.remove();
+                }
+
+
+                // Make sure notification is inside header-right
+                if (
+                    notificationWrapper.parentElement !==
+                    headerRight
+                ) {
+
+                    headerRight.appendChild(
+                        notificationWrapper
+                    );
+
+                }
+
+
+                if (
+                    userProfile.parentElement !==
+                    headerRight
+                ) {
+
+                    headerRight.appendChild(
+                        userProfile
+                    );
+
+                }
+
+
+                headerRight.appendChild(
+                    notificationWrapper
+                );
+
+                headerRight.appendChild(
+                    userProfile
+                );
+
+
+                headerRight.style.marginLeft =
+                    "auto";
+
+                headerRight.style.display =
+                    "flex";
+
+                headerRight.style.alignItems =
+                    "center";
+
+                headerRight.style.justifyContent =
+                    "flex-end";
+
+                headerRight.style.gap =
+                    "20px";
+
+            }
+
+
+            const notificationBtn =
+                document.getElementById(
+                    "notificationBtn"
+                );
+
+            const notificationPanel =
+                document.getElementById(
+                    "notificationPanel"
+                );
+
+            const notificationBadge =
+                document.getElementById(
+                    "notificationBadge"
+                );
+
+
+            if (
+                notificationPanel &&
+                !document.getElementById(
+                    "notificationList"
+                )
+            ) {
+
+                notificationPanel.innerHTML = `
+
+            <div class="notification-header">
+
+                <div>
+
+                    <h3>
+                        Notifications
+                    </h3>
+
+                    <span id="notificationCount">
+                        No new notifications
+                    </span>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="markAllNotificationsRead"
+                    class="mark-all-btn"
+                >
+                    Mark all as read
+                </button>
+
+            </div>
+
+            <div
+                id="notificationList"
+                class="notification-list"
+            >
+
+                <div class="notification-loading">
+                    Loading notifications...
+                </div>
+
+            </div>
+
+        `;
+
+            }
+
+
+
+
+            const notificationList =
+                document.getElementById(
+                    "notificationList"
+                );
+
+            const notificationCount =
+                document.getElementById(
+                    "notificationCount"
+                );
+
+            const markAllNotificationsRead =
+                document.getElementById(
+                    "markAllNotificationsRead"
+                );
+
+
+
+            //admin load all notifs
+
+            async function loadAdminNotifications() {
+
+                if (!notificationList) {
+                    return;
+                }
+
+
+                notificationList.innerHTML = `
+            <div class="notification-loading">
+                Loading notifications...
+            </div>
+        `;
+
+
+                try {
+
+                    const {
+                        data: notifications,
+                        error
+                    } = await supabaseClient
+                        .from("notifications")
+                        .select("*")
+                        .eq(
+                            "recipient",
+                            "admin"
+                        )
+                        .order(
+                            "created_at",
+                            {
+                                ascending: false
+                            }
+                        );
+
+
+                    if (error) {
+
+                        console.error(
+                            "Notification loading error:",
+                            error
+                        );
+
+
+                        notificationList.innerHTML = `
+                    <div class="notification-empty">
+                        Unable to load notifications.
+                    </div>
+                `;
+
+                        return;
+
+                    }
+                    renderAdminNotifications(
+                        notifications || []
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Notification error:",
+                        error
+                    );
+
+
+                    notificationList.innerHTML = `
+                <div class="notification-empty">
+                    Unable to load notifications.
+                </div>
+            `;
+
+                }
+
+            }
+
+            function renderAdminNotifications(
+                notifications
+            ) {
+
+                if (!notificationList) {
+                    return;
+                }
+
+
+                const unreadNotifications =
+                    notifications.filter(
+                        notification =>
+                            notification.is_read !== true
+                    );
+
+
+                const unreadCount =
+                    unreadNotifications.length;
+
+
+
+
+
+                if (
+                    notificationBadge
+                ) {
+
+                    if (unreadCount > 0) {
+
+                        notificationBadge.textContent =
+                            unreadCount > 99
+                                ? "99+"
+                                : unreadCount;
+
+                        notificationBadge.style.display =
+                            "flex";
+
+                    } else {
+
+                        notificationBadge.style.display =
+                            "none";
+
+                    }
+
+                }
+
+
+                //notif count
+
+                if (notificationCount) {
+
+                    if (unreadCount === 0) {
+
+                        notificationCount.textContent =
+                            "No new notifications";
+
+                    }
+
+                    else if (unreadCount === 1) {
+
+                        notificationCount.textContent =
+                            "1 new notification";
+
+                    }
+
+                    else {
+
+                        notificationCount.textContent =
+                            `${unreadCount} new notifications`;
+
+                    }
+
+                }
+
+                // empty notif
+
+                if (
+                    notifications.length === 0
+                ) {
+
+                    notificationList.innerHTML = `
+                <div class="notification-empty">
+                    No notifications yet.
+                </div>
+            `;
+
+                    return;
+
+                }
+
+
+
+                //content of the notif
+                notificationList.innerHTML =
+                    notifications
+                        .map(notification => {
+
+                            const title =
+                                escapeHtml(
+                                    notification.title ||
+                                    "Notification"
+                                );
+
+
+                            const message =
+                                escapeHtml(
+                                    notification.message ||
+                                    ""
+                                );
+
+
+                            const createdAt =
+                                formatNotificationDate(
+                                    notification.created_at
+                                );
+
+
+                            const isUnread =
+                                notification.is_read !== true;
+
+
+                            return `
+
+                        <div
+                            class="notification-item ${isUnread
+                                    ? "unread"
+                                    : ""
+                                }"
+                            data-notification-id="${escapeHtml(
+                                    String(
+                                        notification.id
+                                    )
+                                )}"
+                        >
+
+                            <div class="notification-item-title">
+
+                                <strong>
+                                    ${title}
+                                </strong>
+
+                                ${isUnread
+                                    ? `
+                                            <span
+                                                class="notification-unread-dot"
+                                            ></span>
+                                        `
+                                    : ""
+                                }
+
+                            </div>
+
+
+                            <div class="notification-message">
+                                ${message}
+                            </div>
+
+
+                            <div class="notification-date">
+                                ${createdAt}
+                            </div>
+
+                        </div>
+
+                    `;
+
+                        })
+                        .join("");
+
+
+
+                //function for click notif
+
+                document
+                    .querySelectorAll(
+                        ".notification-item"
+                    )
+                    .forEach(item => {
+
+                        item.addEventListener(
+                            "click",
+                            async function () {
+
+                                const notificationId =
+                                    this.dataset.notificationId;
+
+
+                                await markNotificationAsRead(
+                                    notificationId
+                                );
+
+                            }
+                        );
+
+                    });
+
+            }
+
+
+            //mark as read notif
+
+            async function markNotificationAsRead(
+                notificationId
+            ) {
+
+                if (!notificationId) {
+                    return;
+                }
+
+
+                try {
+
+                    const {
+                        error
+                    } = await supabaseClient
+                        .from("notifications")
+                        .update({
+                            is_read: true
+                        })
+                        .eq(
+                            "id",
+                            notificationId
+                        );
+
+
+                    if (error) {
+
+                        console.error(
+                            "Failed to mark notification as read:",
+                            error
+                        );
+
+                        return;
+
+                    }
+
+
+                    await loadAdminNotifications();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Notification read error:",
+                        error
+                    );
+
+                }
+
+            }
+
+
+
+            //main function to mark all notifications as read
+            async function markAllAdminNotificationsAsRead() {
+
+                try {
+
+                    const {
+                        error
+                    } = await supabaseClient
+                        .from("notifications")
+                        .update({
+                            is_read: true
+                        })
+                        .eq(
+                            "recipient",
+                            "admin"
+                        )
+                        .eq(
+                            "is_read",
+                            false
+                        );
+
+
+                    if (error) {
+
+                        console.error(
+                            "Failed to mark all notifications as read:",
+                            error
+                        );
+
+                        return;
+
+                    }
+
+
+                    await loadAdminNotifications();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Mark all notifications error:",
+                        error
+                    );
+
+                }
+
+            }
+
+
+            //notif button
+
+            if (
+                notificationBtn &&
+                notificationPanel
+            ) {
+
+                notificationBtn.addEventListener(
+                    "click",
+                    async function (event) {
+
+                        event.stopPropagation();
+
+
+                        notificationPanel.classList.toggle(
+                            "show"
+                        );
+
+
+                        if (
+                            notificationPanel.classList.contains(
+                                "show"
+                            )
+                        ) {
+
+                            await loadAdminNotifications();
+
+                        }
+
+                    }
+                );
+
+            }
+
+            //buttons for mark all read
+            if (
+                markAllNotificationsRead
+            ) {
+
+                markAllNotificationsRead.addEventListener(
+                    "click",
+                    async function (event) {
+
+                        event.preventDefault();
+
+                        event.stopPropagation();
+
+
+                        await markAllAdminNotificationsAsRead();
+
+                    }
+                );
+
+            }
+
+
+
+            // =================================================
+            // CLOSE WHEN CLICKING OUTSIDE
+            // =================================================
+
+            document.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        !notificationPanel ||
+                        !notificationBtn
+                    ) {
+                        return;
+                    }
+
+
+                    if (
+                        !notificationPanel.contains(
+                            event.target
+                        ) &&
+                        !notificationBtn.contains(
+                            event.target
+                        )
+                    ) {
+
+                        notificationPanel.classList.remove(
+                            "show"
+                        );
+
+                    }
+
+                }
+            );
+
+
+            function formatNotificationDate(
+                date
+            ) {
+
+                if (!date) {
+                    return "—";
+                }
+
+
+                const parsedDate =
+                    new Date(date);
+
+
+                if (
+                    isNaN(
+                        parsedDate.getTime()
+                    )
+                ) {
+
+                    return "—";
+
+                }
+
+
+                return parsedDate.toLocaleString(
+                    "en-PH",
+                    {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit"
+                    }
+                );
+
+            }
+
+
+            loadAdminNotifications();
+
+        });
+
+
+
         loadLoggedInUser();
+
+        loadPayments();
+
+        loadAdminNotifications();
+
     </script>
+
 </body>
 
 </html>

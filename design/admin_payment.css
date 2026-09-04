@@ -26,48 +26,313 @@
 }
 
 /* Clickable Notification Button Styling */
-div.notification-wrapper {
-    position: relative !important;
-    display: flex !important;
-    align-items: center !important;
-}
+/* =====================================================
+   NOTIFICATION
+   ===================================================== */
 
-button.notification-btn {
+.notification-wrapper {
     position: relative !important;
-    background: transparent !important;
-    border: none !important;
-    color: #353535 !important;
-    font-size: 18px !important;
-    cursor: pointer !important;
-    padding: 0 !important;
-    width: 40px !important;
-    height: 40px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border-radius: 50% !important; /* Circle Icon Frame */
-    transition: background-color 0.2s ease, color 0.2s ease !important;
+    flex-shrink: 0 !important;
 }
 
-button.notification-btn:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
+/* Bell button */
+.notification-btn {
+    position: relative !important;
+
+    width: 40px !important;
+    height: 40px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    border: none !important;
+    border-radius: 50% !important;
+
+    background: transparent !important;
+    color: #353535 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    cursor: pointer !important;
+
+    font-size: 18px !important;
+    line-height: 1 !important;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease !important;
+}
+
+.notification-btn:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
     color: #000000 !important;
 }
 
-span.notification-badge {
+
+/* Notification number */
+.notification-badge {
     position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
+
+    top: -2px !important;
+    right: -2px !important;
+
     min-width: 17px !important;
     height: 17px !important;
+
     padding: 0 4px !important;
+
     background: #dc2626 !important;
     color: #ffffff !important;
-    border-radius: 50% !important; /* Circle Badge */
+
+    border: 2px solid #ffffff !important;
+    border-radius: 50% !important;
+
     font-family: "DM Sans", sans-serif !important;
     font-size: 10px !important;
     font-weight: 700 !important;
+
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+}
+
+
+/* =====================================================
+   NOTIFICATION DROPDOWN
+   ===================================================== */
+
+.notification-panel {
+    position: absolute !important;
+
+    top: 50px !important;
+    right: 0 !important;
+
+    width: 420px !important;
+    max-width: calc(100vw - 30px) !important;
+
+    background: #ffffff !important;
+
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 12px !important;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+
+    z-index: 9999 !important;
+
+    display: none !important;
+
+    overflow: hidden !important;
+}
+
+.notification-panel.show {
+    display: block !important;
+}
+
+
+/* Notification header */
+.notification-header {
+    padding: 16px 18px !important;
+
+    border-bottom: 1px solid #eeeeee !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    gap: 15px !important;
+
+    background: #ffffff !important;
+}
+
+.notification-header h3 {
+    margin: 0 !important;
+
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+
+    color: #333333 !important;
+}
+
+.notification-header span {
+    display: block !important;
+
+    margin-top: 3px !important;
+
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 12px !important;
+
+    color: #777777 !important;
+}
+
+
+/* Mark all button */
+.mark-all-btn {
+    border: none !important;
+    background: transparent !important;
+
+    padding: 0 !important;
+
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+
+    color: #555555 !important;
+
+    cursor: pointer !important;
+}
+
+.mark-all-btn:hover {
+    color: #000000 !important;
+    text-decoration: underline !important;
+}
+
+
+/* Notification list */
+.notification-list {
+    max-height: 500px !important;
+
+    overflow-y: auto !important;
+
+    background: #ffffff !important;
+}
+
+
+/* Individual notification */
+.notification-item {
+    padding: 16px 18px !important;
+
+    border-bottom: 1px solid #eeeeee !important;
+
+    background: #ffffff !important;
+
+    cursor: pointer !important;
+
+    transition: background-color 0.2s ease !important;
+}
+
+.notification-item:hover {
+    background: #f8f8f8 !important;
+}
+
+.notification-item.unread {
+    background: #f5f7ff !important;
+}
+
+.notification-item:last-child {
+    border-bottom: none !important;
+}
+
+
+/* Notification title */
+.notification-item-title {
+    display: flex !important;
+
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+
+    gap: 10px !important;
+}
+
+.notification-item-title strong {
+    font-family: "DM Sans", sans-serif !important;
+
+    font-size: 14px !important;
+    font-weight: 700 !important;
+
+    color: #333333 !important;
+}
+
+
+/* Red unread dot */
+.notification-unread-dot {
+    width: 8px !important;
+    min-width: 8px !important;
+
+    height: 8px !important;
+
+    margin-top: 5px !important;
+
+    border-radius: 50% !important;
+
+    background: #dc2626 !important;
+}
+
+
+/* Notification message */
+.notification-message {
+    margin-top: 8px !important;
+
+    font-family: "DM Sans", sans-serif !important;
+
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+
+    color: #555555 !important;
+
+    white-space: pre-line !important;
+    word-break: break-word !important;
+}
+
+
+/* Notification date */
+.notification-date {
+    margin-top: 8px !important;
+
+    font-family: "DM Sans", sans-serif !important;
+
+    font-size: 11px !important;
+
+    color: #999999 !important;
+}
+
+
+/* Loading / empty */
+.notification-loading,
+.notification-empty {
+    padding: 30px 20px !important;
+
+    text-align: center !important;
+
+    font-family: "DM Sans", sans-serif !important;
+
+    font-size: 13px !important;
+
+    color: #888888 !important;
+}
+.header-right {
+    margin-left: auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+
+    gap: 22px !important;
+}
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+    .notification-panel {
+        position: fixed !important;
+
+        top: 70px !important;
+        left: 15px !important;
+        right: 15px !important;
+
+        width: auto !important;
+        max-width: none !important;
+    }
+
 }

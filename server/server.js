@@ -1725,98 +1725,153 @@ payment_status: "Pending Payment",
 });
 app.post("/api/paymongo/webhook", async (req, res) => {
 
-    try {const signatureHeader = req.headers["paymongo-signature"];
+    try {
 
-if (!signatureHeader) {
-    console.error("Missing PayMongo signature.");
-    return res.status(400).json({
-        success: false,
-        error: "Missing PayMongo signature."
-    });
-}
+        /* =====================================================
+           1. VERIFY PAYMONGO WEBHOOK SIGNATURE
+        ===================================================== */
 
-const parts = signatureHeader.split(",");
+        const signatureHeader =
+            req.headers["paymongo-signature"];
 
-const signatureData = {};
+        if (!signatureHeader) {
 
-for (const part of parts) {
-    const [key, value] = part.split("=");
+            console.error(
+                "Missing PayMongo webhook signature."
+            );
 
-    if (key && value) {
-        signatureData[key] = value;
-    }
-}
+            return res.status(400).json({
+                success: false,
+                error: "Missing webhook signature."
+            });
 
-const timestamp = signatureData.t;
-const testSignature = signatureData.te;
-const liveSignature = signatureData.li;
+        }
 
-const signature = liveSignature || testSignature;
+        const signatureParts =
+            signatureHeader
+                .split(",");
 
-if (!timestamp || !signature) {
-    console.error("Invalid PayMongo signature.");
-    return res.status(400).json({
-        success: false,
-        error: "Invalid PayMongo signature."
-    });
-}
+        const timestampPart =
+            signatureParts
+                .find(part => part.startsWith("t="));
 
-const payload = `${timestamp}.${req.rawBody.toString("utf8")}`;
+        const testSignaturePart =
+            signatureParts
+                .find(part => part.startsWith("te="));
 
-const expectedSignature = crypto
-    .createHmac(
-        "sha256",
-        PAYMONGO_WEBHOOK_SECRET
-    )
-    .update(payload)
-    .digest("hex");
+        const liveSignaturePart =
+            signatureParts
+                .find(part => part.startsWith("li="));
 
-if (
-    !crypto.timingSafeEqual(
-        Buffer.from(expectedSignature),
-        Buffer.from(signature)
-    )
-) {
-    console.error("Invalid PayMongo webhook signature.");
+        const timestamp =
+            timestampPart
+                ? timestampPart.replace("t=", "")
+                : null;
 
-    return res.status(400).json({
-        success: false,
-        error: "Invalid webhook signature."
-    });
-}
+        const receivedSignature =
+            liveSignaturePart
+                ? liveSignaturePart.replace("li=", "")
+                : testSignaturePart
+                    ? testSignaturePart.replace("te=", "")
+                    : null;
 
-console.log("PayMongo webhook signature verified.");
+        if (!timestamp || !receivedSignature) {
+
+            console.error(
+                "Invalid PayMongo signature format."
+            );
+
+            return res.status(400).json({
+                success: false,
+                error: "Invalid webhook signature."
+            });
+
+        }
+
+
+        const rawBody =
+            req.rawBody ||
+            JSON.stringify(req.body);
+
+
+        const signedPayload =
+            `${timestamp}.${rawBody}`;
+
+
+        const expectedSignature =
+            crypto
+                .createHmac(
+                    "sha256",
+                    process.env.PAYMONGO_WEBHOOK_SECRET
+                )
+                .update(signedPayload)
+                .digest("hex");
+
+
+        if (
+            !crypto.timingSafeEqual(
+                Buffer.from(receivedSignature),
+                Buffer.from(expectedSignature)
+            )
+        ) {
+
+            console.error(
+                "Invalid PayMongo webhook signature."
+            );
+
+            return res.status(400).json({
+                success: false,
+                error: "Invalid webhook signature."
+            });
+
+        }
+
+
+        console.log(
+            "PayMongo webhook signature verified."
+        );
+
 
         console.log("====================================");
         console.log("PAYMONGO WEBHOOK RECEIVED");
         console.log("====================================");
 
-        const event = req.body;
+
+        const event =
+            req.body;
+
 
         console.log(
             "PayMongo webhook:",
             JSON.stringify(event, null, 2)
         );
 
+
         /* =====================================================
-           1. GET EVENT INFORMATION
+           2. GET EVENT INFORMATION
         ===================================================== */
 
-        const eventType = event?.data?.attributes?.type;
+        const eventType =
+            event?.data?.attributes?.type;
+
 
         const resource =
             event?.data?.attributes?.data;
 
+
         const checkoutSessionId =
             resource?.id;
 
+
         const attributes =
             resource?.attributes || {};
+
 
         console.log(
             "Event type:",
             eventType
         );
+
 
         console.log(
             "Checkout session ID:",
@@ -1825,12 +1880,14 @@ console.log("PayMongo webhook signature verified.");
 
 
         /* =====================================================
-           2. ONLY PROCESS PAYMENT EVENTS
+           3. ONLY PROCESS PAYMENT EVENTS
         ===================================================== */
 
         if (
-            eventType !== "checkout_session.payment.paid" &&
-            eventType !== "checkout_session.payment.failed"
+            eventType !==
+                "checkout_session.payment.paid" &&
+            eventType !==
+                "checkout_session.payment.failed"
         ) {
 
             console.log(
@@ -1846,15 +1903,15 @@ console.log("PayMongo webhook signature verified.");
         }
 
 
-       const reference =
-    attributes?.reference_number ||
-    attributes?.metadata?.booking_reference ||
-    null;
+        /* =====================================================
+           4. GET BOOKING REFERENCE
+        ===================================================== */
 
-console.log(
-    "Detected booking reference:",
-    reference
-);
+        const reference =
+            attributes?.reference_number ||
+            attributes?.metadata?.booking_reference ||
+            null;
+
 
         console.log(
             "Detected booking reference:",
@@ -1863,7 +1920,7 @@ console.log(
 
 
         /* =====================================================
-           4. FIND BOOKING
+           5. FIND BOOKING BY REFERENCE
         ===================================================== */
 
         let booking = null;
@@ -1898,16 +1955,20 @@ console.log(
 
             }
 
+
             booking = data;
 
         }
 
 
         /* =====================================================
-           5. FALLBACK: FIND BY CHECKOUT SESSION ID
+           6. FALLBACK: FIND BY CHECKOUT SESSION ID
         ===================================================== */
 
-        if (!booking && checkoutSessionId) {
+        if (
+            !booking &&
+            checkoutSessionId
+        ) {
 
             const {
                 data,
@@ -1936,13 +1997,14 @@ console.log(
 
             }
 
+
             booking = data;
 
         }
 
 
         /* =====================================================
-           6. BOOKING NOT FOUND
+           7. BOOKING NOT FOUND
         ===================================================== */
 
         if (!booking) {
@@ -1966,7 +2028,7 @@ console.log(
 
 
         /* =====================================================
-           7. PAYMENT SUCCESS
+           8. PAYMENT SUCCESS
         ===================================================== */
 
         if (
@@ -1979,51 +2041,97 @@ console.log(
             );
 
 
+            /* =================================================
+               PAYMENT INFORMATION
+            ================================================= */
+
             const payment =
-    attributes?.payments?.[0];
-
-const paymentId =
-    payment?.id || null;
-
-const referenceNumber =
-    attributes?.reference_number ||
-    reference ||
-    null;
-
-const paidAt =
-    payment?.attributes?.paid_at
-        ? new Date(
-            payment.attributes.paid_at * 1000
-          ).toISOString()
-        : new Date().toISOString();
+                attributes?.payments?.[0];
 
 
-const {
-    error: updateError
-} = await supabase
-    .from("bookings")
-    .update({
+            const paymentId =
+                payment?.id || null;
 
-        payment_status:
-            "Paid",
 
-        status:
-            "Pending",
+            const referenceNumber =
+                attributes?.reference_number ||
+                reference ||
+                null;
 
-        paymongo_payment_id:
-            paymentId,
 
-        paymongo_reference_number:
-            referenceNumber,
+            const paidAt =
+                payment?.attributes?.paid_at
+                    ? new Date(
+                        payment.attributes.paid_at * 1000
+                    ).toISOString()
+                    : new Date().toISOString();
 
-        paymongo_paid_at:
-            paidAt
 
-    })
-    .eq(
-        "id",
-        booking.id
-    );
+            /* =================================================
+               CALCULATE PAYMENT AMOUNTS
+            ================================================= */
+
+            const totalBookingAmount =
+                Number(
+                    booking.total_price
+                ) || 0;
+
+
+            const downPaymentAmount =
+                Number(
+                    booking.downpayment_amount
+                ) || 0;
+
+
+            const remainingBalance =
+                booking.remaining_balance !== null &&
+                booking.remaining_balance !== undefined
+                    ? Number(
+                        booking.remaining_balance
+                    ) || 0
+                    : Math.max(
+                        0,
+                        totalBookingAmount -
+                        downPaymentAmount
+                    );
+
+
+            /* =================================================
+               UPDATE BOOKING
+            ================================================= */
+
+            const {
+                error: updateError
+            } = await supabase
+                .from("bookings")
+                .update({
+
+                    payment_status:
+                        "Paid",
+
+                    status:
+                        "Pending",
+
+                    paymongo_payment_id:
+                        paymentId,
+
+                    paymongo_reference_number:
+                        referenceNumber,
+
+                    paymongo_paid_at:
+                        paidAt,
+
+                    remaining_balance:
+                        Number(
+                            remainingBalance.toFixed(2)
+                        )
+
+                })
+                .eq(
+                    "id",
+                    booking.id
+                );
+
 
             if (updateError) {
 
@@ -2040,57 +2148,245 @@ const {
             }
 
 
-if (booking.customer_id) {
-
-    const {
-        error: customerNotificationError
-    } = await supabase
-        .from("notifications")
-        .insert({
-
-            customer_id:
-                booking.customer_id,
-
-            recipient:
-                "customer",
-
-            title:
-                "Payment Successful",
-
-            message:
-                `Your ₱${Number(
-                    booking.downpayment_amount
-                ).toFixed(2)} reservation payment was successful. Your booking is now awaiting admin confirmation.`,
-
-            is_read:
-                false
-
-        });
+            console.log(
+                "Booking payment status updated to Paid."
+            );
 
 
-    if (customerNotificationError) {
+            /* =================================================
+               CUSTOMER NOTIFICATION
+            ================================================= */
 
-        console.error(
-            "Customer notification error:",
-            customerNotificationError
-        );
+            if (booking.customer_id) {
 
-    }
+                const {
+                    error:
+                        customerNotificationError
+                } = await supabase
+                    .from("notifications")
+                    .insert({
 
-} else {
+                        customer_id:
+                            booking.customer_id,
 
-    console.log(
-        "Guest booking detected. Customer notification skipped."
-    );
+                        recipient:
+                            "customer",
 
-}
+                        title:
+                            "Payment Successful",
+
+                        message:
+                            `Your payment was successful.
+
+Booking Date: ${booking.booking_date || "N/A"}
+Booking Time: ${booking.booking_time || "N/A"}
+
+Total Booking Amount: ₱${totalBookingAmount.toLocaleString(
+                                "en-PH",
+                                {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }
+                            )}
+
+Down Payment Paid: ₱${downPaymentAmount.toLocaleString(
+                                "en-PH",
+                                {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }
+                            )}
+
+Remaining Balance: ₱${remainingBalance.toLocaleString(
+                                "en-PH",
+                                {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }
+                            )}
+
+Your booking is now awaiting admin confirmation.`,
+
+                        is_read:
+                            false
+
+                    });
+
+
+                if (
+                    customerNotificationError
+                ) {
+
+                    console.error(
+                        "Customer notification error:",
+                        customerNotificationError
+                    );
+
+                } else {
+
+                    console.log(
+                        "Customer notification created successfully."
+                    );
+
+                }
+
+            } else {
+
+                console.log(
+                    "Guest booking detected. Customer notification skipped."
+                );
+
+            }
+
+
+            /* =================================================
+               RECORD PAYMENT IN PAYMENTS TABLE
+            ================================================= */
+
+            const paymentAmount =
+                downPaymentAmount;
+
+
+            const paymentMethod =
+                booking.payment_method ||
+                "PayMongo";
+
+
+            let existingPayment = null;
+
+
+            if (paymentId) {
+
+                const {
+                    data,
+                    error:
+                        existingPaymentError
+                } = await supabase
+                    .from("payments")
+                    .select("id")
+                    .eq(
+                        "paymongo_payment_id",
+                        paymentId
+                    )
+                    .maybeSingle();
+
+
+                if (existingPaymentError) {
+
+                    console.error(
+                        "Payment duplicate check error:",
+                        existingPaymentError
+                    );
+
+                } else {
+
+                    existingPayment =
+                        data;
+
+                }
+
+            }
+
+
+            if (!existingPayment) {
+
+                const {
+                    error:
+                        paymentInsertError
+                } = await supabase
+                    .from("payments")
+                    .insert({
+
+                        customer_id:
+                            booking.customer_id ||
+                            null,
+
+                        booking_id:
+                            booking.id,
+
+                        gallery_access_request_id:
+                            null,
+
+                        client_name:
+                            booking.full_name,
+
+                        email:
+                            booking.email ||
+                            null,
+
+                        amount:
+                            paymentAmount,
+
+                        payment_method:
+                            paymentMethod,
+
+                        status:
+                            "Paid",
+
+                        payment_type:
+                            "Booking",
+
+                        payment_date:
+                            paidAt,
+
+                        paymongo_payment_id:
+                            paymentId,
+
+                        paymongo_checkout_id:
+                            checkoutSessionId,
+
+                        payment_reference:
+                            referenceNumber
+
+                    });
+
+
+                if (paymentInsertError) {
+
+                    console.error(
+                        "Failed to create payment record:",
+                        paymentInsertError
+                    );
+
+                } else {
+
+                    console.log(
+                        "Payment successfully recorded in payments table."
+                    );
+
+                }
+
+            } else {
+
+                console.log(
+                    "Payment already exists. Duplicate record skipped:",
+                    paymentId
+                );
+
+            }
+
 
             /* =================================================
                ADMIN NOTIFICATION
+               DETAILED BOOKING INFORMATION
             ================================================= */
 
+            const adminPaymentMethod =
+                String(
+                    booking.payment_method ||
+                    "PayMongo"
+                )
+                    .trim()
+                    .toLowerCase() ===
+                    "paymongo"
+                    ? "QR Ph"
+                    : booking.payment_method ||
+                      "N/A";
+
+
             const {
-                error: adminNotificationError
+                error:
+                    adminNotificationError
             } = await supabase
                 .from("notifications")
                 .insert({
@@ -2102,9 +2398,37 @@ if (booking.customer_id) {
                         "New Paid Booking Reservation",
 
                     message:
-                        `${booking.full_name} has successfully paid the ₱${Number(
-                            booking.downpayment_amount
-                        ).toFixed(2)} reservation fee for ${booking.booking_date} at ${booking.booking_time}.`,
+                        `${booking.full_name || "A customer"} booked a ${booking.session_type || "Photography Session"}.
+
+Booking Date: ${booking.booking_date || "N/A"}
+Booking Time: ${booking.booking_time || "N/A"}
+
+Total Booking Amount: ₱${totalBookingAmount.toLocaleString(
+                            "en-PH",
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }
+                        )}
+
+Down Payment Paid: ₱${downPaymentAmount.toLocaleString(
+                            "en-PH",
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }
+                        )}
+
+Remaining Balance: ₱${remainingBalance.toLocaleString(
+                            "en-PH",
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }
+                        )}
+
+Payment Method: ${adminPaymentMethod}
+Payment Status: Paid`,
 
                     is_read:
                         false
@@ -2119,6 +2443,12 @@ if (booking.customer_id) {
                     adminNotificationError
                 );
 
+            } else {
+
+                console.log(
+                    "Detailed admin booking notification created successfully."
+                );
+
             }
 
 
@@ -2130,7 +2460,7 @@ if (booking.customer_id) {
 
 
         /* =====================================================
-           8. PAYMENT FAILED
+           9. PAYMENT FAILED
         ===================================================== */
 
         if (
@@ -2178,54 +2508,81 @@ if (booking.customer_id) {
 
 
             /* =================================================
-               CUSTOMER NOTIFICATION
+               CUSTOMER PAYMENT FAILED NOTIFICATION
             ================================================= */
 
             if (booking.customer_id) {
 
-    const {
-        error: notificationError
-    } = await supabase
-        .from("notifications")
-        .insert({
+                const {
+                    error:
+                        notificationError
+                } = await supabase
+                    .from("notifications")
+                    .insert({
 
-            customer_id:
-                booking.customer_id,
+                        customer_id:
+                            booking.customer_id,
 
-            recipient:
-                "customer",
+                        recipient:
+                            "customer",
 
-            title:
-                "Payment Failed",
+                        title:
+                            "Payment Failed",
 
-            message:
-                "Your reservation payment was not completed. Please create a new booking if you would like to reserve another schedule.",
+                        message:
+                            `Your reservation payment was not completed.
 
-            is_read:
-                false
+Booking Date: ${booking.booking_date || "N/A"}
+Booking Time: ${booking.booking_time || "N/A"}
 
-        });
+Total Booking Amount: ₱${(
+                                Number(
+                                    booking.total_price
+                                ) || 0
+                            ).toLocaleString(
+                                "en-PH",
+                                {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }
+                            )}
+
+The booking has been cancelled. Please create a new booking if you would like to reserve another schedule.`,
+
+                        is_read:
+                            false
+
+                    });
 
 
-    if (notificationError) {
+                if (notificationError) {
 
-        console.error(
-            "Payment failed notification error:",
-            notificationError
-        );
+                    console.error(
+                        "Payment failed notification error:",
+                        notificationError
+                    );
 
-    }
+                } else {
 
-} else {
+                    console.log(
+                        "Payment failed notification created successfully."
+                    );
 
-    console.log(
-        "Guest booking detected. Payment-failed customer notification skipped."
-    );
+                }
 
-}
+            } else {
+
+                console.log(
+                    "Guest booking detected. Payment-failed customer notification skipped."
+                );
+
+            }
+
         }
+
+
         /* =====================================================
-           9. TELL PAYMONGO WEBHOOK WAS RECEIVED
+           10. TELL PAYMONGO WEBHOOK WAS RECEIVED
         ===================================================== */
 
         return res.json({
@@ -2259,10 +2616,6 @@ if (booking.customer_id) {
     }
 
 });
-/* =========================================================
-   BOOKING AVAILABILITY
-   CUSTOMER-SAFE AVAILABILITY CHECK
-========================================================= */
 
 app.get("/api/bookings/availability", async (req, res) => {
 
@@ -2629,26 +2982,14 @@ app.get("/api/bookings/availability", async (req, res) => {
 });
 app.listen(
     PORT,
+    "0.0.0.0",
     () => {
-
-        console.log(
-            "===================================="
-        );
-
-        console.log(
-            "CAPTURED SERVER RUNNING"
-        );
-
-       
-        console.log(
-            `Resend API Key: ${
-                RESEND_API_KEY
-                    ? "CONFIGURED"
-                    : "NOT CONFIGURED"
-            }`
-        );
-        console.log(
-            "===================================="
-        );
+        console.log("====================================");
+        console.log("CAPTURED SERVER RUNNING");
+        console.log(`Port: ${PORT}`);
+        console.log(`Resend API Key: ${RESEND_API_KEY ? "CONFIGURED" : "NOT CONFIGURED"}`);
+        console.log(`PayMongo Secret Key: ${PAYMONGO_SECRET_KEY ? "CONFIGURED" : "NOT CONFIGURED"}`);
+        console.log(`PayMongo Webhook Secret: ${PAYMONGO_WEBHOOK_SECRET ? "CONFIGURED" : "NOT CONFIGURED"}`);
+        console.log("====================================");
     }
 );

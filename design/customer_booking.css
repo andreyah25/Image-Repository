@@ -1,3 +1,6 @@
+/* --- Icon Library Import --- */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
 /* --- Direct Google Font Import --- */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
@@ -15,6 +18,20 @@ body {
     display: flex;
     flex-direction: column;
     color: #353535;
+    overflow-x: hidden;
+}
+
+/* Base Form Control Font Inheritance */
+input,
+select,
+textarea,
+button {
+    font-family: "DM Sans", sans-serif !important;
+}
+
+/* Ensure FontAwesome icons inherit FontAwesome font family specifically */
+i.fa, i.fas, i.far, i.fal, i.fab, i.fa-solid, i.fa-regular, i.fa-brands {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
 }
 
 /* =========================================================
@@ -81,6 +98,7 @@ body {
     overflow-y: auto;
     z-index: 1000;
 }
+
 .notification-dropdown h4 {
     padding: 13px 15px;
     margin: 0;
@@ -169,6 +187,7 @@ body {
 .notification-booking-btn i {
     font-size: 0.78rem;
 }
+
 /* --- Header Gradient Bar --- */
 .top-navbar {
     height: 70px;
@@ -272,7 +291,7 @@ body {
     color: #353535;
     font-size: 14px;
     padding: 12px 16px;
-    border-radius: 6px;
+    border-radius: 5px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -300,7 +319,7 @@ body {
     padding: 10px;
     background-color: #ffffff;
     border: 1.5px solid #dc2626 !important;
-    border-radius: 6px;
+    border-radius: 5px;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
@@ -329,6 +348,7 @@ body {
     padding: 40px;
     margin-left: 230px;
     min-height: 100%;
+    width: calc(100% - 230px);
 }
 
 .page-header h1 {
@@ -357,11 +377,12 @@ body {
 .sessions-panel {
     background: #ffffff;
     border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 5px;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
     padding: 40px;
     flex: 1;
     max-width: 1000px;
+    width: 100%;
 }
 
 /* --- Studio Services Panel --- */
@@ -377,6 +398,7 @@ body {
     font-weight: 400;
     color: #353535;
     margin-bottom: 12px;
+    margin-top: -20px;
     letter-spacing: -0.3px;
 }
 
@@ -421,11 +443,12 @@ body {
     margin-bottom: 35px;
 }
 
-.section-title-form {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #353535;
-    margin-bottom: 16px;
+.section-title-form,
+h3.section-title-form {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #353535 !important;
+    margin-bottom: 10px !important;
 }
 
 /* Flex header for policy notes */
@@ -434,7 +457,7 @@ body {
     justify-content: space-between;
     align-items: baseline;
     gap: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 4px;
 }
 
 .section-header-flex .section-title-form {
@@ -445,6 +468,7 @@ body {
     font-size: 0.75rem;
     color: #888888;
     text-align: right;
+    margin-bottom: 12px;
 }
 
 /* Form Grids */
@@ -474,6 +498,40 @@ body {
     margin-top: 10px;
 }
 
+/* Label styling specifically for payment method label */
+.form-group label[for="paymentMethod"],
+.form-group label[for="payment_method"] {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #353535;
+    margin-top: -6px;
+    margin-bottom: 2px;
+}
+
+/* --- OVERRIDE specific fields to break out of grid and span 100% full width --- */
+#packageSelect,
+select[name="package_id"],
+#paymentMethod,
+#payment_method {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+}
+
+.form-group:has(#packageSelect),
+.form-group:has(select[name="package_id"]),
+.form-group:has(#paymentMethod),
+.form-group:has(#payment_method),
+.form-grid-two > div:has(#packageSelect),
+.form-grid-two > div:has(select[name="package_id"]),
+.form-grid-two > div:has(#paymentMethod),
+.form-grid-two > div:has(#payment_method) {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
 /* --- Form Fields Base Rules --- */
 .form-group input,
 .form-group select,
@@ -483,7 +541,7 @@ body {
     height: 42px;
     padding: 10px 14px;
     border: 1px solid #cccccc !important;
-    border-radius: 6px;
+    border-radius: 5px;
     font-family: inherit;
     font-size: 0.9rem;
     color: #353535 !important;
@@ -504,7 +562,11 @@ body {
 
 /* Placeholder Styling for Input Fields */
 .form-group input::placeholder,
-.form-group textarea::placeholder {
+.form-group textarea::placeholder,
+#paymentMethod:invalid,
+#paymentMethod option[value=""]:checked,
+#payment_method:invalid,
+#payment_method option[value=""]:checked {
     color: #888888 !important;
     opacity: 0.6 !important;
 }
@@ -542,6 +604,7 @@ body {
     color: #353535;
     font-size: 0.9rem;
 }
+
 /* =========================================================
    BACKDROP SELECTION
    ========================================================= */
@@ -564,7 +627,7 @@ body {
 
 .backdrop-card {
     border: 2px solid #e5e5e5;
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 10px;
     background: #fff;
     transition: all 0.2s ease;
@@ -598,41 +661,16 @@ body {
 }
 
 /* Backdrop colors */
-
-.backdrop-white {
-    background: #ffffff;
-}
-
-.backdrop-lavender {
-    background: #9b79b7;
-}
-
-.backdrop-sky {
-    background: #82b6c9;
-}
-
-.backdrop-sage {
-    background: #a8b783;
-}
-
-.backdrop-red {
-    background: #c81720;
-}
-
-.backdrop-camel {
-    background: #a87543;
-}
-
-.backdrop-beige {
-    background: #d9bd98;
-}
-
-.backdrop-gray {
-    background: #777b80;
-}
+.backdrop-white { background: #ffffff; }
+.backdrop-lavender { background: #9b79b7; }
+.backdrop-sky { background: #82b6c9; }
+.backdrop-sage { background: #a8b783; }
+.backdrop-red { background: #c81720; }
+.backdrop-camel { background: #a87543; }
+.backdrop-beige { background: #d9bd98; }
+.backdrop-gray { background: #777b80; }
 
 /* Disabled backdrop card */
-
 .backdrop-option.disabled {
     cursor: not-allowed;
     opacity: 0.45;
@@ -642,63 +680,130 @@ body {
     pointer-events: none;
 }
 
+/* =========================================================
+   ADD-ON SECTION STYLING (UPDATED)
+   ========================================================= */
+
 .addon-row {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
-    margin-bottom: 10px;
+    margin-top: 10px;
+    margin-bottom: 12px;
+    width: 100%;
 }
 
+/* Match select and quantity inputs with form-group fields */
+.addon-row select,
+.addon-row .addon-quantity {
+    height: 42px;
+    padding: 10px 14px;
+    border: 1px solid #cccccc !important;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #353535 !important;
+    background-color: #ffffff !important;
+    outline: none;
+    box-shadow: none !important;
+    transition: border-color 0.2s ease;
+}
+
+/* Styled custom dropdown arrow for select elements in add-on row */
 .addon-row select {
     flex: 1;
+    min-width: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%23353535' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") !important;
+    background-repeat: no-repeat !important;
+    background-position: calc(100% - 14px) center !important;
+    background-size: 18px !important;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.addon-row select:focus,
+.addon-row .addon-quantity:focus {
+    border-color: #242f35 !important;
+}
+
+.addon-row select:has(option[value=""]:checked),
+.addon-row select:invalid {
+    color: #888888 !important;
+    opacity: 0.6 !important;
+}
+
+/* Ensure selected options inside the dropdown list remain full opacity */
+.addon-row select option {
+    color: #353535 !important;
+    opacity: 1 !important;
 }
 
 .addon-quantity {
-    width: 100px;
+    width: 90px;
+    flex-shrink: 0;
 }
 
+/* Remove button styling */
 .remove-addon {
-    width: 35px;
-    height: 35px;
+    width: 38px;
+    height: 38px;
     border: none;
     background: #dc3545;
     color: white;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
 }
 
 .remove-addon:hover {
-    opacity: 0.85;
+    background: #c82333;
 }
 
+/* "+ Add Another Add-On" Button */
 #addAddonBtn {
-    padding: 8px 14px;
+    width: 100%;
+    height: 42px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #639A88;
     border: none;
     border-radius: 5px;
+    padding: 0 14px;
     cursor: pointer;
-}
-@media (max-width: 900px) {
-    .backdrop-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 0;
 }
 
-@media (max-width: 600px) {
-    .backdrop-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+#addAddonBtn:hover {
+    background-color: #528373;
+    color: #ffffff;
+}
 
-    .backdrop-color {
-        height: 70px;
-    }
+.addon-btn-spacer {
+    width: 152px;
+    flex-shrink: 0;
 }
 
 /* Field Wrappers */
 .field-wrapper {
     position: relative;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
 }
 
@@ -709,6 +814,8 @@ body {
 .field-wrapper i {
     position: absolute;
     right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #353535;
     pointer-events: none;
     font-size: 0.9rem;
@@ -726,16 +833,93 @@ body {
     background-color: #639A88;
     color: #ffffff;
     border: none;
-    border-radius: 6px;
+    border-radius: 5px;
     font-family: inherit;
     font-size: 0.92rem;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    margin-top: -23px;
 }
 
 .btn-confirm:hover {
     background-color: #528373;
+}
+
+/* =========================================================
+   PAYMENT SUMMARY SECTION
+   ========================================================= */
+
+.payment-summary-section {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    position: relative;
+    margin-top: 60px; 
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+/* Places the title completely outside the top-left boundary of the box */
+.payment-summary-section .section-title-form {
+    position: absolute;
+    top: -28px; /* Pulls text above the border */
+    left: 0;   /* Aligns with the left edge of the box */
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #353535 !important;
+    white-space: nowrap;
+}
+
+.summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+    color: #353535;
+}
+
+.summary-row span {
+    color: #555555;
+}
+
+.summary-row strong {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #353535;
+}
+
+/* Highlighted Down Payment Row */
+.summary-row.highlight-row {
+    padding: 10px 12px;
+    background-color: #eef6f3;
+    border: 1px solid rgba(99, 154, 136, 0.3);
+    border-radius: 5px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.summary-row.highlight-row span {
+    color: #353535;
+    font-weight: 600;
+}
+
+.summary-row.highlight-row strong {
+    color: #639A88;
+    font-weight: 700;
+    font-size: 1rem;
 }
 
 /* ==========================================================================
@@ -884,6 +1068,40 @@ body {
     white-space: nowrap;
 }
 
+/* Pricing Summary Breakdown Box */
+.pricing-summary-box {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 14px 16px;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: #353535;
+}
+
+.pricing-summary-box .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.pricing-summary-box .summary-row:last-child {
+    margin-bottom: 0;
+}
+
+.pricing-summary-box .summary-divider {
+    border: 0;
+    border-top: 1px dashed #cccccc;
+    margin: 8px 0;
+}
+
+.pricing-summary-box .total-row {
+    font-size: 0.95rem;
+    color: #111111;
+}
+
 /* --- ADD-ONS SPECIFIC STYLES --- */
 .text-red {
     color: #353535;
@@ -918,7 +1136,7 @@ body {
     margin-top: 12px;
     padding: 8px 10px;
     background-color: #528373;
-    border-radius: 6px;
+    border-radius: 5px;
     font-size: 0.75rem;
     color: #ffffff;
 }
@@ -995,7 +1213,8 @@ body {
 
     .studio-services-panel {
         width: 100%;
-        margin-top: -20px;
+        margin-top: 0;
+        padding: 20px 0;
     }
 }
 
@@ -1008,6 +1227,12 @@ body {
 
     .reservation-policy-text {
         text-align: left;
+    }
+}
+
+@media (max-width: 900px) {
+    .backdrop-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -1048,7 +1273,12 @@ body {
 
     .content {
         margin-left: 0;
-        padding: 30px 20px;
+        padding: 20px;
+        width: 100%;
+    }
+
+    .sessions-panel {
+        padding: 24px;
     }
 
     .form-grid-three,
@@ -1059,11 +1289,46 @@ body {
 }
 
 @media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 38px;
+    }
+
+    #bookingAvailabilityMessage {
+        margin-bottom: -5px !important;
+    }
+
+    .form-grid-two > div:nth-child(2) {
+        margin-top: 25px !important;
+    }
+
     .form-group input,
     .form-group select,
     .form-group textarea,
     .form-group input[readonly] {
         font-size: 16px !important;
+    }
+
+    .addon-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .addon-row select {
+        width: 100%;
+        flex: 1 1 100%;
+        font-size: 0.9rem !important;
+    }
+
+    .addon-quantity {
+        flex: 1;
+    }
+
+    .addon-btn-spacer {
+        display: none;
+    }
+
+    #addAddonBtn {
+        width: 100%;
     }
 
     .notification-dropdown {
@@ -1084,18 +1349,21 @@ body {
         line-height: 1.2;
     }
 
+    .modal-overlay {
+        padding: 10px;
+    }
+
     .modal-close-btn {
-        top: 5px;   
+        top: 8px;   
         right: 12px; 
         font-size: 24px; 
     }
 
     .modal-table-container {
-        padding: 25px 8px 15px 8px;
+        padding: 30px 12px 15px 12px;
         overflow-x: hidden;
     }
 
-    /* Strict Mobile Table Rules (Prevents Horizontal Overflow) */
     .packages-table {
         table-layout: fixed !important;
         width: 100% !important;
@@ -1126,7 +1394,6 @@ body {
         font-size: 0.75rem;
     }
 
-    /* Add-Ons Discount Box Mobile Fixes */
     .rate-discounted {
         padding: 6px 4px !important;
         font-size: 0.7rem;
@@ -1149,9 +1416,21 @@ body {
     .pet-reminders-list li {
         font-size: 0.85rem;
     }
+
+    .btn-confirm {
+        width: 100%;
+    }
 }
 
 @media (max-width: 600px) {
+    .top-navbar {
+        padding: 0 15px;
+    }
+
+    #customer-name {
+        display: none;
+    }
+
     .sidebar {
         flex-direction: column;
         padding: 15px;
@@ -1160,6 +1439,7 @@ body {
     .sidebar nav {
         width: 100%;
         gap: 4px;
+        flex-wrap: wrap;
     }
 
     .sidebar a {
@@ -1170,6 +1450,41 @@ body {
 
     .sidebar .logout-btn {
         width: 100%;
-        margin-top: 10px;
+        margin-top: 2px;
+    }
+
+    .backdrop-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .backdrop-color {
+        height: 65px;
+    }
+
+    .sessions-panel {
+        padding: 16px;
+    }
+
+    .payment-summary-section {
+        padding: 12px 8px;
+    }
+
+    .summary-details {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .summary-row {
+        font-size: 0.85rem;
+        gap: 8px;   
+    }
+
+    .summary-row.highlight-row {
+        padding: 8px 10px; 
+    }
+
+    .summary-row.highlight-row strong {
+        font-size: 0.95rem; 
     }
 }
