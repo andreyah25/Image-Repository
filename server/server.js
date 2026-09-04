@@ -1511,8 +1511,27 @@ payment_status: "Pending Payment",
     }
 );
 
-        const paymongoData =
-            await paymongoResponse.json();
+      const paymongoData =
+    await paymongoResponse.json();
+
+console.log(
+    "PAYMONGO HTTP STATUS:",
+    paymongoResponse.status
+);
+
+console.log(
+    "PAYMONGO HTTP OK:",
+    paymongoResponse.ok
+);
+
+console.log(
+    "PAYMONGO RESPONSE:",
+    JSON.stringify(
+        paymongoData,
+        null,
+        2
+    )
+);
 
 
         console.log(
@@ -2950,6 +2969,7 @@ app.get("/api/bookings/availability", async (req, res) => {
     }
 
 });
+
 app.listen(
     PORT,
     "0.0.0.0",
