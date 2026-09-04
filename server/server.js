@@ -1393,7 +1393,7 @@ remaining_balance:
 payment_status: "Pending Payment",
 
                 status:
-                    "Pending",
+                    "Payment Pending",
 
                 paymongo_reference:
                     bookingReference,
@@ -1439,8 +1439,8 @@ payment_status: "Pending Payment",
 
   
 
-    const paymongoResponse = await fetch(
-    "https://api.paymongo.com/v2/checkout_sessions",
+   const paymongoResponse = await fetch(
+    "https://api.paymongo.com/v1/checkout_sessions",
     {
         method: "POST",
 
@@ -1458,12 +1458,8 @@ payment_status: "Pending Payment",
                     line_items: [
                         {
                             currency: "PHP",
-
                             amount: amountInCentavos,
-
-                            name:
-                                `Reservation Down Payment - ${session_type}`,
-
+                            name: `Reservation Down Payment - ${session_type}`,
                             quantity: 1
                         }
                     ],
@@ -1481,15 +1477,11 @@ payment_status: "Pending Payment",
                     description:
                         `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
 
-                    reference_number:
-                        bookingReference,
+                    reference_number: bookingReference,
 
                     metadata: {
-                        booking_id:
-                            String(bookingData.id),
-
-                        booking_reference:
-                            bookingReference
+                        booking_id: String(bookingData.id),
+                        booking_reference: bookingReference
                     },
 
                     send_email_receipt: true,
@@ -2040,7 +2032,56 @@ app.post("/api/paymongo/webhook", async (req, res) => {
 
             const paymentId =
                 payment?.id || null;
+/* =================================================
+   VERIFY PAYMONGO PAYMENT AMOUNT
+================================================= */
 
+const paymongoPaidAmountCentavos =
+    Number(
+        payment?.attributes?.amount
+    );
+
+const requiredDownpaymentCentavos =
+    Math.round(
+        Number(booking.downpayment_amount) * 100
+    );
+
+console.log("====================================");
+console.log("PAYMENT AMOUNT VERIFICATION");
+console.log("====================================");
+console.log(
+    "Required downpayment:",
+    requiredDownpaymentCentavos,
+    "centavos"
+);
+console.log(
+    "PayMongo paid amount:",
+    paymongoPaidAmountCentavos,
+    "centavos"
+);
+console.log("====================================");
+
+
+if (
+    !Number.isFinite(paymongoPaidAmountCentavos) ||
+    paymongoPaidAmountCentavos < requiredDownpaymentCentavos
+) {
+
+    console.error(
+        "❌ PAYMENT AMOUNT DOES NOT MATCH REQUIRED DOWNPAYMENT."
+    );
+
+    console.error({
+        bookingId: booking.id,
+        requiredDownpaymentCentavos,
+        paymongoPaidAmountCentavos
+    });
+
+    return res.status(400).json({
+        success: false,
+        error: "Payment amount does not match the required downpayment."
+    });
+}
 
             const referenceNumber =
                 attributes?.reference_number ||
