@@ -3341,6 +3341,149 @@ app.get(
         }
     }
 );
+/* =========================================================
+   GET CUSTOMER BOOKINGS
+========================================================= */
+
+app.get("/api/customer/bookings", async (req, res) => {
+
+    try {
+
+        const customerId = String(
+            req.query.customer_id || ""
+        ).trim();
+
+        const email = String(
+            req.query.email || ""
+        ).trim().toLowerCase();
+
+        if (!customerId && !email) {
+
+            return res.status(400).json({
+                success: false,
+                error: "Customer ID or email is required."
+            });
+
+        }
+
+        let query = supabase
+            .from("bookings")
+            .select(`
+                id,
+                customer_id,
+                full_name,
+                contact_number,
+                email,
+                booking_date,
+                booking_time,
+                session_type,
+                notes,
+                status,
+                created_at,
+                payment_method,
+                downpayment_amount,
+                payment_status,
+                payment_reference,
+                total_price,
+                remaining_balance,
+                full_payment_amount,
+                final_payment_amount,
+                confirmed_at,
+                rejection_reason,
+                paymongo_checkout_id,
+                paymongo_payment_id,
+                paymongo_reference_number,
+                paymongo_paid_at,
+                paymongo_reference,
+                backdrops,
+                addons,
+                booking_duration,
+                is_archived
+            `)
+            .eq("is_archived", false);
+
+        if (customerId) {
+
+            query = query.eq(
+                "customer_id",
+                customerId
+            );
+
+        } else {
+
+            query = query.ilike(
+                "email",
+                email
+            );
+
+        }
+
+        const {
+            data: bookings,
+            error
+        } = await query
+            .order("booking_date", {
+                ascending: true
+            })
+            .order("booking_time", {
+                ascending: true
+            });
+
+        if (error) {
+
+            console.error(
+                "Customer bookings query error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to load customer bookings.",
+                message: error.message
+            });
+
+        }
+
+        console.log(
+            "Customer bookings loaded:",
+            bookings?.length || 0
+        );
+
+        return res.json({
+
+            success: true,
+
+            count:
+                bookings?.length || 0,
+
+            bookings:
+                bookings || []
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Customer bookings API error:",
+            error
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            error:
+                "Internal server error.",
+
+            message:
+                error.message
+
+        });
+
+    }
+
+});
+
 app.listen(
     PORT,
     "0.0.0.0",
