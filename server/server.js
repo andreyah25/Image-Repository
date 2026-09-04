@@ -251,36 +251,42 @@ app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
             profileError = error;
 
         } else {
-           
-            console.log(
-                "No automatic profile found. Creating staff profile manually..."
-            );
 
-         const { error: profileError } = await supabase
-    .from("staff_profiles")
-    .update({
-        full_name: fullName,
-        email: email,
-        role: "staff",
-        status: "Active",
-        updated_at: new Date().toISOString()
-    })
-    .eq("id", staffUser.id);
+    console.log(
+        "No automatic profile found. Creating staff profile manually..."
+    );
 
-if (profileError) {
-    console.error("Staff profile update error:", profileError);
+    const {
+        error: manualProfileError
+    } = await supabase
+        .from("staff_profiles")
+        .insert({
+            id: staffUser.id,
+            full_name: fullName,
+            email: email,
+            role: "staff",
+            verified: true,
+            status: "Active",
+            updated_at: new Date().toISOString()
+        });
 
-    await supabase.auth.admin.deleteUser(staffUser.id);
+    if (manualProfileError) {
 
-    return res.status(500).json({
-        success: false,
-        error: profileError.message
-    });
-}   
+        console.error(
+            "Staff profile creation error:",
+            manualProfileError
+        );
 
-            profileError = error;
-        }
+        await supabase.auth.admin.deleteUser(
+            staffUser.id
+        );
 
+        return res.status(500).json({
+            success: false,
+            error: manualProfileError.message
+        });
+    }
+}
     
         if (profileError) {
             console.error("Staff profile error:", profileError);
@@ -1389,9 +1395,10 @@ if (!Number.isFinite(existingDuration) || existingDuration <= 0) {
         payment_status:
             "Pending Payment",
 
-        // Booking is NOT visible to Admin yet
-        status:
-            "Pending Payment",
+       // Booking is immediately recorded and visible
+// in the Admin Booked Sessions table.
+status:
+    "Pending Payment",
 
         paymongo_reference:
             bookingReference,
@@ -2988,13 +2995,6 @@ app.get("/api/bookings/availability", async (req, res) => {
             );
 
 
-        /* =====================================================
-           PACKAGE DURATIONS
-           
-           Used only for older bookings where
-           booking_duration is NULL.
-        ===================================================== */
-
         const PACKAGE_DURATIONS = {
 
             basic_1: 15,
@@ -3233,7 +3233,114 @@ app.get("/api/bookings/availability", async (req, res) => {
     }
 
 });
+/* =========================================================
+   GET ALL BOOKINGS FOR ADMIN
+========================================================= */
 
+/* =========================================================
+   GET ALL BOOKINGS FOR ADMIN
+   BOOKED SESSIONS TABLE
+========================================================= */
+
+app.get(
+    "/api/admin/bookings",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            console.log("====================================");
+            console.log("📋 LOADING ALL BOOKINGS FOR ADMIN");
+            console.log("====================================");
+
+            const {
+                data: bookings,
+                error
+            } = await supabase
+                .from("bookings")
+                .select("*")
+                .order("booking_date", {
+                    ascending: true
+                })
+                .order("booking_time", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                console.error(
+                    "❌ Admin bookings query error:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Unable to load bookings.",
+                    message: error.message
+                });
+            }
+
+            console.log(
+                "✅ Total bookings found:",
+                bookings?.length || 0
+            );
+
+            console.log(
+                "Booking IDs:",
+                (bookings || []).map(
+                    booking => booking.id
+                )
+            );
+
+            console.log(
+                "Booking statuses:",
+                (bookings || []).map(
+                    booking => ({
+                        id: booking.id,
+                        name: booking.full_name,
+                        date: booking.booking_date,
+                        time: booking.booking_time,
+                        status: booking.status,
+                        payment_status: booking.payment_status
+                    })
+                )
+            );
+
+            console.log("====================================");
+
+            return res.status(200).json({
+
+                success: true,
+
+                count:
+                    bookings?.length || 0,
+
+                bookings:
+                    bookings || []
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "❌ Admin bookings API error:",
+                error
+            );
+
+            return res.status(500).json({
+
+                success: false,
+
+                error:
+                    "Internal server error.",
+
+                message:
+                    error.message
+
+            });
+        }
+    }
+);
 app.listen(
     PORT,
     "0.0.0.0",
