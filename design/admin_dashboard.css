@@ -418,7 +418,7 @@ i.fa-brands,
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
-    width: 500px;
+    width: 400px;
     background: white;
     border: 1px solid #e5e5e5;
     border-radius: 10px;
@@ -1191,7 +1191,7 @@ i.fa-brands,
 .analytics-card {
     width: 100%;
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 24px;
     border: 1px solid #eeeeee;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);

@@ -991,11 +991,12 @@
         }
         async function archiveCompletedBookings() {
 
-            const today = new Date()
-                .toISOString()
-                .split("T")[0];
+            // Calculate the date exactly 14 days (2 weeks) ago from today
+            const twoWeeksAgo = new Date();
+            twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+            const archiveCutoffDate = twoWeeksAgo.toISOString().split("T")[0];
 
-            console.log("Checking for records ready to archive...");
+            console.log("Checking for records ready to archive (older than 2 weeks)...", archiveCutoffDate);
 
             /*
              ============================================================
@@ -1004,7 +1005,7 @@
              
              Conditions:
              - status = Completed
-             - booking_date is before today
+             - booking_date is on or before 14 days ago
              - is_archived = false
             */
 
@@ -1016,7 +1017,7 @@
                 .select("id, full_name, booking_date, status, is_archived")
                 .eq("status", "Completed")
                 .eq("is_archived", false)
-                .lt("booking_date", today);
+                .lte("booking_date", archiveCutoffDate);
 
             if (bookingFetchError) {
 
@@ -1031,7 +1032,7 @@
             if (!bookings || bookings.length === 0) {
 
                 console.log(
-                    "No completed bookings are ready to be archived."
+                    "No completed bookings older than 2 weeks are ready to be archived."
                 );
 
                 return;
@@ -1039,8 +1040,9 @@
 
 
             console.log(
-                `${bookings.length} booking(s) ready to be archived.`
+                `${bookings.length} booking(s) older than 2 weeks ready to be archived.`
             );
+
 
 
             /*
@@ -1115,6 +1117,7 @@
                     }
 
 
+
                     /*
                      ====================================================
                      2C. ARCHIVE THE FOLDER
@@ -1165,16 +1168,15 @@
                 if (bookingArchiveError) {
 
                     console.error(
-                        `Error archiving customer ${booking.full_name}:`,
+                        `Error archiving customer ${ booking.full_name }:`,
                         bookingArchiveError
                     );
 
                     throw bookingArchiveError;
                 }
 
-
                 console.log(
-                    `Successfully archived: ${booking.full_name}`
+                    `Successfully archived: ${ booking.full_name }`
                 );
 
             }

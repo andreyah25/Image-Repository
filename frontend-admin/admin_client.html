@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clients</title>
+    <title>Captured Admin Studio</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,34 @@
     <link rel="stylesheet" href="/design/admin_client.css">
 
     <style>
-        /* Payment proof floating preview */
+        .page-switch {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .page-switch a {
+            text-decoration: none;
+            padding: 9px 14px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            color: #555;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .page-switch a.active {
+            background: #639A88;
+            color: #fff;
+            border-color: #639A88;
+        }
+
+        .ui-table-card-panel {
+            overflow-x: auto;
+        }
+
         .payment-proof-btn {
             border: 0;
             background: #639A88;
@@ -27,10 +54,6 @@
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-        }
-
-        .payment-proof-btn:hover {
-            opacity: .88;
         }
 
         .payment-proof-modal {
@@ -114,21 +137,62 @@
             object-fit: contain;
         }
 
-        body.payment-proof-modal-open {
-            overflow: hidden;
+        .simple-rejection-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, .55);
+            padding: 20px;
         }
 
-        @media (max-width: 700px) {
+        .simple-rejection-modal.show {
+            display: flex;
+        }
+
+        .simple-rejection-card {
+            width: min(520px, 96vw);
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .simple-rejection-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .simple-rejection-actions button {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #cancelRejectionBtn {
+            background: #eee;
+            color: #333;
+        }
+
+        #confirmRejectionBtn {
+            background: #b84b4b;
+            color: #fff;
+        }
+
+        @media(max-width:700px) {
             .payment-proof-details {
                 grid-template-columns: 1fr;
             }
         }
     </style>
-
 </head>
 
 <body>
-
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
@@ -137,23 +201,18 @@
 
         <div class="navbar-right">
             <div class="notification-container">
-
-                <button id="notificationBtn" class="notification-btn">
+                <button id="notificationBtn" class="notification-btn" type="button">
                     <i class="fa-solid fa-bell"></i>
                     <span id="notificationCount">0</span>
                 </button>
-
                 <div id="notificationDropdown" class="notification-dropdown">
-
                     <div class="notification-header">
                         <h3>Notifications</h3>
                     </div>
-
                     <div id="notificationList"></div>
-
                 </div>
-
             </div>
+
             <div class="user-profile">
                 <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
                 <span id="userName">Loading...</span>
@@ -162,37 +221,18 @@
     </header>
 
     <div class="dashboard-wrapper">
-
         <aside class="sidebar">
             <nav>
-                <a href="admin_dashboard.html">
-                    <i class="fa-solid fa-table-cells-large"></i>
-                    Dashboard
+                <a href="admin_dashboard.html"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
+                <a href="admin_client_booked_sessions.html" class="active">
+                    <i class="fa-solid fa-calendar-check"></i> Booked Sessions
                 </a>
-                <a href="admin_client.html" class="active">
-                    <i class="fa-solid fa-users"></i>
-                    Clients
-                </a>
-                <a href="admin_repository.html">
-                    <i class="fa-solid fa-book"></i>
-                    Repository
-                </a>
-                <a href="admin_payment.html">
-                    <i class="fa-solid fa-credit-card"></i>
-                    Payments
-                </a>
-                <a href="admin_archives.html">
-                    <i class="fa-solid fa-box-archive"></i>
-                    Archives
-                </a>
-                <a href="admin_profile.html">
-                    <i class="fa-solid fa-user"></i>
-                    Profile
-                </a>
-                <a href="admin_settings.html">
-                    <i class="fa-solid fa-gear"></i>
-                    Settings
-                </a>
+               
+                <a href="admin_repository.html"><i class="fa-solid fa-book"></i> Repository</a>
+                <a href="admin_payment.html"><i class="fa-solid fa-credit-card"></i> Payments</a>
+                <a href="admin_archives.html"><i class="fa-solid fa-box-archive"></i> Archives</a>
+                <a href="admin_profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+                <a href="admin_settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
             </nav>
 
             <a href="admin_dashboard.html" class="logout-btn" id="logoutBtn">
@@ -202,15 +242,14 @@
         </aside>
 
         <main class="content">
-
             <div class="client-header-container">
                 <div class="page-header">
-                    <h1>Client List</h1>
-                    <p>Browse and manage your clients records.</p>
+                    <h1>All Booked Sessions</h1>
+                    <p>View and manage customer booking sessions.</p>
 
-                    <div class="client-tabs">
-                        <button class="tab-btn active" id="tabBookedSessions">All Booked Sessions</button>
-                        <button class="tab-btn" id="tabAccessRequests">All Access Requests</button>
+                    <div class="page-switch">
+                        <a href="admin_client_booked_sessions.html" class="active">All Booked Sessions</a>
+                        <a href="admin_client_access_request.html" class="">All Access Requests</a>
                     </div>
                 </div>
 
@@ -220,10 +259,9 @@
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
 
-                    <div class="filter-dropdown-wrapper">
-                        <button class="table-filter-btn" id="filterBtn">
-                            <i class="fa-solid fa-sliders"></i>
-                            Filter
+                    <div class="filter-dropdown-wrapper" id="filterWrapper">
+                        <button class="table-filter-btn" id="filterBtn" type="button">
+                            <i class="fa-solid fa-sliders"></i> Filter
                         </button>
                         <div class="filter-dropdown-menu" id="filterDropdown">
                             <div class="dropdown-section-title">Select Month</div>
@@ -240,38 +278,22 @@
                                 <a href="#" data-filter="10">October</a>
                                 <a href="#" data-filter="11">November</a>
                                 <a href="#" data-filter="12">December</a>
+                                <a href="#" class="clear-filter" data-filter="all">All Months</a>
                             </div>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" data-filter="all" class="clear-filter">Clear Filter</a>
                         </div>
                     </div>
-
-                    <button class="add-new-client-btn" id="addNewClientBtn">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                        Add New Client
-                    </button>
                 </div>
             </div>
 
             <div class="ui-table-card-panel">
                 <table class="ui-data-grid">
-                    <thead id="clientTableHeader">
-                        <tr>
-                            <th>Clients</th>
-                            <th>Email Address</th>
-                            <th>Event Type</th>
-                            <th>Expiry Date</th>
-                            <th>Payment Status</th>
-                            <th>Access Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientTableBody">
-                    </tbody>
+                    <thead id="clientTableHeader"></thead>
+                    <tbody id="clientTableBody"></tbody>
                 </table>
             </div>
-
         </main>
     </div>
+
     <div id="toast" class="toast">
         <i class="fa-solid fa-circle-check"></i>
         <div>
@@ -280,210 +302,82 @@
         </div>
     </div>
 
-    <!-- Payment Proof Preview Modal -->
     <div class="payment-proof-modal" id="paymentProofModal">
-        <div class="payment-proof-card" role="dialog" aria-modal="true" aria-labelledby="paymentProofName">
-            <button type="button" class="payment-proof-close" id="closePaymentProofModal"
-                aria-label="Close">&times;</button>
-
+        <div class="payment-proof-card">
+            <button type="button" class="payment-proof-close" id="closePaymentProofModal">&times;</button>
             <div class="payment-proof-header">
                 <h2>Payment Proof</h2>
                 <div id="paymentProofName">Customer</div>
             </div>
-
             <div class="payment-proof-details" id="paymentProofDetails"></div>
-
             <div class="payment-proof-image-wrap">
                 <img id="paymentProofImage" class="payment-proof-image" src="" alt="Payment proof">
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="addClientModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <i class="fa-solid fa-user-plus"></i>
-                <h2>New Client</h2>
-            </div>
+    <div class="simple-rejection-modal" id="rejectionModal">
+        <div class="simple-rejection-card">
+            <h2 id="rejectionModalTitle">Reject Booking</h2>
+            <p>Please select a reason. The customer will be notified.</p>
 
-            <form class="modal-form" id="newClientForm">
-                <p class="form-instruction">Enter client information.</p>
-
-                <div class="form-field">
-                    <input type="text" id="clientName" placeholder="Client Name" required>
-                </div>
-
-                <div class="form-field">
-                    <input type="email" id="clientEmail" placeholder="Email Address" required>
-                </div>
-
-                <div class="form-field">
-                    <input type="text" id="eventType" placeholder="Event Type" required>
-                </div>
-
-                <div class="form-field date-field-wrapper">
-                    <input type="date" id="expiryDate" required>
-                    <span class="date-placeholder">Set Expiry Date</span>
-                </div>
-
+            <form id="rejectionForm">
                 <div class="form-field select-field-wrapper">
-                    <select id="paymentStatus" required>
-                        <option value="" disabled selected hidden>Payment Status</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Pending">Pending</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down select-arrow"></i>
-                </div>
-
-                <div class="form-field select-field-wrapper">
-                    <select id="accessStatus" required>
-                        <option value="" disabled selected hidden>Access Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down select-arrow"></i>
-                </div>
-
-                <button type="submit" class="save-client-btn">Save Client</button>
-            </form>
-        </div>
-    </div>
-    <!-- =========================================================
-     REJECTION REASON MODAL
-========================================================= -->
-
-    <div class="modal-overlay" id="rejectionModal">
-
-        <div class="modal-card rejection-modal-card">
-
-            <div class="modal-header">
-
-                <i class="fa-solid fa-circle-exclamation"></i>
-
-                <h2 id="rejectionModalTitle">
-                    Reject Booking
-                </h2>
-
-            </div>
-
-            <form class="modal-form" id="rejectionForm">
-
-                <p class="form-instruction">
-                    Please select a reason for rejecting this request.
-                    The customer will be notified of your decision.
-                </p>
-
-
-                <div class="form-field select-field-wrapper">
-
                     <select id="rejectionReason" required>
-
-                        <option value="" disabled selected hidden>
-                            Select rejection reason
+                        <option value="" disabled selected hidden>Select rejection reason</option>
+                        <option value="The requested date is no longer available.">Requested date is unavailable
                         </option>
-
-                        <option value="The requested date is no longer available.">
-                            Requested date is unavailable
-                        </option>
-
-                        <option value="The requested time slot is no longer available.">
-                            Requested time slot is unavailable
-                        </option>
-
-                        <option value="The selected package or session is unavailable.">
-                            Selected package/session is unavailable
-                        </option>
-
-                        <option value="The booking information provided was incomplete or incorrect.">
-                            Incomplete or incorrect booking information
-                        </option>
-
-                        <option value="The payment could not be verified.">
-                            Payment could not be verified
-                        </option>
-
-                        <option value="The booking does not meet the studio's requirements.">
-                            Booking does not meet studio requirements
-                        </option>
-
-                        <option value="The studio is unavailable on the requested date.">
-                            Studio unavailable
-                        </option>
-
-                        <option value="Other">
-                            Other reason
-                        </option>
-
+                        <option value="The requested time slot is no longer available.">Requested time slot is
+                            unavailable</option>
+                        <option value="The selected package or session is unavailable.">Selected package/session is
+                            unavailable</option>
+                        <option value="The booking information provided was incomplete or incorrect.">Incomplete or
+                            incorrect booking information</option>
+                        <option value="The payment could not be verified.">Payment could not be verified</option>
+                        <option value="The booking does not meet the studio's requirements.">Booking does not meet
+                            studio requirements</option>
+                        <option value="The studio is unavailable on the requested date.">Studio unavailable</option>
+                        <option value="Other">Other reason</option>
                     </select>
-
                     <i class="fa-solid fa-chevron-down select-arrow"></i>
-
                 </div>
-
 
                 <div class="form-field" id="customRejectionReasonWrapper" style="display:none;">
-
                     <textarea id="customRejectionReason" placeholder="Enter the reason..." rows="4"></textarea>
-
                 </div>
 
-
-                <div class="rejection-modal-actions">
-
-                    <button type="button" class="rejection-cancel-btn" id="cancelRejectionBtn">
-                        Cancel
-                    </button>
-
-                    <button type="submit" class="rejection-confirm-btn" id="confirmRejectionBtn">
-                        Reject & Notify Customer
-                    </button>
-
+                <div class="simple-rejection-actions">
+                    <button type="button" id="cancelRejectionBtn">Cancel</button>
+                    <button type="submit" id="confirmRejectionBtn">Reject & Notify Customer</button>
                 </div>
-
             </form>
-
         </div>
-
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
 
-        /* =========================================================
-           SUPABASE
-        ========================================================= */
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
-        const SUPABASE_URL =
-            "https://rprcbeabdvxdenmngxxc.supabase.co";
-
-        const SUPABASE_ANON_KEY =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
         const supabaseClient = supabase.createClient(
             SUPABASE_URL,
             SUPABASE_ANON_KEY
-        );
+        )
 
 
-        /* =========================================================
-           GLOBAL VARIABLES
-        ========================================================= */
+        const SERVER_URL =
+            (window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1")
+                ? "http://localhost:3000"
+                : "";
 
         let allBookedSessions = [];
-        let selectedMonth = "all";
         let allAccessRequests = [];
-
-
-        /* =========================================================
-           HELPER
-        ========================================================= */
+        let selectedMonth = "all";
 
         function escapeHtml(value) {
-
-            if (value === null || value === undefined) {
-                return "";
-            }
-
+            if (value === null || value === undefined) return "";
             return String(value)
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
@@ -491,36 +385,22 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+
         function formatBookingTime(timeString) {
-
-            if (!timeString) {
-                return "-";
-            }
-
-            /*
-             * Handles:
-             * 14:30
-             * 14:30:00
-             * 09:00
-             * 09:00:00
-             */
+            if (!timeString) return "-";
 
             const parts = String(timeString).split(":");
-
-            if (parts.length < 2) {
-                return timeString;
-            }
+            if (parts.length < 2) return timeString;
 
             const hours = parseInt(parts[0], 10);
-            const minutes = parts[1];
+            const minutes = parseInt(parts[1], 10);
 
-            if (isNaN(hours)) {
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) {
                 return timeString;
             }
 
             const date = new Date();
-
-            date.setHours(hours, parseInt(minutes, 10), 0, 0);
+            date.setHours(hours, minutes, 0, 0);
 
             return date.toLocaleTimeString("en-US", {
                 hour: "numeric",
@@ -530,873 +410,31 @@
         }
 
         function formatBookingDate(dateString) {
+            if (!dateString) return "-";
 
-            if (!dateString) {
-                return "-";
-            }
+            const date = new Date(`${dateString}T00:00:00`);
+            if (Number.isNaN(date.getTime())) return dateString;
 
-            const date = new Date(
-                dateString + "T00:00:00"
-            );
-
-            if (isNaN(date.getTime())) {
-                return dateString;
-            }
-
-            return date.toLocaleDateString(
-                "en-US",
-                {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric"
-                }
-            );
+            return date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            });
         }
-
-
-        /* =========================================================
-           TOAST
-        ========================================================= */
 
         function showToast(title, message) {
+            const titleElement = document.getElementById("toastTitle");
+            const messageElement = document.getElementById("toastMessage");
+            const toast = document.getElementById("toast");
 
-            const titleElement =
-                document.getElementById("toastTitle");
-
-            const messageElement =
-                document.getElementById("toastMessage");
-
-            const toast =
-                document.getElementById("toast");
-
-            if (titleElement) {
-                titleElement.textContent = title;
-            }
-
-            if (messageElement) {
-                messageElement.textContent = message;
-            }
+            if (titleElement) titleElement.textContent = title;
+            if (messageElement) messageElement.textContent = message;
 
             if (toast) {
-
                 toast.classList.add("show");
-
-                setTimeout(() => {
-                    toast.classList.remove("show");
-                }, 4000);
+                setTimeout(() => toast.classList.remove("show"), 4000);
             }
         }
-
-        /* =========================================================
-           REJECTION REASON SYSTEM
-        ========================================================= */
-
-        let rejectionTargetId = null;
-        let rejectionTargetType = null;
-
-
-        /* =========================================================
-           OPEN REJECTION MODAL
-        ========================================================= */
-
-        document.addEventListener(
-            "click",
-            function (e) {
-
-                /* ---------------------------------------------
-                   BOOKING REJECT
-                --------------------------------------------- */
-
-                const bookingRejectBtn =
-                    e.target.closest(".reject-btn");
-
-                if (bookingRejectBtn) {
-
-                    const bookingId =
-                        bookingRejectBtn.dataset.id;
-
-                    if (!bookingId) {
-                        console.error("Missing booking ID.");
-                        return;
-                    }
-
-                    rejectionTargetId =
-                        bookingId;
-
-                    rejectionTargetType =
-                        "booking";
-
-                    openRejectionModal(
-                        "Reject Booking",
-                        "Reject & Notify Customer"
-                    );
-
-                    return;
-                }
-
-
-                /* ---------------------------------------------
-                   ACCESS REQUEST DECLINE
-                --------------------------------------------- */
-
-                const accessRejectBtn =
-                    e.target.closest(".reject-access-btn");
-
-                if (accessRejectBtn) {
-
-                    const requestId =
-                        accessRejectBtn.dataset.id;
-
-                    if (!requestId) {
-                        console.error(
-                            "Missing access request ID."
-                        );
-
-                        return;
-                    }
-
-                    rejectionTargetId =
-                        requestId;
-
-                    rejectionTargetType =
-                        "access_request";
-
-                    openRejectionModal(
-                        "Decline Gallery Access",
-                        "Decline & Notify Customer"
-                    );
-
-                    return;
-                }
-
-            }
-        );
-
-
-        /* =========================================================
-           OPEN MODAL
-        ========================================================= */
-
-        function openRejectionModal(
-            title,
-            buttonText
-        ) {
-
-            const modal =
-                document.getElementById(
-                    "rejectionModal"
-                );
-
-            const titleElement =
-                document.getElementById(
-                    "rejectionModalTitle"
-                );
-
-            const submitButton =
-                document.getElementById(
-                    "confirmRejectionBtn"
-                );
-
-            const form =
-                document.getElementById(
-                    "rejectionForm"
-                );
-
-            const customWrapper =
-                document.getElementById(
-                    "customRejectionReasonWrapper"
-                );
-
-            const customReason =
-                document.getElementById(
-                    "customRejectionReason"
-                );
-
-            if (form) {
-                form.reset();
-            }
-
-            if (titleElement) {
-                titleElement.textContent =
-                    title;
-            }
-
-            if (submitButton) {
-                submitButton.textContent =
-                    buttonText;
-            }
-
-            if (customWrapper) {
-                customWrapper.style.display =
-                    "none";
-            }
-
-            if (customReason) {
-                customReason.required =
-                    false;
-
-                customReason.value =
-                    "";
-            }
-
-            if (modal) {
-
-                modal.classList.add(
-                    "show"
-                );
-
-                document.body.style.overflow =
-                    "hidden";
-            }
-        }
-
-
-        /* =========================================================
-           CLOSE MODAL
-        ========================================================= */
-
-        function closeRejectionModal() {
-
-            const modal =
-                document.getElementById(
-                    "rejectionModal"
-                );
-
-            const form =
-                document.getElementById(
-                    "rejectionForm"
-                );
-
-            const customWrapper =
-                document.getElementById(
-                    "customRejectionReasonWrapper"
-                );
-
-            const customReason =
-                document.getElementById(
-                    "customRejectionReason"
-                );
-
-            if (modal) {
-
-                modal.classList.remove(
-                    "show"
-                );
-            }
-
-            document.body.style.overflow =
-                "";
-
-            if (form) {
-                form.reset();
-            }
-
-            if (customWrapper) {
-                customWrapper.style.display =
-                    "none";
-            }
-
-            if (customReason) {
-                customReason.required =
-                    false;
-            }
-
-            rejectionTargetId =
-                null;
-
-            rejectionTargetType =
-                null;
-        }
-
-
-        /* =========================================================
-           CANCEL
-        ========================================================= */
-
-        const cancelRejectionBtn =
-            document.getElementById(
-                "cancelRejectionBtn"
-            );
-
-        if (cancelRejectionBtn) {
-
-            cancelRejectionBtn.addEventListener(
-                "click",
-                function () {
-
-                    closeRejectionModal();
-
-                }
-            );
-        }
-
-
-        /* =========================================================
-           CLOSE WHEN CLICKING OUTSIDE
-        ========================================================= */
-
-        const rejectionModal =
-            document.getElementById(
-                "rejectionModal"
-            );
-
-        if (rejectionModal) {
-
-            rejectionModal.addEventListener(
-                "click",
-                function (e) {
-
-                    if (
-                        e.target ===
-                        rejectionModal
-                    ) {
-
-                        closeRejectionModal();
-                    }
-
-                }
-            );
-        }
-
-
-        /* =========================================================
-           ESCAPE KEY
-        ========================================================= */
-
-        document.addEventListener(
-            "keydown",
-            function (e) {
-
-                if (
-                    e.key === "Escape" &&
-                    rejectionTargetId
-                ) {
-
-                    closeRejectionModal();
-                }
-
-            }
-        );
-
-
-        /* =========================================================
-           CUSTOM "OTHER" REASON
-        ========================================================= */
-
-        const rejectionReason =
-            document.getElementById(
-                "rejectionReason"
-            );
-
-        if (rejectionReason) {
-
-            rejectionReason.addEventListener(
-                "change",
-                function () {
-
-                    const wrapper =
-                        document.getElementById(
-                            "customRejectionReasonWrapper"
-                        );
-
-                    const textarea =
-                        document.getElementById(
-                            "customRejectionReason"
-                        );
-
-
-                    if (
-                        this.value ===
-                        "Other"
-                    ) {
-
-                        if (wrapper) {
-                            wrapper.style.display =
-                                "block";
-                        }
-
-                        if (textarea) {
-                            textarea.required =
-                                true;
-                        }
-
-                    } else {
-
-                        if (wrapper) {
-                            wrapper.style.display =
-                                "none";
-                        }
-
-                        if (textarea) {
-
-                            textarea.required =
-                                false;
-
-                            textarea.value =
-                                "";
-                        }
-                    }
-
-                }
-            );
-        }
-
-
-        /* =========================================================
-           SUBMIT REJECTION
-        ========================================================= */
-
-        const rejectionForm =
-            document.getElementById(
-                "rejectionForm"
-            );
-
-        if (rejectionForm) {
-
-            rejectionForm.addEventListener(
-                "submit",
-                async function (e) {
-
-                    e.preventDefault();
-
-
-                    if (
-                        !rejectionTargetId ||
-                        !rejectionTargetType
-                    ) {
-
-                        alert(
-                            "The request information is missing."
-                        );
-
-                        return;
-                    }
-
-
-                    /* ---------------------------------------------
-                       GET SELECTED REASON
-                    --------------------------------------------- */
-
-                    const selectedReason =
-                        document.getElementById(
-                            "rejectionReason"
-                        )?.value;
-
-
-                    const customReason =
-                        document.getElementById(
-                            "customRejectionReason"
-                        )?.value.trim();
-
-
-                    let finalReason =
-                        selectedReason;
-
-
-                    if (
-                        selectedReason ===
-                        "Other"
-                    ) {
-
-                        if (!customReason) {
-
-                            alert(
-                                "Please enter the rejection reason."
-                            );
-
-                            return;
-                        }
-
-                        finalReason =
-                            customReason;
-                    }
-
-
-                    if (!finalReason) {
-
-                        alert(
-                            "Please select a rejection reason."
-                        );
-
-                        return;
-                    }
-
-
-                    const submitButton =
-                        document.getElementById(
-                            "confirmRejectionBtn"
-                        );
-
-
-                    if (submitButton) {
-
-                        submitButton.disabled =
-                            true;
-
-                        submitButton.textContent =
-                            rejectionTargetType ===
-                                "booking"
-                                ? "Rejecting..."
-                                : "Declining...";
-                    }
-
-
-                    try {
-
-                        /* =================================================
-                           BOOKING REJECTION
-                        ================================================= */
-
-                        if (
-                            rejectionTargetType ===
-                            "booking"
-                        ) {
-
-                            const {
-                                data: booking,
-                                error: bookingError
-                            } =
-                                await supabaseClient
-                                    .from("bookings")
-                                    .select("*")
-                                    .eq(
-                                        "id",
-                                        rejectionTargetId
-                                    )
-                                    .single();
-
-
-                            if (bookingError) {
-                                throw bookingError;
-                            }
-
-
-                            if (!booking) {
-
-                                throw new Error(
-                                    "Booking was not found."
-                                );
-                            }
-
-
-                            /* ---------------------------------------------
-                               UPDATE BOOKING
-                            --------------------------------------------- */
-
-                            const {
-                                error: updateError
-                            } =
-                                await supabaseClient
-                                    .from("bookings")
-                                    .update({
-
-                                        status:
-                                            "Rejected",
-
-                                        rejection_reason:
-                                            finalReason
-
-                                    })
-                                    .eq(
-                                        "id",
-                                        rejectionTargetId
-                                    );
-
-
-                            if (updateError) {
-                                throw updateError;
-                            }
-
-
-                            /* ---------------------------------------------
-                               NOTIFY CUSTOMER
-                            --------------------------------------------- */
-
-                            if (
-                                booking.customer_id
-                            ) {
-
-                                const {
-                                    error:
-                                    notificationError
-                                } =
-                                    await supabaseClient
-                                        .from("notifications")
-                                        .insert({
-
-                                            customer_id:
-                                                booking.customer_id,
-
-                                            booking_id:
-                                                booking.id,
-
-                                            recipient:
-                                                "customer",
-
-                                            title:
-                                                "Booking Request Rejected",
-
-                                            message:
-                                                `Your booking request for ` +
-                                                `${booking.session_type || "your selected session"} ` +
-                                                `on ${formatBookingDate(
-                                                    booking.booking_date
-                                                )} has been rejected.\n\n` +
-                                                `Reason: ${finalReason}\n\n` +
-                                                `If you have any questions, please contact Captured Photography Studio.`,
-
-                                            is_read:
-                                                false,
-
-                                            link:
-                                                null
-
-                                        });
-
-
-                                if (notificationError) {
-
-                                    console.error(
-                                        "Customer notification error:",
-                                        notificationError
-                                    );
-
-                                    /*
-                                     * The booking is already rejected.
-                                     * Do not undo the rejection.
-                                     */
-                                }
-                            }
-
-
-                            showToast(
-                                "Booking Rejected",
-                                `${booking.full_name}'s booking has been rejected and the customer has been notified.`
-                            );
-
-
-                            await loadBookedSessions();
-
-                        }
-
-
-                        /* =================================================
-                           ACCESS REQUEST DECLINE
-                        ================================================= */
-
-                        else if (
-                            rejectionTargetType ===
-                            "access_request"
-                        ) {
-
-                            const {
-                                data: request,
-                                error: requestError
-                            } =
-                                await supabaseClient
-                                    .from(
-                                        "gallery_access_requests"
-                                    )
-                                    .select("*")
-                                    .eq(
-                                        "id",
-                                        rejectionTargetId
-                                    )
-                                    .single();
-
-
-                            if (requestError) {
-                                throw requestError;
-                            }
-
-
-                            if (!request) {
-
-                                throw new Error(
-                                    "Access request was not found."
-                                );
-                            }
-
-
-                            /* ---------------------------------------------
-                               GET BOOKING
-                            --------------------------------------------- */
-
-                            let booking =
-                                null;
-
-
-                            if (
-                                request.booking_id
-                            ) {
-
-                                const {
-                                    data: bookingData,
-                                    error: bookingError
-                                } =
-                                    await supabaseClient
-                                        .from(
-                                            "bookings"
-                                        )
-                                        .select("*")
-                                        .eq(
-                                            "id",
-                                            request.booking_id
-                                        )
-                                        .single();
-
-
-                                if (
-                                    !bookingError
-                                ) {
-
-                                    booking =
-                                        bookingData;
-                                }
-                            }
-
-                            const {
-                                error: updateError
-                            } =
-                                await supabaseClient
-                                    .from(
-                                        "gallery_access_requests"
-                                    )
-                                    .update({
-
-                                        status:
-                                            "declined",
-
-                                        rejection_reason:
-                                            finalReason
-
-                                    })
-                                    .eq(
-                                        "id",
-                                        rejectionTargetId
-                                    );
-
-
-                            if (updateError) {
-                                throw updateError;
-                            }
-
-
-                            /* ---------------------------------------------
-                               CUSTOMER ID
-                            --------------------------------------------- */
-
-                            const customerId =
-                                request.customer_id ||
-                                booking?.customer_id ||
-                                null;
-
-
-                            /* ---------------------------------------------
-                               NOTIFY CUSTOMER
-                            --------------------------------------------- */
-
-                            if (customerId) {
-
-                                const {
-                                    error:
-                                    notificationError
-                                } =
-                                    await supabaseClient
-                                        .from(
-                                            "notifications"
-                                        )
-                                        .insert({
-
-                                            customer_id:
-                                                customerId,
-
-                                            booking_id:
-                                                request.booking_id ||
-                                                null,
-
-                                            recipient:
-                                                "customer",
-
-                                            title:
-                                                "Gallery Access Request Declined",
-
-                                            message:
-                                                `Your gallery access request has been declined.\n\n` +
-                                                `Reason: ${finalReason}\n\n` +
-                                                `You may submit another access request if access is required.`,
-
-                                            is_read:
-                                                false,
-
-                                            link:
-                                                null
-
-                                        });
-
-
-                                if (notificationError) {
-
-                                    console.error(
-                                        "Customer notification error:",
-                                        notificationError
-                                    );
-                                }
-                            }
-
-
-                            showToast(
-                                "Access Declined",
-                                "The customer has been notified of the reason."
-                            );
-
-
-                            await loadAccessRequests();
-                        }
-
-
-                        /* ---------------------------------------------
-                           CLOSE MODAL
-                        --------------------------------------------- */
-
-                        closeRejectionModal();
-
-
-                    } catch (error) {
-
-                        console.error(
-                            "REJECTION ERROR:",
-                            error
-                        );
-
-                        alert(
-                            "The request could not be rejected.\n\n" +
-                            error.message
-                        );
-
-                    } finally {
-
-                        if (submitButton) {
-
-                            submitButton.disabled =
-                                false;
-
-                            submitButton.textContent =
-                                rejectionTargetType ===
-                                    "booking"
-                                    ? "Reject & Notify Customer"
-                                    : "Decline & Notify Customer";
-                        }
-
-                    }
-
-                }
-            );
-        }
-        /* =========================================================
-           NOTIFICATIONS
-        ========================================================= */
-
         async function loadAdminNotifications() {
 
             const {
@@ -1511,56 +549,115 @@
         /* =========================================================
            LOAD BOOKINGS
         ========================================================= */
-
         async function loadBookedSessions() {
 
-            console.log(
-                "Loading ALL bookings..."
-            );
-
-
-            const pageSize = 1000;
-            let from = 0;
-            let allBookings = [];
-
             try {
-                while (true) {
-                    const {
-                        data,
-                        error
-                    } = await supabaseClient
-                        .from("bookings")
-                        .select("*")
-                        .order("created_at", {
-                            ascending: false
-                        })
-                        .range(
-                            from,
-                            from + pageSize - 1
-                        );
 
-                    if (error) {
-                        throw error;
-                    }
+                console.log("Loading ALL bookings...");
 
-                    const rows = data || [];
+                // IMPORTANT:
+                // Change supabaseClient below to whatever variable
+                // your admin_client.html uses for createClient().
+                const {
+                    data: { session },
+                    error: sessionError
+                } = await supabaseClient.auth.getSession();
 
-                    allBookings.push(...rows);
+                if (sessionError) {
 
-                    if (rows.length < pageSize) {
-                        break;
-                    }
+                    console.error(
+                        "Supabase session error:",
+                        sessionError
+                    );
 
-                    from += pageSize;
+                    return;
+                }
+
+                if (!session) {
+
+                    console.error(
+                        "No active Supabase session."
+                    );
+
+                    return;
                 }
 
                 console.log(
-                    "Total bookings loaded:",
-                    allBookings.length
+                    "Authenticated user:",
+                    session.user.id
                 );
 
+                console.log(
+                    "Authenticated email:",
+                    session.user.email
+                );
+
+                const accessToken =
+                    session.access_token;
+
+                const response =
+                    await fetch(
+                        `${SERVER_URL}/api/admin/bookings`,
+                        {
+                            method: "GET",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${accessToken}`,
+
+                                "Content-Type":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+                console.log(
+                    "Bookings API status:",
+                    response.status
+                );
+
+                const result =
+                    await response.json();
+
+                console.log(
+                    "Bookings API response:",
+                    result
+                );
+
+                if (!response.ok) {
+
+                    console.error(
+                        "Failed to load bookings:",
+                        result
+                    );
+
+                    return;
+                }
+
+                if (!result.success) {
+
+                    console.error(
+                        "Bookings request failed:",
+                        result
+                    );
+
+                    return;
+                }
+
                 allBookedSessions =
-                    allBookings;
+                    Array.isArray(result.bookings)
+                        ? result.bookings
+                        : [];
+
+                console.log(
+                    "Total bookings loaded:",
+                    allBookedSessions.length
+                );
+
+                console.log(
+                    "Bookings:",
+                    allBookedSessions
+                );
 
                 renderBookedSessions();
 
@@ -1570,348 +667,8 @@
                     "Error loading bookings:",
                     error
                 );
-
-                showToast(
-                    "Loading Error",
-                    "Unable to load bookings."
-                );
             }
-        }
-        /* =========================================================
-           LOAD ACCESS REQUESTS
-        ========================================================= */
-
-
-
-        document.addEventListener(
-            "click",
-            async function (e) {
-
-                const btn =
-                    e.target.closest(".approve-access-btn");
-
-                if (!btn) {
-                    return;
-                }
-
-                const requestId =
-                    btn.dataset.id;
-
-                if (!requestId) {
-                    console.error("Missing request ID.");
-                    return;
-                }
-
-                const confirmed =
-                    confirm(
-                        "Approve this customer's gallery access request?"
-                    );
-
-                if (!confirmed) {
-                    return;
-                }
-
-                btn.disabled = true;
-                btn.textContent = "Approving...";
-
-                try {
-
-                    /* ---------------------------------------------
-                       GET ACCESS REQUEST
-                    --------------------------------------------- */
-
-                    const {
-                        data: request,
-                        error: requestError
-                    } = await supabaseClient
-                        .from("gallery_access_requests")
-                        .select("*")
-                        .eq("id", requestId)
-                        .single();
-
-                    if (requestError) {
-                        throw requestError;
-                    }
-
-                    if (!request) {
-                        throw new Error(
-                            "Access request was not found."
-                        );
-                    }
-
-
-                    /* ---------------------------------------------
-                       CHECK IF ALREADY APPROVED
-                    --------------------------------------------- */
-
-                    if (request.status === "approved") {
-
-                        showToast(
-                            "Already Approved",
-                            "This access request has already been approved."
-                        );
-
-                        return;
-                    }
-
-
-                    /* ---------------------------------------------
-                       GET BOOKING
-                    --------------------------------------------- */
-
-                    const {
-                        data: booking,
-                        error: bookingError
-                    } = await supabaseClient
-                        .from("bookings")
-                        .select("*")
-                        .eq("id", request.booking_id)
-                        .single();
-
-                    if (bookingError) {
-                        throw bookingError;
-                    }
-
-                    if (!booking) {
-                        throw new Error(
-                            "The booking connected to this request was not found."
-                        );
-                    }
-
-
-                    /* ---------------------------------------------
-                       CREATE / GET CLIENT REPOSITORY LINK
-                    --------------------------------------------- */
-
-                    const repository =
-                        await createClientRepository(
-                            booking
-                        );
-
-                    const clientLink =
-                        getClientRepositoryLink(repository);
-                    const approvedAt = new Date();
-
-                    /*
-                     * Gallery access remains valid for 7 days.
-                     */
-                    const expiresAt = new Date(
-                        approvedAt.getTime() +
-                        (7 * 24 * 60 * 60 * 1000)
-                    );
-
-                    /*
-                     * Access request is archived after 2 days.
-                     */
-                    const archiveAt = new Date(
-                        approvedAt.getTime() +
-                        (2 * 24 * 60 * 60 * 1000)
-                    );
-                    const {
-                        error: updateError
-                    } = await supabaseClient
-                        .from("gallery_access_requests")
-                        .update({
-
-                            status: "approved",
-
-                            repository_id: repository.id,
-
-                            approved_at: approvedAt.toISOString(),
-
-                            access_started_at: approvedAt.toISOString(),
-
-                            access_expires_at: expiresAt.toISOString(),
-
-                            expires_at: expiresAt.toISOString(),
-
-                            archive_at: archiveAt.toISOString(),
-
-                            is_expired: false,
-
-                            approved_by:
-                                (await supabaseClient.auth.getUser())
-                                    .data.user?.id || null
-
-                        })
-                        .eq("id", requestId);
-                    if (updateError) {
-                        console.error("Access request update error:", updateError);
-                        throw updateError;
-                    }
-
-
-                    /* ---------------------------------------------
-                       CREATE CUSTOMER NOTIFICATION
-                    --------------------------------------------- */
-
-                    if (request.customer_id) {
-
-                        const {
-                            error: notificationError
-                        } = await supabaseClient
-                            .from("notifications")
-                            .insert({
-
-                                customer_id:
-                                    request.customer_id,
-
-                                booking_id:
-                                    request.booking_id,
-
-                                recipient:
-                                    "customer",
-
-                                title:
-                                    "Gallery Access Approved",
-
-                                message:
-                                    `Your gallery access request has been approved. ` +
-                                    `Your gallery link is available for 7 days. ` +
-                                    `Please copy the gallery link below and paste it into the My Gallery page.\n\n` +
-                                    clientLink,
-                                is_read:
-                                    false,
-
-                                link:
-                                    getClientRepositoryLink(
-                                        repository
-                                    )
-
-                            });
-
-                        if (notificationError) {
-
-                            console.error(
-                                "Customer notification error:",
-                                notificationError
-                            );
-
-                        }
-                    }
-
-
-                    /* ---------------------------------------------
-                       SUCCESS
-                    --------------------------------------------- */
-
-                    showToast(
-                        "Access Approved",
-                        "The customer's gallery access has been approved."
-                    );
-
-
-                    /* ---------------------------------------------
-                       RELOAD ACCESS REQUESTS
-                    --------------------------------------------- */
-
-                    await loadAccessRequests();
-
-
-                } catch (error) {
-
-                    console.error(
-                        "APPROVE ACCESS ERROR:",
-                        error
-                    );
-
-                    alert(
-                        "The access request could not be approved.\n\n" +
-                        error.message
-                    );
-
-                } finally {
-
-                    btn.disabled = false;
-                    btn.textContent = "Approve";
-
-                }
-
-            }
-        );
-
-        async function sendPaymentConfirmationEmail(booking) {
-            try {
-
-                if (!booking) {
-                    throw new Error("Booking information is missing.");
-                }
-
-                console.log("========== PAYMENT CONFIRMATION DATA ==========");
-                console.log("email:", booking.email);
-                console.log("name:", booking.full_name);
-                console.log("booking_date:", booking.booking_date);
-                console.log("booking_time:", booking.booking_time);
-                console.log("session_type:", booking.session_type);
-                console.log("total_price:", booking.total_price);
-                console.log("downpayment_amount:", booking.downpayment_amount);
-                console.log("remaining_balance:", booking.remaining_balance);
-                console.log("===============================================");
-
-                const response = await fetch(
-                    "http://localhost:3000/send-payment-confirmation",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-
-                        body: JSON.stringify({
-
-                            email: booking.email,
-
-                            name: booking.full_name,
-
-                            booking_date: booking.booking_date,
-
-                            booking_time: booking.booking_time,
-
-                            session_type: booking.session_type,
-
-                            total_price: Number(booking.total_price) || 0,
-
-                            downpayment_amount:
-                                Number(booking.downpayment_amount) || 0,
-
-                            remaining_balance:
-                                Number(booking.remaining_balance) || 0
-
-                        })
-                    }
-                );
-
-                const result = await response.json();
-
-                console.log(
-                    "Payment confirmation email response:",
-                    result
-                );
-
-                if (!response.ok) {
-                    throw new Error(
-                        result.error ||
-                        result.message ||
-                        "Failed to send payment confirmation email."
-                    );
-                }
-
-                console.log(
-                    "Payment confirmation email sent successfully."
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Payment confirmation email error:",
-                    error
-                );
-
-            }
-        }
-
-
-        function renderBookedSessions() {
+        } function renderBookedSessions() {
 
             const tbody = document.getElementById("clientTableBody");
 
@@ -1960,11 +717,6 @@
                     return priorityA - priorityB;
                 }
 
-
-                /*
-                 * Same priority:
-                 * oldest booking first.
-                 */
 
                 const dateA = new Date(
                     a.created_at ||
@@ -2306,7 +1058,8 @@
                 const paymentStatusText =
                     String(
                         booking.payment_status || "Pending"
-                    ).trim();
+                    )
+                        .trim();
 
                 const paymentStatusLower =
                     paymentStatusText.toLowerCase();
@@ -2482,7 +1235,6 @@
         `;
             });
         }
-
         function openPaymentProofModal(booking) {
             const modal = document.getElementById("paymentProofModal");
             const image = document.getElementById("paymentProofImage");
@@ -2547,8 +1299,7 @@
 
         document.addEventListener("keydown", function (e) {
             if (e.key === "Escape") closePaymentProofModal();
-        });
-        async function createClientRepository(
+        }); async function createClientRepository(
             booking
         ) {
 
@@ -2667,7 +1418,6 @@
             );
         }
 
-
         document.addEventListener(
             "click",
             async function (e) {
@@ -2727,6 +1477,37 @@
 
 
                     /* ---------------------------------------------
+                       VERIFY PAYMENT BEFORE CONFIRMING
+                    --------------------------------------------- */
+
+                    const paymentStatus =
+                        String(booking.payment_status || "")
+                            .trim()
+                            .toLowerCase();
+
+                    if (paymentStatus !== "paid") {
+
+                        console.warn(
+                            "BLOCKED CONFIRMATION: Booking has not been fully paid.",
+                            {
+                                bookingId: booking.id,
+                                paymentStatus: booking.payment_status,
+                                downpaymentAmount: booking.downpayment_amount
+                            }
+                        );
+
+                        alert(
+                            "This booking cannot be confirmed yet.\n\n" +
+                            "The customer's full downpayment has not been successfully paid."
+                        );
+
+                        await loadBookedSessions();
+
+                        return;
+                    }
+
+
+                    /* ---------------------------------------------
                        UPDATE BOOKING STATUS
                     --------------------------------------------- */
 
@@ -2751,10 +1532,6 @@
                         updatedBooking
                     );
 
-
-                    /* ---------------------------------------------
-                       CREATE / GET CUSTOMER REPOSITORY
-                    --------------------------------------------- */
 
                     const repository =
                         await createClientRepository(
@@ -2895,9 +1672,7 @@
                 }
             }
         );
-        /* =========================================================
-   COMPLETE BOOKING
-========================================================= */
+
 
         document.addEventListener(
             "click",
@@ -3008,618 +1783,326 @@
 
             }
         );
-        /* =========================================================
-           SEARCH
-        ========================================================= */
+        let rejectionTargetId = null;
+
+        function openRejectionModal(bookingId) {
+            rejectionTargetId = bookingId;
+
+            const modal = document.getElementById("rejectionModal");
+            const form = document.getElementById("rejectionForm");
+            const customWrapper =
+                document.getElementById("customRejectionReasonWrapper");
+            const customReason =
+                document.getElementById("customRejectionReason");
+
+            if (form) form.reset();
+            if (customWrapper) customWrapper.style.display = "none";
+
+            if (customReason) {
+                customReason.required = false;
+                customReason.value = "";
+            }
+
+            if (modal) {
+                modal.classList.add("show");
+                document.body.style.overflow = "hidden";
+            }
+        }
+
+        function closeRejectionModal() {
+            const modal = document.getElementById("rejectionModal");
+            const form = document.getElementById("rejectionForm");
+
+            if (modal) modal.classList.remove("show");
+            if (form) form.reset();
+
+            document.body.style.overflow = "";
+            rejectionTargetId = null;
+        }
+
+        document.addEventListener("click", (e) => {
+            const btn = e.target.closest(".reject-btn");
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            if (id) openRejectionModal(id);
+        });
+
+        document.getElementById("rejectionReason")
+            ?.addEventListener("change", (e) => {
+                const wrapper =
+                    document.getElementById("customRejectionReasonWrapper");
+                const textarea =
+                    document.getElementById("customRejectionReason");
+
+                if (e.target.value === "Other") {
+                    if (wrapper) wrapper.style.display = "block";
+                    if (textarea) textarea.required = true;
+                } else {
+                    if (wrapper) wrapper.style.display = "none";
+                    if (textarea) {
+                        textarea.required = false;
+                        textarea.value = "";
+                    }
+                }
+            });
+
+        document.getElementById("cancelRejectionBtn")
+            ?.addEventListener("click", closeRejectionModal);
+
+        document.getElementById("rejectionModal")
+            ?.addEventListener("click", (e) => {
+                if (e.target.id === "rejectionModal") {
+                    closeRejectionModal();
+                }
+            });
+
+        document.getElementById("rejectionForm")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                if (!rejectionTargetId) {
+                    alert("The booking information is missing.");
+                    return;
+                }
+
+                const selectedReason =
+                    document.getElementById("rejectionReason")?.value;
+
+                const customReason =
+                    document.getElementById("customRejectionReason")
+                        ?.value.trim();
+
+                let finalReason = selectedReason;
+
+                if (selectedReason === "Other") {
+                    if (!customReason) {
+                        alert("Please enter the rejection reason.");
+                        return;
+                    }
+
+                    finalReason = customReason;
+                }
+
+                if (!finalReason) {
+                    alert("Please select a rejection reason.");
+                    return;
+                }
+
+                const submitButton =
+                    document.getElementById("confirmRejectionBtn");
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Rejecting...";
+                }
+
+                try {
+                    const { data: booking, error: bookingError } =
+                        await supabaseClient
+                            .from("bookings")
+                            .select("*")
+                            .eq("id", rejectionTargetId)
+                            .single();
+
+                    if (bookingError) throw bookingError;
+                    if (!booking) {
+                        throw new Error("Booking was not found.");
+                    }
+
+                    const { error: updateError } =
+                        await supabaseClient
+                            .from("bookings")
+                            .update({
+                                status: "Rejected",
+                                rejection_reason: finalReason
+                            })
+                            .eq("id", rejectionTargetId);
+
+                    if (updateError) throw updateError;
+
+                    if (booking.customer_id) {
+                        const { error: notificationError } =
+                            await supabaseClient
+                                .from("notifications")
+                                .insert({
+                                    customer_id: booking.customer_id,
+                                    booking_id: booking.id,
+                                    recipient: "customer",
+                                    title: "Booking Request Rejected",
+                                    message:
+                                        `Your booking request for ${booking.session_type || "your selected session"} ` +
+                                        `on ${formatBookingDate(booking.booking_date)} has been rejected.\n\n` +
+                                        `Reason: ${finalReason}\n\n` +
+                                        `If you have any questions, please contact Captured Photography Studio.`,
+                                    is_read: false,
+                                    link: null
+                                });
+
+                        if (notificationError) {
+                            console.error(
+                                "Customer notification error:",
+                                notificationError
+                            );
+                        }
+                    }
+
+                    showToast(
+                        "Booking Rejected",
+                        `${booking.full_name}'s booking has been rejected and the customer has been notified.`
+                    );
+
+                    closeRejectionModal();
+                    await loadBookedSessions();
+
+                } catch (error) {
+                    console.error(
+                        "BOOKING REJECTION ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "The booking could not be rejected.\n\n" +
+                        error.message
+                    );
+
+                } finally {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent =
+                            "Reject & Notify Customer";
+                    }
+                }
+            });
+
+        async function loadAdminProfile() {
+            const { data: { session }, error } =
+                await supabaseClient.auth.getSession();
+
+            if (error || !session) {
+                window.location.href = "admin_login.html";
+                return false;
+            }
+
+            const { data: profile, error: profileError } =
+                await supabaseClient
+                    .from("staff_profiles")
+                    .select("*")
+                    .eq("id", session.user.id)
+                    .single();
+
+            if (profileError) {
+                console.error("Profile error:", profileError);
+            }
+
+            const userName = document.getElementById("userName");
+            const userAvatar = document.getElementById("userAvatar");
+
+            if (userName) {
+                userName.textContent =
+                    profile?.full_name || session.user.email || "Admin";
+            }
+
+            if (userAvatar && profile?.avatar_url) {
+                userAvatar.src = profile.avatar_url;
+            }
+
+            return true;
+        }
+
+        const notificationBtn = document.getElementById("notificationBtn");
+        const notificationDropdown =
+            document.getElementById("notificationDropdown");
+
+        if (notificationBtn && notificationDropdown) {
+            notificationBtn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle("show");
+
+                if (notificationDropdown.classList.contains("show")) {
+                    await supabaseClient
+                        .from("notifications")
+                        .update({ is_read: true })
+                        .eq("recipient", "admin")
+                        .eq("is_read", false);
+
+                    await loadAdminNotifications();
+                }
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!notificationDropdown.contains(e.target) &&
+                    e.target !== notificationBtn) {
+                    notificationDropdown.classList.remove("show");
+                }
+            });
+        }
+
+        const logoutBtn = document.getElementById("logoutBtn");
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                await supabaseClient.auth.signOut();
+                window.location.href = "admin_login.html";
+            });
+        }
+
+        supabaseClient
+            .channel("admin_notifications_separate_pages")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "notifications",
+                    filter: "recipient=eq.admin"
+                },
+                () => loadAdminNotifications()
+            )
+            .subscribe();
 
         const searchInput =
-            document.getElementById(
-                "clientSearchInput"
-            );
-
+            document.getElementById("clientSearchInput");
 
         if (searchInput) {
-            searchInput.addEventListener(
-                "input",
-                function () {
+            searchInput.addEventListener("input", () => {
+                renderBookedSessions();
+            });
+        }
 
-                    const activeTab =
-                        document.querySelector(
-                            ".tab-btn.active"
-                        );
+        const filterBtn = document.getElementById("filterBtn");
+        const filterDropdown = document.getElementById("filterDropdown");
 
-                    if (
-                        activeTab &&
-                        activeTab.id ===
-                        "tabAccessRequests"
-                    ) {
+        if (filterBtn && filterDropdown) {
+            filterBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                filterDropdown.classList.toggle("show");
+            });
 
-                        renderAccessRequests();
+            filterDropdown
+                .querySelectorAll(".dropdown-scroll-area a, .clear-filter")
+                .forEach(option => {
+                    option.addEventListener("click", (e) => {
+                        e.preventDefault();
 
-                    } else {
+                        selectedMonth =
+                            option.getAttribute("data-filter") || "all";
 
+                        filterDropdown.classList.remove("show");
                         renderBookedSessions();
-                    }
-
-                }
-            );
-        }
-
-        const tableHeader =
-            document.getElementById(
-                "clientTableHeader"
-            );
-
-        const tabs =
-            document.querySelectorAll(
-                ".tab-btn"
-            );
-
-        const addNewClientBtn =
-            document.getElementById(
-                "addNewClientBtn"
-            );
-        async function autoArchiveAccessRequests() {
-
-            console.log("Checking access requests for archive...");
-
-            const now = new Date().toISOString();
-
-            const { data: requests, error } =
-                await supabaseClient
-                    .from("gallery_access_requests")
-                    .select("id, status, archive_at")
-                    .eq("status", "approved")
-                    .not("archive_at", "is", null)
-                    .lte("archive_at", now);
-
-            if (error) {
-
-                console.error(
-                    "Error checking archive requests:",
-                    error
-                );
-
-                return;
-            }
-
-            if (!requests || requests.length === 0) {
-
-                console.log(
-                    "No access requests need to be archived."
-                );
-
-                return;
-            }
-
-            for (const request of requests) {
-
-                const { error: updateError } =
-                    await supabaseClient
-                        .from("gallery_access_requests")
-                        .update({
-                            status: "expired"
-                        })
-                        .eq("id", request.id)
-                        .eq("status", "approved");
-
-                if (updateError) {
-
-                    console.error(
-                        "Failed to archive request:",
-                        request.id,
-                        updateError
-                    );
-
-                } else {
-
-                    console.log(
-                        "Access request archived:",
-                        request.id
-                    );
-                }
-            }
-        }
-        async function loadAccessRequests() {
-
-            console.log("Loading access requests...");
-
-
-            await autoArchiveAccessRequests();
-
-
-            const {
-                data: requests,
-                error
-            } = await supabaseClient
-                .from("gallery_access_requests")
-                .select("*")
-                .neq("status", "expired")
-                .order("requested_at", {
-                    ascending: true
+                    });
                 });
 
-            if (error) {
-
-                console.error(
-                    "Error loading access requests:",
-                    error
-                );
-
-                return;
-            }
-
-            /*
-             * Get the related booking information.
-             * This makes the table display the actual
-             * customer information from the booking.
-             */
-            const bookingIds = (requests || [])
-                .map(request => request.booking_id)
-                .filter(Boolean);
-
-            let bookings = [];
-
-            if (bookingIds.length > 0) {
-
-                const {
-                    data: bookingData,
-                    error: bookingError
-                } = await supabaseClient
-                    .from("bookings")
-                    .select(`
-                id,
-                full_name,
-                email,
-                contact_number,
-                session_type,
-                booking_date,
-                booking_time
-            `)
-                    .in("id", bookingIds);
-
-                if (bookingError) {
-
-                    console.error(
-                        "Error loading related bookings:",
-                        bookingError
-                    );
-
-                } else {
-
-                    bookings = bookingData || [];
+            document.addEventListener("click", (e) => {
+                if (!filterDropdown.contains(e.target) &&
+                    e.target !== filterBtn) {
+                    filterDropdown.classList.remove("show");
                 }
-            }
-
-            const rawRequests = (requests || []).map(request => {
-
-                const booking = bookings.find(
-                    item =>
-                        String(item.id) ===
-                        String(request.booking_id)
-                );
-
-                return {
-                    ...request,
-                    booking: booking || null
-                };
             });
-
-
-
-
-            const requestCounter = {};
-
-
-            allAccessRequests = rawRequests.map(request => {
-
-                const booking =
-                    request.booking || {};
-
-                const customerKey =
-                    request.customer_id ||
-                    request.customer_email ||
-                    booking.email ||
-                    request.booking_id ||
-                    request.id;
-
-                if (!requestCounter[customerKey]) {
-                    requestCounter[customerKey] = 0;
-                }
-
-                requestCounter[customerKey]++;
-
-                return {
-                    ...request,
-
-                    request_number:
-                        requestCounter[customerKey]
-                };
-            });
-            console.log(
-                "Access requests loaded:",
-                allAccessRequests
-            );
-
-            renderAccessRequests();
-        }
-        function getPaymentStatusHTML(booking) {
-
-            const paymentStatus =
-                String(booking.payment_status || "Pending")
-                    .trim()
-                    .toLowerCase();
-
-            let label = booking.payment_status || "Pending";
-            let className = "payment-pending";
-
-            if (
-                paymentStatus === "paid" ||
-                paymentStatus === "succeeded" ||
-                paymentStatus === "success"
-            ) {
-                label = "Paid";
-                className = "payment-paid";
-
-            } else if (
-                paymentStatus === "failed" ||
-                paymentStatus === "cancelled" ||
-                paymentStatus === "canceled"
-            ) {
-                label = "Failed";
-                className = "payment-failed";
-
-            } else if (
-                paymentStatus === "processing"
-            ) {
-                label = "Processing";
-                className = "payment-processing";
-            }
-
-            return `
-        <span class="payment-status-badge ${className}">
-            ${escapeHtml(label)}
-        </span>
-    `;
-        }
-        function renderAccessRequests() {
-
-            const tbody =
-                document.getElementById(
-                    "clientTableBody"
-                );
-
-            if (!tbody) {
-                return;
-            }
-
-            tbody.innerHTML = "";
-
-            const searchInput =
-                document.getElementById(
-                    "clientSearchInput"
-                );
-
-            const searchTerm =
-                searchInput
-                    ? searchInput.value
-                        .trim()
-                        .toLowerCase()
-                    : "";
-            const sortedRequests = [...allAccessRequests].sort((a, b) => {
-
-                const bookingA = a.booking || {};
-                const bookingB = b.booking || {};
-
-                const dateA = new Date(
-                    `${bookingA.booking_date || "9999-12-31"}T${bookingA.booking_time || "23:59"}`
-                );
-
-                const dateB = new Date(
-                    `${bookingB.booking_date || "9999-12-31"}T${bookingB.booking_time || "23:59"}`
-                );
-
-                return dateA - dateB;
-            });
-            const filteredRequests =
-                sortedRequests.filter(
-                    request => {
-
-                        const booking =
-                            request.booking || {};
-
-                        if (!searchTerm) {
-                            return true;
-                        }
-
-                        const searchableText = [
-
-                            booking.full_name,
-                            booking.email,
-                            request.customer_email,
-                            request.booking_id,
-                            booking.session_type,
-                            booking.booking_date,
-                            booking.booking_time,
-                            request.status,
-                            request.requested_at,
-                            request.approved_at
-
-                        ]
-                            .filter(
-                                value =>
-                                    value !== null &&
-                                    value !== undefined
-                            )
-                            .join(" ")
-                            .toLowerCase();
-
-                        return searchableText.includes(
-                            searchTerm
-                        );
-                    }
-                );
-
-            if (filteredRequests.length === 0) {
-
-                tbody.innerHTML = `
-            <tr>
-                <td
-                    colspan="7"
-                    style="
-                        text-align:center;
-                        padding:30px;
-                        color:#888;
-                    "
-                >
-                    No access requests found.
-                </td>
-            </tr>
-        `;
-
-                return;
-            }
-
-            filteredRequests.forEach(
-                (request, index) => {
-
-                    const booking =
-                        request.booking || {};
-
-                    const status =
-                        String(
-                            request.status || "pending"
-                        ).toLowerCase();
-
-                    /*
-                     * Prefer the email from the related booking.
-                     * Fall back to customer_email from the request.
-                     */
-                    const customerEmail =
-                        booking.email ||
-                        request.customer_email ||
-                        "-";
-
-                    const customerName =
-                        booking.full_name ||
-                        "-";
-
-                    const bookingId =
-                        request.booking_id ||
-                        "-";
-
-                    const requestedAt =
-                        request.requested_at
-                            ? new Date(
-                                request.requested_at
-                            ).toLocaleString(
-                                "en-US",
-                                {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                    hour: "numeric",
-                                    minute: "2-digit"
-                                }
-                            )
-                            : "-";
-
-                    const requestNumber =
-                        Number(request.request_number || 1);
-
-                    const requestLabel =
-                        requestNumber === 1
-                            ? "1st Request"
-                            : requestNumber === 2
-                                ? "2nd Request"
-                                : `${requestNumber}th Request`;
-                    const approvedAt =
-                        request.approved_at
-                            ? new Date(
-                                request.approved_at
-                            ).toLocaleString(
-                                "en-US",
-                                {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                    hour: "numeric",
-                                    minute: "2-digit"
-                                }
-                            )
-                            : "-";
-
-                    let actionHTML = "-";
-
-                    /*
-                     * PENDING
-                     */
-                    if (status === "pending") {
-
-                        actionHTML = `
-                    <div style="
-                        display:flex;
-                        gap:6px;
-                        flex-wrap:wrap;
-                    ">
-
-                        <button
-                            type="button"
-                            class="approve-access-btn"
-                            data-id="${escapeHtml(request.id)}"
-                            style="
-                                border:0;
-                                border-radius:6px;
-                                padding:7px 12px;
-                                background:#639A88;
-                                color:#fff;
-                                cursor:pointer;
-                                font-family:inherit;
-                                font-size:12px;
-                                font-weight:600;
-                            "
-                        >
-                            Approve
-                        </button>
-
-                        <button
-                            type="button"
-                            class="reject-access-btn"
-                            data-id="${escapeHtml(request.id)}"
-                            style="
-                                border:0;
-                                border-radius:6px;
-                                padding:7px 12px;
-                                background:#c95c5c;
-                                color:#fff;
-                                cursor:pointer;
-                                font-family:inherit;
-                                font-size:12px;
-                                font-weight:600;
-                            "
-                        >
-                            Decline
-                        </button>
-
-                    </div>
-                `;
-
-                        /*
-                         * APPROVED
-                         */
-                    } else if (status === "approved") {
-
-                        actionHTML = `
-                    <span
-                        style="
-                            display:inline-block;
-                            padding:7px 12px;
-                            border-radius:6px;
-                            background:#dff3ea;
-                            color:#3d806b;
-                            font-size:12px;
-                            font-weight:600;
-                        "
-                    >
-                        Approved
-                    </span>
-                `;
-
-                        /*
-                         * DECLINED / REJECTED
-                         */
-                    } else if (
-                        status === "declined" ||
-                        status === "rejected"
-                    ) {
-
-                        actionHTML = `
-                    <span
-                        style="
-                            display:inline-block;
-                            padding:7px 12px;
-                            border-radius:6px;
-                            background:#f8dddd;
-                            color:#a84b4b;
-                            font-size:12px;
-                            font-weight:600;
-                        "
-                    >
-                        Declined
-                    </span>
-                `;
-                    }
-
-                    tbody.innerHTML += `
-                <tr>
-                    <td>
-                    <strong>${index + 1}</strong>
-                       </td>
-                    <td>
-                        ${escapeHtml(customerName)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(customerEmail)}
-                    </td>
-<td>
-        <span
-            style="
-                display:inline-block;
-                padding:6px 10px;
-                border-radius:6px;
-                background:#eef5f2;
-                color:#4f806f;
-                font-size:12px;
-                font-weight:600;
-            "
-        >
-            ${escapeHtml(requestLabel)}
-        </span>
-    </td>
-                    <td>
-                        ${escapeHtml(bookingId)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(requestedAt)}
-                    </td>
-
-                    <td>
-                        <span
-                            class="
-                                status-badge
-                                ${escapeHtml(status)}
-                            "
-                        >
-                            ${escapeHtml(
-                        request.status || "-"
-                    )}
-                        </span>
-                    </td>
-
-                    <td>
-                        ${escapeHtml(approvedAt)}
-                    </td>
-
-                    <td>
-                        ${actionHTML}
-                    </td>
-
-                </tr>
-            `;
-                }
-            );
         }
 
-        function renderHeaders(activeTabId) {
-
-            if (
-                activeTabId ===
-                "tabBookedSessions"
-            ) {
-
-                tableHeader.innerHTML = `
+        document.getElementById("clientTableHeader").innerHTML = `
 <tr>
     <th>#</th>
     <th>Full Name</th>
@@ -3631,542 +2114,53 @@
     <th>Backdrop</th>
     <th>Add-ons</th>
     <th>Payment Method</th>
-
-    <!-- PAYMENT DETAILS -->
     <th>Total Price</th>
     <th>Down Payment</th>
     <th>Remaining Balance</th>
     <th>Payment Status</th>
-
     <th>Proof of Payment</th>
     <th>Booking Status</th>
     <th>Note</th>
     <th>Rejection Reason</th>
     <th>Action</th>
-</tr>
-`;
-                if (addNewClientBtn) {
-                    addNewClientBtn.style.display =
-                        "none";
-                }
-
-                loadBookedSessions();
-
-            } else {
-
-                tableHeader.innerHTML = `
-    <tr>
-        <th>#</th>
-        <th>Customer Name</th>
-        <th> Request # </th>
-
-        <th>Email Address</th>
-
-        <th>Booking ID</th>
-
-        <th>Requested At</th>
-
-        <th>Status</th>
-
-        <th>Approved At</th>
-
-        <th>Action</th>
-
-    </tr>
-`;
-
-                if (addNewClientBtn) {
-
-                    addNewClientBtn.style.display =
-                        "none";
-                }
-
-
-                loadAccessRequests();
-            }
-        }
-
-        tabs.forEach(
-            tab => {
-
-                tab.addEventListener(
-                    "click",
-                    () => {
-
-                        tabs.forEach(
-                            t =>
-                                t.classList
-                                    .remove(
-                                        "active"
-                                    )
-                        );
-
-
-                        tab.classList.add(
-                            "active"
-                        );
-
-
-                        renderHeaders(
-                            tab.id
-                        );
-                    }
-                );
-            }
-        );
-
-        /* =========================================================
-           FILTER
-        ========================================================= */
-
-        const filterBtn =
-            document.getElementById(
-                "filterBtn"
-            );
-
-        const filterDropdown =
-            document.getElementById(
-                "filterDropdown"
-            );
-
-
-        if (
-            filterBtn &&
-            filterDropdown
-        ) {
-
-            filterBtn.addEventListener(
-                "click",
-                function (e) {
-
-                    e.stopPropagation();
-
-                    filterDropdown
-                        .classList
-                        .toggle(
-                            "show"
-                        );
-                }
-            );
-
-
-            filterDropdown
-                .querySelectorAll(
-                    ".dropdown-scroll-area a, .clear-filter"
-                )
-                .forEach(
-                    option => {
-
-                        option.addEventListener(
-                            "click",
-                            function (e) {
-
-                                e.preventDefault();
-
-
-                                selectedMonth =
-                                    option.getAttribute(
-                                        "data-filter"
-                                    );
-
-
-                                console.log(
-                                    "Selected month:",
-                                    selectedMonth
-                                );
-
-
-                                filterDropdown
-                                    .classList
-                                    .remove(
-                                        "show"
-                                    );
-
-
-                                renderBookedSessions();
-                            }
-                        );
-                    }
-                );
-
-
-            document.addEventListener(
-                "click",
-                function (e) {
-
-                    if (
-                        !filterDropdown
-                            .contains(
-                                e.target
-                            ) &&
-                        e.target !== filterBtn
-                    ) {
-
-                        filterDropdown
-                            .classList
-                            .remove(
-                                "show"
-                            );
-                    }
-                }
-            );
-        }
-
-
-        /* =========================================================
-           NOTIFICATION BUTTON
-        ========================================================= */
-
-        const notificationBtn =
-            document.getElementById(
-                "notificationBtn"
-            );
-
-
-        if (notificationBtn) {
-
-            notificationBtn.addEventListener(
-                "click",
-                async function () {
-
-                    const dropdown =
-                        document.getElementById(
-                            "notificationDropdown"
-                        );
-
-
-                    const opening =
-                        dropdown.style.display !==
-                        "block";
-
-
-                    dropdown.style.display =
-                        opening
-                            ? "block"
-                            : "none";
-
-
-                    if (opening) {
-
-                        /*
-                         * Mark unread admin notifications
-                         * as read.
-                         */
-
-                        const {
-                            error
-                        } =
-                            await supabaseClient
-                                .from(
-                                    "notifications"
-                                )
-                                .update({
-                                    is_read:
-                                        true
-                                })
-                                .eq(
-                                    "recipient",
-                                    "admin"
-                                )
-                                .eq(
-                                    "is_read",
-                                    false
-                                );
-
-
-                        if (error) {
-
-                            console.error(
-                                "Notification update error:",
-                                error
-                            );
-
-                            return;
-                        }
-
-
-                        await loadAdminNotifications();
-                    }
-                }
-            );
-
-
-            document.addEventListener(
-                "click",
-                function (e) {
-
-                    const dropdown =
-                        document.getElementById(
-                            "notificationDropdown"
-                        );
-
-
-                    if (
-                        !notificationBtn
-                            .contains(
-                                e.target
-                            ) &&
-                        !dropdown
-                            .contains(
-                                e.target
-                            )
-                    ) {
-
-                        dropdown.style.display =
-                            "none";
-                    }
-                }
-            );
-        }
-
+</tr>`;
 
         supabaseClient
-            .channel("admin_notifications")
+            .channel("admin_bookings_separate_page")
             .on(
                 "postgres_changes",
                 {
                     event: "INSERT",
                     schema: "public",
-                    table: "notifications",
-                    filter: "recipient=eq.admin"
+                    table: "bookings"
                 },
-                payload => {
-                    loadAdminNotifications();
-                }
-            )
-            .subscribe();
-
-
-        /* =========================================================
-           REALTIME BOOKINGS
-        ========================================================= */
-
-        supabaseClient
-            .channel(
-                "admin_bookings"
+                () => loadBookedSessions()
             )
             .on(
                 "postgres_changes",
                 {
-                    event:
-                        "INSERT",
-
-                    schema:
-                        "public",
-
-                    table:
-                        "bookings"
+                    event: "UPDATE",
+                    schema: "public",
+                    table: "bookings"
                 },
-                payload => {
-
-                    console.log(
-                        "New booking:",
-                        payload.new
-                    );
-
-
-                    const bookedTab =
-                        document.getElementById(
-                            "tabBookedSessions"
-                        );
-
-
-                    if (
-                        bookedTab &&
-                        bookedTab.classList
-                            .contains(
-                                "active"
-                            )
-                    ) {
-
-                        loadBookedSessions();
-                    }
-                }
-            )
-            .on(
-                "postgres_changes",
-                {
-                    event:
-                        "UPDATE",
-
-                    schema:
-                        "public",
-
-                    table:
-                        "bookings"
-                },
-                payload => {
-
-                    console.log(
-                        "Booking updated:",
-                        payload.new
-                    );
-
-
-                    loadBookedSessions();
-                }
+                () => loadBookedSessions()
             )
             .subscribe();
 
+        window.addEventListener("load", async () => {
+            try {
+                const ok = await loadAdminProfile();
+                if (!ok) return;
 
-        /* =========================================================
-           LOGOUT
-        ========================================================= */
-
-        const logoutBtn =
-            document.getElementById(
-                "logoutBtn"
-            );
-
-
-        if (logoutBtn) {
-
-            logoutBtn.addEventListener(
-                "click",
-                async function (e) {
-
-                    e.preventDefault();
-
-
-                    await supabaseClient
-                        .auth
-                        .signOut();
-
-
-                    window.location.href =
-                        "admin_login.html";
-                }
-            );
-        }
-
-
-        /* =========================================================
-           INITIAL LOAD
-        ========================================================= */
-
-        window.addEventListener(
-            "load",
-            async function () {
-
-                try {
-
-                    const {
-                        data: {
-                            session
-                        }
-                    } =
-                        await supabaseClient
-                            .auth
-                            .getSession();
-
-
-                    if (!session) {
-
-                        window.location.href =
-                            "admin_login.html";
-
-                        return;
-                    }
-
-
-                    const user =
-                        session.user;
-
-
-                    console.log(
-                        "Logged in user:",
-                        user.id
-                    );
-
-                    console.log(
-                        "Logged in email:",
-                        user.email
-                    );
-
-
-                    /* ---------------------------------------------
-                       LOAD ADMIN PROFILE
-                    --------------------------------------------- */
-
-                    const {
-                        data: profile,
-                        error:
-                        profileError
-                    } =
-                        await supabaseClient
-                            .from(
-                                "staff_profiles"
-                            )
-                            .select("*")
-                            .eq(
-                                "id",
-                                user.id
-                            )
-                            .single();
-
-
-                    if (
-                        profileError
-                    ) {
-
-                        console.error(
-                            "Profile error:",
-                            profileError
-                        );
-                    }
-
-
-                    if (profile) {
-
-                        const userName =
-                            document.getElementById(
-                                "userName"
-                            );
-
-
-                        const userAvatar =
-                            document.getElementById(
-                                "userAvatar"
-                            );
-
-
-                        if (userName) {
-
-                            userName.textContent =
-                                profile.full_name ||
-                                user.email;
-                        }
-
-
-                        if (
-                            userAvatar &&
-                            profile.avatar_url
-                        ) {
-
-                            userAvatar.src =
-                                profile.avatar_url;
-                        }
-                    }
-
-
-                    await loadAdminNotifications();
-
-                    renderHeaders(
-                        "tabBookedSessions"
-                    );
-
-                    await loadBookedSessions();
-
-
-                } catch (error) {
-
-                    console.error(
-                        "INITIALIZATION ERROR:",
-                        error
-                    );
-                }
+                await loadAdminNotifications();
+                await loadBookedSessions();
+            } catch (error) {
+                console.error(
+                    "BOOKED SESSIONS INITIALIZATION ERROR:",
+                    error
+                );
             }
-        );
+        });
 
     </script>
 </body>

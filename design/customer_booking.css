@@ -264,7 +264,6 @@ i.fa, i.fas, i.far, i.fal, i.fab, i.fa-solid, i.fa-regular, i.fa-brands {
     min-height: calc(100vh - 70px);
 }
 
-/* --- Left Sidebar --- */
 .sidebar {
     width: 230px;
     background: #ffffff;
@@ -1236,58 +1235,706 @@ select[name="package_id"],
     }
 }
 
+/* =========================================================
+   RESPONSIVE SIDEBAR + CONTENT
+   SIDEBAR MOVES TO TOP ON TABLET / MOBILE
+   ========================================================= */
+
 @media (max-width: 850px) {
+
+    /* -----------------------------------------------------
+       DASHBOARD
+    ----------------------------------------------------- */
+
     .dashboard-wrapper {
+        display: flex;
         flex-direction: column;
+
+        width: 100%;
+        min-height: calc(100vh - 70px);
+
         margin-top: 70px;
     }
 
+
+    /* =====================================================
+       SIDEBAR → TOP NAVIGATION
+       ===================================================== */
+
     .sidebar {
-        width: 100%;
         position: relative;
-        top: 0;
-        left: 0;
+
+        top: auto;
+        bottom: auto;
+        left: auto;
+
+        width: 100%;
+        height: auto;
+        min-height: 0;
+
+        padding: 12px 15px;
+
+        background: #ffffff;
+
         border-right: none;
         border-bottom: 1px solid #e5e5e5;
-        padding: 15px 20px;
+
+        display: flex;
         flex-direction: row;
+
         align-items: center;
-        gap: 15px;
+
+        justify-content: space-between;
+
+        gap: 10px;
+
+        z-index: 90;
+
+        box-sizing: border-box;
     }
+
+
+    /* -----------------------------------------------------
+       SIDEBAR NAVIGATION
+    ----------------------------------------------------- */
 
     .sidebar nav {
+        display: flex;
         flex-direction: row;
-        justify-content: space-around;
-        width: auto;
+
+        align-items: center;
+
+        justify-content: flex-start;
+
+        gap: 8px;
+
+        width: 100%;
+
         flex: 1;
+
+        min-width: 0;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        scrollbar-width: none;
     }
+
+    .sidebar nav::-webkit-scrollbar {
+        display: none;
+    }
+
+
+    /* -----------------------------------------------------
+       SIDEBAR LINKS
+    ----------------------------------------------------- */
 
     .sidebar a {
+        flex: 0 0 auto;
+
+        min-width: 125px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
         padding: 10px 14px;
+
+        border-radius: 6px;
+
+        font-size: 14px;
+
+        white-space: nowrap;
+
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease;
     }
+
+
+    /* Normal hover */
+    .sidebar a:hover {
+        background-color: #f4f4f4;
+        color: #353535;
+    }
+
+
+    /* Active */
+    .sidebar a.active {
+        background-color: #639A88;
+        color: #ffffff;
+    }
+
+
+    /* Active hover */
+    .sidebar a.active:hover {
+        background-color: #528373;
+        color: #ffffff;
+    }
+
+
+    /* -----------------------------------------------------
+       LOGOUT
+    ----------------------------------------------------- */
 
     .sidebar .logout-btn {
+        flex: 0 0 auto;
+
         width: auto;
-        padding: 10px 20px;
+
+        min-width: 110px;
+
+        padding: 10px 16px;
+
+        margin: 0;
+
+        white-space: nowrap;
+
+        transition: background-color 0.2s ease;
     }
+
+
+    /* -----------------------------------------------------
+       CONTENT
+    ----------------------------------------------------- */
 
     .content {
-        margin-left: 0;
-        padding: 20px;
         width: 100%;
+
+        margin-left: 0;
+
+        padding: 25px 20px;
+
+        min-height: calc(100vh - 150px);
+
+        box-sizing: border-box;
+
+        overflow-x: hidden;
     }
 
-    .sessions-panel {
-        padding: 24px;
+
+    /* -----------------------------------------------------
+       BOOKING LAYOUT
+    ----------------------------------------------------- */
+
+    .booking-layout-wrapper {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 20px;
+
+        margin-top: 25px;
+
+        box-sizing: border-box;
     }
+
+
+    .sessions-panel {
+        width: 100%;
+        max-width: 100%;
+
+        padding: 24px;
+
+        box-sizing: border-box;
+    }
+
+
+    .studio-services-panel {
+        width: 100%;
+        max-width: 100%;
+
+        margin-top: 0;
+
+        padding: 20px 0;
+    }
+
+
+    /* -----------------------------------------------------
+       FORM GRIDS
+    ----------------------------------------------------- */
 
     .form-grid-three,
     .form-grid-two {
         grid-template-columns: 1fr;
+
         gap: 15px;
+
+        width: 100%;
+    }
+
+
+    /* -----------------------------------------------------
+       FORM FIELDS
+    ----------------------------------------------------- */
+
+    .form-group {
+        width: 100%;
+
+        min-width: 0;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .form-group input[readonly] {
+        width: 100%;
+
+        max-width: 100%;
+
+        box-sizing: border-box;
+
+        font-size: 16px !important;
+    }
+
+
+    /* -----------------------------------------------------
+       ADD-ON ROW
+    ----------------------------------------------------- */
+
+    .addon-row {
+        width: 100%;
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+
+        box-sizing: border-box;
+    }
+
+    .addon-row select {
+        width: 100%;
+
+        flex: 1 1 100%;
+
+        min-width: 0;
+    }
+
+    .addon-quantity {
+        flex: 1 1 0;
+
+        min-width: 0;
+    }
+
+    .addon-btn-spacer {
+        display: none;
+    }
+
+    #addAddonBtn {
+        width: 100%;
+    }
+
+
+    /* -----------------------------------------------------
+       BACKDROP GRID
+    ----------------------------------------------------- */
+
+    .backdrop-grid {
+        grid-template-columns: repeat(3, 1fr);
+
+        width: 100%;
+    }
+
+
+    /* -----------------------------------------------------
+       HEADER
+    ----------------------------------------------------- */
+
+    .section-header-flex {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 6px;
+    }
+
+    .reservation-policy-text {
+        text-align: left;
+    }
+
+
+    /* -----------------------------------------------------
+       NOTIFICATIONS
+    ----------------------------------------------------- */
+
+    .notification-dropdown {
+        position: fixed;
+
+        top: 65px;
+
+        right: 15px;
+        left: 15px;
+
+        width: auto;
+
+        max-width: 350px;
+
+        margin-left: auto;
+
+        max-height: 70vh;
+
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+
+    /* -----------------------------------------------------
+       MODALS
+    ----------------------------------------------------- */
+
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .modal-close-btn {
+        top: 8px;
+        right: 12px;
+
+        font-size: 24px;
+    }
+
+    .modal-table-container {
+        padding: 30px 12px 15px 12px;
+
+        overflow-x: hidden;
+    }
+
+
+    .packages-table {
+        table-layout: fixed !important;
+
+        width: 100% !important;
+    }
+
+    .packages-table th,
+    .packages-table td {
+        padding: 8px 4px !important;
+
+        font-size: 0.75rem;
+
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .pkg-name,
+    .pkg-price,
+    .rate-main,
+    .rate-sub {
+        white-space: normal !important;
+
+        word-break: break-word;
+    }
+
+    .pkg-inclusions ul {
+        padding-left: 12px;
+    }
+
+    .pkg-inclusions li {
+        margin-bottom: 2px;
+
+        font-size: 0.75rem;
+    }
+
+    .rate-discounted {
+        padding: 6px 4px !important;
+
+        font-size: 0.7rem;
+    }
+
+    .rate-discount-row {
+        flex-direction: column;
+
+        gap: 2px;
+    }
+
+    .addons-note {
+        font-size: 0.8rem;
+
+        padding: 0 5px;
+    }
+
+    .pet-capacity-list li {
+        font-size: 0.9rem;
+    }
+
+    .pet-reminders-list li {
+        font-size: 0.85rem;
+    }
+
+
+    /* -----------------------------------------------------
+       CONFIRM BUTTON
+    ----------------------------------------------------- */
+
+    .btn-confirm {
+        width: 100%;
     }
 }
 
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    /* -----------------------------------------------------
+       TOP NAVBAR
+    ----------------------------------------------------- */
+
+    .top-navbar {
+        padding: 0 15px;
+    }
+
+    #customer-name {
+        display: none;
+    }
+
+
+    /* =====================================================
+       SIDEBAR STAYS HORIZONTAL AT TOP
+       ===================================================== */
+
+    .sidebar {
+        width: 100%;
+
+        display: flex;
+
+        flex-direction: row;
+
+        align-items: center;
+
+        padding: 10px 12px;
+
+        gap: 8px;
+    }
+
+
+    /* -----------------------------------------------------
+       NAV
+    ----------------------------------------------------- */
+
+    .sidebar nav {
+        width: 100%;
+
+        flex: 1;
+
+        display: flex;
+
+        flex-direction: row;
+
+        flex-wrap: nowrap;
+
+        gap: 6px;
+
+        overflow-x: auto;
+
+        overflow-y: hidden;
+
+        scrollbar-width: none;
+    }
+
+    .sidebar nav::-webkit-scrollbar {
+        display: none;
+    }
+
+
+    /* -----------------------------------------------------
+       LINKS
+    ----------------------------------------------------- */
+
+    .sidebar a {
+        flex: 1 0 auto;
+
+        min-width: 115px;
+
+        padding: 9px 10px;
+
+        font-size: 13px;
+
+        gap: 6px;
+
+        border-radius: 6px;
+
+        white-space: nowrap;
+    }
+
+
+    /* Hover */
+    .sidebar a:hover {
+        background-color: #f4f4f4;
+        color: #353535;
+    }
+
+
+    /* Active */
+    .sidebar a.active {
+        background-color: #639A88;
+        color: #ffffff;
+    }
+
+
+    .sidebar a.active:hover {
+        background-color: #528373;
+        color: #ffffff;
+    }
+
+
+    /* -----------------------------------------------------
+       LOGOUT
+    ----------------------------------------------------- */
+
+    .sidebar .logout-btn {
+        width: auto;
+
+        min-width: 90px;
+
+        padding: 9px 12px;
+
+        margin: 0;
+
+        font-size: 13px;
+    }
+
+
+    /* -----------------------------------------------------
+       CONTENT
+    ----------------------------------------------------- */
+
+    .content {
+        width: 100%;
+
+        margin-left: 0;
+
+        padding: 20px 15px;
+
+        box-sizing: border-box;
+    }
+
+
+    /* -----------------------------------------------------
+       PAGE HEADER
+    ----------------------------------------------------- */
+
+    .page-header h1 {
+        font-size: 30px;
+    }
+
+    .page-header p {
+        font-size: 0.9rem;
+    }
+
+
+    /* -----------------------------------------------------
+       BOOKING PANEL
+    ----------------------------------------------------- */
+
+    .sessions-panel {
+        width: 100%;
+
+        padding: 16px;
+
+        border-radius: 5px;
+    }
+
+
+    /* -----------------------------------------------------
+       BACKDROPS
+    ----------------------------------------------------- */
+
+    .backdrop-grid {
+        grid-template-columns: repeat(2, 1fr);
+
+        gap: 10px;
+    }
+
+    .backdrop-color {
+        height: 65px;
+    }
+
+
+    /* -----------------------------------------------------
+       PAYMENT SUMMARY
+    ----------------------------------------------------- */
+
+    .payment-summary-section {
+        width: 100% !important;
+
+        padding: 12px 8px;
+    }
+
+    .summary-details {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .summary-row {
+        font-size: 0.85rem;
+
+        gap: 8px;
+    }
+
+    .summary-row.highlight-row {
+        padding: 8px 10px;
+    }
+
+    .summary-row.highlight-row strong {
+        font-size: 0.95rem;
+    }
+
+
+    /* -----------------------------------------------------
+       ADD-ONS
+    ----------------------------------------------------- */
+
+    .addon-row {
+        width: 100%;
+
+        flex-wrap: wrap;
+    }
+
+    .addon-row select {
+        width: 100% !important;
+
+        flex: 1 1 100%;
+    }
+
+    .addon-quantity {
+        width: 100%;
+
+        flex: 1 1 100%;
+    }
+
+
+    /* -----------------------------------------------------
+       FORM
+    ----------------------------------------------------- */
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .form-group input[readonly] {
+        width: 100% !important;
+
+        max-width: 100% !important;
+
+        box-sizing: border-box;
+
+        font-size: 16px !important;
+    }
+
+
+    /* -----------------------------------------------------
+       CONFIRM BUTTON
+    ----------------------------------------------------- */
+
+    .btn-confirm {
+        width: 100%;
+    }
+}
 @media (max-width: 768px) {
     .page-header h1 {
         font-size: 38px;

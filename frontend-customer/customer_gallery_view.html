@@ -35,23 +35,19 @@
 
     <div class="dashboard-wrapper">
 
-        <!-- SIDEBAR -->
         <aside class="sidebar">
             <nav>
                 <a href="customer_booking.html">
                     <i class="fa-regular fa-calendar-check"></i>
                     <span>Book a Session</span>
                 </a>
-                <a href="customer_gallery_request.html" class="active">
-                    <i class="fa-regular fa-image"></i>
-                    <span>My Gallery</span>
-                </a>
-                <a href="customer_profile.html">
-                    <i class="fa-regular fa-user"></i>
-                    <span>Profile</span>
+            </nav>
+            <nav>
+                <a href="customer_gallery_view.html"
+                    style="display:inline-block; margin-top:15px; padding:10px 18px; background:#639A88; color:white; text-decoration:none; border-radius:8px;">
+                    Enter Gallery Link
                 </a>
             </nav>
-
             <button type="button" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
@@ -332,208 +328,8 @@
                 SUPABASE_URL,
                 SUPABASE_ANON_KEY
             );
-        let loggedInUser = null;
 
-        async function getLoggedInCustomer() {
 
-            try {
-
-                const {
-                    data: { user },
-                    error
-                } = await supabaseClient.auth.getUser();
-
-                if (error) {
-                    console.error("AUTH ERROR:", error);
-                    return null;
-                }
-
-                if (!user) {
-                    console.warn("NO LOGGED-IN USER");
-                    return null;
-                }
-
-                loggedInUser = user;
-
-                console.log("=================================");
-                console.log("LOGGED-IN CUSTOMER");
-                console.log("User ID:", user.id);
-                console.log("Email:", user.email);
-                console.log("Metadata:", user.user_metadata);
-                console.log("=================================");
-
-                return user;
-
-            } catch (error) {
-
-                console.error(
-                    "Failed to fetch logged-in customer:",
-                    error
-                );
-
-                return null;
-            }
-        }
-        async function loadCustomerProfile() {
-
-            const userNameElement =
-                document.getElementById("userName");
-
-            const avatarElement =
-                document.getElementById("userAvatar");
-
-            if (!userNameElement) {
-                console.error("ERROR: #userName element was not found.");
-                return;
-            }
-
-            if (!avatarElement) {
-                console.error("ERROR: #userAvatar element was not found.");
-                return;
-            }
-
-            if (!loggedInUser) {
-                console.warn("No logged-in user.");
-                return;
-            }
-
-            console.log("=================================");
-            console.log("FETCHING CUSTOMER PROFILE");
-            console.log("Auth User ID:", loggedInUser.id);
-            console.log("Auth Email:", loggedInUser.email);
-            console.log("=================================");
-
-            try {
-
-                let profile = null;
-
-                const {
-                    data: profileById,
-                    error: profileIdError
-                } = await supabaseClient
-                    .from("profiles")
-                    .select("*")
-                    .eq("id", loggedInUser.id)
-                    .maybeSingle();
-
-                if (profileIdError) {
-
-                    console.error(
-                        "Profile ID lookup error:",
-                        profileIdError
-                    );
-
-                } else if (profileById) {
-
-                    profile = profileById;
-
-                    console.log(
-                        "Profile found using Auth User ID."
-                    );
-                }
-
-                if (!profile && loggedInUser.email) {
-
-                    console.log(
-                        "No profile found by Auth ID."
-                    );
-
-                    console.log(
-                        "Trying profile using email:",
-                        loggedInUser.email
-                    );
-
-                    const {
-                        data: profileByEmail,
-                        error: profileEmailError
-                    } = await supabaseClient
-                        .from("profiles")
-                        .select("*")
-                        .eq("email", loggedInUser.email)
-                        .maybeSingle();
-
-                    if (profileEmailError) {
-
-                        console.error(
-                            "Profile email lookup error:",
-                            profileEmailError
-                        );
-
-                    } else if (profileByEmail) {
-
-                        profile = profileByEmail;
-
-                        console.log(
-                            "Profile found using email."
-                        );
-                    }
-                }
-
-                console.log("=================================");
-                console.log("FINAL PROFILE:");
-                console.log(profile);
-                console.log("=================================");
-
-                const customerName =
-                    profile?.full_name ||
-                    profile?.name ||
-                    loggedInUser.user_metadata?.full_name ||
-                    loggedInUser.user_metadata?.name ||
-                    loggedInUser.email ||
-                    "Customer";
-
-                const customerAvatar =
-                    profile?.avatar_url ||
-                    profile?.profile_image ||
-                    profile?.avatar ||
-                    loggedInUser.user_metadata?.avatar_url ||
-                    loggedInUser.user_metadata?.picture ||
-                    null;
-
-                userNameElement.textContent =
-                    customerName;
-
-                if (customerAvatar) {
-
-                    avatarElement.style.display = "block";
-
-                    avatarElement.src = customerAvatar;
-
-                    avatarElement.onerror = function () {
-
-                        console.warn(
-                            "Profile image failed to load:",
-                            customerAvatar
-                        );
-
-                        this.onerror = null;
-                        this.style.display = "none";
-
-                    };
-
-                } else {
-                    avatarElement.style.display = "none";
-                }
-
-                console.log("=================================");
-                console.log("CUSTOMER DISPLAY");
-                console.log("Name:", customerName);
-                console.log("Avatar:", customerAvatar);
-                console.log("=================================");
-
-            } catch (error) {
-
-                console.error(
-                    "LOAD CUSTOMER PROFILE ERROR:",
-                    error
-                );
-
-                userNameElement.textContent =
-                    loggedInUser.email || "Customer";
-
-                avatarElement.style.display = "none";
-            }
-        }
         const galleryTitle =
             document.getElementById("galleryTitle");
 
@@ -558,25 +354,6 @@
 
         let currentPhotos = [];
 
-        window.addEventListener("DOMContentLoaded", async () => {
-
-            const user = await getLoggedInCustomer();
-
-            if (!user) {
-
-                showGalleryError(
-                    "Login Required",
-                    "Please log in to access your gallery."
-                );
-
-                return;
-            }
-
-            await loadCustomerProfile();
-
-            await initializeGallery();
-
-        });
 
         let gallerySessionId = null;
 
@@ -693,12 +470,22 @@
 
             try {
 
+                /* =========================================================
+                   FIND REPOSITORY USING PRIVATE ACCESS TOKEN
+                ========================================================= */
+
                 const {
                     data: repository,
                     error
                 } = await supabaseClient
                     .from("repository_client_links")
-                    .select("id, booking_id, access_token")
+                    .select(`
+                id,
+                booking_id,
+                access_token,
+                download_access,
+                gallery_access_expires_at
+            `)
                     .eq("access_token", token.trim())
                     .limit(1)
                     .maybeSingle();
@@ -734,6 +521,39 @@
 
                 currentRepository =
                     repository;
+
+
+                /* =========================================================
+                   CHECK 24-HOUR ACCESS EXPIRATION
+                ========================================================= */
+
+                const accessExpiresAt =
+                    repository.gallery_access_expires_at;
+
+                if (accessExpiresAt) {
+
+                    const now = new Date();
+                    const expiresAt =
+                        new Date(accessExpiresAt);
+
+                    if (
+                        Number.isNaN(expiresAt.getTime()) ||
+                        now >= expiresAt
+                    ) {
+
+                        showGalleryError(
+                            "Gallery Access Expired",
+                            "Your gallery access has expired. Please request access again from the My Gallery page."
+                        );
+
+                        return;
+                    }
+                }
+
+
+                /* =========================================================
+                   LOAD BOOKING
+                ========================================================= */
 
                 const {
                     data: booking,
@@ -771,31 +591,6 @@
 
                     return;
                 }
-
-                if (!loggedInUser) {
-
-                    showGalleryError(
-                        "Login Required",
-                        "Please log in to access your gallery."
-                    );
-
-                    return;
-                }
-
-                if (booking.customer_id !== loggedInUser.id) {
-
-                    console.warn(
-                        "Gallery does not belong to logged-in user."
-                    );
-
-                    showGalleryError(
-                        "Gallery Access Denied",
-                        "This gallery does not belong to the currently logged-in account."
-                    );
-
-                    return;
-                }
-
                 currentBooking =
                     booking;
 
@@ -999,24 +794,27 @@
                 return false;
             }
 
-            if (currentRepository.download_access === true) {
-                return true;
+            if (
+                !currentRepository.gallery_access_expires_at
+            ) {
+                return false;
             }
 
-            if (
-                currentRepository.gallery_access_expires_at
-            ) {
+            const now =
+                new Date();
 
-                const now = new Date();
-
-                const expiresAt = new Date(
+            const expiresAt =
+                new Date(
                     currentRepository.gallery_access_expires_at
                 );
 
-                return now < expiresAt;
+            if (
+                Number.isNaN(expiresAt.getTime())
+            ) {
+                return false;
             }
 
-            return false;
+            return now < expiresAt;
         }
 
         function downloadPhoto(photo) {
@@ -1284,15 +1082,7 @@
                 .replace(/'/g, "&#039;");
         }
 
-        document.getElementById("logoutBtn").addEventListener("click", async () => {
-            const { error } = await supabaseClient.auth.signOut();
-
-            if (error) {
-                console.error("Logout error:", error);
-                alert("Unable to log out.");
-                return;
-            }
-
+        document.getElementById("logoutBtn").addEventListener("click", () => {
             window.location.href = "customer_homepage.html";
         });
     </script>

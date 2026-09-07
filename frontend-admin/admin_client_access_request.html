@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captured Admin Studio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="/design/admin_dashboard.css">
+    <link rel="stylesheet" href="/design/admin_client.css">
+
+    <style>
+        .page-switch {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .page-switch a {
+            text-decoration: none;
+            padding: 9px 14px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            color: #555;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .page-switch a.active {
+            background: #639A88;
+            color: #fff;
+            border-color: #639A88;
+        }
+
+        .ui-table-card-panel {
+            overflow-x: auto;
+        }
+
+        .payment-proof-btn {
+            border: 0;
+            background: #639A88;
+            color: #fff;
+            border-radius: 6px;
+            padding: 7px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .payment-proof-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, .72);
+        }
+
+        .payment-proof-modal.show {
+            display: flex;
+        }
+
+        .payment-proof-card {
+            width: min(920px, 96vw);
+            max-height: 94vh;
+            overflow: auto;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+            position: relative;
+            padding: 20px;
+        }
+
+        .payment-proof-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 50%;
+            background: #f1f1f1;
+            color: #333;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .payment-proof-header {
+            padding: 0 48px 14px 4px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 16px;
+        }
+
+        .payment-proof-header h2 {
+            margin: 0 0 5px;
+            font-size: 20px;
+            color: #353535;
+        }
+
+        .payment-proof-details {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 20px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .payment-proof-image-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .payment-proof-image {
+            display: block;
+            max-width: 100%;
+            max-height: 68vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .simple-rejection-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, .55);
+            padding: 20px;
+        }
+
+        .simple-rejection-modal.show {
+            display: flex;
+        }
+
+        .simple-rejection-card {
+            width: min(520px, 96vw);
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .simple-rejection-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .simple-rejection-actions button {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #cancelRejectionBtn {
+            background: #eee;
+            color: #333;
+        }
+
+        #confirmRejectionBtn {
+            background: #b84b4b;
+            color: #fff;
+        }
+
+        @media(max-width:700px) {
+            .payment-proof-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="top-navbar">
+        <div class="logo-section">
+            <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
+            <span>Captured Admin Studio</span>
+        </div>
+
+        <div class="navbar-right">
+            <div class="notification-container">
+                <button id="notificationBtn" class="notification-btn" type="button">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notificationCount">0</span>
+                </button>
+                <div id="notificationDropdown" class="notification-dropdown">
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+                    </div>
+                    <div id="notificationList"></div>
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <img id="userAvatar" class="avatar" src="https://via.placeholder.com/42" alt="Profile">
+                <span id="userName">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <nav>
+                <a href="admin_dashboard.html"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
+                <a href="admin_client.html" class="">
+                    <i class="fa-solid fa-calendar-check"></i> Booked Sessions
+                </a>
+                <a href="admin_repository.html"><i class="fa-solid fa-book"></i> Repository</a>
+                <a href="admin_payment.html"><i class="fa-solid fa-credit-card"></i> Payments</a>
+                <a href="admin_archives.html"><i class="fa-solid fa-box-archive"></i> Archives</a>
+                <a href="admin_profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+                <a href="admin_settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+
+            <a href="admin_dashboard.html" class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+        <main class="content">
+            <div class="client-header-container">
+                <div class="page-header">
+                    <h1>All Access Requests</h1>
+                    <p>Review and manage customer gallery access requests.</p>
+
+                    <div class="page-switch">
+                        <a href="admin_client.html" class="">All Booked Sessions</a>
+                        <a href="admin_client_access_request.html" class="active">All Access Requests</a>
+                    </div>
+                </div>
+
+                <div class="client-actions-row">
+                    <div class="table-search-box">
+                        <input type="text" id="clientSearchInput" placeholder="Search" autocomplete="off">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+
+                    <div class="filter-dropdown-wrapper" id="filterWrapper">
+                        <button class="table-filter-btn" id="filterBtn" type="button">
+                            <i class="fa-solid fa-sliders"></i> Filter
+                        </button>
+                        <div class="filter-dropdown-menu" id="filterDropdown">
+                            <div class="dropdown-section-title">Select Month</div>
+                            <div class="dropdown-scroll-area">
+                                <a href="#" data-filter="1">January</a>
+                                <a href="#" data-filter="2">February</a>
+                                <a href="#" data-filter="3">March</a>
+                                <a href="#" data-filter="4">April</a>
+                                <a href="#" data-filter="5">May</a>
+                                <a href="#" data-filter="6">June</a>
+                                <a href="#" data-filter="7">July</a>
+                                <a href="#" data-filter="8">August</a>
+                                <a href="#" data-filter="9">September</a>
+                                <a href="#" data-filter="10">October</a>
+                                <a href="#" data-filter="11">November</a>
+                                <a href="#" data-filter="12">December</a>
+                                <a href="#" class="clear-filter" data-filter="all">All Months</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-table-card-panel">
+                <table class="ui-data-grid">
+                    <thead id="clientTableHeader"></thead>
+                    <tbody id="clientTableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <div>
+            <strong id="toastTitle">Success</strong>
+            <p id="toastMessage"></p>
+        </div>
+    </div>
+
+    <div class="simple-rejection-modal" id="rejectionModal">
+        <div class="simple-rejection-card">
+            <h2 id="rejectionModalTitle">Decline Gallery Access</h2>
+            <p>Please select a reason. The customer will be notified.</p>
+
+            <form id="rejectionForm">
+                <div class="form-field select-field-wrapper">
+                    <select id="rejectionReason" required>
+                        <option value="" disabled selected hidden>Select rejection reason</option>
+                        <option value="The requested date is no longer available.">Requested date is unavailable
+                        </option>
+                        <option value="The requested time slot is no longer available.">Requested time slot is
+                            unavailable</option>
+                        <option value="The selected package or session is unavailable.">Selected package/session is
+                            unavailable</option>
+                        <option value="The booking information provided was incomplete or incorrect.">Incomplete or
+                            incorrect booking information</option>
+                        <option value="The payment could not be verified.">Payment could not be verified</option>
+                        <option value="The booking does not meet the studio's requirements.">Booking does not meet
+                            studio requirements</option>
+                        <option value="The studio is unavailable on the requested date.">Studio unavailable</option>
+                        <option value="Other">Other reason</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                </div>
+
+                <div class="form-field" id="customRejectionReasonWrapper" style="display:none;">
+                    <textarea id="customRejectionReason" placeholder="Enter the reason..." rows="4"></textarea>
+                </div>
+
+                <div class="simple-rejection-actions">
+                    <button type="button" id="cancelRejectionBtn">Cancel</button>
+                    <button type="submit" id="confirmRejectionBtn">Reject & Notify Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        )
+
+        const SERVER_URL =
+            (window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1")
+                ? "http://localhost:3000"
+                : "";
+
+        let allBookedSessions = [];
+        let allAccessRequests = [];
+        let selectedMonth = "all";
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return "";
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function formatBookingTime(timeString) {
+            if (!timeString) return "-";
+
+            const parts = String(timeString).split(":");
+            if (parts.length < 2) return timeString;
+
+            const hours = parseInt(parts[0], 10);
+            const minutes = parseInt(parts[1], 10);
+
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+                return timeString;
+            }
+
+            const date = new Date();
+            date.setHours(hours, minutes, 0, 0);
+
+            return date.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
+            });
+        }
+
+        function formatBookingDate(dateString) {
+            if (!dateString) return "-";
+
+            const date = new Date(`${dateString}T00:00:00`);
+            if (Number.isNaN(date.getTime())) return dateString;
+
+            return date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            });
+        }
+
+        function showToast(title, message) {
+            const titleElement = document.getElementById("toastTitle");
+            const messageElement = document.getElementById("toastMessage");
+            const toast = document.getElementById("toast");
+
+            if (titleElement) titleElement.textContent = title;
+            if (messageElement) messageElement.textContent = message;
+
+            if (toast) {
+                toast.classList.add("show");
+                setTimeout(() => toast.classList.remove("show"), 4000);
+            }
+        }
+        async function loadAdminNotifications() {
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("notifications")
+                .select("*")
+                .eq("recipient", "admin")
+                .order("created_at", {
+                    ascending: false
+                });
+
+            if (error) {
+
+                console.error(
+                    "Notification loading error:",
+                    error
+                );
+
+                return;
+            }
+
+            const list =
+                document.getElementById(
+                    "notificationList"
+                );
+
+            if (!list) {
+                return;
+            }
+
+            list.innerHTML = "";
+
+            let unread = 0;
+
+            (data || []).forEach(notification => {
+
+                if (!notification.is_read) {
+                    unread++;
+                }
+
+                list.innerHTML += `
+<div class="notification-item ${notification.is_read ? "" : "unread"}">
+
+    <div class="notification-icon">
+        <i class="fa-solid fa-circle-check"></i>
+    </div>
+
+    <div class="notification-content">
+
+        <h4>
+            ${notification.title || ""}
+        </h4>
+
+        <p class="notification-message">
+            ${notification.message || ""}
+        </p>
+
+        ${notification.link
+                        ? `
+                    <a
+                        href="${notification.link}"
+                        class="notification-link"
+                    >
+                        <i class="fa-solid fa-images"></i>
+                        Open My Gallery
+                    </a>
+                  `
+                        : ""
+                    }
+
+        <small>
+            ${notification.created_at
+                        ? new Date(
+                            notification.created_at
+                        ).toLocaleString()
+                        : ""
+                    }
+        </small>
+
+    </div>
+
+</div>
+`;
+            });
+
+            const badge =
+                document.getElementById(
+                    "notificationCount"
+                );
+
+            if (!badge) {
+                return;
+            }
+
+            if (unread > 0) {
+
+                badge.textContent = unread;
+
+                badge.style.display =
+                    "inline-flex";
+
+            } else {
+
+                badge.style.display =
+                    "none";
+            }
+        }
+        async function createClientRepository(
+            booking
+        ) {
+
+            console.log(
+                "Creating repository for:",
+                booking.full_name
+            );
+
+            const {
+                data: existingRepository,
+                error: existingError
+            } = await supabaseClient
+                .from(
+                    "repository_client_links"
+                )
+                .select("*")
+                .eq(
+                    "booking_id",
+                    booking.id
+                )
+                .maybeSingle();
+
+
+            if (existingError) {
+
+                console.error(
+                    "Repository lookup error:",
+                    existingError
+                );
+
+                throw existingError;
+            }
+
+
+            if (existingRepository) {
+
+                console.log(
+                    "Repository already exists."
+                );
+
+                return existingRepository;
+            }
+
+            const {
+                data: {
+                    user
+                }
+            } =
+                await supabaseClient
+                    .auth
+                    .getUser();
+
+
+            const uniqueToken =
+                crypto.randomUUID();
+
+            const {
+                data: repository,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        "repository_client_links"
+                    )
+                    .insert({
+
+                        booking_id:
+                            booking.id,
+
+                        access_token:
+                            uniqueToken,
+
+                        created_by:
+                            user?.id || null
+
+                    })
+                    .select()
+                    .single();
+
+
+            if (error) {
+
+                console.error(
+                    "Repository creation error:",
+                    error
+                );
+
+                throw error;
+            }
+
+
+            console.log(
+                "Repository created:",
+                repository
+            );
+
+
+            return repository;
+        }
+
+        function getClientRepositoryLink(repository) {
+
+            if (!repository || !repository.access_token) {
+                console.error("Repository token is missing:", repository);
+                return null;
+            }
+
+            return (
+                window.location.origin +
+                "/frontend-customer/client-gallery.html?token=" +
+                encodeURIComponent(repository.access_token)
+            );
+        }
+
+        async function autoArchiveAccessRequests() {
+
+            console.log("Checking access requests for archive...");
+
+            const now = new Date().toISOString();
+
+            const { data: requests, error } =
+                await supabaseClient
+                    .from("gallery_access_requests")
+                    .select("id, status, archive_at")
+                    .eq("status", "approved")
+                    .not("archive_at", "is", null)
+                    .lte("archive_at", now);
+
+            if (error) {
+
+                console.error(
+                    "Error checking archive requests:",
+                    error
+                );
+
+                return;
+            }
+
+            if (!requests || requests.length === 0) {
+
+                console.log(
+                    "No access requests need to be archived."
+                );
+
+                return;
+            }
+
+            for (const request of requests) {
+
+                const { error: updateError } =
+                    await supabaseClient
+                        .from("gallery_access_requests")
+                        .update({
+                            status: "expired"
+                        })
+                        .eq("id", request.id)
+                        .eq("status", "approved");
+
+                if (updateError) {
+
+                    console.error(
+                        "Failed to archive request:",
+                        request.id,
+                        updateError
+                    );
+
+                } else {
+
+                    console.log(
+                        "Access request archived:",
+                        request.id
+                    );
+                }
+            }
+        } async function loadAccessRequests() {
+
+            console.log("Loading access requests...");
+
+
+            await autoArchiveAccessRequests();
+
+
+            const {
+                data: requests,
+                error
+            } = await supabaseClient
+                .from("gallery_access_requests")
+                .select("*")
+                .neq("status", "expired")
+                .order("created_at", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                console.error(
+                    "Error loading access requests:",
+                    error
+                );
+
+                return;
+            }
+
+            const bookingIds = (requests || [])
+                .map(request => request.booking_id)
+                .filter(Boolean);
+
+            let bookings = [];
+
+            if (bookingIds.length > 0) {
+
+                const {
+                    data: bookingData,
+                    error: bookingError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select(`
+                id,
+                full_name,
+                email,
+                contact_number,
+                session_type,
+                booking_date,
+                booking_time
+            `)
+                    .in("id", bookingIds);
+
+                if (bookingError) {
+
+                    console.error(
+                        "Error loading related bookings:",
+                        bookingError
+                    );
+
+                } else {
+
+                    bookings = bookingData || [];
+                }
+            }
+
+            const rawRequests = (requests || []).map(request => {
+
+                const booking = bookings.find(
+                    item =>
+                        String(item.id) ===
+                        String(request.booking_id)
+                );
+
+                return {
+                    ...request,
+                    booking: booking || null
+                };
+            });
+            const requestCounter = {};
+
+
+            allAccessRequests = rawRequests.map(request => {
+
+                return {
+                    ...request,
+
+                    request_number:
+                        Number(request.request_number || 1)
+                };
+
+            });
+            console.log(
+                "Access requests loaded:",
+                allAccessRequests
+            );
+
+            renderAccessRequests();
+        }
+        function getPaymentStatusHTML(booking) {
+
+            const paymentStatus =
+                String(booking.payment_status || "Pending")
+                    .trim()
+                    .toLowerCase();
+
+            let label = booking.payment_status || "Pending";
+            let className = "payment-pending";
+
+            if (
+                paymentStatus === "paid" ||
+                paymentStatus === "succeeded" ||
+                paymentStatus === "success"
+            ) {
+                label = "Paid";
+                className = "payment-paid";
+
+            } else if (
+                paymentStatus === "failed" ||
+                paymentStatus === "cancelled" ||
+                paymentStatus === "canceled"
+            ) {
+                label = "Failed";
+                className = "payment-failed";
+
+            } else if (
+                paymentStatus === "processing"
+            ) {
+                label = "Processing";
+                className = "payment-processing";
+            }
+
+            return `
+        <span class="payment-status-badge ${className}">
+            ${escapeHtml(label)}
+        </span>
+    `;
+        } function getPaymentStatusHTML(booking) {
+
+            const paymentStatus =
+                String(booking.payment_status || "Pending")
+                    .trim()
+                    .toLowerCase();
+
+            let label = booking.payment_status || "Pending";
+            let className = "payment-pending";
+
+            if (
+                paymentStatus === "paid" ||
+                paymentStatus === "succeeded" ||
+                paymentStatus === "success"
+            ) {
+                label = "Paid";
+                className = "payment-paid";
+
+            } else if (
+                paymentStatus === "failed" ||
+                paymentStatus === "cancelled" ||
+                paymentStatus === "canceled"
+            ) {
+                label = "Failed";
+                className = "payment-failed";
+
+            } else if (
+                paymentStatus === "processing"
+            ) {
+                label = "Processing";
+                className = "payment-processing";
+            }
+
+            return `
+        <span class="payment-status-badge ${className}">
+            ${escapeHtml(label)}
+        </span>
+    `;
+        } function renderAccessRequests() {
+
+            const tbody =
+                document.getElementById(
+                    "clientTableBody"
+                );
+
+            if (!tbody) {
+                return;
+            }
+
+            tbody.innerHTML = "";
+
+            const searchInput =
+                document.getElementById(
+                    "clientSearchInput"
+                );
+
+            const searchTerm =
+                searchInput
+                    ? searchInput.value
+                        .trim()
+                        .toLowerCase()
+                    : "";
+            const sortedRequests = [...allAccessRequests].sort((a, b) => {
+
+                const bookingA = a.booking || {};
+                const bookingB = b.booking || {};
+
+                const dateA = new Date(
+                    `${bookingA.booking_date || "9999-12-31"}T${bookingA.booking_time || "23:59"}`
+                );
+
+                const dateB = new Date(
+                    `${bookingB.booking_date || "9999-12-31"}T${bookingB.booking_time || "23:59"}`
+                );
+
+                return dateA - dateB;
+            });
+            const filteredRequests =
+                sortedRequests.filter(
+                    request => {
+
+                        const booking =
+                            request.booking || {};
+
+                        if (!searchTerm) {
+                            return true;
+                        }
+
+                        const searchableText = [
+
+                            booking.full_name,
+                            booking.email,
+                            request.customer_email,
+                            request.booking_id,
+                            booking.session_type,
+                            booking.booking_date,
+                            booking.booking_time,
+                            request.status,
+                            request.created_at,
+                            request.approved_at
+
+                        ]
+                            .filter(
+                                value =>
+                                    value !== null &&
+                                    value !== undefined
+                            )
+                            .join(" ")
+                            .toLowerCase();
+
+                        return searchableText.includes(
+                            searchTerm
+                        );
+                    }
+                );
+
+            if (filteredRequests.length === 0) {
+
+                tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="7"
+                    style="
+                        text-align:center;
+                        padding:30px;
+                        color:#888;
+                    "
+                >
+                    No access requests found.
+                </td>
+            </tr>
+        `;
+
+                return;
+            }
+
+            filteredRequests.forEach(
+                (request, index) => {
+
+                    const booking =
+                        request.booking || {};
+
+                    const status =
+                        String(
+                            request.status || "pending"
+                        ).toLowerCase();
+
+                    const customerEmail =
+                        booking.email ||
+                        request.customer_email ||
+                        "-";
+
+                    const customerName =
+                        booking.full_name ||
+                        "-";
+
+                    const bookingId =
+                        request.booking_id ||
+                        "-";
+
+                    const requestedAt =
+                        request.created_at
+                            ? new Date(
+                                request.created_at
+                            ).toLocaleString(
+                                "en-US",
+                                {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "2-digit"
+                                }
+                            )
+                            : "-";
+
+                    const requestNumber =
+                        Number(request.request_number || 1);
+
+                    const requestLabel =
+                        requestNumber === 1
+                            ? "1st Request"
+                            : requestNumber === 2
+                                ? "2nd Request"
+                                : `${requestNumber}th Request`;
+                    const approvedAt =
+                        request.approved_at
+                            ? new Date(
+                                request.approved_at
+                            ).toLocaleString(
+                                "en-US",
+                                {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "2-digit"
+                                }
+                            )
+                            : "-";
+
+                    let actionHTML = "-";
+
+                    /*
+                     * PENDING
+                     */
+                    if (status === "pending") {
+
+                        actionHTML = `
+                    <div style="
+                        display:flex;
+                        gap:6px;
+                        flex-wrap:wrap;
+                    ">
+
+                        <button
+                            type="button"
+                            class="approve-access-btn"
+                            data-id="${escapeHtml(request.id)}"
+                            style="
+                                border:0;
+                                border-radius:6px;
+                                padding:7px 12px;
+                                background:#639A88;
+                                color:#fff;
+                                cursor:pointer;
+                                font-family:inherit;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Approve
+                        </button>
+
+                        <button
+                            type="button"
+                            class="reject-access-btn"
+                            data-id="${escapeHtml(request.id)}"
+                            style="
+                                border:0;
+                                border-radius:6px;
+                                padding:7px 12px;
+                                background:#c95c5c;
+                                color:#fff;
+                                cursor:pointer;
+                                font-family:inherit;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Decline
+                        </button>
+
+                    </div>
+                `;
+
+                        /*
+                         * APPROVED
+                         */
+                    } else if (status === "approved") {
+
+                        actionHTML = `
+                    <span
+                        style="
+                            display:inline-block;
+                            padding:7px 12px;
+                            border-radius:6px;
+                            background:#dff3ea;
+                            color:#3d806b;
+                            font-size:12px;
+                            font-weight:600;
+                        "
+                    >
+                        Approved
+                    </span>
+                `;
+
+                    } else if (
+                        status === "declined" ||
+                        status === "rejected"
+                    ) {
+
+                        actionHTML = `
+                    <span
+                        style="
+                            display:inline-block;
+                            padding:7px 12px;
+                            border-radius:6px;
+                            background:#f8dddd;
+                            color:#a84b4b;
+                            font-size:12px;
+                            font-weight:600;
+                        "
+                    >
+                        Declined
+                    </span>
+                `;
+                    }
+
+                    tbody.innerHTML += `
+                <tr>
+                    <td>
+                    <strong>${index + 1}</strong>
+                       </td>
+                   <td>
+                    ${escapeHtml(customerName)}
+                </td>
+
+
+                <!-- REQUEST # -->
+                <td>
+                    <span
+                        style="
+                            display:inline-block;
+                            padding:6px 10px;
+                            border-radius:6px;
+                            background:#eef5f2;
+                            color:#4f806f;
+                            font-size:12px;
+                            font-weight:600;
+                        "
+                    >
+                        ${escapeHtml(requestLabel)}
+                    </span>
+                </td>
+
+
+                <!-- EMAIL -->
+                <td>
+                    ${escapeHtml(customerEmail)}
+                </td>
+
+                    <td>
+                        ${escapeHtml(bookingId)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(requestedAt)}
+                    </td>
+
+                    <td>
+                        <span
+                            class="
+                                status-badge
+                                ${escapeHtml(status)}
+                            "
+                        >
+                            ${escapeHtml(
+                        request.status || "-"
+                    )}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(approvedAt)}
+                    </td>
+
+                    <td>
+                        ${actionHTML}
+                    </td>
+
+                </tr>
+            `;
+                }
+            );
+        }
+        document.addEventListener(
+            "click",
+            async function (e) {
+
+                const btn =
+                    e.target.closest(".approve-access-btn");
+
+                if (!btn) {
+                    return;
+                }
+
+                const requestId =
+                    btn.dataset.id;
+
+                if (!requestId) {
+                    console.error("Missing request ID.");
+                    return;
+                }
+
+                const confirmed =
+                    confirm(
+                        "Approve this customer's gallery access request?"
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = "Approving...";
+
+                try {
+
+
+                    const {
+                        data: request,
+                        error: requestError
+                    } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .select("*")
+                        .eq("id", requestId)
+                        .single();
+
+                    if (requestError) {
+                        throw requestError;
+                    }
+
+                    if (!request) {
+                        throw new Error(
+                            "Access request was not found."
+                        );
+                    }
+
+
+                    if (request.status === "approved") {
+
+                        showToast(
+                            "Already Approved",
+                            "This access request has already been approved."
+                        );
+
+                        return;
+                    }
+                    const {
+                        data: booking,
+                        error: bookingError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .eq("id", request.booking_id)
+                        .single();
+
+                    if (bookingError) {
+                        throw bookingError;
+                    }
+
+                    if (!booking) {
+                        throw new Error(
+                            "The booking connected to this request was not found."
+                        );
+                    }
+
+                    const repository =
+                        await createClientRepository(
+                            booking
+                        );
+
+                    const clientLink =
+                        getClientRepositoryLink(repository);
+                    const approvedAt = new Date();
+
+                    const expiresAt = new Date(
+                        approvedAt.getTime() +
+                        (24 * 60 * 60 * 1000)
+                    );
+
+                    const archiveAt = new Date(
+                        approvedAt.getTime() +
+                        (2 * 24 * 60 * 60 * 1000)
+                    );
+                    const {
+                        error: updateError
+                    } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .update({
+
+                            status: "approved",
+
+                            repository_id: repository.id,
+
+                            approved_at: approvedAt.toISOString(),
+
+                            access_started_at: approvedAt.toISOString(),
+
+                            access_expires_at: expiresAt.toISOString(),
+
+                            expires_at: expiresAt.toISOString(),
+
+                            archive_at: archiveAt.toISOString(),
+
+                            is_expired: false,
+
+                            approved_by:
+                                (await supabaseClient.auth.getUser())
+                                    .data.user?.id || null
+
+                        })
+                        .eq("id", requestId);
+                    if (updateError) {
+                        console.error("Access request update error:", updateError);
+                        throw updateError;
+                    }
+                    console.log(
+                        "Sending approved gallery email..."
+                    );
+
+                    console.log(
+                        "Customer email:",
+                        request.customer_email
+                    );
+
+
+                    const emailResponse =
+                        await fetch(
+                            `${SERVER_URL}/api/gallery-access/send-approved-email/${encodeURIComponent(requestId)}`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+
+                                body: JSON.stringify({
+                                    requestId: requestId
+                                })
+                            }
+                        );
+
+
+                    let emailResult = null;
+
+                    try {
+
+                        emailResult =
+                            await emailResponse.json();
+
+                    } catch (jsonError) {
+
+                        console.error(
+                            "EMAIL RESPONSE IS NOT JSON:",
+                            jsonError
+                        );
+
+                    }
+
+
+                    console.log(
+                        "GALLERY EMAIL RESPONSE:",
+                        emailResult
+                    );
+
+
+                    if (!emailResponse.ok) {
+
+                        throw new Error(
+                            emailResult?.error ||
+                            "The gallery was approved, but the email could not be sent."
+                        );
+
+                    }
+
+
+                    if (!emailResult?.success) {
+
+                        throw new Error(
+                            emailResult?.error ||
+                            "The gallery was approved, but the email could not be sent."
+                        );
+
+                    }
+
+
+                    console.log(
+                        "GALLERY ACCESS EMAIL SENT:",
+                        emailResult.email
+                    );
+
+
+                    showToast(
+                        "Access Approved",
+                        "The customer's gallery access has been approved."
+                    );
+
+
+                    await loadAccessRequests();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "APPROVE ACCESS ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "The access request could not be approved.\n\n" +
+                        error.message
+                    );
+
+                } finally {
+
+                    btn.disabled = false;
+                    btn.textContent = "Approve";
+
+                }
+
+            }
+        );
+        let rejectionTargetId = null;
+
+        function openRejectionModal(requestId) {
+            rejectionTargetId = requestId;
+
+            const modal = document.getElementById("rejectionModal");
+            const form = document.getElementById("rejectionForm");
+            const customWrapper =
+                document.getElementById("customRejectionReasonWrapper");
+            const customReason =
+                document.getElementById("customRejectionReason");
+
+            if (form) form.reset();
+            if (customWrapper) customWrapper.style.display = "none";
+
+            if (customReason) {
+                customReason.required = false;
+                customReason.value = "";
+            }
+
+            if (modal) {
+                modal.classList.add("show");
+                document.body.style.overflow = "hidden";
+            }
+        }
+
+        function closeRejectionModal() {
+            const modal = document.getElementById("rejectionModal");
+            const form = document.getElementById("rejectionForm");
+
+            if (modal) modal.classList.remove("show");
+            if (form) form.reset();
+
+            document.body.style.overflow = "";
+            rejectionTargetId = null;
+        }
+
+        document.addEventListener("click", (e) => {
+            const btn = e.target.closest(".reject-access-btn");
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            if (id) openRejectionModal(id);
+        });
+
+        document.getElementById("rejectionReason")
+            ?.addEventListener("change", (e) => {
+                const wrapper =
+                    document.getElementById("customRejectionReasonWrapper");
+                const textarea =
+                    document.getElementById("customRejectionReason");
+
+                if (e.target.value === "Other") {
+                    if (wrapper) wrapper.style.display = "block";
+                    if (textarea) textarea.required = true;
+                } else {
+                    if (wrapper) wrapper.style.display = "none";
+                    if (textarea) {
+                        textarea.required = false;
+                        textarea.value = "";
+                    }
+                }
+            });
+
+        document.getElementById("cancelRejectionBtn")
+            ?.addEventListener("click", closeRejectionModal);
+
+        document.getElementById("rejectionModal")
+            ?.addEventListener("click", (e) => {
+                if (e.target.id === "rejectionModal") {
+                    closeRejectionModal();
+                }
+            });
+
+        document.getElementById("rejectionForm")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                if (!rejectionTargetId) {
+                    alert("The access request information is missing.");
+                    return;
+                }
+
+                const selectedReason =
+                    document.getElementById("rejectionReason")?.value;
+
+                const customReason =
+                    document.getElementById("customRejectionReason")
+                        ?.value.trim();
+
+                let finalReason = selectedReason;
+
+                if (selectedReason === "Other") {
+                    if (!customReason) {
+                        alert("Please enter the rejection reason.");
+                        return;
+                    }
+
+                    finalReason = customReason;
+                }
+
+                if (!finalReason) {
+                    alert("Please select a rejection reason.");
+                    return;
+                }
+
+                const submitButton =
+                    document.getElementById("confirmRejectionBtn");
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Declining...";
+                }
+
+                try {
+                    const { data: request, error: requestError } =
+                        await supabaseClient
+                            .from("gallery_access_requests")
+                            .select("*")
+                            .eq("id", rejectionTargetId)
+                            .single();
+
+                    if (requestError) throw requestError;
+                    if (!request) {
+                        throw new Error("Access request was not found.");
+                    }
+
+                    let booking = null;
+
+                    if (request.booking_id) {
+                        const { data: bookingData, error: bookingError } =
+                            await supabaseClient
+                                .from("bookings")
+                                .select("*")
+                                .eq("id", request.booking_id)
+                                .single();
+
+                        if (!bookingError) booking = bookingData;
+                    }
+
+                    const { error: updateError } =
+                        await supabaseClient
+                            .from("gallery_access_requests")
+                            .update({
+                                status: "declined",
+                                rejection_reason: finalReason
+                            })
+                            .eq("id", rejectionTargetId);
+
+                    if (updateError) throw updateError;
+
+                    const customerId =
+                        request.customer_id ||
+                        booking?.customer_id ||
+                        null;
+
+                    if (customerId) {
+                        const { error: notificationError } =
+                            await supabaseClient
+                                .from("notifications")
+                                .insert({
+                                    customer_id: customerId,
+                                    booking_id: request.booking_id || null,
+                                    recipient: "customer",
+                                    title: "Gallery Access Request Declined",
+                                    message:
+                                        `Your gallery access request has been declined.\n\n` +
+                                        `Reason: ${finalReason}\n\n` +
+                                        `You may submit another access request if access is required.`,
+                                    is_read: false,
+                                    link: null
+                                });
+
+                        if (notificationError) {
+                            console.error(
+                                "Customer notification error:",
+                                notificationError
+                            );
+                        }
+                    }
+
+                    showToast(
+                        "Access Declined",
+                        "The customer has been notified of the reason."
+                    );
+
+                    closeRejectionModal();
+                    await loadAccessRequests();
+
+                } catch (error) {
+                    console.error(
+                        "ACCESS REJECTION ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "The access request could not be declined.\n\n" +
+                        error.message
+                    );
+
+                } finally {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent =
+                            "Decline & Notify Customer";
+                    }
+                }
+            });
+
+        async function loadAdminProfile() {
+            const { data: { session }, error } =
+                await supabaseClient.auth.getSession();
+
+            if (error || !session) {
+                window.location.href = "admin_login.html";
+                return false;
+            }
+
+            const { data: profile, error: profileError } =
+                await supabaseClient
+                    .from("staff_profiles")
+                    .select("*")
+                    .eq("id", session.user.id)
+                    .single();
+
+            if (profileError) {
+                console.error("Profile error:", profileError);
+            }
+
+            const userName = document.getElementById("userName");
+            const userAvatar = document.getElementById("userAvatar");
+
+            if (userName) {
+                userName.textContent =
+                    profile?.full_name || session.user.email || "Admin";
+            }
+
+            if (userAvatar && profile?.avatar_url) {
+                userAvatar.src = profile.avatar_url;
+            }
+
+            return true;
+        }
+
+        const notificationBtn = document.getElementById("notificationBtn");
+        const notificationDropdown =
+            document.getElementById("notificationDropdown");
+
+        if (notificationBtn && notificationDropdown) {
+            notificationBtn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle("show");
+
+                if (notificationDropdown.classList.contains("show")) {
+                    await supabaseClient
+                        .from("notifications")
+                        .update({ is_read: true })
+                        .eq("recipient", "admin")
+                        .eq("is_read", false);
+
+                    await loadAdminNotifications();
+                }
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!notificationDropdown.contains(e.target) &&
+                    e.target !== notificationBtn) {
+                    notificationDropdown.classList.remove("show");
+                }
+            });
+        }
+
+        const logoutBtn = document.getElementById("logoutBtn");
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                await supabaseClient.auth.signOut();
+                window.location.href = "admin_login.html";
+            });
+        }
+
+        supabaseClient
+            .channel("admin_notifications_separate_pages")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "notifications",
+                    filter: "recipient=eq.admin"
+                },
+                () => loadAdminNotifications()
+            )
+            .subscribe();
+
+        const searchInput =
+            document.getElementById("clientSearchInput");
+
+        if (searchInput) {
+            searchInput.addEventListener("input", () => {
+                renderAccessRequests();
+            });
+        }
+
+        document.getElementById("filterWrapper")?.remove();
+
+        document.getElementById("clientTableHeader").innerHTML = `
+<tr>
+    <th>#</th>
+    <th>Customer Name</th>
+    <th>Request #</th>
+    <th>Email Address</th>
+    <th>Booking ID</th>
+    <th>Requested At</th>
+    <th>Status</th>
+    <th>Approved At</th>
+    <th>Action</th>
+</tr>`;
+
+        supabaseClient
+            .channel("admin_access_requests_separate_page")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "gallery_access_requests"
+                },
+                () => loadAccessRequests()
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "UPDATE",
+                    schema: "public",
+                    table: "gallery_access_requests"
+                },
+                () => loadAccessRequests()
+            )
+            .subscribe();
+
+        window.addEventListener("load", async () => {
+            try {
+                const ok = await loadAdminProfile();
+                if (!ok) return;
+
+                await loadAdminNotifications();
+                await loadAccessRequests();
+            } catch (error) {
+                console.error(
+                    "ACCESS REQUEST INITIALIZATION ERROR:",
+                    error
+                );
+            }
+        });
+
+    </script>
+</body>
+
+</html>

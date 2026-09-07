@@ -36,9 +36,11 @@ const supabase = createClient(
     SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY
 );
-/* =========================================================
-   ADMIN AUTHORIZATION
-========================================================= */
+const supabaseAdmin = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 
 async function requireAdmin(req, res, next) {
 
@@ -392,175 +394,191 @@ app.delete(
     "/api/admin/staff/:staffId",
     requireAdmin,
     async (req, res) => {
-
         try {
+            const { staffId } = req.params;
 
-            const {
-                staffId
-            } = req.params;
+            console.log("====================================");
+            console.log("DELETE STAFF ACCOUNT");
+            console.log("STAFF ID:", staffId);
+            console.log("ADMIN ID:", req.authUser.id);
+            console.log("====================================");
 
             if (!staffId) {
-
                 return res.status(400).json({
                     success: false,
-                    error:
-                        "Staff ID is required."
+                    error: "Staff ID is required."
                 });
             }
 
-            /* ---------------------------------------------
-               GET TARGET STAFF
-            --------------------------------------------- */
+            // Prevent admin from deleting themselves
+            if (staffId === req.authUser.id) {
+                return res.status(400).json({
+                    success: false,
+                    error: "You cannot delete your own account."
+                });
+            }
+
+            // ------------------------------------------------
+            // GET STAFF PROFILE
+            // ------------------------------------------------
 
             const {
                 data: staff,
                 error: staffError
-            } =
-                await supabase
-                    .from("staff_profiles")
-                    .select("*")
-                    .eq("id", staffId)
-                    .maybeSingle();
+            } = await supabaseAdmin
+                .from("staff_profiles")
+                .select("id, full_name, email, role, status")
+                .eq("id", staffId)
+                .maybeSingle();
 
             if (staffError) {
-
                 console.error(
-                    "Staff lookup error:",
+                    "STAFF PROFILE ERROR:",
                     staffError
                 );
 
                 return res.status(500).json({
                     success: false,
-                    error:
-                        "Unable to find staff account."
+                    error: staffError.message
                 });
             }
 
             if (!staff) {
-
                 return res.status(404).json({
                     success: false,
-                    error:
-                        "Staff account not found."
+                    error: "Staff account not found."
                 });
             }
 
-            /* ---------------------------------------------
-               NEVER DELETE ADMIN THROUGH STAFF ROUTE
-            --------------------------------------------- */
+            console.log("TARGET STAFF:", staff);
 
-            if (staff.role === "admin") {
+            // ------------------------------------------------
+            // PROTECT ADMIN ACCOUNTS
+            // ------------------------------------------------
 
+            if (
+                staff.role &&
+                staff.role.toLowerCase() === "admin"
+            ) {
                 return res.status(403).json({
                     success: false,
                     error:
-                        "The administrator account cannot be deleted here."
+                        "Administrator accounts cannot be deleted."
                 });
             }
 
-            /* ---------------------------------------------
-               DELETE LOGIN HISTORY FIRST
-            --------------------------------------------- */
+            // ------------------------------------------------
+            // DISABLE SUPABASE AUTH ACCOUNT
+            // ------------------------------------------------
+
+            console.log(
+                "Disabling Auth account:",
+                staffId
+            );
 
             const {
-                error: historyError
-            } =
-                await supabase
-                    .from("login_history")
-                    .delete()
-                    .eq("staff_id", staffId);
+                data: disabledUser,
+                error: disableError
+            } = await supabaseAdmin.auth.admin.updateUserById(
+                staffId,
+                {
+                    ban_duration: "876000h"
+                }
+            );
 
-            if (historyError) {
+            if (disableError) {
 
                 console.error(
-                    "Login history deletion error:",
-                    historyError
+                    "AUTH ACCOUNT DISABLE ERROR:",
+                    disableError
                 );
 
                 return res.status(500).json({
                     success: false,
                     error:
-                        "Unable to remove staff login history."
-                });
-            }
-
-            /* ---------------------------------------------
-               DELETE AUTH USER
-            --------------------------------------------- */
-
-            const {
-                error: authError
-            } =
-                await supabase.auth.admin.deleteUser(
-                    staffId
-                );
-
-            if (authError) {
-
-                console.error(
-                    "Auth user deletion error:",
-                    authError
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error:
-                        "Unable to delete staff authentication account."
-                });
-            }
-
-            /* ---------------------------------------------
-               DELETE STAFF PROFILE
-            --------------------------------------------- */
-
-            const {
-                error: profileError
-            } =
-                await supabase
-                    .from("staff_profiles")
-                    .delete()
-                    .eq("id", staffId);
-
-            if (profileError) {
-
-                console.error(
-                    "Staff profile deletion error:",
-                    profileError
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error:
-                        "Auth account deleted, but staff profile could not be removed."
+                        disableError.message ||
+                        "Unable to disable staff authentication account."
                 });
             }
 
             console.log(
-                "Staff account deleted:",
-                staff.email
+                "AUTH ACCOUNT DISABLED:",
+                disabledUser?.user?.id
+            );
+
+            // ------------------------------------------------
+            // DELETE LOGIN HISTORY
+            // ------------------------------------------------
+
+            const {
+                error: historyError
+            } = await supabaseAdmin
+                .from("login_history")
+                .delete()
+                .eq("staff_id", staffId);
+
+            if (historyError) {
+
+                console.warn(
+                    "LOGIN HISTORY CLEANUP ERROR:",
+                    historyError
+                );
+
+            }
+
+            // ------------------------------------------------
+            // DELETE STAFF PROFILE
+            // ------------------------------------------------
+
+            const {
+                error: profileDeleteError
+            } = await supabaseAdmin
+                .from("staff_profiles")
+                .delete()
+                .eq("id", staffId);
+
+            if (profileDeleteError) {
+
+                console.error(
+                    "STAFF PROFILE DELETE ERROR:",
+                    profileDeleteError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Account was disabled, but the staff profile could not be removed: " +
+                        profileDeleteError.message
+                });
+            }
+
+            console.log(
+                "STAFF PROFILE REMOVED:",
+                staffId
+            );
+
+            console.log(
+                "STAFF ACCOUNT SUCCESSFULLY REMOVED FROM SYSTEM"
             );
 
             return res.json({
-
-                success:
-                    true,
-
+                success: true,
                 message:
                     "Staff account deleted successfully."
-
             });
 
         } catch (error) {
 
             console.error(
-                "Delete staff error:",
+                "DELETE STAFF ERROR:",
                 error
             );
 
             return res.status(500).json({
                 success: false,
                 error:
-                    "Server error while deleting staff."
+                    error?.message ||
+                    "Unable to delete staff account."
             });
         }
     }
@@ -577,9 +595,6 @@ app.get("/health", (req, res) => {
         server: "online"
     });
 });
-/* =========================================================
-   OTP
-========================================================= */
 
 function generateOTP() {
     return Math.floor(
@@ -587,6 +602,151 @@ function generateOTP() {
     ).toString();
 }
 
+app.post(
+    "/api/admin/staff/:staffId/signout",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            console.log("======================================");
+            console.log("ADMIN STAFF SIGN OUT REQUEST");
+            console.log("TARGET STAFF ID:", req.params.staffId);
+
+            const { staffId } = req.params;
+
+            // --------------------------------------------------
+            // VALIDATE STAFF ID
+            // --------------------------------------------------
+
+            if (!staffId) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Staff account ID is required."
+                });
+            }
+
+            // --------------------------------------------------
+            // PREVENT ADMIN FROM SIGNING THEMSELVES OUT
+            // --------------------------------------------------
+
+            if (staffId === req.authUser.id) {
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "You cannot sign out your own account using this button."
+                });
+            }
+
+            // --------------------------------------------------
+            // GET TARGET STAFF
+            // --------------------------------------------------
+
+            const {
+                data: targetStaff,
+                error: targetError
+            } = await supabaseAdmin
+                .from("staff_profiles")
+                .select(`
+                    id,
+                    full_name,
+                    email,
+                    role
+                `)
+                .eq("id", staffId)
+                .maybeSingle();
+
+            if (targetError) {
+
+                console.error(
+                    "TARGET STAFF LOOKUP ERROR:",
+                    targetError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: targetError.message
+                });
+            }
+
+            if (!targetStaff) {
+
+                return res.status(404).json({
+                    success: false,
+                    error: "Selected staff account was not found."
+                });
+            }
+
+            console.log(
+                "TARGET STAFF:",
+                targetStaff.full_name,
+                targetStaff.email
+            );
+
+            // --------------------------------------------------
+            // FORCE SIGN OUT
+            // --------------------------------------------------
+
+            const signOutTime =
+                new Date().toISOString();
+
+            const {
+                error: updateError
+            } = await supabaseAdmin
+                .from("staff_profiles")
+                .update({
+                    force_signout_at: signOutTime
+                })
+                .eq("id", staffId);
+
+            if (updateError) {
+
+                console.error(
+                    "FORCE SIGN OUT DATABASE ERROR:",
+                    updateError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: updateError.message
+                });
+            }
+
+            console.log(
+                "STAFF FORCE SIGN OUT SET:",
+                targetStaff.email,
+                signOutTime
+            );
+
+            console.log("======================================");
+
+            return res.json({
+                success: true,
+                message:
+                    `${targetStaff.full_name || targetStaff.email} has been signed out successfully.`,
+                staff: {
+                    id: targetStaff.id,
+                    full_name: targetStaff.full_name,
+                    email: targetStaff.email
+                }
+            });
+
+        } catch (error) {
+
+            console.error(
+                "ADMIN STAFF SIGN OUT ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    error.message ||
+                    "Internal server error."
+            });
+        }
+    }
+);
 app.post("/send-otp", async (req, res) => {
 
     try {
@@ -626,11 +786,6 @@ app.post("/send-otp", async (req, res) => {
                 deleteError
             );
         }
-
-        /* -------------------------------------------------
-           SAVE NEW OTP
-        ------------------------------------------------- */
-
         const { error: dbError } = await supabase
             .from("otp_verifications")
             .insert({
@@ -650,10 +805,6 @@ app.post("/send-otp", async (req, res) => {
                 message: dbError.message
             });
         }
-
-        /* -------------------------------------------------
-           SEND EMAIL
-        ------------------------------------------------- */
 
         const { error: emailError } =
             await resend.emails.send({
@@ -723,9 +874,6 @@ function money(value) {
 
     return Number(number.toFixed(2));
 }
-/* =========================================================
-   BOOKING CONFIRMATION EMAIL
-========================================================= */
 
 app.post("/send-payment-confirmation", async (req, res) => {
 
@@ -791,9 +939,6 @@ app.post("/send-payment-confirmation", async (req, res) => {
             process.env.RESEND_FROM_EMAIL ||
             "onboarding@resend.dev";
 
-        /*
-         * Use the values already stored in the database.
-         */
         const total = Number(totalPrice) || 0;
         const downpayment = Number(downpaymentAmount) || 0;
         const balance = Number(remainingBalance) || 0;
@@ -1080,11 +1225,6 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
             addons,
             booking_duration
         });
-
-
-        /* =====================================================
-           1. VALIDATE BOOKING INFORMATION
-        ===================================================== */
 
  const missingFields = [];
 
@@ -3123,12 +3263,6 @@ app.get("/api/bookings/availability", async (req, res) => {
             return duration;
 
         }
-
-
-        /* =====================================================
-           RETURN ONLY DATA NEEDED BY CUSTOMER BOOKING PAGE
-        ===================================================== */
-
         const availability =
             activeBookings
                 .map(
@@ -3483,7 +3617,1184 @@ app.get("/api/customer/bookings", async (req, res) => {
     }
 
 });
+app.post(
+    "/api/gallery-access/request",
+    async (req, res) => {
 
+        try {
+
+            console.log(
+                "========================================"
+            );
+
+            console.log(
+                "CUSTOMER GALLERY ACCESS REQUEST"
+            );
+
+            console.log(
+                "========================================"
+            );
+
+
+            const {
+                email,
+                fullName,
+                bookingDate,
+                bookingId,
+                repositoryId,
+                requestNumber,
+                accessType,
+                paymentRequired
+            } = req.body;
+
+
+            /* =====================================================
+               1. VALIDATE INPUT
+            ===================================================== */
+
+            if (
+                !email ||
+                !fullName ||
+                !bookingDate
+            ) {
+
+                return res.status(400).json({
+                    error:
+                        "Email, full name, and booking date are required."
+                });
+
+            }
+
+
+            console.log(
+                "EMAIL:",
+                email
+            );
+
+            console.log(
+                "FULL NAME:",
+                fullName
+            );
+
+            console.log(
+                "BOOKING DATE:",
+                bookingDate
+            );
+
+
+            /* =====================================================
+               2. FIND COMPLETED BOOKING
+            ===================================================== */
+
+            const {
+                data: bookings,
+                error: bookingError
+            } = await supabase
+                .from("bookings")
+                .select("*")
+                .ilike(
+                    "email",
+                    email.trim()
+                )
+                .eq(
+                    "status",
+                    "Completed"
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+            if (bookingError) {
+
+                console.error(
+                    "BOOKING LOOKUP ERROR:",
+                    bookingError
+                );
+
+                return res.status(500).json({
+                    error:
+                        "Unable to verify your booking."
+                });
+
+            }
+
+
+            const normalizedName =
+                fullName
+                    .trim()
+                    .toLowerCase();
+
+
+            const normalizedDate =
+                String(bookingDate)
+                    .substring(0, 10);
+
+
+            const booking =
+                (bookings || []).find(
+                    candidate => {
+
+                        const candidateName =
+                            String(
+                                candidate.full_name || ""
+                            )
+                                .trim()
+                                .toLowerCase();
+
+
+                        const candidateDate =
+                            String(
+                                candidate.booking_date || ""
+                            )
+                                .substring(0, 10);
+
+
+                        return (
+                            candidateDate ===
+                            normalizedDate
+                            &&
+                            candidateName ===
+                            normalizedName
+                        );
+
+                    }
+                );
+
+
+            if (!booking) {
+
+                console.log(
+                    "NO MATCHING COMPLETED BOOKING"
+                );
+
+                return res.status(404).json({
+                    error:
+                        "We could not find a completed booking matching your email, full name, and booking date."
+                });
+
+            }
+
+
+            console.log(
+                "BOOKING VERIFIED:",
+                booking.id
+            );
+
+
+            /* =====================================================
+               3. VERIFY BOOKING ID IF PROVIDED
+            ===================================================== */
+
+            if (
+                bookingId &&
+                booking.id !== bookingId
+            ) {
+
+                return res.status(400).json({
+                    error:
+                        "The booking information could not be verified."
+                });
+
+            }
+
+
+            /* =====================================================
+               4. FIND REPOSITORY
+            ===================================================== */
+
+            const {
+                data: repository,
+                error: repositoryError
+            } = await supabase
+                .from("repository_client_links")
+                .select("*")
+                .eq(
+                    "booking_id",
+                    booking.id
+                )
+                .maybeSingle();
+
+
+            if (repositoryError) {
+
+                console.error(
+                    "REPOSITORY LOOKUP ERROR:",
+                    repositoryError
+                );
+
+                return res.status(500).json({
+                    error:
+                        "Unable to find your photo gallery."
+                });
+
+            }
+
+
+            if (!repository) {
+
+                return res.status(404).json({
+                    error:
+                        "Your booking was found, but your photo folder has not been created yet."
+                });
+
+            }
+
+
+            if (
+                repositoryId &&
+                repository.id !== repositoryId
+            ) {
+
+                return res.status(400).json({
+                    error:
+                        "The gallery information could not be verified."
+                });
+
+            }
+
+
+            console.log(
+                "REPOSITORY VERIFIED:",
+                repository.id
+            );
+
+
+            /* =====================================================
+               5. CHECK PREVIOUS REQUESTS
+            ===================================================== */
+
+            const {
+                data: previousRequests,
+                error: previousRequestsError
+            } = await supabase
+                .from("gallery_access_requests")
+                .select("*")
+                .eq(
+                    "booking_id",
+                    booking.id
+                )
+                .ilike(
+                    "customer_email",
+                    email.trim()
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+            if (previousRequestsError) {
+
+                console.error(
+                    "PREVIOUS REQUEST LOOKUP ERROR:",
+                    previousRequestsError
+                );
+
+                return res.status(500).json({
+                    error:
+                        "Unable to check your previous gallery requests."
+                });
+
+            }
+
+
+            const allRequests =
+                previousRequests || [];
+
+            const pendingRequest =
+                allRequests.find(
+                    request =>
+                        request.status === "pending"
+                );
+
+
+            if (pendingRequest) {
+
+                return res.status(409).json({
+                    error:
+                        `Your gallery access request #${pendingRequest.request_number} is already pending. Please wait for the admin to approve it.`,
+                    request: pendingRequest
+                });
+
+            }
+            const approvedRequests =
+                allRequests.filter(
+                    request =>
+                        request.status === "approved"
+                );
+
+            let finalRequestNumber = 1;
+            let finalAccessType = "free";
+            let finalPaymentRequired = false;
+
+
+            if (
+                approvedRequests.length === 0
+            ) {
+
+                finalRequestNumber = 1;
+                finalAccessType = "free";
+                finalPaymentRequired = false;
+
+            }
+            else {
+
+                const firstApproved =
+                    approvedRequests.find(
+                        request =>
+                            Number(
+                                request.request_number
+                            ) === 1
+                    );
+
+
+                if (
+                    firstApproved &&
+                    firstApproved.access_expires_at
+                ) {
+
+                    const expiresAt =
+                        new Date(
+                            firstApproved.access_expires_at
+                        );
+
+
+                    if (
+                        expiresAt > new Date()
+                    ) {
+
+                        return res.status(409).json({
+                            error:
+                                "You already have an active gallery access."
+                        });
+
+                    }
+
+                }
+
+
+                finalRequestNumber = 2;
+                finalAccessType = "paid";
+                finalPaymentRequired = true;
+
+            }
+
+            if (
+                requestNumber &&
+                Number(requestNumber) !==
+                finalRequestNumber
+            ) {
+
+                console.log(
+                    "REQUEST NUMBER FROM CLIENT:",
+                    requestNumber
+                );
+
+                console.log(
+                    "SERVER REQUEST NUMBER:",
+                    finalRequestNumber
+                );
+
+            }
+
+
+            const requestId =
+                crypto.randomUUID();
+
+
+            const requestData = {
+
+                id:
+                    requestId,
+
+                customer_id:
+                    null,
+
+                customer_email:
+                    email.trim(),
+
+                booking_id:
+                    booking.id,
+
+                repository_id:
+                    repository.id,
+
+                request_number:
+                    finalRequestNumber,
+
+                access_type:
+                    finalAccessType,
+
+                payment_required:
+                    finalPaymentRequired,
+
+                payment_status:
+                    finalPaymentRequired
+                        ? "unpaid"
+                        : "not_required",
+
+                status:
+                    "pending"
+
+            };
+
+
+            console.log(
+                "INSERTING GALLERY REQUEST:",
+                requestData
+            );
+
+
+            const {
+                data: newRequest,
+                error: requestError
+            } =
+                await supabase
+                    .from(
+                        "gallery_access_requests"
+                    )
+                    .insert(
+                        requestData
+                    )
+                    .select("*")
+                    .single();
+
+
+            if (requestError) {
+
+                console.error(
+                    "GALLERY REQUEST INSERT ERROR:",
+                    requestError
+                );
+
+                return res.status(500).json({
+                    error:
+                        "Unable to create your gallery access request.",
+                    details:
+                        requestError.message
+                });
+
+            }
+
+
+            console.log(
+                "GALLERY REQUEST CREATED:",
+                newRequest.id
+            );
+
+
+            const {
+                error: notificationError
+            } =
+                await supabase
+                    .from("notifications")
+                    .insert({
+
+                        recipient:
+                            "admin",
+
+                        booking_id:
+                            booking.id,
+
+                        title:
+                            finalRequestNumber === 1
+                                ? "New FREE Gallery Access Request"
+                                : "New PAID Gallery Access Request",
+
+                        message:
+                            `${fullName.trim()} (${email.trim()}) requested gallery access for booking ${booking.id}. Request #${finalRequestNumber}. ${finalPaymentRequired
+                                ? "₱100 payment will be required for downloads."
+                                : "First access is free for 24 hours."
+                            }`,
+
+                        is_read:
+                            false
+
+                    });
+
+
+            if (notificationError) {
+
+                console.error(
+                    "ADMIN NOTIFICATION ERROR:",
+                    notificationError
+                );
+
+                
+
+            }
+            return res.status(201).json({
+
+                success:
+                    true,
+
+                request:
+                    newRequest
+
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "GALLERY ACCESS REQUEST SERVER ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+
+                error:
+                    "An unexpected error occurred while creating your gallery access request."
+
+            });
+
+        }
+
+    }
+);
+app.get("/api/gallery-access/test", (req, res) => {
+    res.json({
+        success: true,
+        message: "Gallery access route is loaded"
+    });
+});
+app.get("/api/gallery-access/request/:requestId", async (req, res) => {
+    try {
+        const { requestId } = req.params;
+
+        console.log("========== CHECK GALLERY ACCESS REQUEST ==========");
+        console.log("REQUEST ID:", requestId);
+
+        if (!requestId) {
+            return res.status(400).json({
+                success: false,
+                error: "Request ID is required."
+            });
+        }
+        const { data: request, error } = await supabase
+            .from("gallery_access_requests")
+            .select("*")
+            .eq("id", requestId)
+            .maybeSingle();
+
+        if (error) {
+            console.error("ERROR CHECKING GALLERY REQUEST:", error);
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to check gallery access request.",
+                details: error.message
+            });
+        }
+
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                error: "Gallery access request not found."
+            });
+        }
+
+        console.log("GALLERY REQUEST FOUND:", request);
+        console.log("REQUEST STATUS:", request.status);
+
+        // If approved, get the repository separately.
+        let repository = null;
+
+        if (
+            request.status === "approved" &&
+            request.repository_id
+        ) {
+            const { data: repositoryData, error: repositoryError } =
+                await supabase
+                    .from("repository_client_links")
+                    .select("*")
+                    .eq("id", request.repository_id)
+                    .maybeSingle();
+
+            if (repositoryError) {
+                console.error(
+                    "ERROR GETTING REPOSITORY:",
+                    repositoryError
+                );
+            } else {
+                repository = repositoryData;
+            }
+        }
+
+        return res.json({
+            success: true,
+            request,
+            repository
+        });
+
+    } catch (error) {
+        console.error(
+            "CHECK GALLERY REQUEST UNEXPECTED ERROR:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: "Unable to check gallery access request.",
+            details: error.message
+        });
+    }
+});
+
+app.post(
+    "/api/gallery-access/send-approved-email/:requestId",
+    async (req, res) => {
+
+        try {
+
+            const { requestId } = req.params;
+
+            console.log(
+                "========================================"
+            );
+
+            console.log(
+                "SENDING APPROVED GALLERY EMAIL"
+            );
+
+            console.log(
+                "REQUEST ID:",
+                requestId
+            );
+
+            console.log(
+                "========================================"
+            );
+
+
+            if (!requestId) {
+
+                return res.status(400).json({
+                    success: false,
+                    error: "Gallery access request ID is required."
+                });
+
+            }
+
+
+            /* =====================================================
+               2. GET GALLERY ACCESS REQUEST
+            ===================================================== */
+
+            const {
+                data: request,
+                error: requestError
+            } = await supabase
+                .from("gallery_access_requests")
+                .select("*")
+                .eq("id", requestId)
+                .maybeSingle();
+
+
+            if (requestError) {
+
+                console.error(
+                    "GALLERY REQUEST LOOKUP ERROR:",
+                    requestError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Unable to find the gallery access request.",
+                    details: requestError.message
+                });
+
+            }
+
+
+            if (!request) {
+
+                return res.status(404).json({
+                    success: false,
+                    error: "Gallery access request was not found."
+                });
+
+            }
+
+
+            if (request.status !== "approved") {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "The gallery access request must be approved before an email can be sent."
+                });
+
+            }
+
+
+            /* =====================================================
+               4. GET CUSTOMER EMAIL
+            ===================================================== */
+
+            const customerEmail =
+                String(
+                    request.customer_email || ""
+                ).trim();
+
+
+            if (!customerEmail) {
+
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "The customer's email address is missing from the gallery access request."
+                });
+
+            }
+
+
+            console.log(
+                "CUSTOMER EMAIL:",
+                customerEmail
+            );
+
+
+            /* =====================================================
+               5. GET BOOKING
+            ===================================================== */
+
+            const {
+                data: booking,
+                error: bookingError
+            } = await supabase
+                .from("bookings")
+                .select("*")
+                .eq("id", request.booking_id)
+                .maybeSingle();
+
+
+            if (bookingError) {
+
+                console.error(
+                    "BOOKING LOOKUP ERROR:",
+                    bookingError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to retrieve the customer's booking.",
+                    details:
+                        bookingError.message
+                });
+
+            }
+
+
+            if (!booking) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "The booking connected to this gallery request was not found."
+                });
+
+            }
+
+
+            /* =====================================================
+               6. GET REPOSITORY
+            ===================================================== */
+
+            const {
+                data: repository,
+                error: repositoryError
+            } = await supabase
+                .from("repository_client_links")
+                .select("*")
+                .eq("id", request.repository_id)
+                .eq("booking_id", booking.id)
+                .maybeSingle();
+
+
+            if (repositoryError) {
+
+                console.error(
+                    "REPOSITORY LOOKUP ERROR:",
+                    repositoryError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to retrieve the customer's gallery.",
+                    details:
+                        repositoryError.message
+                });
+
+            }
+
+
+            if (!repository) {
+
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "The customer's gallery repository was not found."
+                });
+
+            }
+
+
+            if (!repository.access_token) {
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "The gallery access token is missing."
+                });
+
+            }
+
+            const frontendUrl =
+                (
+                    process.env.FRONTEND_URL ||
+                    "http://localhost:5500"
+                ).replace(/\/+$/, "");
+
+
+            const galleryLink =
+                frontendUrl +
+                "/frontend-customer/customer_gallery_view.html?token=" +
+                encodeURIComponent(
+                    repository.access_token
+                );
+
+
+            console.log(
+                "GALLERY LINK:",
+                galleryLink
+            );
+
+            let expirationText =
+                "24 hours";
+
+
+            if (request.access_expires_at) {
+
+                const expirationDate =
+                    new Date(
+                        request.access_expires_at
+                    );
+
+
+                if (!Number.isNaN(
+                    expirationDate.getTime()
+                )) {
+
+                    expirationText =
+                        expirationDate.toLocaleString(
+                            "en-US",
+                            {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit"
+                            }
+                        );
+
+                }
+
+            }
+
+
+            /* =====================================================
+               9. SEND EMAIL THROUGH RESEND
+            ===================================================== */
+
+            if (!resend) {
+
+                console.error(
+                    "RESEND IS NOT INITIALIZED."
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Email service is not configured."
+                });
+
+            }
+
+
+            const customerName =
+                booking.full_name ||
+                "Customer";
+
+
+            const emailResult =
+                await resend.emails.send({
+
+                    from:
+                        "Captured Photography Studio <onboarding@resend.dev>",
+
+                    to:
+                        [customerEmail],
+
+                    subject:
+                        "Your Captured Studio Gallery Is Ready",
+
+                    html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Your Gallery Is Ready
+    </title>
+</head>
+
+<body
+    style="
+        margin:0;
+        padding:0;
+        background:#f7f7f7;
+        font-family:Arial,Helvetica,sans-serif;
+        color:#333;
+    "
+>
+
+    <div
+        style="
+            max-width:600px;
+            margin:40px auto;
+            background:#ffffff;
+            border-radius:12px;
+            padding:35px;
+            box-sizing:border-box;
+        "
+    >
+
+        <h2
+            style="
+                margin-top:0;
+                color:#333;
+            "
+        >
+            Your Gallery Is Ready
+        </h2>
+
+
+        <p>
+            Hello
+            <strong>
+                ${String(customerName)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;")}
+            </strong>,
+        </p>
+
+
+        <p>
+            Your gallery access request has been
+            <strong>approved</strong>.
+        </p>
+
+
+        <p>
+            You can now access your photos using
+            the button below.
+        </p>
+
+
+        <div
+            style="
+                text-align:center;
+                margin:30px 0;
+            "
+        >
+
+            <a
+                href="${galleryLink}"
+                style="
+                    display:inline-block;
+                    padding:13px 24px;
+                    background:#639A88;
+                    color:#ffffff;
+                    text-decoration:none;
+                    border-radius:7px;
+                    font-weight:bold;
+                "
+            >
+                Open My Gallery
+            </a>
+
+        </div>
+
+
+        <p
+            style="
+                font-size:14px;
+                color:#666;
+            "
+        >
+            Your gallery access is available for
+            <strong>24 hours</strong>.
+        </p>
+
+
+        <p
+            style="
+                font-size:14px;
+                color:#666;
+            "
+        >
+            Access expires on:
+            <strong>
+                ${expirationText}
+            </strong>
+        </p>
+
+
+        <p
+            style="
+                font-size:13px;
+                color:#888;
+                word-break:break-all;
+            "
+        >
+            If the button does not work, copy and
+            paste this link into your browser:
+            <br><br>
+
+            ${galleryLink}
+        </p>
+
+
+        <hr
+            style="
+                border:0;
+                border-top:1px solid #eee;
+                margin:30px 0;
+            "
+        >
+
+
+        <p
+            style="
+                font-size:13px;
+                color:#888;
+                margin-bottom:0;
+            "
+        >
+            Thank you for choosing
+            Captured Photography Studio.
+        </p>
+
+    </div>
+
+</body>
+</html>
+                    `
+
+                });
+
+
+            console.log(
+                "RESEND RESULT:",
+                emailResult
+            );
+
+
+            /* =====================================================
+               10. CHECK RESEND ERROR
+            ===================================================== */
+
+            if (emailResult?.error) {
+
+                console.error(
+                    "RESEND EMAIL ERROR:",
+                    emailResult.error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "The gallery was approved, but the email could not be sent.",
+                    details:
+                        emailResult.error.message ||
+                        String(emailResult.error)
+                });
+
+            }
+
+
+            /* =====================================================
+               11. SUCCESS
+            ===================================================== */
+
+            console.log(
+                "GALLERY ACCESS EMAIL SENT SUCCESSFULLY TO:",
+                customerEmail
+            );
+
+
+            return res.json({
+
+                success: true,
+
+                message:
+                    "Gallery access email sent successfully.",
+
+                email:
+                    customerEmail,
+
+                galleryLink:
+                    galleryLink,
+
+                emailId:
+                    emailResult?.data?.id || null
+
+            });
+
+
+        }
+        catch (error) {
+
+            console.error(
+                "SEND APPROVED GALLERY EMAIL ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                success: false,
+
+                error:
+                    "An unexpected error occurred while sending the gallery access email.",
+
+                details:
+                    error.message
+
+            });
+
+        }
+
+    }
+);
 app.listen(
     PORT,
     "0.0.0.0",

@@ -23,14 +23,7 @@
             <span>Captured Admin Studio</span>
         </div>
         <div class="navbar-right">
-            <div class="notification-container">
-
-                <div id="notificationDropdown"
-                    style="display:none;position:absolute;right:0;top:55px;width:320px;background:#fff;border-radius:10px;padding:10px;box-shadow:0 10px 25px rgba(0,0,0,.15);z-index:999;max-height:350px;overflow-y:auto;">
-
-                    <div id="notificationList"></div>
-
-                </div>
+          
 
             </div>
             <div class="user-profile">
@@ -366,10 +359,6 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
-        /* =========================================================
-           PROFILE ELEMENTS
-        ========================================================= */
-
         const openEditModalBtn =
             document.getElementById("openEditModalBtn");
 
@@ -566,8 +555,7 @@
             }
 
         }
-        
-
+    
         async function uploadProfileImage(userId, file) {
 
             if (!file) {
@@ -635,9 +623,6 @@
 
             return publicUrl;
         }
-        /* =========================================================
-           SAVE PROFILE
-        ========================================================= */
 
         editProfileForm.addEventListener(
             "submit",
@@ -730,10 +715,6 @@
 
                 try {
 
-                    /* =================================================
-                       CHECK SELECTED IMAGE
-                    ================================================= */
-
                     const imageFile =
                         profileImageInput.files[0];
 
@@ -754,11 +735,6 @@
                             );
 
                     }
-
-
-                    /* =================================================
-                       UPDATE DATABASE
-                    ================================================= */
 
                     const updateData = {
 
@@ -796,25 +772,8 @@
                     }
 
                     console.log("Updated profile:", updatedProfile);
-
-                    /* =================================================
-                       RELOAD PROFILE FROM DATABASE
-                    ================================================= */
-
                     await loadProfile();
-
-
-                    /* =================================================
-                       CLEAR IMAGE INPUT
-                    ================================================= */
-
                     profileImageInput.value = "";
-
-
-                    /* =================================================
-                       CLOSE MODAL
-                    ================================================= */
-
                     editProfileModal.classList.remove(
                         "show"
                     );
@@ -856,105 +815,10 @@
 
             await loadProfile();
 
-            await loadNotifications();
+           
 
         });
-        async function loadNotifications() {
-
-            const { data, error } = await supabaseClient
-                .from("notifications")
-                .select("*")
-                .eq("recipient", "admin")
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.error(error);
-                return;
-            }
-
-            const list = document.getElementById("notificationList");
-            const badge = document.getElementById("notificationCount");
-
-            list.innerHTML = "";
-
-            let unread = 0;
-
-            data.forEach(notification => {
-
-                if (!notification.is_read) unread++;
-
-                list.innerHTML += `
-            <div style="padding:10px;border-bottom:1px solid #eee;">
-                <strong>${notification.title}</strong><br>
-                <small>${notification.message}</small><br>
-                <small style="color:gray">
-                    ${new Date(notification.created_at).toLocaleString()}
-                </small>
-            </div>
-        `;
-            });
-
-            if (unread > 0) {
-                badge.style.display = "inline-flex";
-                badge.textContent = unread;
-            } else {
-                badge.style.display = "none";
-            }
-        }
-        const notificationBtn = document.getElementById("notificationBtn");
-
-        notificationBtn.addEventListener("click", async () => {
-
-            const dropdown = document.getElementById("notificationDropdown");
-
-            if (dropdown.style.display === "block") {
-                dropdown.style.display = "none";
-                return;
-            }
-
-            dropdown.style.display = "block";
-
-            await supabaseClient
-                .from("notifications")
-                .update({ is_read: true })
-                .eq("recipient", "admin")
-                .eq("is_read", false);
-
-            await loadNotifications();
-
-        });
-        document.addEventListener("click", (e) => {
-
-            const dropdown = document.getElementById("notificationDropdown");
-
-            if (
-                !notificationBtn.contains(e.target) &&
-                !dropdown.contains(e.target)
-            ) {
-                dropdown.style.display = "none";
-            }
-
-        });
-        supabaseClient
-            .channel("admin_notifications")
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "notifications"
-                },
-                (payload) => {
-                    console.log("Realtime:", payload);
-
-                    if (payload.new.recipient === "admin") {
-                        loadNotifications();
-                    }
-                }
-            )
-            .subscribe((status) => {
-                console.log("Status:", status);
-            });
+       
         document.getElementById("logoutBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             await supabaseClient.auth.signOut();

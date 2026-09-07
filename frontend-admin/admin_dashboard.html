@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Staff Dashboard</title>
+    <title>Dashboard</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,7 +131,7 @@
 
             <div class="page-header">
                 <h1>Welcome back!</h1>
-                <p>See the latest updates on your work.</p>
+                <p>See the latest updates on your studio.</p>
             </div>
 
             <div class="stats-grid">
@@ -173,7 +173,7 @@
 
             <div id="calendar"></div>
             <h2 class="section-title">
-                ANALYTICS
+                Booking Statistics
             </h2>
 
             <div class="analytics-card">
@@ -183,7 +183,7 @@
                     <div>
                         <h3>Client Bookings</h3>
                         <p class="analytics-subtitle">
-                            Number of confirmed client bookings per month
+                            Number of confirmed client bookings per month.
                         </p>
                     </div>
 
@@ -207,7 +207,7 @@
                     <div class="analytics-summary-card">
 
                         <span>
-                            Total Bookings
+                            Total Bookings:
                         </span>
 
                         <strong id="yearlyBookingTotal">
@@ -220,7 +220,7 @@
                     <div class="analytics-summary-card">
 
                         <span>
-                            Average Monthly
+                            Average Monthly:
                         </span>
 
                         <strong id="averageMonthlyBookings">
@@ -233,7 +233,7 @@
                     <div class="analytics-summary-card">
 
                         <span>
-                            Busiest Month
+                            Busiest Month:
                         </span>
 
                         <strong id="busiestBookingMonth">
@@ -957,10 +957,17 @@
 
         async function loadBookingAnalytics(selectedYear) {
 
-            console.log("Loading booking analytics for:", selectedYear);
+            console.log(
+                "Loading booking analytics for:",
+                selectedYear
+            );
 
-            const startDate = `${selectedYear}-01-01`;
-            const endDate = `${Number(selectedYear) + 1}-01-01`;
+            const startDate =
+                `${selectedYear}-01-01`;
+
+            const endDate =
+                `${Number(selectedYear) + 1}-01-01`;
+
 
             const {
                 data: bookings,
@@ -972,17 +979,29 @@
             booking_date,
             status
         `)
-                .eq("status", "Confirmed")
+                .in("status", [
+                    "Confirmed",
+                    "Completed"
+                ])
                 .gte("booking_date", startDate)
                 .lt("booking_date", endDate);
 
+
             if (error) {
-                console.error("Booking analytics error:", error);
+
+                console.error(
+                    "Booking analytics error:",
+                    error
+                );
+
                 return;
             }
 
+
             // 12 months: January -> December
-            const monthlyBookings = Array(12).fill(0);
+            const monthlyBookings =
+                Array(12).fill(0);
+
 
             bookings.forEach(booking => {
 
@@ -990,30 +1009,66 @@
                     return;
                 }
 
+
                 /*
-                 * Extract the month directly from YYYY-MM-DD.
+                 * Extract month directly from
+                 * YYYY-MM-DD.
+                 *
                  * This avoids timezone problems.
                  */
-                const month = Number(
-                    booking.booking_date.substring(5, 7)
-                ) - 1;
+                const month =
+                    Number(
+                        booking.booking_date.substring(5, 7)
+                    ) - 1;
 
-                if (month >= 0 && month <= 11) {
+
+                if (
+                    month >= 0 &&
+                    month <= 11
+                ) {
+
                     monthlyBookings[month]++;
+
                 }
+
             });
+
 
             console.log(
                 `Bookings for ${selectedYear}:`,
                 monthlyBookings
             );
 
+
+            console.log(
+                "Total bookings:",
+                bookings.length
+            );
+
+
+            console.log(
+                "Confirmed bookings:",
+                bookings.filter(
+                    booking =>
+                        booking.status === "Confirmed"
+                ).length
+            );
+
+
+            console.log(
+                "Completed bookings:",
+                bookings.filter(
+                    booking =>
+                        booking.status === "Completed"
+                ).length
+            );
+
+
             renderBookingAnalytics(
                 monthlyBookings,
                 selectedYear
             );
         }
-
 
         /* function renderBookingAnalytics(
              monthlyBookings,
@@ -1237,93 +1292,168 @@
                 count || 0
             );
         }
+
         async function loadTotalIncome() {
+            console.log("========== LOADING TOTAL INCOME ==========");
 
-            console.log("Loading total income...");
-
-            const totalIncomeElement =
-                document.getElementById("totalIncome");
+            const totalIncomeElement = document.getElementById("totalIncome");
 
             if (!totalIncomeElement) {
                 console.error("totalIncome element not found.");
                 return;
             }
 
-            const {
-                data: bookings,
-                error
-            } = await supabaseClient
+            const { data: bookings, error } = await supabaseClient
                 .from("bookings")
-                .select("id, status, payment_status, downpayment_status, full_payment_amount");
+                .select(`
+            id,
+            status,
+            payment_status,
+            downpayment_amount,
+            total_price,
+            remaining_balance,
+            full_payment_amount,
+            final_payment_amount,
+            paymongo_paid_at,
+            paymongo_payment_id
+        `);
 
             if (error) {
-
-                console.error(
-                    "Error loading booking payments:",
-                    error
-                );
-
+                console.error("Error loading booking payments:", error);
                 totalIncomeElement.textContent = "₱0.00";
-
                 return;
             }
 
+            console.log("Bookings fetched:", bookings);
+
             let totalIncome = 0;
 
-            (bookings || []).forEach(booking => {
+            (bookings || []).forEach((booking) => {
 
-                const downpayment =
-                    Number(booking.downpayment_amount) || 0;
-
-                const fullpaymemt =
-                    String(booking.full_payment_amount || "")
-                        .trim()
-                        .toLowerCase();
-
-                let amountPaid = 0;
-                const paymentStatus = String(booking.paymentStatus || "")
+                const status = String(booking.status || "")
                     .trim()
-                    .toLocaleLowerCase()
+                    .toLowerCase();
 
+                const paymentStatus = String(booking.payment_status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const totalPrice = Number(booking.total_price) || 0;
+                const downpayment = Number(booking.downpayment_amount) || 0;
+                const remainingBalance = Number(booking.remaining_balance) || 0;
+                const fullPayment = Number(booking.full_payment_amount) || 0;
+                const finalPayment = Number(booking.final_payment_amount) || 0;
+
+                let amountReceived = 0;
+
+                // -----------------------------------------
+                // IGNORE CANCELLED / REJECTED BOOKINGS
+                // -----------------------------------------
+                if (
+                    status === "cancelled" ||
+                    status === "canceled" ||
+                    status === "rejected" ||
+                    status === "declined"
+                ) {
+                    return;
+                }
+
+                // -----------------------------------------
+                // FULLY PAID
+                // -----------------------------------------
                 if (
                     paymentStatus === "paid" ||
+                    paymentStatus === "fully paid" ||
+                    paymentStatus === "fully_paid" ||
+                    paymentStatus === "completed" ||
+                    paymentStatus === "success" ||
+                    paymentStatus === "successful"
+                ) {
+
+                    // If the booking has a total price,
+                    // use it because the entire booking has been paid.
+                    if (totalPrice > 0) {
+                        amountReceived = totalPrice;
+                    } else {
+                        // Fallback if total_price is empty
+                        amountReceived = downpayment + finalPayment;
+                    }
+
+                }
+
+                // -----------------------------------------
+                // PARTIAL / DOWNPAYMENT ONLY
+                // -----------------------------------------
+                else if (
                     paymentStatus === "partial" ||
                     paymentStatus === "partially paid" ||
                     paymentStatus === "half" ||
                     paymentStatus === "half paid" ||
-                    paymentStatus === "fully paid" ||
-                    paymentStatus === "completed"
+                    paymentStatus === "downpayment" ||
+                    paymentStatus === "downpayment paid"
                 ) {
-                    amountPaid = totalPrice;
+
+                    amountReceived = downpayment;
+                }
+
+                // -----------------------------------------
+                // PAYMONGO PAYMENT EXISTS
+                // -----------------------------------------
+                else if (booking.paymongo_paid_at || booking.paymongo_payment_id) {
+
+                    /*
+                     * A successful PayMongo payment means money
+                     * was actually received.
+                     *
+                     * If there is still a remaining balance,
+                     * treat this as a downpayment.
+                     */
+                    if (remainingBalance > 0) {
+                        amountReceived = downpayment;
+                    } else if (totalPrice > 0) {
+                        amountReceived = totalPrice;
+                    } else {
+                        amountReceived = downpayment + finalPayment;
+                    }
 
                 }
 
-                /*
-                 * HALF / PARTIAL PAYMENT
-                 */
+                // -----------------------------------------
+                // COMPLETED BOOKING
+                // -----------------------------------------
                 else if (
-                    paymentStatus === "fully paid" ||
-                    paymentStatus === "completed"
-
+                    status === "completed" &&
+                    totalPrice > 0
                 ) {
 
-                    amountReceived += fullpayment;
-
+                    /*
+                     * Your workflow can treat Completed as
+                     * fully paid.
+                     *
+                     * Remove this section if a Completed booking
+                     * can still have an unpaid balance.
+                     */
+                    amountReceived = totalPrice;
                 }
-                totalIncome += amountReceived;
-
+                if (amountReceived < 0) {
+                    amountReceived = 0;
+                }
 
                 console.log(
-                    "Booking payment:",
+                    `Booking ${booking.id}:`,
                     {
-                        id: booking.id,
-                        downpayment,
-                        fullpayment,
-                        paymentStatus,
-                        amountReceived
+                        status: booking.status,
+                        payment_status: booking.payment_status,
+                        total_price: totalPrice,
+                        downpayment: downpayment,
+                        remaining_balance: remainingBalance,
+                        full_payment_amount: fullPayment,
+                        final_payment_amount: finalPayment,
+                        amountReceived: amountReceived
                     }
                 );
 
+                totalIncome += amountReceived;
             });
 
             totalIncomeElement.textContent =
@@ -1332,11 +1462,12 @@
                     maximumFractionDigits: 2
                 })}`;
 
-            console.log(
-                "TOTAL INCOME:",
-                totalIncome
-            );
+            console.log("==========================================");
+            console.log("TOTAL INCOME:", totalIncome);
+            console.log("==========================================");
         }
+
+
         let photoRealtimeChannel = null;
 
         function setupPhotoRealtime() {
@@ -1382,46 +1513,42 @@
 
                     });
         }
+
         function renderBookingAnalytics(
             monthlyBookings,
             selectedYear
         ) {
 
             const barsWrapper =
-                document.getElementById(
-                    "barsWrapper"
-                );
-
+                document.getElementById("barsWrapper");
 
             const yAxis =
-                document.getElementById(
-                    "bookingYAxis"
-                );
-
+                document.getElementById("bookingYAxis");
 
             const gridLines =
-                document.getElementById(
-                    "bookingGridLines"
+                document.getElementById("bookingGridLines");
+
+
+            if (
+                !barsWrapper ||
+                !yAxis ||
+                !gridLines
+            ) {
+                console.error(
+                    "Analytics chart elements not found."
                 );
-
-
-            if (!barsWrapper) {
                 return;
             }
-
 
             barsWrapper.innerHTML = "";
             yAxis.innerHTML = "";
             gridLines.innerHTML = "";
-
-
 
             const maxBooking =
                 Math.max(
                     ...monthlyBookings,
                     0
                 );
-
             let chartMax;
 
             if (maxBooking <= 5) {
@@ -1429,40 +1556,52 @@
                 chartMax = 5;
 
             }
-            else if (maxBooking <= 10) {
-
-                chartMax = 10;
-
-            }
-            else if (maxBooking <= 20) {
-
-                chartMax = 20;
-
-            }
-            else if (maxBooking <= 50) {
-
-                chartMax =
-                    Math.ceil(maxBooking / 10) * 10;
-
-            }
             else {
 
+                const magnitude =
+                    Math.pow(
+                        10,
+                        Math.floor(
+                            Math.log10(maxBooking)
+                        )
+                    );
+
+                const normalized =
+                    maxBooking / magnitude;
+
+
+                let niceNumber;
+
+                if (normalized <= 1) {
+
+                    niceNumber = 1;
+
+                }
+                else if (normalized <= 2) {
+
+                    niceNumber = 2;
+
+                }
+                else if (normalized <= 5) {
+
+                    niceNumber = 5;
+
+                }
+                else {
+
+                    niceNumber = 10;
+
+                }
+
+
                 chartMax =
-                    Math.ceil(maxBooking / 20) * 20;
+                    niceNumber * magnitude;
 
             }
-
-
-            /*
-             * Create Y-axis.
-             */
-
             const steps = 5;
 
             const stepValue =
                 chartMax / steps;
-
-
             for (
                 let i = steps;
                 i >= 0;
@@ -1484,7 +1623,9 @@
                     value.toLocaleString();
 
 
-                yAxis.appendChild(label);
+                yAxis.appendChild(
+                    label
+                );
 
 
                 const line =
@@ -1496,31 +1637,28 @@
                     "grid-line";
 
 
-                gridLines.appendChild(line);
+                gridLines.appendChild(
+                    line
+                );
 
             }
-
-
-            /*
-             * Render bars.
-             */
-
             monthlyBookings.forEach(
                 (value, index) => {
 
                     const percentage =
-                        chartMax === 0
-                            ? 0
-                            : (
+                        chartMax > 0
+                            ? (
                                 value /
                                 chartMax
-                            ) * 100;
+                            ) * 100
+                            : 0;
 
 
                     const column =
                         document.createElement(
                             "div"
                         );
+
 
                     column.className =
                         "bar-column";
@@ -1538,12 +1676,13 @@
                     >
 
                         <span class="bar-value">
-                            ${value}
+                            ${value.toLocaleString()}
                         </span>
 
                     </div>
 
                 </div>
+
 
                 <div class="bar-label">
                     ${monthNames[index]}
@@ -1558,12 +1697,6 @@
 
                 }
             );
-
-
-            /*
-             * YEARLY TOTAL
-             */
-
             const yearlyTotal =
                 monthlyBookings.reduce(
                     (total, value) =>
@@ -1572,60 +1705,85 @@
                 );
 
 
-            document.getElementById(
-                "yearlyBookingTotal"
-            ).textContent =
-                yearlyTotal.toLocaleString();
+            const yearlyTotalElement =
+                document.getElementById(
+                    "yearlyBookingTotal"
+                );
 
 
-            /*
-             * AVERAGE MONTHLY BOOKINGS
-             */
+            if (yearlyTotalElement) {
 
+                yearlyTotalElement.textContent =
+                    yearlyTotal.toLocaleString();
+
+            }
             const average =
                 yearlyTotal / 12;
 
 
-            document.getElementById(
-                "averageMonthlyBookings"
-            ).textContent =
-                average.toFixed(1);
+            const averageElement =
+                document.getElementById(
+                    "averageMonthlyBookings"
+                );
 
 
-            /*
-             * BUSIEST MONTH
-             */
+            if (averageElement) {
 
+                averageElement.textContent =
+                    average.toFixed(1);
+
+            }
             const highest =
                 Math.max(
                     ...monthlyBookings
                 );
 
 
-            if (highest === 0) {
-
+            const busiestElement =
                 document.getElementById(
                     "busiestBookingMonth"
-                ).textContent =
-                    "—";
+                );
+
+
+            if (busiestElement) {
+
+                if (highest === 0) {
+
+                    busiestElement.textContent =
+                        "—";
+
+                }
+                else {
+
+                    const busiestIndex =
+                        monthlyBookings.indexOf(
+                            highest
+                        );
+
+
+                    busiestElement.textContent =
+                        monthNames[
+                        busiestIndex
+                        ];
+
+                }
 
             }
-            else {
-
-                const busiestIndex =
-                    monthlyBookings.indexOf(
-                        highest
-                    );
-
-
-                document.getElementById(
-                    "busiestBookingMonth"
-                ).textContent =
-                    monthNames[busiestIndex];
-
-            }
+            console.log(
+                `Analytics rendered for ${selectedYear}`,
+                {
+                    monthlyBookings,
+                    yearlyTotal,
+                    average,
+                    highestMonthlyBookings:
+                        maxBooking,
+                    chartMaximum:
+                        chartMax
+                }
+            );
 
         }
+
         async function loadAnalyticsYears() {
 
             const {
@@ -1856,44 +2014,108 @@
         });
         async function updateExpiredGalleryAccess() {
 
-            console.log("Checking for expired gallery access...");
+            console.log("==========================================");
+            console.log("CHECKING ALL EXPIRED GALLERY ACCESS");
+            console.log("==========================================");
 
             const now = new Date().toISOString();
 
-            /*
-            ============================================================
-            FIND APPROVED ACCESS THAT HAS EXPIRED
-            ============================================================
-            */
+            console.log("Current time:", now);
+
+            // ============================================================
+            // FETCH ALL ACCESS REQUESTS THAT HAVE EXPIRED
+            //
+            // We check BOTH:
+            //   access_expires_at
+            //   expires_at
+            //
+            // because your table contains both columns.
+            // ============================================================
 
             const {
-                data: expiredAccess,
+                data: allAccess,
                 error: fetchError
             } = await supabaseClient
                 .from("gallery_access_requests")
                 .select(`
             id,
+            customer_id,
+            customer_email,
+            booking_id,
             repository_id,
-            access_expires_at,
             status,
-            is_expired
-        `)
-                .eq("status", "approved")
-                .eq("is_expired", false)
-                .not("access_expires_at", "is", null)
-                .lte("access_expires_at", now);
+            requested_at,
+            approved_at,
+            access_started_at,
+            access_expires_at,
+            expires_at,
+            is_expired,
+            payment_required,
+            payment_confirmed,
+            access_granted_at,
+            payment_status,
+            paid_at
+        `);
 
             if (fetchError) {
 
                 console.error(
-                    "Error finding expired gallery access:",
+                    "ERROR FETCHING GALLERY ACCESS:",
                     fetchError
                 );
 
                 return;
             }
 
-            if (!expiredAccess || expiredAccess.length === 0) {
+            console.log(
+                "Total gallery access records fetched:",
+                allAccess?.length || 0
+            );
+
+            if (!allAccess || allAccess.length === 0) {
+
+                console.log(
+                    "No gallery access records found."
+                );
+
+                return;
+            }
+
+            // ============================================================
+            // FIND EXPIRED RECORDS
+            // ============================================================
+
+            const expiredAccess = allAccess.filter(access => {
+
+                const accessExpiresAt = access.access_expires_at
+                    ? new Date(access.access_expires_at)
+                    : null;
+
+                const expiresAt = access.expires_at
+                    ? new Date(access.expires_at)
+                    : null;
+
+                const accessExpired =
+                    accessExpiresAt &&
+                    accessExpiresAt <= new Date(now);
+
+                const expiresExpired =
+                    expiresAt &&
+                    expiresAt <= new Date(now);
+
+                return accessExpired || expiresExpired;
+            });
+
+            console.log(
+                "Expired gallery access found:",
+                expiredAccess.length
+            );
+
+            // ============================================================
+            // NO EXPIRED ACCESS
+            // ============================================================
+
+            if (expiredAccess.length === 0) {
 
                 console.log(
                     "No gallery access has expired."
@@ -1902,33 +2124,55 @@
                 return;
             }
 
-            console.log(
-                `${expiredAccess.length} access record(s) expired.`
+            // ============================================================
+            // DISPLAY ALL EXPIRED RECORDS
+            // ============================================================
+
+            console.table(
+                expiredAccess.map(access => ({
+                    id: access.id,
+                    customer_email: access.customer_email,
+                    booking_id: access.booking_id,
+                    status: access.status,
+                    is_expired: access.is_expired,
+                    access_expires_at: access.access_expires_at,
+                    expires_at: access.expires_at
+                }))
             );
 
-
-            /*
-            ============================================================
-            MARK EACH ACCESS REQUEST AS EXPIRED
-            ============================================================
-            */
+            // ============================================================
+            // MARK EXPIRED ACCESS AS EXPIRED
+            // ============================================================
 
             for (const access of expiredAccess) {
+
+                // Already correctly marked expired
+                if (
+                    access.status === "expired" &&
+                    access.is_expired === true
+                ) {
+
+                    console.log(
+                        `Access ${access.id} is already expired.`
+                    );
+
+                    continue;
+                }
 
                 const {
                     error: updateError
                 } = await supabaseClient
                     .from("gallery_access_requests")
                     .update({
-                        is_expired: true,
-                        status: "expired"
+                        status: "expired",
+                        is_expired: true
                     })
                     .eq("id", access.id);
 
                 if (updateError) {
 
                     console.error(
-                        `Error expiring access ${access.id}:`,
+                        `ERROR updating access ${access.id}:`,
                         updateError
                     );
 
@@ -1936,13 +2180,13 @@
                 }
 
                 console.log(
-                    `Access ${access.id} marked as expired.`
+                    `Access ${access.id} successfully marked as expired.`
                 );
             }
 
-            console.log(
-                "Finished updating expired gallery access."
-            );
+            console.log("==========================================");
+            console.log("FINISHED EXPIRED GALLERY ACCESS CHECK");
+            console.log("==========================================");
         }
         async function loadDashboardStats() {
 
@@ -2161,13 +2405,20 @@
         }
         async function loadBookingCalendar() {
 
+
             const {
                 data,
                 error
             } = await supabaseClient
                 .from("bookings")
                 .select("*")
-                .eq("status", "Confirmed");
+                .in("status", ["Confirmed", "Completed"])
+                .order("booking_date", {
+                    ascending: true
+                })
+                .order("booking_time", {
+                    ascending: true
+                });
 
             if (error) {
 
@@ -2520,12 +2771,6 @@
                             ).textContent =
                                 props.paymentStatus ||
                                 "Pending";
-
-
-                            /*
-                             * NOTES
-                             */
-
                             document.getElementById(
                                 "modalNotes"
                             ).textContent =
@@ -2533,20 +2778,10 @@
                                 "No notes provided.";
 
 
-                            /*
-                             * STATUS
-                             */
-
                             document.getElementById(
                                 "modalStatus"
                             ).textContent =
-                                "Confirmed";
-
-
-                            /*
-                             * SHOW MODAL
-                             */
-
+                                props.status || "Unknown";
                             document
                                 .getElementById(
                                     "bookingModal"
@@ -2559,12 +2794,6 @@
 
                     }
                 );
-
-
-            /*
-             * CLOSE MODAL
-             */
-
             const closeButton =
                 document.querySelector(
                     ".close-booking-modal"
@@ -2583,12 +2812,6 @@
                         );
 
                 };
-
-
-            /*
-             * CLOSE WHEN CLICKING OUTSIDE
-             */
-
             window.addEventListener(
                 "click",
                 function (e) {
@@ -2615,9 +2838,11 @@
             calendarInstance.render();
 
         }
+
         async function refreshBookingCalendar() {
 
             if (!calendarInstance) {
+                await loadBookingCalendar();
                 return;
             }
 
@@ -2627,7 +2852,13 @@
             } = await supabaseClient
                 .from("bookings")
                 .select("*")
-                .eq("status", "Confirmed");
+                .in("status", ["Confirmed", "Completed"])
+                .order("booking_date", {
+                    ascending: true
+                })
+                .order("booking_time", {
+                    ascending: true
+                });
 
             if (error) {
 
@@ -2639,48 +2870,149 @@
                 return;
             }
 
-            const events = data.map(booking => ({
 
-                id: String(booking.id),
+            function formatArrayValue(value) {
 
-                title:
-                    booking.full_name,
+                if (Array.isArray(value)) {
 
-                start:
-                    booking.booking_date +
-                    "T" +
-                    booking.booking_time,
-
-                extendedProps: {
-
-                    email:
-                        booking.email,
-
-                    contact:
-                        booking.contact_number,
-
-                    package:
-                        booking.package,
-
-                    session:
-                        booking.session_type,
-
-                    notes:
-                        booking.notes,
-
-                    bookingDate:
-                        booking.booking_date,
-
-                    bookingTime:
-                        booking.booking_time
-
+                    return value.length
+                        ? value.join(", ")
+                        : "None";
                 }
 
-            }));
+                if (
+                    typeof value === "string" &&
+                    value.trim() !== ""
+                ) {
+
+                    try {
+
+                        const parsed =
+                            JSON.parse(value);
+
+                        if (Array.isArray(parsed)) {
+
+                            return parsed.length
+                                ? parsed.join(", ")
+                                : "None";
+                        }
+
+                    } catch (error) {
+                        // Normal string
+                    }
+
+                    return value;
+                }
+
+                return "None";
+            }
+
+
+            function createCalendarEvent(booking) {
+
+                const totalPrice =
+                    Number(booking.total_price) || 0;
+
+                const downpayment =
+                    Number(booking.downpayment_amount) || 0;
+
+                const remainingBalance =
+                    booking.remaining_balance !== null &&
+                        booking.remaining_balance !== undefined
+
+                        ? Number(booking.remaining_balance) || 0
+
+                        : Math.max(
+                            0,
+                            totalPrice - downpayment
+                        );
+
+
+                return {
+
+                    id:
+                        String(booking.id),
+
+                    title:
+                        booking.full_name ||
+                        "Customer",
+
+                    start:
+                        `${booking.booking_date}T${booking.booking_time} `,
+
+                    extendedProps: {
+
+                        bookingId:
+                            booking.id,
+
+                        email:
+                            booking.email,
+
+                        contact:
+                            booking.contact_number,
+
+                        package:
+                            booking.package ||
+                            booking.photo_package ||
+                            booking.photoPackage ||
+                            "Not specified",
+
+                        session:
+                            booking.session_type ||
+                            "Not specified",
+
+                        bookingDate:
+                            booking.booking_date,
+
+                        bookingTime:
+                            booking.booking_time,
+
+                        duration:
+                            booking.booking_duration,
+
+                        backdrop:
+                            booking.backdrops,
+
+                        addons:
+                            booking.addons,
+
+                        paymentMethod:
+                            booking.payment_method,
+
+                        totalPrice:
+                            totalPrice,
+
+                        downpayment:
+                            downpayment,
+
+                        remainingBalance:
+                            remainingBalance,
+
+                        paymentStatus:
+                            booking.payment_status,
+
+                        notes:
+                            booking.notes,
+
+                        status:
+                            booking.status
+
+                    }
+
+                };
+            }
+            const events =
+                (data || []).map(
+                    createCalendarEvent
+                );
 
             calendarInstance.removeAllEvents();
+            events.forEach(event => {
 
-            calendarInstance.addEventSource(events);
+                calendarInstance.addEvent(event);
+
+            });
+            calendarInstance.render();
 
         }
         const sidebar = document.querySelector(".sidebar");
@@ -2851,15 +3183,29 @@
             };
 
         }
-        async function loadNotifications() {
 
+        function cleanGalleryMessage(message) {
+            if (!message) return "";
+            return message
+                // 1. Remove all HTML tags (<a>, <span>, etc.) and their content
+                .replace(/<[^>]*>.*?<\/[^>]*>/gi, "")
+                .replace(/<[^>]+>/gi, "")
+                // 2. Remove standard URLs (http, https, ftp)
+                .replace(/(https?:\/\/|ftp:\/\/)[^\s<]+/gi, "")
+                // 3. Remove domain-style links (e.g., website.com/path, www.site.com)
+                .replace(/(^|\s)(www\.[^\s<]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\/[^\s<]*)/gi, "$1")
+                // 4. Clean up leftover double spaces or extra punctuation
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        async function loadNotifications() {
             if (!currentUser) {
                 console.warn("Cannot load notifications: no current user.");
                 return;
             }
 
             try {
-
                 console.log("Loading notifications from database...");
 
                 const {
@@ -2868,113 +3214,73 @@
                 } = await supabaseClient
                     .from("notifications")
                     .select("*")
-                    .not("booking_id", "is", null)
-                    .order("created_at", {
-                        ascending: false
-                    })
+                    .order("created_at", { ascending: false })
                     .limit(15);
 
                 if (notificationError) {
-
-                    console.error(
-                        "LOAD NOTIFICATIONS ERROR:",
-                        notificationError
-                    );
-
+                    console.error("LOAD NOTIFICATIONS ERROR:", notificationError);
                     notificationList.innerHTML = `
-                <div class="notification-empty">
-                    Unable to load notifications
-                </div>
-            `;
-
+        <div class="notification-empty">
+            Unable to load notifications
+        </div>
+    `;
                     return;
                 }
 
                 notifications = [];
 
                 for (const notificationRow of notificationRows || []) {
+                    const rawType = (notificationRow.type || "").toLowerCase();
+                    const rawTitle = (notificationRow.title || "").toLowerCase();
+                    let message = notificationRow.message || "";
 
-                    if (!notificationRow.booking_id) {
+                    // Filter out the specific gallery approval notification message requested to be removed
+                    if (message.includes("Your gallery access request has been approved") ||
+                        message.includes("Your gallery link is available for 7 days")) {
                         continue;
                     }
 
-                    const {
-                        data: booking,
-                        error: bookingError
-                    } = await supabaseClient
-                        .from("bookings")
-                        .select("*")
-                        .eq("id", notificationRow.booking_id)
-                        .maybeSingle();
+                    // 1. FILTER: STRICTLY ALLOW ONLY "New Customer Booking" AND "Gallery Access"
+                    const isBooking = rawType === "booking" || rawTitle.includes("new customer booking");
+                    const isGallery = rawType === "gallery_access" || rawType === "gallery" || rawTitle.includes("gallery access");
 
-
-                    if (bookingError) {
-
-                        console.warn(
-                            "Could not load booking for notification:",
-                            notificationRow.id,
-                            bookingError
-                        );
-
-                        continue;
+                    if (!isBooking && !isGallery) {
+                        continue; // Skip any other notification types completely
                     }
 
-
-                    if (!booking) {
-                        continue;
+                    // 2. REMOVE LINK/URL FROM GALLERY ACCESS SUBTEXT
+                    if (isGallery) {
+                        message = cleanGalleryMessage(message);
                     }
+
+                    let booking = null;
+                    if (notificationRow.booking_id) {
+                        const { data: bookingData } = await supabaseClient
+                            .from("bookings")
+                            .select("*")
+                            .eq("id", notificationRow.booking_id)
+                            .maybeSingle();
+
+                        booking = bookingData || null;
+                    }
+
                     const notification = {
-
-                        id:
-                            String(notificationRow.id),
-                        type:
-                            "booking",
-
-                        title:
-                            notificationRow.title ||
-                            "New Customer Booking",
-
-                        message:
-                            notificationRow.message ||
-                            `${booking.full_name || "A customer"} has a confirmed booking.`,
-
-                        date:
-                            notificationRow.created_at ||
-                            booking.created_at ||
-                            new Date().toISOString(),
-
-                        unread:
-                            notificationRow.is_read !== true,
-
-                        booking:
-                            booking,
-
-                        databaseId:
-                            notificationRow.id
-
+                        id: String(notificationRow.id),
+                        type: isBooking ? "booking" : "gallery_access",
+                        title: isBooking ? "New Customer Booking" : "New Gallery Access Request",
+                        message: message,
+                        date: notificationRow.created_at || booking?.created_at || new Date().toISOString(),
+                        unread: notificationRow.is_read !== true,
+                        booking: booking,
+                        databaseId: notificationRow.id
                     };
 
-
                     notifications.push(notification);
-
                 }
 
                 renderNotifications();
-
-
-                console.log(
-                    "✅ Notifications loaded:",
-                    notifications
-                );
-
-
             } catch (error) {
-
-                console.error(
-                    "Notification loading failed:",
-                    error
-                );
-
+                console.error("Notification loading failed:", error);
             }
         }
 
@@ -3599,136 +3905,78 @@
              * Open booking details
              */
             if (
-                notification.type === "booking" &&
+                (notification.type === "booking" || notification.type === "gallery_access") &&
                 notification.booking &&
                 notification.booking.id
             ) {
-
                 await openNotificationBooking(
                     notification
                 );
-
             }
 
         }
 
         function renderNotifications() {
-
             notificationList.innerHTML = "";
 
-
-            if (
-                !notifications ||
-                notifications.length === 0
-            ) {
-
+            if (!notifications || notifications.length === 0) {
                 notificationList.innerHTML = `
-
             <div class="notification-empty">
                 No notifications
             </div>
-
         `;
-
                 updateNotificationBadge();
-
                 return;
-
             }
 
+            notifications.forEach(function (notification) {
+                const item = document.createElement("div");
+                item.className = "notification-item";
 
-            notifications.forEach(
-                function (notification) {
-
-                    const item =
-                        document.createElement("div");
-
-
-                    item.className =
-                        "notification-item";
-
-
-                    if (notification.unread) {
-
-                        item.classList.add(
-                            "unread"
-                        );
-
-                    }
-
-
-                    let icon =
-                        "fa-bell";
-
-
-                    if (
-                        notification.type ===
-                        "booking"
-                    ) {
-
-                        icon =
-                            "fa-calendar-check";
-
-                    }
-
-
-                    item.innerHTML = `
-
-                <div class="notification-icon">
-
-                    <i class="fa-solid ${icon}"></i>
-
-                </div>
-
-
-                <div class="notification-content">
-
-                    <p class="notification-title">
-                        ${escapeNotificationHTML(
-                        notification.title
-                    )}
-                    </p>
-
-
-                    <p class="notification-message">
-                        ${escapeNotificationHTML(
-                        notification.message
-                    )}
-                    </p>
-
-
-                    <div class="notification-time">
-                        ${formatNotificationDate(
-                        notification.date
-                    )}
-                    </div>
-
-                </div>
-
-            `;
-
-
-                    item.addEventListener(
-                        "click",
-                        function () {
-
-                            handleNotificationClick(
-                                notification,
-                                item
-                            );
-
-                        }
-                    );
-
-
-                    notificationList.appendChild(
-                        item
-                    );
-
+                if (notification.unread) {
+                    item.classList.add("unread");
                 }
-            );
-            updateNotificationBadge();
 
+                let icon = "fa-bell";
+                if (notification.type === "booking") {
+                    icon = "fa-calendar-check";
+                } else if (notification.type === "gallery_access") {
+                    icon = "fa-image";
+                }
+
+                // Handle text display safely without showing escaped link tags
+                const formattedMessage = notification.type === "gallery_access"
+                    ? cleanGalleryMessage(notification.message)
+                    : escapeNotificationHTML(notification.message);
+
+                item.innerHTML = `
+            <div class="notification-icon">
+                <i class="fa-solid ${icon}"></i>
+            </div>
+
+            <div class="notification-content">
+                <p class="notification-title">
+                    ${escapeNotificationHTML(notification.title)}
+                </p>
+
+                <p class="notification-message">
+                    ${formattedMessage}
+                </p>
+
+                <div class="notification-time">
+                    ${formatNotificationDate(notification.date)}
+                </div>
+            </div>
+        `;
+
+                item.addEventListener("click", function () {
+                    handleNotificationClick(notification, item);
+                });
+
+                notificationList.appendChild(item);
+            });
+
+            updateNotificationBadge();
         }
 
         function updateNotificationBadge() {
@@ -3921,6 +4169,7 @@
             await loadAnalyticsYears();
 
         }
+
         function setupNotificationRealtime() {
 
             console.log("Starting notification realtime listener...");
@@ -3942,125 +4191,56 @@
                         table: "notifications"
                     },
                     async function (payload) {
-
-                        console.log(
-                            "🔔 NEW NOTIFICATION:",
-                            payload
-                        );
+                        console.log("🔔 NEW NOTIFICATION:", payload);
 
                         const notificationRow = payload.new;
+                        const rawType = (notificationRow.type || "").toLowerCase();
+                        const rawTitle = (notificationRow.title || "").toLowerCase();
 
+                        // 1. FILTER: STRICTLY ALLOW ONLY "New Customer Booking" AND "Gallery Access"
+                        const isBooking = rawType === "booking" || rawTitle.includes("new customer booking");
+                        const isGallery = rawType === "gallery_access" || rawType === "gallery" || rawTitle.includes("gallery access");
 
-                        if (
-                            !notificationRow ||
-                            notificationRow.type !== "booking"
-                        ) {
-                            return;
+                        if (!isBooking && !isGallery) {
+                            return; // Ignore all other realtime notification types
+                        }
+
+                        let message = notificationRow.message || "";
+
+                        // 2. REMOVE LINK/URL FROM GALLERY ACCESS SUBTEXT
+                        if (isGallery) {
+                            message = cleanGalleryMessage(message);
                         }
 
                         let booking = null;
-
                         if (notificationRow.booking_id) {
-
-                            const {
-                                data,
-                                error
-                            } = await supabaseClient
+                            const { data: bookingData } = await supabaseClient
                                 .from("bookings")
                                 .select("*")
-                                .eq(
-                                    "id",
-                                    notificationRow.booking_id
-                                )
+                                .eq("id", notificationRow.booking_id)
                                 .maybeSingle();
 
-                            if (error) {
-
-                                console.error(
-                                    "Unable to load booking for notification:",
-                                    error
-                                );
-
-                                return;
-                            }
-
-                            booking = data;
+                            booking = bookingData;
                         }
-                        const alreadyExists =
-                            notifications.some(
-                                notification =>
-                                    String(
-                                        notification.databaseId
-                                    ) ===
-                                    String(
-                                        notificationRow.id
-                                    )
-                            );
 
-                        if (alreadyExists) {
-
-                            console.log(
-                                "Notification already exists."
-                            );
-
-                            return;
-                        }
                         const notification = {
-
-                            id:
-                                String(notificationRow.id),
-
-                            type:
-                                notificationRow.type ||
-                                "booking",
-
-                            title:
-                                notificationRow.title ||
-                                "New Customer Booking",
-
-                            message:
-                                notificationRow.message ||
-                                (
-                                    booking?.full_name ||
-                                    "A customer"
-                                ) +
-                                " has a confirmed booking.",
-
-                            date:
-                                notificationRow.created_at ||
-                                new Date().toISOString(),
-
-                            unread:
-                                notificationRow.is_read !== true,
-
-                            booking:
-                                booking,
-
-                            databaseId:
-                                notificationRow.id
-
+                            id: String(notificationRow.id),
+                            type: isBooking ? "booking" : "gallery_access",
+                            title: isBooking ? "New Customer Booking" : "New Gallery Access Request",
+                            message: message,
+                            date: notificationRow.created_at || new Date().toISOString(),
+                            unread: notificationRow.is_read !== true,
+                            booking: booking,
+                            databaseId: notificationRow.id
                         };
 
+                        notifications.unshift(notification);
+                        notifications = notifications.slice(0, 15);
 
-                        notifications.unshift(
-                            notification
-                        );
-
-                        notifications =
-                            notifications.slice(
-                                0,
-                                15
-                            );
                         renderNotifications();
                         await refreshBookingCalendar();
                         await loadDashboardStats();
                         await loadAnalyticsYears();
-
-                        console.log(
-                            "✅ New notification added:",
-                            notification
-                        );
-
                     }
                 )
                 .on(

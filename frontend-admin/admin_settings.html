@@ -192,29 +192,11 @@
                     </div>
                 </div>
 
-                <div class="action-list-wrapper">
-                    <div class="action-item">
-                        <div class="action-info">
-                            <h3>Sign Out of All Devices</h3>
-                            <p>End all active sessions across your devices.</p>
-                        </div>
-                        <button type="button" class="btn-dark" id="signOutDevicesBtn">Sign Out</button>
-                    </div>
-
-                    <div class="action-item">
-                        <div class="action-info">
-                            <h3>Delete Account</h3>
-                            <p>Permanently delete your account and associated data.</p>
-                        </div>
-                        <button type="button" class="btn-danger" id="deleteAccountBtn">Delete</button>
-                    </div>
-                </div>
             </div>
 
         </main>
     </div>
 
-    <!-- STAFF LIST MODAL -->
     <div class="modal-overlay" id="staffModal">
         <div class="staff-modal-container">
             <div class="staff-modal-header">
@@ -367,41 +349,60 @@
             });
         });
 
-        // Modal Elements
+
         const staffModal = document.getElementById("staffModal");
         const viewStaffListBtn = document.getElementById("viewStaffListBtn");
+        const staffTableBody = document.getElementById("staffTableBody");
 
-        // Open Modal
-        viewStaffListBtn.addEventListener("click", () => {
+        viewStaffListBtn.addEventListener("click", async () => {
+
             staffModal.classList.add("active");
-            fetchStaffList();
-        });
 
-        // Close Modal when clicking outside container
+            await fetchStaffList();
+
+        });
         staffModal.addEventListener("click", (e) => {
+
             if (e.target === staffModal) {
+
                 staffModal.classList.remove("active");
+
             }
+
         });
 
         async function fetchStaffList() {
 
             try {
 
+                staffTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center; padding:30px;">
+                    Loading staff accounts...
+                </td>
+            </tr>
+        `;
+
+
+                // Get current admin session
                 const {
-                    data: { session }
+                    data: { session },
+                    error: sessionError
                 } = await supabaseClient.auth.getSession();
 
-                if (!session) {
 
-                    alert("Your session has expired.");
+                if (sessionError || !session) {
 
-                    window.location.href =
-                        "admin_login.html";
+                    alert("Your session has expired. Please log in again.");
+
+                    window.location.href = "admin_login.html";
 
                     return;
+
                 }
 
+
+                // Request staff list from backend
                 const response = await fetch(
                     "http://localhost:3000/api/admin/staff",
                     {
@@ -409,19 +410,30 @@
 
                         headers: {
                             "Authorization":
-                                `Bearer ${session.access_token}`
+                                `Bearer ${session.access_token}`,
+
+                            "Content-Type":
+                                "application/json"
                         }
                     }
                 );
 
+
                 const result = await response.json();
+
+
+                console.log("STAFF LIST RESPONSE:", result);
+
 
                 if (!response.ok || !result.success) {
 
-                    console.error(
-                        "Staff list error:",
-                        result
-                    );
+                    staffTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:30px;">
+                        Unable to load staff accounts.
+                    </td>
+                </tr>
+            `;
 
                     alert(
                         result.error ||
@@ -429,101 +441,300 @@
                     );
 
                     return;
+
                 }
 
-                const staffList =
-                    result.staff || [];
 
-                const tbody =
-                    document.getElementById(
-                        "staffTableBody"
-                    );
+                const staffList = result.staff || [];
 
-                tbody.innerHTML = "";
 
+                staffTableBody.innerHTML = "";
+
+
+                // No staff
                 if (staffList.length === 0) {
 
-                    tbody.innerHTML = `
+                    staffTableBody.innerHTML = `
                 <tr>
-                    <td colspan="5" style="text-align:center;">
+                    <td colspan="5" style="text-align:center; padding:30px;">
                         No staff accounts found.
                     </td>
                 </tr>
             `;
 
                     return;
-                }
 
+                }
                 staffList.forEach(staff => {
 
-                    const tr =
-                        document.createElement("tr");
+                    const tr = document.createElement("tr");
 
-                    const statusClass =
-                        staff.status === "Inactive"
-                            ? "status-inactive"
-                            : "status-active";
 
                     const statusText =
                         staff.status || "Active";
 
-                    const deleteButton =
-                        staff.role === "admin"
-                            ? ""
-                            : `
+
+                    const statusClass =
+                        statusText.toLowerCase() === "inactive"
+                            ? "status-inactive"
+                            : "status-active";
+
+
+                    // Escape values used inside onclick
+                    const staffName =
+                        String(
+                            staff.full_name ||
+                            staff.email ||
+                            "Staff Account"
+                        )
+                            .replace(/\\/g, "\\\\")
+                            .replace(/'/g, "\\'");
+
+
+                    // =================================================
+                    // CURRENT ADMIN
+                    // =================================================
+
+                    if (staff.id === session.user.id) {
+
+                        tr.innerHTML = `
+                    <td>${staff.full_name || "N/A"}</td>
+
+                    <td>${staff.email || "N/A"}</td>
+
+                    <td>
+                        <span class="role-badge">
+                            ${staff.role || "staff"}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="status-badge ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span style="
+                            color:#888;
+                            font-size:13px;
+                            white-space:nowrap;
+                        ">
+                            Current account
+                        </span>
+                    </td>
+                `;
+
+                    }
+                    else {
+
+                        tr.innerHTML = `
+                    <td>${staff.full_name || "N/A"}</td>
+
+                    <td>${staff.email || "N/A"}</td>
+
+                    <td>
+                        <span class="role-badge">
+                            ${staff.role || "staff"}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="status-badge ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+
+                    <td style="white-space:nowrap;">
+
                         <button
-                            class="btn-table-delete"
-                            onclick="deleteStaff('${staff.id}')">
-                            Delete
+                            type="button"
+                            class="btn-table-signout"
+                            onclick="signOutStaff(
+                                '${staff.id}',
+                                '${staffName}'
+                            )">
+
+                            <i class="fa-solid fa-right-from-bracket"></i>
+
+                            Sign Out
+
                         </button>
-                    `;
 
-                    tr.innerHTML = `
-                <td>${staff.full_name || "N/A"}</td>
+                        ${staff.role !== "admin"
+                                ? `
+                                    <button
+                                        type="button"
+                                        class="btn-table-delete"
+                                        onclick="deleteStaff('${staff.id}')">
 
-                <td>${staff.email || "N/A"}</td>
+                                        <i class="fa-solid fa-trash"></i>
 
-                <td>
-                    <span class="role-badge">
-                        ${staff.role || "staff"}
-                    </span>
-                </td>
+                                        Delete
 
-                <td>
-                    <span class="status-badge ${statusClass}">
-                        ${statusText}
-                    </span>
-                </td>
+                                    </button>
+                                `
+                                : ""
+                            }
 
-                <td>
-                    ${deleteButton}
-                </td>
-            `;
+                    </td>
+                `;
 
-                    tbody.appendChild(tr);
+                    }
+
+
+                    staffTableBody.appendChild(tr);
 
                 });
+
 
             } catch (error) {
 
                 console.error(
-                    "Fetch staff error:",
+                    "FETCH STAFF ERROR:",
                     error
                 );
+
+
+                staffTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center; padding:30px;">
+                    Error loading staff accounts.
+                </td>
+            </tr>
+        `;
+
 
                 alert(
                     "Unable to connect to the server."
                 );
 
             }
-        }
-        async function deleteStaff(staffId) {
 
-            if (!confirm(
-                "Are you sure you want to delete this staff account?"
-            )) {
+        }
+
+
+        // =====================================================
+        // SIGN OUT SELECTED STAFF ACCOUNT
+        // =====================================================
+
+        async function signOutStaff(staffId, staffName) {
+
+            if (!staffId) {
+
+                alert("Invalid staff account.");
+
                 return;
+
             }
+
+
+            const confirmed = confirm(
+                `Are you sure you want to sign out "${staffName}" from all devices?\n\n` +
+                `This will end their active sessions and they will need to log in again.`
+            );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const {
+                    data: { session },
+                    error: sessionError
+                } = await supabaseClient.auth.getSession();
+
+
+                if (sessionError || !session) {
+
+                    alert(
+                        "Your admin session has expired. Please log in again."
+                    );
+
+                    window.location.href =
+                        "admin_login.html";
+
+                    return;
+
+                }
+
+
+                console.log(
+                    "Signing out staff:",
+                    staffId
+                );
+
+
+                const response = await fetch(
+                    `http://localhost:3000/api/admin/staff/${staffId}/signout`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Authorization":
+                                `Bearer ${session.access_token}`,
+
+                            "Content-Type":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+                const result = await response.json();
+
+
+                console.log(
+                    "SIGN OUT RESPONSE:",
+                    result
+                );
+
+
+                if (!response.ok || !result.success) {
+
+                    alert(
+                        result.error ||
+                        "Failed to sign out the account."
+                    );
+
+                    return;
+
+                }
+
+
+                alert(
+                    result.message ||
+                    `${staffName} has been signed out from all devices.`
+                );
+
+
+                // Refresh list
+                await fetchStaffList();
+
+
+            } catch (error) {
+
+                console.error(
+                    "SIGN OUT STAFF ERROR:",
+                    error
+                );
+
+
+                alert(
+                    "Unable to connect to the server."
+                );
+
+            }
+
+        }
+
+
+        async function checkForcedSignOut() {
 
             try {
 
@@ -532,13 +743,97 @@
                 } = await supabaseClient.auth.getSession();
 
                 if (!session) {
+                    return;
+                }
 
-                    alert("Your session has expired.");
+                const {
+                    data: profile,
+                    error
+                } = await supabaseClient
+                    .from("staff_profiles")
+                    .select("force_signout_at")
+                    .eq("id", session.user.id)
+                    .maybeSingle();
+
+                if (error) {
+
+                    console.error(
+                        "Force sign-out check error:",
+                        error
+                    );
+
+                    return;
+                }
+
+                if (!profile) {
+                    return;
+                }
+
+                if (profile.force_signout_at) {
+
+                    console.log(
+                        "ACCOUNT WAS FORCE SIGNED OUT"
+                    );
+
+                    await supabaseClient.auth.signOut();
+
+                    alert(
+                        "Your account has been signed out by an administrator."
+                    );
+
+                    window.location.href =
+                        "admin_login.html";
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "FORCE SIGN OUT CHECK ERROR:",
+                    error
+                );
+            }
+        }
+        async function deleteStaff(staffId) {
+
+            if (!staffId) {
+
+                alert("Invalid staff account.");
+
+                return;
+
+            }
+
+
+            const confirmed = confirm(
+                "Are you sure you want to delete this staff account?"
+            );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const {
+                    data: { session }
+                } = await supabaseClient.auth.getSession();
+
+
+                if (!session) {
+
+                    alert(
+                        "Your session has expired. Please log in again."
+                    );
 
                     window.location.href =
                         "admin_login.html";
 
                     return;
+
                 }
 
 
@@ -549,13 +844,24 @@
 
                         headers: {
                             "Authorization":
-                                `Bearer ${session.access_token}`
+                                `Bearer ${session.access_token}`,
+
+                            "Content-Type":
+                                "application/json"
                         }
                     }
                 );
 
+
                 const result =
                     await response.json();
+
+
+                console.log(
+                    "DELETE STAFF RESPONSE:",
+                    result
+                );
+
 
                 if (!response.ok || !result.success) {
 
@@ -565,28 +871,33 @@
                     );
 
                     return;
+
                 }
+
 
                 alert(
                     "Staff account deleted successfully."
                 );
 
-                fetchStaffList();
+
+                await fetchStaffList();
+
 
             } catch (error) {
 
                 console.error(
-                    "Delete staff error:",
+                    "DELETE STAFF ERROR:",
                     error
                 );
+
 
                 alert(
                     "Unable to connect to the server."
                 );
 
             }
+
         }
-        // Change Password Form logic
         document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const { data: { user } } = await supabaseClient.auth.getUser();

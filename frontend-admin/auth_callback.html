@@ -49,11 +49,9 @@
 
                 console.log("Google Login Success:", user);
 
-                // Save user info
                 localStorage.setItem("loggedInUserId", user.id);
                 localStorage.setItem("loggedInUserEmail", user.email);
 
-                // Check if profile already exists
                 let {
                     data: profile,
                     error: profileError
@@ -114,8 +112,6 @@
                     JSON.stringify(profile)
                 );
 
-                // Send OTP email
-                // Send OTP email
                 console.log("Sending OTP to:", user.email);
                 console.log("Sending OTP request...");
 
@@ -140,13 +136,11 @@
                     return;
                 }
 
-                // Save email for verification page
                 localStorage.setItem(
                     "verification_email",
                     user.email
                 );
 
-                // Go to OTP page
                 window.location.href = "verification_code.html";
 
             } catch (err) {

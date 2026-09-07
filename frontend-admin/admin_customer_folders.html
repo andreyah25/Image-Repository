@@ -22,7 +22,6 @@
 </head>
 
 <body>
-
     <header class="top-navbar">
 
         <div class="logo-section">
@@ -32,8 +31,6 @@
             <span>Captured Admin Studio</span>
 
         </div>
-
-
         <div class="navbar-right">
 
             <button type="button" class="notification-btn" id="notificationTrigger" aria-label="Notifications">
@@ -53,9 +50,6 @@
         </div>
 
     </header>
-
-
-
     <div class="dashboard-wrapper">
 
         <aside class="sidebar">
@@ -66,46 +60,31 @@
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
-
-
                 <a href="admin_client.html">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
-
-
                 <a href="admin_repository.html" class="active">
                     <i class="fa-solid fa-book"></i>
                     Repository
                 </a>
-
-
                 <a href="admin_payment.html">
                     <i class="fa-solid fa-credit-card"></i>
                     Payments
                 </a>
-
-
                 <a href="admin_archives.html">
                     <i class="fa-solid fa-box-archive"></i>
                     Archives
                 </a>
-
-
                 <a href="admin_profile.html">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
-
-
                 <a href="admin_settings.html">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
-
             </nav>
-
-
             <a href="admin_login.html" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
 
@@ -116,8 +95,6 @@
             </a>
 
         </aside>
-
-
         <main class="content">
 
             <div id="foldersView">
@@ -396,36 +373,19 @@
 
                 if (error) {
 
-                    console.error(
-                        "Session error:",
-                        error
-                    );
+                    console.error( "Session error:",error );
 
-                    window.location.href =
-                        "admin_login.html";
-
-                    return;
+                    window.location.href ="admin_login.html"; return; 
                 }
-
 
                 if (!session) {
-
-                    window.location.href =
-                        "admin_login.html";
+                     window.location.href = "admin_login.html";
 
                     return;
                 }
-
-
-                currentUser =
-                    session.user;
-
-
-                await loadAdminProfile();
-
-                await loadCompletedClients();
-
-
+                currentUser = session.user;
+                  await loadAdminProfile();
+                  await loadCompletedClients();
             } catch (error) {
 
                 console.error(
@@ -440,8 +400,6 @@
             }
 
         });
-
-
         async function loadAdminProfile() {
 
             const {
@@ -456,36 +414,24 @@
 
 
             if (error) {
-
-                console.warn(
-                    "Could not load staff profile:",
-                    error.message
+                  console.warn( "Could not load staff profile:", error.message
                 );
-
-                return;
+                 return;
             }
-
-
             if (!profile) {
                 return;
             }
-
-
             const userName =
                 document.getElementById("userName");
 
             const userAvatar =
                 document.getElementById("userAvatar");
-
-
             if (userName) {
 
                 userName.textContent =
                     profile.full_name || "Admin";
 
             }
-
-
             if (
                 userAvatar &&
                 profile.avatar_url
@@ -495,7 +441,6 @@
                     profile.avatar_url;
 
             }
-
         }
 
         async function loadCompletedClients() {
@@ -506,7 +451,6 @@
             <div>Loading customers...</div>
         </div>
     `;
-
             try {
 
                 const {
@@ -538,8 +482,6 @@
 
                     return;
                 }
-
-                
                 let filteredClients = data || [];
 
                 if (selectedPackage) {
@@ -559,18 +501,10 @@
                     "FILTERED CUSTOMERS:",
                     filteredClients
                 );
-
-        
-
                 completedClients = filteredClients;
-
-             
-
                 renderCompletedClients(
                     completedClients
                 );
-
-
                 if (selectedPackage) {
 
                     document.querySelector(
@@ -1308,15 +1242,12 @@
 
             return (
                 siteURL +
-                "/customer_gallery_view.html?token=" +
+                "/frontend-customer/customer_gallery_view.html?token=" +
                 encodeURIComponent(token)
             );
 
         }
 
-        /* =========================================================
-           COPY CLIENT LINK
-        ========================================================= */
 
         async function copyClientLink(
             repository
@@ -1670,15 +1601,9 @@
                     "DATABASE UPDATE REQUEST SUCCESS."
                 );
 
-
-                // =====================================================
-                // 6. VERIFY THE SAVED DATA
-                // =====================================================
-
                 console.log(
                     "Verifying saved ML data..."
                 );
-
 
                 const {
                     data: verifiedPhoto,
@@ -1705,8 +1630,6 @@
                     );
 
                 }
-
-
                 console.log(
                     "================================="
                 );
@@ -1719,23 +1642,13 @@
                     verifiedPhoto
                 );
 
-                console.log(
-                    "================================="
-                );
-
-
+                console.log( "=================================");
                 if (!verifiedPhoto) {
 
                     throw new Error(
                         "Photo was not found after ML update. Check repository_photos RLS policies."
                     );
                 }
-
-
-                // =====================================================
-                // 7. SUCCESS
-                // =====================================================
-
                 console.log(
                     "================================="
                 );
@@ -1792,12 +1705,6 @@
                 console.error(
                     "================================="
                 );
-
-
-                // =====================================================
-                // MARK AS FAILED
-                // =====================================================
-
                 const {
                     error: failedError
                 } = await supabaseClient
@@ -1816,8 +1723,6 @@
                     );
 
                 }
-
-
                 return {
 
                     success: false,
@@ -1854,12 +1759,6 @@
                     String(searchQuery || "").trim();
 
                 let result;
-
-                /*
-                 * If there is no search term,
-                 * load all photos normally.
-                 */
-
                 if (!query) {
 
                     result =
@@ -1882,12 +1781,6 @@
                             );
 
                 }
-
-                /*
-                 * If there is a search term,
-                 * use the PostgreSQL search function.
-                 */
-
                 else {
 
                     result =
@@ -1947,12 +1840,6 @@
                 renderPhotos(
                     photoResults
                 );
-
-
-                /*
-                 * Update search information
-                 */
-
                 if (query) {
 
                     photoSearchInfo.textContent =
@@ -2123,11 +2010,6 @@
 
         }
 
-
-        /* =========================================================
-           START UPLOAD
-        ========================================================= */
-
         function startPhotoUpload() {
 
             if (
@@ -2146,11 +2028,6 @@
             photoFilesUploader.click();
 
         }
-
-
-        /* =========================================================
-           FILE SELECTION
-        ========================================================= */
 
         photoFilesUploader.addEventListener(
             "change",
@@ -2182,11 +2059,6 @@
 
             }
         );
-
-
-        /* =========================================================
-           UPLOAD PHOTOS
-        ========================================================= */
 
         async function uploadPhotos(
             files
@@ -2248,29 +2120,14 @@
 
                     }
 
-
-                    /* -----------------------------------------
-                       SAFE FILE NAME
-                    ----------------------------------------- */
-
                     const safeName =
                         file.name.replace(
                             /[^a-zA-Z0-9._-]/g,
                             "_"
                         );
-
-
-                    /* -----------------------------------------
-                       UNIQUE STORAGE PATH
-                    ----------------------------------------- */
-
                     const storagePath =
                         `${selectedClient.id}/${selectedRepository.id}/${crypto.randomUUID()}-${safeName}`;
 
-
-                    /* -----------------------------------------
-                       UPLOAD TO SUPABASE STORAGE
-                    ----------------------------------------- */
 
                     const {
                         error: storageError
@@ -2433,14 +2290,12 @@
                     return;
                 }
 
-
                 await copyClientLink(
                     selectedRepository
                 );
 
             }
         );
-
 
         copyClientLinkInputBtn.addEventListener(
             "click",

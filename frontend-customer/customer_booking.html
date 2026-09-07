@@ -28,6 +28,12 @@
                     <span>Book a Session</span>
                 </a>
             </nav>
+               <nav>
+                <a href="customer_gallery_request.html" class="active">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>View Gallery</span>
+                </a>
+            </nav>
 
             <a href="customer_homepage.html" class="logout-btn">
                 <i class="fa-solid fa-house logout-icon"></i>
@@ -2792,7 +2798,7 @@
                     (existingBookings || [])
                         .filter(booking => {
 
-                            const status =
+                           const status =
                                 (booking.status || "")
                                     .toLowerCase()
                                     .trim();

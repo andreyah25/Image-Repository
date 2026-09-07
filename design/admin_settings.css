@@ -285,147 +285,393 @@
 /* ==========================================================================
    STAFF LIST MODAL STYLES
    ========================================================================== */
+
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.4);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.45);
+
     display: flex;
     justify-content: center;
     align-items: center;
+
+    padding: 20px;
+    box-sizing: border-box;
+
     z-index: 2000;
+
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
 }
 
 .modal-overlay.active {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
 }
 
+
+/* ==========================================================================
+   MODAL CONTAINER
+   ========================================================================== */
+
 .staff-modal-container {
     background: #ffffff;
-    width: 90%;
-    max-width: 580px;
-    border-radius: 12px;
+
+    width: min(95vw, 1050px);
+    max-height: 85vh;
+
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.22);
+
     position: relative;
-    transform: scale(0.95);
+
+    display: flex;
+    flex-direction: column;
+
+    transform: translateY(-10px) scale(0.98);
+
     transition: transform 0.2s ease;
 }
 
 .modal-overlay.active .staff-modal-container {
-    transform: scale(1);
+    transform: translateY(0) scale(1);
 }
 
-/* Modal Dark Header Bar */
+
+/* ==========================================================================
+   MODAL HEADER
+   ========================================================================== */
+
 .staff-modal-header {
     background-color: #639A88;
+
     color: #ffffff;
-    padding: 18px;
+
+    min-height: 64px;
+
+    padding: 16px 24px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+
+    gap: 10px;
+
+    box-sizing: border-box;
+
+    flex-shrink: 0;
 }
 
 .staff-modal-header i {
-    font-size: 22px;
+    font-size: 20px;
 }
 
 .staff-modal-header h2 {
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 600;
+
     margin: 0;
 }
 
-/* Modal Body Content */
+
+/* ==========================================================================
+   MODAL BODY
+   ========================================================================== */
+
 .staff-modal-body {
-    padding: 24px 30px 32px 30px;
+    padding: 20px 24px 24px;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
 }
 
 .modal-subtitle {
     text-align: center;
+
     color: #666666;
-    font-size: 15px;
+
+    font-size: 13px;
     font-weight: 300;
-    margin: 0 0 24px 0;
+
+    margin: 0 0 18px;
 }
 
-/* Modal Table Styling */
+
+/* ==========================================================================
+   TABLE WRAPPER
+   ========================================================================== */
+
 .staff-table-wrapper {
     width: 100%;
+
+    max-height: 55vh;
+
+    overflow-x: auto;
+    overflow-y: auto;
+
+    border: 1px solid #e5e5e5;
     border-radius: 6px;
-    overflow: hidden;
+
+    box-sizing: border-box;
 }
+
+
+/* ==========================================================================
+   STAFF TABLE
+   ========================================================================== */
 
 .staff-table {
     width: 100%;
-    border-collapse: collapse !important;
-    border-spacing: 0 !important;
+
+    min-width: 800px;
+
+    border-collapse: collapse;
+    border-spacing: 0;
+
     background-color: #ffffff;
+
+    table-layout: auto;
 }
 
+
+/* ==========================================================================
+   TABLE HEADER
+   ========================================================================== */
+
 .staff-table thead tr {
-    background-color: #243336;
+    background-color: #528373;
     color: #ffffff;
 }
 
 .staff-table th {
-    padding: 12px 16px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 12px 14px;
+
+    font-size: 12.5px;
+    font-weight: 600;
+
     text-align: left;
-    border: none !important;
+
+    white-space: nowrap;
+
+    border: none;
+
     background-color: #528373;
+
+    position: sticky;
+    top: 0;
+
+    z-index: 2;
 }
+
+
+/* ==========================================================================
+   TABLE BODY
+   ========================================================================== */
 
 .staff-table tbody tr {
     background-color: #ffffff;
+
+    transition: background-color 0.15s ease;
+}
+
+.staff-table tbody tr:hover {
+    background-color: #f8faf9;
 }
 
 .staff-table td {
-    padding: 16px 16px;
-    font-size: 14px;
+    padding: 13px 14px;
+
+    font-size: 13px;
     color: #333333;
-    border: none !important;
-    border-bottom: 1px solid #ededed !important;
+
+    border: none;
+    border-bottom: 1px solid #ededed;
+
+    vertical-align: middle;
+
+    white-space: nowrap;
 }
 
-/* Table Badges & Action Buttons */
+.staff-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ==========================================================================
+   COLUMN SIZING
+   ========================================================================== */
+
+.staff-table th:nth-child(1),
+.staff-table td:nth-child(1) {
+    min-width: 150px;
+}
+
+.staff-table th:nth-child(2),
+.staff-table td:nth-child(2) {
+    min-width: 190px;
+}
+
+.staff-table th:nth-child(3),
+.staff-table td:nth-child(3) {
+    min-width: 80px;
+}
+
+.staff-table th:nth-child(4),
+.staff-table td:nth-child(4) {
+    min-width: 90px;
+}
+
+.staff-table th:nth-child(5),
+.staff-table td:nth-child(5) {
+    min-width: 210px;
+}
+
+
+/* ==========================================================================
+   ROLE BADGE
+   ========================================================================== */
+
+.role-badge {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 10px;
+
+    border-radius: 5px;
+
+    background-color: #f0f3f2;
+
+    color: #344644;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* ==========================================================================
+   STATUS BADGES
+   ========================================================================== */
+
 .status-badge {
-    display: inline-block;
-    padding: 4px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 58px;
+
+    padding: 4px 10px;
+
+    border-radius: 5px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    box-sizing: border-box;
 }
 
 .status-active {
-    background: rgba(34, 197, 94, 0.15) !important;
+    background: rgba(34, 197, 94, 0.12) !important;
     color: #16a34a !important;
-    border: 1px solid #6ee7b7;
+
+    border: 1px solid #86efac;
 }
 
 .status-inactive {
-    background: rgba(34, 197, 94, 0.15) !important;
-    color: #e65100 !important;
-    border: 1px solid #6ee7b7;
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
+
+    border: 1px solid #fbbf24;
 }
+
+
+/* ==========================================================================
+   SIGN OUT BUTTON
+   ========================================================================== */
+
+.btn-table-signout {
+    background-color: #639A88;
+
+    color: #ffffff;
+
+    border: none;
+
+    padding: 7px 12px;
+
+    border-radius: 4px;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    white-space: nowrap;
+
+    transition: background-color 0.15s ease;
+}
+
+.btn-table-signout:hover {
+    background-color: #528373;
+}
+
+
+/* ==========================================================================
+   DELETE BUTTON
+   ========================================================================== */
 
 .btn-table-delete {
     background-color: #cc3333;
+
     color: #ffffff;
+
     border: none;
-    padding: 6px 16px;
+
+    padding: 7px 12px;
+
+    margin-left: 6px;
+
     border-radius: 4px;
-    font-size: 13px;
+
+    font-family: inherit;
+
+    font-size: 12px;
     font-weight: 600;
+
     cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    white-space: nowrap;
+
     transition: background-color 0.15s ease;
 }
 
@@ -433,9 +679,101 @@
     background-color: #a82828;
 }
 
-/* Media Queries for Responsiveness */
-@media (max-width: 1024px) {
-    .settings-grid {
-        grid-template-columns: 1fr;
+
+/* ==========================================================================
+   SCROLLBAR
+   ========================================================================== */
+
+.staff-table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.staff-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.staff-table-wrapper::-webkit-scrollbar-thumb {
+    background: #c5c5c5;
+    border-radius: 10px;
+}
+
+.staff-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #999999;
+}
+
+
+/* ==========================================================================
+   TABLE EMPTY / LOADING MESSAGE
+   ========================================================================== */
+
+.staff-table td[colspan="5"] {
+    text-align: center;
+
+    padding: 30px 15px;
+
+    color: #888888;
+}
+
+
+/* ==========================================================================
+   RESPONSIVE MODAL
+   ========================================================================== */
+
+@media (max-width: 900px) {
+
+    .staff-modal-container {
+        width: 95vw;
+        max-height: 85vh;
     }
+
+    .staff-modal-body {
+        padding: 18px;
+    }
+
+    .staff-table {
+        min-width: 760px;
+    }
+
+}
+
+
+/* ==========================================================================
+   SMALL SCREENS
+   ========================================================================== */
+
+@media (max-width: 600px) {
+
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .staff-modal-container {
+        width: 100%;
+        max-height: 90vh;
+        border-radius: 8px;
+    }
+
+    .staff-modal-header {
+        min-height: 58px;
+        padding: 14px 18px;
+    }
+
+    .staff-modal-header h2 {
+        font-size: 17px;
+    }
+
+    .staff-modal-body {
+        padding: 15px;
+    }
+
+    .modal-subtitle {
+        font-size: 12px;
+        margin-bottom: 14px;
+    }
+
+    .staff-table {
+        min-width: 720px;
+    }
+
 }
