@@ -20,7 +20,6 @@ app.use( express.json({
 );
 
 const PORT = process.env.PORT || 3000;
-
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -2097,11 +2096,6 @@ if (
 
         }
 
-
-        /* =====================================================
-           6. FALLBACK: FIND BY CHECKOUT SESSION ID
-        ===================================================== */
-
         if (
             !booking &&
             checkoutSessionId
@@ -2139,11 +2133,6 @@ if (
 
         }
 
-
-        /* =====================================================
-           7. BOOKING NOT FOUND
-        ===================================================== */
-
         if (!booking) {
 
             console.error(
@@ -2162,9 +2151,6 @@ if (
             "Booking found:",
             booking.id
         );
-/* =====================================================
-   VERIFY CHECKOUT SESSION BELONGS TO THIS BOOKING
-===================================================== */
 
 if (
     booking.paymongo_checkout_id &&
@@ -2199,10 +2185,6 @@ console.log(
     "PayMongo checkout session verified for booking."
 );
 
-        /* =====================================================
-           8. PAYMENT SUCCESS
-        ===================================================== */
-
         if (
             eventType ===
             "checkout_session.payment.paid"
@@ -2211,14 +2193,6 @@ console.log(
             console.log(
                 "PAYMENT SUCCESSFUL"
             );
-
-
-            /* =================================================
-               PAYMENT INFORMATION
-            ================================================= */
-/* =================================================
-   PAYMENT INFORMATION
-================================================= */
 
 const payment =
     Array.isArray(attributes?.payments)
@@ -2266,11 +2240,6 @@ if (!paymentId) {
     });
 
 }
-
-
-/* =================================================
-   VERIFY PAYMENT AMOUNT
-================================================= */
 
 const paymongoPaidAmountCentavos =
     Number(
@@ -2353,20 +2322,12 @@ if (
 
 }
 
-
-/* =================================================
-   GET PAYMENT REFERENCE
-================================================= */
-
 const referenceNumber =
     attributes?.reference_number ||
     reference ||
     null;
 
 
-/* =================================================
-   GET PAYMENT DATE
-================================================= */
 
 const paidAt =
     payment?.attributes?.paid_at
@@ -2376,9 +2337,6 @@ const paidAt =
         : new Date().toISOString();
 
 
-/* =================================================
-   CALCULATE PAYMENT AMOUNTS
-================================================= */
 
 const totalBookingAmount =
     Number(
@@ -2449,10 +2407,6 @@ if (
 }
 
 
-/* =================================================
-   UPDATE BOOKING TO PAID
-================================================= */
-
 const {
     data: updatedBooking,
     error: updateError
@@ -2486,10 +2440,6 @@ const {
     .select()
     .single();
 
-
-/* =================================================
-   VERIFY DATABASE UPDATE
-================================================= */
 
 if (updateError) {
 
@@ -2639,10 +2589,6 @@ Your booking is now awaiting admin confirmation.`,
             }
 
 
-            /* =================================================
-               RECORD PAYMENT IN PAYMENTS TABLE
-            ================================================= */
-
             const paymentAmount =
                 downPaymentAmount;
 
@@ -2764,12 +2710,6 @@ Your booking is now awaiting admin confirmation.`,
                 );
 
             }
-
-
-            /* =================================================
-               ADMIN NOTIFICATION
-               DETAILED BOOKING INFORMATION
-            ================================================= */
 
             const adminPaymentMethod =
                 String(
@@ -2905,11 +2845,6 @@ Payment Status: Paid`,
                 });
 
             }
-
-
-            /* =================================================
-               CUSTOMER PAYMENT FAILED NOTIFICATION
-            ================================================= */
 
             if (booking.customer_id) {
 
@@ -3475,9 +3410,7 @@ app.get(
         }
     }
 );
-/* =========================================================
-   GET CUSTOMER BOOKINGS
-========================================================= */
+
 
 app.get("/api/customer/bookings", async (req, res) => {
 
@@ -3910,7 +3843,7 @@ app.post(
             const pendingRequest =
                 allRequests.find(
                     request =>
-                        request.status === "pending"
+                       String(request.status || "").toLowerCase() === "pending"
                 );
 
 
@@ -3923,67 +3856,105 @@ app.post(
                 });
 
             }
-            const approvedRequests =
-                allRequests.filter(
-                    request =>
-                        request.status === "approved"
-                );
+const requestNumbers = allRequests
+    .map(request => Number(request.request_number))
+    .filter(number =>
+        Number.isFinite(number) &&
+        number > 0
+    );
 
-            let finalRequestNumber = 1;
-            let finalAccessType = "free";
-            let finalPaymentRequired = false;
+const highestRequestNumber =
+    requestNumbers.length > 0
+        ? Math.max(...requestNumbers)
+        : 0;
 
+        
+const finalRequestNumber =
+    highestRequestNumber + 1;
 
-            if (
-                approvedRequests.length === 0
-            ) {
+console.log(
+    "TOTAL PREVIOUS REQUESTS:",
+    allRequests.length
+);
 
-                finalRequestNumber = 1;
-                finalAccessType = "free";
-                finalPaymentRequired = false;
+console.log(
+    "PREVIOUS REQUEST NUMBERS:",
+    requestNumbers
+);
 
-            }
-            else {
+console.log(
+    "HIGHEST REQUEST NUMBER:",
+    highestRequestNumber
+);
 
-                const firstApproved =
-                    approvedRequests.find(
-                        request =>
-                            Number(
-                                request.request_number
-                            ) === 1
-                    );
-
-
-                if (
-                    firstApproved &&
-                    firstApproved.access_expires_at
-                ) {
-
-                    const expiresAt =
-                        new Date(
-                            firstApproved.access_expires_at
-                        );
+console.log(
+    "NEW REQUEST NUMBER:",
+    finalRequestNumber
+);
 
 
-                    if (
-                        expiresAt > new Date()
-                    ) {
+if (finalRequestNumber > 2) {
 
-                        return res.status(409).json({
-                            error:
-                                "You already have an active gallery access."
-                        });
+    return res.status(409).json({
+        error:
+            "You have already used your two gallery access requests for this booking."
+    });
 
-                    }
+}
 
-                }
+let finalAccessType;
+let finalPaymentRequired;
 
 
-                finalRequestNumber = 2;
-                finalAccessType = "paid";
-                finalPaymentRequired = true;
+if (finalRequestNumber === 1) {
 
-            }
+    finalAccessType = "free";
+    finalPaymentRequired = false;
+
+}
+else {
+
+    /* =================================================
+       REQUEST #2 CAN ONLY HAPPEN AFTER REQUEST #1
+       HAS EXPIRED
+    ================================================= */
+
+    const firstRequest =
+        allRequests.find(
+            request =>
+                Number(request.request_number) === 1
+        );
+
+
+    if (
+        firstRequest &&
+        firstRequest.access_expires_at
+    ) {
+
+        const expiresAt =
+            new Date(
+                firstRequest.access_expires_at
+            );
+
+
+        if (
+            expiresAt > new Date()
+        ) {
+
+            return res.status(409).json({
+                error:
+                    "You already have an active gallery access."
+            });
+
+        }
+
+    }
+
+
+    finalAccessType = "paid";
+    finalPaymentRequired = true;
+
+}
 
             if (
                 requestNumber &&
@@ -4247,6 +4218,583 @@ app.get("/api/gallery-access/request/:requestId", async (req, res) => {
     }
 });
 
+app.post("/api/gallery-access/create-payment", async (req, res) => {
+
+    try {
+
+        const {
+            requestId
+        } = req.body;
+
+        if (!requestId) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Gallery access request ID is required."
+            });
+        }
+        const {
+            data: accessRequest,
+            error: requestError
+        } = await supabase
+            .from("gallery_access_requests")
+            .select(`
+                id,
+                customer_email,
+                booking_id,
+                repository_id,
+                status,
+                request_number,
+                payment_required,
+                payment_confirmed,
+                payment_status
+            `)
+            .eq("id", requestId)
+            .maybeSingle();
+
+        if (requestError) {
+
+            console.error(
+                "Gallery payment request lookup error:",
+                requestError
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: "Unable to verify gallery access request."
+            });
+        }
+
+        if (!accessRequest) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Gallery access request was not found."
+            });
+        }
+        if (accessRequest.status !== "approved") {
+
+            return res.status(400).json({
+                success: false,
+                message: "This gallery access request is not approved."
+            });
+        }
+
+        if (Number(accessRequest.request_number || 1) < 2) {
+
+            return res.status(400).json({
+                success: false,
+                message: "The first gallery access request is free."
+            });
+        }
+
+        if (accessRequest.payment_required !== true) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Payment is not required for this request."
+            });
+        }
+
+        if (accessRequest.payment_confirmed === true) {
+
+            return res.status(400).json({
+                success: false,
+                message: "This gallery access has already been paid."
+            });
+        }
+        const amount =
+            Number(
+                process.env.GALLERY_ACCESS_AMOUNT || 100
+            );
+
+        if (!amount || amount <= 0) {
+
+            return res.status(500).json({
+                success: false,
+                message: "Gallery access payment amount is not configured."
+            });
+        }
+
+        const referenceNumber =
+            `GALLERY-${accessRequest.id}`;
+        const frontendUrl =
+            process.env.FRONTEND_URL ||
+            "http://localhost:5500";
+
+        const galleryUrl =
+            `${frontendUrl}/frontend-customer/customer_gallery_view.html` +
+            `?token=${encodeURIComponent(
+                req.body.token || ""
+            )}` +
+            `&email=${encodeURIComponent(
+                accessRequest.customer_email || ""
+            )}`;
+
+        const paymongoResponse =
+            await fetch(
+                "https://api.paymongo.com/v2/checkout_sessions",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Authorization":
+                            "Basic " +
+                            Buffer.from(
+                                `${process.env.PAYMONGO_SECRET_KEY}:`
+                            ).toString("base64"),
+
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        data: {
+
+                            attributes: {
+
+                                line_items: [
+                                    {
+                                        name:
+                                            "Gallery Access",
+
+                                        amount:
+                                            amount,
+
+                                        currency:
+                                            "PHP",
+
+                                        quantity:
+                                            1
+                                    }
+                                ],
+
+                                payment_method_types: [
+                                    "card",
+                                    "gcash",
+                                    "qrph"
+                                ],
+
+                                description:
+                                    `Gallery access payment for ${accessRequest.customer_email}`,
+
+                                reference_number:
+                                    referenceNumber,
+
+                                send_email_receipt:
+                                    true,
+
+                                billing: {
+                                    email:
+                                        accessRequest.customer_email
+                                },
+
+                                success_url:
+                                    galleryUrl,
+
+                                cancel_url:
+                                    galleryUrl
+                            }
+                        }
+                    })
+                }
+            );
+
+        const paymongoData =
+            await paymongoResponse.json();
+
+        if (!paymongoResponse.ok) {
+
+            console.error(
+                "PayMongo create checkout error:",
+                paymongoData
+            );
+
+            return res.status(
+                paymongoResponse.status
+            ).json({
+                success: false,
+                message:
+                    paymongoData?.errors?.[0]?.detail ||
+                    "Unable to create PayMongo checkout."
+            });
+        }
+
+        const checkoutSession =
+            paymongoData?.data;
+
+        const checkoutUrl =
+            checkoutSession?.attributes?.checkout_url;
+
+        if (!checkoutUrl) {
+
+            console.error(
+                "PayMongo did not return checkout URL:",
+                paymongoData
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "PayMongo did not return a checkout URL."
+            });
+        }
+
+        console.log(
+            "Gallery PayMongo checkout created:",
+            checkoutSession.id
+        );
+
+        return res.json({
+
+            success: true,
+
+            checkoutUrl:
+
+                checkoutUrl,
+
+            checkoutSessionId:
+                checkoutSession.id,
+
+            referenceNumber:
+                referenceNumber,
+
+            amount:
+                amount
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Gallery payment creation error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Unable to start gallery payment."
+        });
+    }
+});
+
+app.post("/api/paymongo/gallery-webhook", async (req, res) => {
+
+    try {
+
+        const event =
+            req.body?.data;
+
+        if (!event) {
+
+            return res.status(200).json({
+                received: true
+            });
+        }
+
+        const eventType =
+            event.type ||
+            event.attributes?.type;
+
+        console.log(
+            "PAYMONGO GALLERY EVENT:",
+            eventType
+        );
+        if (
+            eventType ===
+            "checkout_session.payment.paid"
+        ) {
+
+            const session =
+                event.data;
+
+            const attributes =
+                session?.attributes || {};
+
+            const referenceNumber =
+                attributes.reference_number;
+
+            if (!referenceNumber) {
+
+                console.error(
+                    "Gallery payment has no reference number."
+                );
+
+                return res.status(200).json({
+                    received: true
+                });
+            }
+
+            if (
+                !referenceNumber.startsWith(
+                    "GALLERY-"
+                )
+            ) {
+
+                console.log(
+                    "Ignoring non-gallery PayMongo payment:",
+                    referenceNumber
+                );
+
+                return res.status(200).json({
+                    received: true
+                });
+            }
+
+            const requestId =
+                referenceNumber.replace(
+                    "GALLERY-",
+                    ""
+                );
+            const {
+                data: accessRequest,
+                error: requestError
+            } = await supabase
+                .from("gallery_access_requests")
+                .select(`
+                    id,
+                    status,
+                    request_number,
+                    payment_required,
+                    payment_confirmed,
+                    payment_status
+                `)
+                .eq("id", requestId)
+                .maybeSingle();
+
+            if (requestError) {
+
+                console.error(
+                    "Webhook request lookup error:",
+                    requestError
+                );
+
+                return res.status(200).json({
+                    received: true
+                });
+            }
+
+            if (!accessRequest) {
+
+                console.error(
+                    "Gallery access request not found:",
+                    requestId
+                );
+
+                return res.status(200).json({
+                    received: true
+                });
+            }
+            if (
+                Number(
+                    accessRequest.request_number || 1
+                ) < 2
+            ) {
+
+                console.log(
+                    "Ignoring payment for first request:",
+                    requestId
+                );
+
+                return res.status(200).json({
+                    received: true
+                });
+            }
+
+            if (
+                accessRequest.payment_required !== true
+            ) {
+
+                console.log(
+                    "Payment not required:",
+                    requestId
+                );
+
+                return res.status(200).json({
+                    received: true
+                });
+            }
+            const paidAt =
+                new Date().toISOString();
+
+            const {
+                error: updateError
+            } = await supabase
+                .from("gallery_access_requests")
+                .update({
+
+                    payment_confirmed:
+                        true,
+
+                    payment_status:
+                        "paid",
+
+                    paid_at:
+                        paidAt,
+
+                    access_granted_at:
+                        paidAt
+
+                })
+                .eq(
+                    "id",
+                    requestId
+                );
+
+            if (updateError) {
+
+                console.error(
+                    "Gallery payment database update error:",
+                    updateError
+                );
+
+                return res.status(200).json({
+                    received: true
+                });
+            }
+
+            console.log(
+                "===================================="
+            );
+
+            console.log(
+                "GALLERY PAYMENT CONFIRMED"
+            );
+
+            console.log(
+                "REQUEST:",
+                requestId
+            );
+
+            console.log(
+                "PAYMONGO SESSION:",
+                session.id
+            );
+
+            console.log(
+                "===================================="
+            );
+        }
+
+        return res.status(200).json({
+            received: true
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Gallery PayMongo webhook error:",
+            error
+        );
+        return res.status(200).json({
+            received: true
+        });
+    }
+});
+app.get(
+    "/api/gallery-access/payment-status/:requestId",
+    async (req, res) => {
+
+        try {
+
+            const {
+                requestId
+            } = req.params;
+
+            if (!requestId) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Request ID is required."
+                });
+            }
+
+            const {
+                data: accessRequest,
+                error
+            } = await supabase
+                .from("gallery_access_requests")
+                .select(`
+                    id,
+                    status,
+                    request_number,
+                    payment_required,
+                    payment_confirmed,
+                    payment_status,
+                    paid_at,
+                    access_granted_at,
+                    access_expires_at
+                `)
+                .eq(
+                    "id",
+                    requestId
+                )
+                .maybeSingle();
+
+            if (error) {
+
+                console.error(
+                    "Payment status lookup error:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Unable to check payment status."
+                });
+            }
+
+            if (!accessRequest) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Gallery access request not found."
+                });
+            }
+
+            return res.json({
+
+                success: true,
+
+                paymentConfirmed:
+                    accessRequest.payment_confirmed === true,
+
+                paymentStatus:
+                    accessRequest.payment_status,
+
+                accessGranted:
+                    accessRequest.payment_confirmed === true,
+
+                accessExpiresAt:
+                    accessRequest.access_expires_at
+
+            });
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Payment status error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Unable to check payment status."
+            });
+        }
+    }
+);
 app.post(
     "/api/gallery-access/send-approved-email/:requestId",
     async (req, res) => {
@@ -4332,12 +4880,6 @@ app.post(
                 });
 
             }
-
-
-            /* =====================================================
-               4. GET CUSTOMER EMAIL
-            ===================================================== */
-
             const customerEmail =
                 String(
                     request.customer_email || ""
@@ -4359,12 +4901,6 @@ app.post(
                 "CUSTOMER EMAIL:",
                 customerEmail
             );
-
-
-            /* =====================================================
-               5. GET BOOKING
-            ===================================================== */
-
             const {
                 data: booking,
                 error: bookingError
