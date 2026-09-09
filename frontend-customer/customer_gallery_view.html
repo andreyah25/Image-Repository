@@ -75,238 +75,73 @@
 
     </div>
 
-    <!-- PAYMENT & QR MODAL -->
+    <!-- PAYMENT MODAL -->
     <div class="modal-overlay" id="paymentModal">
-        <div class="payment-modal-card"
-            style="width: 420px; min-height: 540px; border-radius: 8px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div class="payment-modal-card" style="width:420px; min-height:420px; border-radius:8px; padding:24px;">
 
-            <!-- STEP 1: PAYMENT SUMMARY & METHOD SELECTION -->
-            <div id="paymentNoticeStep" style="padding: 24px; display: flex; flex-direction: column; flex: 1;">
+            <div id="paymentNoticeStep">
                 <div class="modal-header">
                     <i class="fa-regular fa-credit-card modal-card-icon"></i>
                     <h2>Make a Payment</h2>
                 </div>
-                <div class="modal-body"
-                    style="gap: 15px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                    <p class="modal-prompt-text" style="margin-bottom: 0;">
-                        Complete your payment to download your photos.
-                    </p>
 
-                    <!-- Payment Summary Box -->
-                    <div style="background: #f4f5f7; border-radius: 4px; padding: 16px; text-align: left;">
-                        <h4
-                            style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #333; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;">
-                            Payment Summary
-                        </h4>
+                <div class="modal-body">
+                    <p class="modal-prompt-text">
+                        Complete your payment to download your high-quality photos. </p>
 
-                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #555;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Order ID:</span>
-                                <strong id="summaryOrderId" style="color: #222;">#ORD-001</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Client:</span>
-                                <strong id="summaryClientName" style="color: #222;">Customer</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Access:</span>
-                                <strong style="color: #222;">Folder Access</strong>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 6px; border-top: 1px stroke #e0e0e0;">
-                                <span>Total Amount:</span>
-                                <strong id="summaryAmount" style="color: #639A88; font-size: 14px;">₱0.00</strong>
-                            </div>
+                    <div style="background:#f4f5f7; padding:16px;
+                    border-radius:4px; text-align:left;">
+
+                        <h4>Payment Summary</h4>
+
+                        <div style="display:flex;
+                        justify-content:space-between;">
+                            <span>Order ID:</span>
+                            <strong id="summaryOrderId">#ORD-001</strong>
+                        </div>
+
+                        <div style="display:flex;
+                        justify-content:space-between;">
+                            <span>Client:</span>
+                            <strong id="summaryClientName">Customer</strong>
+                        </div>
+
+                        <div style="display:flex;
+                        justify-content:space-between;">
+                            <span>Access:</span>
+                            <strong>Folder Access</strong>
+                        </div>
+
+                        <div style="display:flex;
+                        justify-content:space-between;
+                        margin-top:10px;
+                        padding-top:8px;
+                        border-top:1px solid #ddd;">
+
+                            <span>Total Amount:</span>
+                            <strong id="summaryAmount">₱1.00</strong>
                         </div>
                     </div>
 
-                    <!-- Direct Payment Method Options -->
-                    <div style="text-align: left; display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-size: 12.5px; font-weight: 600; color: #333;">Select Payment Method</label>
-                        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 2px;">
-                            <button type="button" class="btn-payment-method" data-method="gcash" data-label="GCash"
-                                style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background-color: #ffffff; border: 1.5px solid #e0e0e0; border-radius: 4px; font-size: 13.5px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s ease; text-align: left;">
-                                <i class="fa-solid fa-mobile-screen-button"
-                                    style="color: #639A88; font-size: 16px;"></i>
-                                <span>GCash QR</span>
-                            </button>
-                            <button type="button" class="btn-payment-method" data-method="maya" data-label="Maya"
-                                style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background-color: #ffffff; border: 1.5px solid #e0e0e0; border-radius: 4px; font-size: 13.5px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s ease; text-align: left;">
-                                <i class="fa-solid fa-wallet" style="color: #639A88; font-size: 16px;"></i>
-                                <span>Maya QR</span>
-                            </button>
-                            <button type="button" class="btn-payment-method" data-method="bank"
-                                data-label="Bank Transfer"
-                                style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background-color: #ffffff; border: 1.5px solid #e0e0e0; border-radius: 4px; font-size: 13.5px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s ease; text-align: left;">
-                                <i class="fa-solid fa-building-columns" style="color: #639A88; font-size: 16px;"></i>
-                                <span>Bank Transfer QR</span>
-                            </button>
-                        </div>
-                    </div>
+                    <button type="button" id="btnPayMongo" style="width:100%; margin-top:20px;
+                    padding:12px; background:#639A88;
+                    color:white; border:0; border-radius:4px;
+                    font-weight:700; cursor:pointer;">
 
-                    <div class="modal-actions-row" style="margin-top: 5px;">
-                        <button type="button" class="btn-modal-cancel" id="btnMaybeLater"
-                            style="width: 100%; border-radius: 4px;">Maybe Later</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 2: QR PAYMENT DISPLAY -->
-            <div id="qrPaymentStep" style="display: none; padding: 24px; flex-direction: column; flex: 1;">
-                <div class="modal-header">
-                    <i class="fa-solid fa-qrcode modal-card-icon"></i>
-                    <h2>Scan to Pay</h2>
-                </div>
-                <div class="modal-body"
-                    style="gap: 15px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                    <p class="modal-prompt-text" style="font-size: 13.5px; margin-bottom: 0;">
-                        Scan the <span id="selectedMethodLabel" style="font-weight: 700;">GCash</span> QR code below to
-                        complete your payment.
-                    </p>
-
-                    <!-- QR Image Placeholder -->
-                    <div class="qr-container"
-                        style="padding: 10px; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
-                        <img id="paymentQrImage" src="/images/gcash_qr.jpeg" alt="Payment QR Code"
-                            style="width: 180px; height: 180px; object-fit: contain; display: block; border-radius: 10px;">
-                    </div>
-
-                    <!-- Scan-Specific Notice -->
-                    <div
-                        style="background-color: #eef7f4; border: 1px solid #c2e5d9; border-radius: 4px; padding: 10px 12px; text-align: left; font-size: 12px; color: #2d6a54; line-height: 1.4;">
-                        <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>
-                        <strong>Payment Instructions:</strong> Please scan using your selected payment app, save your
-                        transaction receipt, and click <strong>Next</strong> to upload your proof.
-                    </div>
-
-                    <div class="modal-actions-row" style="margin-top: 5px; display: flex; gap: 10px; width: 100%;">
-                        <button type="button" class="btn-modal-cancel" id="btnBackToNotice"
-                            style="flex: 1; border-radius: 4px;">Back</button>
-                        <button type="button" class="btn-modal-proceed" id="btnGoToForm"
-                            style="flex: 1; border-radius: 4px;">Next</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 3: INPUT AMOUNT & UPLOAD PROOF -->
-            <div id="paymentFormStep" style="display: none; padding: 24px; flex-direction: column; flex: 1;">
-                <div class="modal-header">
-                    <i class="fa-solid fa-receipt modal-card-icon"></i>
-                    <h2>Verify Payment</h2>
-                </div>
-                <div class="modal-body"
-                    style="gap: 12px; text-align: left; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-
-                    <p class="modal-prompt-text" style="font-size: 13.5px; margin-bottom: 5px; text-align: center;">
-                        Enter your payment details below to unlock gallery downloads.
-                    </p>
-
-                    <!-- Amount Field -->
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label style="font-size: 12px; font-weight: 600; color: #333;">Amount Paid (PHP) <span
-                                style="color: #dc2626;">*</span></label>
-                        <input type="number" id="paymentAmountInput" placeholder="Enter exact amount paid"
-                            style="width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;" />
-                    </div>
-
-                    <!-- File Upload Input Container -->
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label style="font-size: 12px; font-weight: 600; color: #333;">Upload Proof of Payment <span
-                                style="color: #dc2626;">*</span></label>
-
-                        <div class="custom-file-upload-field"
-                            style="display: flex; align-items: center; border: 1px solid #ccc; border-radius: 4px; background: #fff; overflow: hidden; height: 38px;">
-                            <label for="paymentReceiptInput"
-                                style="background-color: #f0f0f0; border-right: 1px solid #ccc; padding: 0 12px; height: 100%; display: flex; align-items: center; font-size: 12.5px; font-weight: 600; color: #444; cursor: pointer; white-space: nowrap; margin: 0; transition: background 0.2s;">
-                                Choose File
-                            </label>
-                            <span id="fileNameDisplay"
-                                style="padding: 0 10px; font-size: 12.5px; color: #777; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-                                No file chosen
-                            </span>
-                            <input type="file" id="paymentReceiptInput" accept="image/*" style="display: none;" />
-                        </div>
-                    </div>
-
-                    <!-- Exact Payment Policy Notice -->
-                    <div
-                        style="background-color: #fff8e6; border: 1px solid #ffe58f; border-radius: 4px; padding: 10px 12px; text-align: left; font-size: 12px; color: #8a6d3b; line-height: 1.4;">
-                        <strong>Exact Amount & Verification:</strong> Submitting fake, altered, or inaccurate proofs
-                        will result in gallery access restriction and account blacklisting.
-                    </div>
-
-                    <p id="paymentErrorMsg" style="color: #d9534f; font-size: 12px; margin: 0; display: none;"></p>
-
-                    <div class="modal-actions-row" style="margin-top: 10px; display: flex; gap: 10px; width: 100%;">
-                        <button type="button" class="btn-modal-cancel" id="btnBackToQR"
-                            style="flex: 1; border-radius: 4px;">Back</button>
-                        <button type="button" class="btn-modal-proceed" id="btnSubmitPayment"
-                            style="flex: 1; border-radius: 4px;">Submit & Verify</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 4: PAYMENT SUCCESS RECEIPT -->
-            <div id="paymentReceiptStep" style="display: none; flex-direction: column; flex: 1;">
-                <!-- Header Banner -->
-                <div
-                    style="background-color: #639A88; color: #ffffff; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; border-top-left-radius: 8px; border-top-right-radius: 8px;">
-                    <i class="fa-solid fa-ribbon" style="font-size: 20px;"></i>
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">Payment Successful</h3>
-                </div>
-
-                <div
-                    style="padding: 24px; text-align: center; background: #fff; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                    <!-- Big Green Check Icon -->
-                    <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 12px;">
-                        <div
-                            style="width: 72px; height: 72px; border-radius: 50%; border: 4px solid #4CAF50; display: flex; justify-content: center; align-items: center;">
-                            <i class="fa-solid fa-check" style="font-size: 38px; color: #4CAF50;"></i>
-                        </div>
-                    </div>
-
-                    <!-- Confirmation Text -->
-                    <p style="font-size: 16px; color: #555; margin: 0 0 16px 0; line-height: 1.4; font-weight: 400;">
-                        Payment of <strong id="receiptPaidAmount"
-                            style="color: #111; font-weight: 800;">₱1,000.00</strong> for Order<br>
-                        <strong id="receiptOrderId"
-                            style="color: #111; font-weight: 800; font-size: 17px;">#ORD-001</strong> Confirmed!
-                    </p>
-
-                    <!-- Order Details Box -->
-                    <div
-                        style="background-color: #f4f6f8; border-radius: 4px; padding: 16px; text-align: left; margin-bottom: 16px;">
-                        <h4
-                            style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #333; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                            Your Order Details
-                        </h4>
-
-                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #555;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Order ID:</span>
-                                <strong id="receiptDetailOrderId" style="color: #222;">#ORD-001</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Client:</span>
-                                <strong id="receiptDetailClient" style="color: #222;">Customer</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Access:</span>
-                                <strong style="color: #222;">Folder Access</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Total Amount:</span>
-                                <strong id="receiptDetailAmount"
-                                    style="color: #222; font-weight: 700;">₱1,000.00</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Close Button -->
-                    <button type="button" id="btnCloseReceipt"
-                        style="width: 100%; padding: 12px; background-color: #639A88; color: #ffffff; border: none; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s;">
-                        Close
+                        <i class="fa-solid fa-credit-card"></i>
+                        Pay with PayMongo
                     </button>
+
+                    <button type="button" id="btnMaybeLater" class="btn-modal-cancel" style="width:100%; margin-top:10px;
+                    border-radius:4px;">
+
+                        Maybe Later
+                    </button>
+
+                    <p id="paymentErrorMsg" style="color:#d9534f;
+                    font-size:12px;
+                    display:none;">
+                    </p>
                 </div>
             </div>
 
@@ -316,9 +151,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        /* =========================================================
-           SUPABASE CONFIGURATION
-        ========================================================= */
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
@@ -328,8 +160,7 @@
                 SUPABASE_URL,
                 SUPABASE_ANON_KEY
             );
-
-
+        const SERVER_URL = "https://image-repository-1.onrender.com";
         const galleryTitle =
             document.getElementById("galleryTitle");
 
@@ -353,112 +184,100 @@
         let currentBooking = null;
 
         let currentPhotos = [];
+        let currentAccessRequest = null;
 
+        let galleryPreviewMode = false;
+        let galleryAccessNumber = 0;
 
-        let gallerySessionId = null;
+        function displayClientInformation(booking) {
 
-        async function startGalleryActivity() {
-
-            const params =
-                new URLSearchParams(
-                    window.location.search
-                );
-
-            const token =
-                params.get("token");
-
-            if (!token) {
-
-                console.warn(
-                    "No gallery token found."
-                );
-
+            if (!booking) {
                 return;
             }
 
-            /*
-             * Create a gallery session.
-             */
-
-            const {
-                data,
-                error
-            } = await supabaseClient
-                .from("gallery_sessions")
-                .insert({
-                    access_token: token,
-                    last_seen_at: new Date().toISOString()
-                })
-                .select("id")
-                .single();
-
-            if (error) {
-
-                console.error(
-                    "Unable to create gallery session:",
-                    error
-                );
-
-                return;
+            if (galleryTitle) {
+                galleryTitle.textContent =
+                    `${booking.full_name || "Customer"}'s Gallery`;
             }
 
-            gallerySessionId =
-                data.id;
+            if (gallerySubtitle) {
+                const sessionDate = booking.booking_date
+                    ? formatDate(booking.booking_date)
+                    : "Date not specified";
 
-            console.log(
-                "🟢 Gallery session started:",
-                gallerySessionId
-            );
+                gallerySubtitle.textContent =
+                    `${booking.session_type || "Photography Session"} • ${sessionDate}`;
+            }
+
+            const userName =
+                document.getElementById("userName");
+
+            if (userName) {
+                userName.textContent =
+                    booking.full_name || "Customer";
+            }
         }
-        async function updateGalleryActivity() {
+        async function loadRepositoryPhotos(repositoryId) {
 
-            if (!gallerySessionId) {
-                return;
-            }
-
-            const {
-                error
-            } = await supabaseClient
-                .from("gallery_sessions")
-                .update({
-                    last_seen_at:
-                        new Date().toISOString()
-                })
-                .eq(
-                    "id",
-                    gallerySessionId
-                );
-
-            if (error) {
-
-                console.error(
-                    "Gallery heartbeat error:",
-                    error
-                );
-
+            if (!repositoryId) {
+                console.error("No repository ID provided.");
                 return;
             }
 
             console.log(
-                "🟢 Gallery activity updated"
+                "Loading photos for repository:",
+                repositoryId
+            );
+
+            const {
+                data: photos,
+                error
+            } = await supabaseClient
+                .from("repository_photos")
+                .select("*")
+                .eq("repository_id", repositoryId)
+                .order("created_at", {
+                    ascending: true
+                });
+
+            if (error) {
+
+                console.error(
+                    "Repository photos error:",
+                    error
+                );
+
+                galleryGrid.innerHTML = `
+            <div class="gallery-loading">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p>Unable to load gallery photos.</p>
+                <small>${escapeHTML(error.message)}</small>
+            </div>
+        `;
+
+                return;
+            }
+
+            currentPhotos =
+                photos || [];
+
+            console.log(
+                "Photos loaded:",
+                currentPhotos.length
+            );
+
+            renderGalleryPhotos(
+                currentPhotos
             );
         }
-
-        setInterval(
-            updateGalleryActivity,
-            30 * 1000
-        );
         async function initializeGallery() {
 
-            const urlParams =
-                new URLSearchParams(
-                    window.location.search
-                );
+            const urlParams = new URLSearchParams(window.location.search);
 
-            const token =
-                urlParams.get("token");
+            const token = urlParams.get("token");
+            const email = urlParams.get("email");
 
-            if (!token || token.trim() === "") {
+            if ((!token || token.trim() === "") && (!email || email.trim() === "")) {
 
                 showGalleryError(
                     "Invalid Gallery Link",
@@ -470,90 +289,184 @@
 
             try {
 
-                /* =========================================================
-                   FIND REPOSITORY USING PRIVATE ACCESS TOKEN
-                ========================================================= */
+                let repositories = [];
+                if (token && token.trim() !== "") {
 
-                const {
-                    data: repository,
-                    error
-                } = await supabaseClient
-                    .from("repository_client_links")
-                    .select(`
-                id,
-                booking_id,
-                access_token,
-                download_access,
-                gallery_access_expires_at
-            `)
-                    .eq("access_token", token.trim())
-                    .limit(1)
-                    .maybeSingle();
+                    console.log("Opening gallery using access token.");
 
-                if (error) {
-
-                    console.error(
-                        "Repository validation error:",
+                    const {
+                        data: repository,
                         error
-                    );
+                    } = await supabaseClient
+                        .from("repository_client_links")
+                        .select(`
+                    id,
+                    booking_id,
+                    access_token,
+                    download_access
+                    
+                `)
+                        .eq("access_token", token.trim())
+                        .maybeSingle();
 
-                    showGalleryError(
-                        "Unable to Open Gallery",
-                        "We could not verify this gallery link."
-                    );
+                    if (error) {
 
-                    return;
-                }
+                        console.error(
+                            "Repository validation error:",
+                            error
+                        );
 
-                if (!repository) {
+                        console.error(
+                            "Repository validation error message:",
+                            error?.message
+                        );
 
-                    console.warn(
-                        "Invalid gallery token."
-                    );
+                        console.error(
+                            "Repository validation error code:",
+                            error?.code
+                        );
 
-                    showGalleryError(
-                        "Invalid Gallery Link",
-                        "This gallery link does not exist or may have expired."
-                    );
+                        console.error(
+                            "Repository validation error details:",
+                            error?.details
+                        );
 
-                    return;
-                }
-
-                currentRepository =
-                    repository;
-
-
-                /* =========================================================
-                   CHECK 24-HOUR ACCESS EXPIRATION
-                ========================================================= */
-
-                const accessExpiresAt =
-                    repository.gallery_access_expires_at;
-
-                if (accessExpiresAt) {
-
-                    const now = new Date();
-                    const expiresAt =
-                        new Date(accessExpiresAt);
-
-                    if (
-                        Number.isNaN(expiresAt.getTime()) ||
-                        now >= expiresAt
-                    ) {
-
+                        console.error(
+                            "Repository validation error hint:",
+                            error?.hint
+                        );
                         showGalleryError(
-                            "Gallery Access Expired",
-                            "Your gallery access has expired. Please request access again from the My Gallery page."
+                            "Unable to Open Gallery",
+                            "We could not verify this gallery link."
                         );
 
                         return;
                     }
+                    repositories = [repository];
+                    if (!repository) {
+
+                        showGalleryError(
+                            "Invalid Gallery Link",
+                            "This gallery link does not exist or may have expired."
+                        );
+
+                        return;
+                    }
+
+                    repositories = [repository];
                 }
+                else if (email && email.trim() !== "") {
+
+                    const customerEmail =
+                        decodeURIComponent(email.trim()).toLowerCase();
+
+                    console.log(
+                        "Opening gallery using customer email:",
+                        customerEmail
+                    );
+
+                    const {
+                        data: bookings,
+                        error: bookingSearchError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .select("id, full_name, email")
+                        .ilike("email", customerEmail);
+
+                    if (bookingSearchError) {
+
+                        console.error(
+                            "Customer booking lookup error:",
+                            bookingSearchError
+                        );
+
+                        showGalleryError(
+                            "Unable to Open Gallery",
+                            "We could not find the customer gallery."
+                        );
+
+                        return;
+                    }
+
+                    if (!bookings || bookings.length === 0) {
+
+                        showGalleryError(
+                            "Gallery Not Found",
+                            "No gallery is associated with this email address."
+                        );
+
+                        return;
+                    }
+
+                    const bookingIds =
+                        bookings.map(
+                            booking => booking.id
+                        );
+                    const {
+                        data: repositoryList,
+                        error: repositoryError
+                    } = await supabaseClient
+                        .from("repository_client_links")
+                        .select(`
+                    id,
+                    booking_id,
+                    access_token,
+                    download_access
+                    
+                `)
+                        .in("booking_id", bookingIds);
+
+                    if (repositoryError) {
+
+                        console.error(
+                            "Repository lookup error:",
+                            repositoryError
+                        );
+
+                        showGalleryError(
+                            "Unable to Open Gallery",
+                            "We could not load the customer's gallery folder."
+                        );
+
+                        return;
+                    }
+
+                    if (!repositoryList || repositoryList.length === 0) {
+
+                        showGalleryError(
+                            "Gallery Not Found",
+                            "No gallery folder has been created for this email address yet."
+                        );
+
+                        return;
+                    }
+
+                    repositories = repositoryList;
+                }
+                if (!repositories || repositories.length === 0) {
+
+                    showGalleryError(
+                        "Gallery Not Found",
+                        "No gallery folder was found."
+                    );
+
+                    return;
+                }
+                const validRepositories = repositories;
 
 
-                /* =========================================================
-                   LOAD BOOKING
-                ========================================================= */
+                if (validRepositories.length === 0) {
+
+                    showGalleryError(
+                        "Gallery Access Expired",
+                        "Your gallery access has expired. Please request access again from the studio."
+                    );
+
+                    return;
+                }
+                currentRepository =
+                    validRepositories[0];
+
 
                 const {
                     data: booking,
@@ -563,9 +476,10 @@
                     .select("*")
                     .eq(
                         "id",
-                        repository.booking_id
+                        currentRepository.booking_id
                     )
                     .maybeSingle();
+
 
                 if (bookingError) {
 
@@ -582,6 +496,7 @@
                     return;
                 }
 
+
                 if (!booking) {
 
                     showGalleryError(
@@ -591,18 +506,126 @@
 
                     return;
                 }
+
+
                 currentBooking =
                     booking;
+
+                const {
+                    data: approvedRequests,
+                    error: accessRequestError
+                } = await supabaseClient
+                    .from("gallery_access_requests")
+                    .select(`
+        id,
+        customer_email,
+        booking_id,
+        repository_id,
+        status,
+        request_number,
+        payment_required,
+        payment_confirmed,
+        payment_status,
+        paid_at,
+        access_granted_at,
+        access_expires_at,
+        created_at
+    `)
+                    .eq("booking_id", currentRepository.booking_id)
+                    .eq("repository_id", currentRepository.id)
+                    .eq("status", "approved")
+                    .order("created_at", {
+                        ascending: true
+                    });
+
+                if (accessRequestError) {
+
+                    console.error(
+                        "Gallery access request lookup error:",
+                        accessRequestError
+                    );
+
+                    showGalleryError(
+                        "Unable to Verify Gallery Access",
+                        "We could not verify your gallery access status."
+                    );
+
+                    return;
+                }
+
+                if (!approvedRequests || approvedRequests.length === 0) {
+
+                    showGalleryError(
+                        "Gallery Access Not Approved",
+                        "Your gallery access has not been approved yet."
+                    );
+
+                    return;
+                }
+
+                currentAccessRequest =
+                    approvedRequests[approvedRequests.length - 1];
+
+                galleryAccessNumber =
+                    Number(currentAccessRequest.request_number || 0);
+
+                galleryPreviewMode =
+                    galleryAccessNumber >= 2;
+
+                if (galleryAccessNumber >= 2) {
+                    currentAccessRequest.payment_required = true;
+                }
+                console.log("====================================");
+
+                console.log(
+                    "APPROVED REQUEST COUNT:",
+                    galleryAccessNumber
+                );
+
+                console.log(
+                    "LATEST REQUEST ID:",
+                    currentAccessRequest.id
+                );
+
+                console.log(
+                    "REQUEST NUMBER:",
+                    currentAccessRequest.request_number
+                );
+
+                console.log(
+                    "PAYMENT REQUIRED:",
+                    currentAccessRequest.payment_required
+                );
+
+                console.log(
+                    "PAYMENT CONFIRMED:",
+                    currentAccessRequest.payment_confirmed
+                );
+
+                console.log(
+                    "PAYMENT STATUS:",
+                    currentAccessRequest.payment_status
+                );
+
+                console.log(
+                    "GALLERY PREVIEW MODE:",
+                    galleryPreviewMode
+                );
+
+                console.log("====================================");
 
                 displayClientInformation(
                     booking
                 );
 
                 await loadRepositoryPhotos(
-                    repository.id
+                    currentRepository.id
                 );
+                await checkGalleryPayment();
 
-            } catch (error) {
+            }
+
+            catch (error) {
 
                 console.error(
                     "Gallery initialization error:",
@@ -611,92 +634,11 @@
 
                 showGalleryError(
                     "Unable to Open Gallery",
-                    "Something went wrong while verifying your gallery link."
+                    "Something went wrong while opening your gallery."
                 );
 
             }
-
         }
-
-        function displayClientInformation(
-            booking
-        ) {
-
-            const clientName =
-                booking.full_name ||
-                "Customer";
-
-            const sessionType =
-                booking.session_type ||
-                "Photography Session";
-
-            const bookingDate =
-                formatDate(
-                    booking.booking_date
-                );
-
-            galleryTitle.textContent =
-                clientName;
-
-            gallerySubtitle.textContent =
-                `${sessionType} • ${bookingDate}`;
-
-        }
-
-        async function loadRepositoryPhotos(
-            repositoryId
-        ) {
-
-            galleryGrid.innerHTML = `
-                <div class="gallery-loading">
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p>Loading your photos...</p>
-                </div>
-            `;
-
-            const {
-                data: photos,
-                error
-            } = await supabaseClient
-                .from("repository_photos")
-                .select("*")
-                .eq(
-                    "repository_id",
-                    repositoryId
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-            if (error) {
-
-                console.error(
-                    "Photo loading error:",
-                    error
-                );
-
-                galleryGrid.innerHTML = `
-                    <div class="gallery-loading">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-                        <p>Unable to load your photos.</p>
-                    </div>
-                `;
-
-                return;
-            }
-
-            currentPhotos =
-                photos || [];
-
-            renderGalleryPhotos(
-                currentPhotos
-            );
-
-        }
-
         function renderGalleryPhotos(
             photos
         ) {
@@ -731,13 +673,36 @@
                     const image =
                         document.createElement("img");
 
-                    const highQuality =
-                        canAccessHighQuality();
 
-                    image.src =
-                        highQuality
-                            ? (photo.image_url || "")
-                            : (photo.preview_url || "");
+                    const firstApprovedRequest =
+                        galleryAccessNumber === 1;
+
+                    if (firstApprovedRequest) {
+
+                        // REQUEST #1
+                        // Full-quality photo
+                        image.src =
+                            photo.image_url || "";
+
+                        image.style.filter =
+                            "none";
+
+                        image.style.opacity =
+                            "1";
+
+                    } else {
+
+                        // REQUEST #2+
+                        // Preview only
+                        image.src =
+                            photo.preview_url || "";
+
+                        image.style.filter =
+                            "blur(8px)";
+
+                        image.style.opacity =
+                            "0.75";
+                    }
 
                     image.alt =
                         photo.original_name ||
@@ -774,7 +739,100 @@
                     card.appendChild(
                         image
                     );
+                    if (galleryPreviewMode) {
 
+                        const watermark =
+                            document.createElement("div");
+
+                        watermark.textContent =
+                            "CAPTURED PHOTOGRAPHY STUDIO • PREVIEW";
+
+                        watermark.style.position =
+                            "absolute";
+
+                        watermark.style.top =
+                            "50%";
+
+                        watermark.style.left =
+                            "50%";
+
+                        watermark.style.transform =
+                            "translate(-50%, -50%) rotate(-25deg)";
+
+                        watermark.style.fontSize =
+                            "18px";
+
+                        watermark.style.fontWeight =
+                            "700";
+
+                        watermark.style.color =
+                            "rgba(255,255,255,0.75)";
+
+                        watermark.style.textAlign =
+                            "center";
+
+                        watermark.style.whiteSpace =
+                            "nowrap";
+
+                        watermark.style.pointerEvents =
+                            "none";
+
+                        watermark.style.textShadow =
+                            "0 1px 4px rgba(0,0,0,0.7)";
+
+                        watermark.style.zIndex =
+                            "5";
+
+                        card.appendChild(
+                            watermark
+                        );
+                    }
+                    if (galleryPreviewMode) {
+
+                        const lockOverlay =
+                            document.createElement("div");
+
+                        lockOverlay.style.position = "absolute";
+                        lockOverlay.style.inset = "0";
+                        lockOverlay.style.display = "flex";
+                        lockOverlay.style.flexDirection = "column";
+                        lockOverlay.style.alignItems = "center";
+                        lockOverlay.style.justifyContent = "center";
+                        lockOverlay.style.background = "rgba(0, 0, 0, 0.20)";
+                        lockOverlay.style.color = "#ffffff";
+                        lockOverlay.style.textAlign = "center";
+                        lockOverlay.style.pointerEvents = "none";
+
+                        lockOverlay.innerHTML = galleryPreviewMode
+                            ? `
+        <i class="fa-solid fa-eye-slash"
+           style="font-size:28px; margin-bottom:8px;"></i>
+
+        <strong style="font-size:14px;">
+            Preview Mode
+        </strong>
+
+        <span style="font-size:11px; margin-top:4px;">
+         High-quality downloads require payment        </span>
+      `
+                            : `
+        <i class="fa-solid fa-lock"
+           style="font-size:28px; margin-bottom:8px;"></i>
+
+        <strong style="font-size:14px;">
+            Payment Required
+        </strong>
+
+        <span style="font-size:11px; margin-top:4px;">
+            Complete payment to view and download
+        </span>
+      `;
+                        card.style.position = "relative";
+
+                        card.appendChild(
+                            lockOverlay
+                        );
+                    }
                     card.appendChild(
                         button
                     );
@@ -790,220 +848,327 @@
 
         function canAccessHighQuality() {
 
-            if (!currentRepository) {
+            if (!currentAccessRequest) {
                 return false;
             }
 
-            if (
-                !currentRepository.gallery_access_expires_at
-            ) {
+            if (currentAccessRequest.status !== "approved") {
                 return false;
             }
+            if (currentAccessRequest.access_expires_at) {
 
-            const now =
-                new Date();
+                const expiresAt =
+                    new Date(
+                        currentAccessRequest.access_expires_at
+                    );
 
-            const expiresAt =
-                new Date(
-                    currentRepository.gallery_access_expires_at
+                if (
+                    Number.isNaN(expiresAt.getTime()) ||
+                    new Date() >= expiresAt
+                ) {
+                    return false;
+                }
+            }
+            const requestNumber =
+                Number(
+                    currentAccessRequest.request_number || 0
                 );
 
-            if (
-                Number.isNaN(expiresAt.getTime())
-            ) {
-                return false;
+            if (requestNumber === 1) {
+                return true;
             }
 
-            return now < expiresAt;
+            if (requestNumber >= 2) {
+
+                const paymentConfirmed =
+                    currentAccessRequest.payment_confirmed === true;
+
+                const paymentPaid =
+                    String(
+                        currentAccessRequest.payment_status || ""
+                    ).toLowerCase() === "paid";
+
+                return (
+                    paymentConfirmed &&
+                    paymentPaid
+                );
+            }
+            return false;
         }
+        async function downloadPhoto(photo) {
 
-        function downloadPhoto(photo) {
+            if (!canAccessHighQuality()) {
 
-            if (canAccessHighQuality()) {
+                openPaymentModal();
 
-                if (!photo.image_url) {
-                    alert("High-quality photo is unavailable.");
-                    return;
-                }
-
-                window.open(photo.image_url, "_blank");
                 return;
             }
 
-            if (!photo.preview_url) {
-                alert("Preview photo is unavailable.");
+            // Make sure this photo exists
+            if (!photo || !photo.image_url) {
+
+                alert(
+                    "High-quality photo is unavailable."
+                );
+
                 return;
             }
 
-            window.open(photo.preview_url, "_blank");
-        }
+            try {
 
-        /* =========================================================
-           PAYMENT & QR MODAL
-        ========================================================= */
-        const paymentNoticeStep = document.getElementById("paymentNoticeStep");
-        const qrPaymentStep = document.getElementById("qrPaymentStep");
-        const paymentFormStep = document.getElementById("paymentFormStep");
-        const paymentReceiptStep = document.getElementById("paymentReceiptStep");
+                console.log(
+                    "Downloading photo:",
+                    photo.original_name || photo.image_url
+                );
 
-        const btnBackToNotice = document.getElementById("btnBackToNotice");
-        const btnGoToForm = document.getElementById("btnGoToForm");
-        const btnBackToQR = document.getElementById("btnBackToQR");
-        const btnSubmitPayment = document.getElementById("btnSubmitPayment");
-        const btnCloseReceipt = document.getElementById("btnCloseReceipt");
+                const response =
+                    await fetch(photo.image_url);
 
-        const paymentAmountInput = document.getElementById("paymentAmountInput");
-        const paymentReceiptInput = document.getElementById("paymentReceiptInput");
-        const fileNameDisplay = document.getElementById("fileNameDisplay");
-        const paymentErrorMsg = document.getElementById("paymentErrorMsg");
+                if (!response.ok) {
 
-        const selectedMethodLabel = document.getElementById("selectedMethodLabel");
-        const paymentQrImage = document.getElementById("paymentQrImage");
-
-        const summaryOrderId = document.getElementById("summaryOrderId");
-        const summaryClientName = document.getElementById("summaryClientName");
-        const summaryAmount = document.getElementById("summaryAmount");
-
-        const receiptPaidAmount = document.getElementById("receiptPaidAmount");
-        const receiptOrderId = document.getElementById("receiptOrderId");
-        const receiptDetailOrderId = document.getElementById("receiptDetailOrderId");
-        const receiptDetailClient = document.getElementById("receiptDetailClient");
-        const receiptDetailAmount = document.getElementById("receiptDetailAmount");
-
-        if (paymentReceiptInput && fileNameDisplay) {
-            paymentReceiptInput.addEventListener("change", (e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                    fileNameDisplay.textContent = e.target.files[0].name;
-                    fileNameDisplay.style.color = "#333";
-                } else {
-                    fileNameDisplay.textContent = "No file chosen";
-                    fileNameDisplay.style.color = "#777";
+                    throw new Error(
+                        "Unable to download the photo."
+                    );
                 }
-            });
+
+                const blob =
+                    await response.blob();
+
+                const blobUrl =
+                    URL.createObjectURL(blob);
+
+                const link =
+                    document.createElement("a");
+
+                link.href =
+                    blobUrl;
+
+                link.download =
+                    photo.original_name ||
+                    `gallery-photo-${Date.now()}.jpg`;
+
+                document.body.appendChild(link);
+
+                link.click();
+
+                document.body.removeChild(link);
+
+                URL.revokeObjectURL(blobUrl);
+
+                console.log(
+                    "Photo downloaded successfully."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Individual photo download error:",
+                    error
+                );
+
+                alert(
+                    "Unable to download this photo."
+                );
+            }
         }
+        async function downloadAllPhotos() {
+
+            // Check payment/access
+            if (!canAccessHighQuality()) {
+
+                openPaymentModal();
+
+                return;
+            }
+
+            // Check photos
+            if (!currentPhotos || currentPhotos.length === 0) {
+
+                alert(
+                    "No photos available to download."
+                );
+
+                return;
+            }
+
+            const photosToDownload =
+                currentPhotos.filter(
+                    photo =>
+                        photo &&
+                        photo.image_url
+                );
+
+            if (photosToDownload.length === 0) {
+
+                alert(
+                    "No downloadable photos are available."
+                );
+
+                return;
+            }
+
+            const originalText =
+                downloadAllBtn.innerHTML;
+
+            downloadAllBtn.disabled = true;
+
+            downloadAllBtn.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Downloading...
+    `;
+
+            let successfulDownloads = 0;
+
+            try {
+
+                for (
+                    let i = 0;
+                    i < photosToDownload.length;
+                    i++
+                ) {
+
+                    const photo =
+                        photosToDownload[i];
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                photo.image_url
+                            );
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                "Unable to download photo."
+                            );
+                        }
+
+                        const blob =
+                            await response.blob();
+
+                        const blobUrl =
+                            URL.createObjectURL(blob);
+
+                        const link =
+                            document.createElement("a");
+
+                        link.href =
+                            blobUrl;
+
+                        link.download =
+                            photo.original_name ||
+                            `gallery-photo-${i + 1}.jpg`;
+
+                        document.body.appendChild(link);
+
+                        link.click();
+
+                        document.body.removeChild(link);
+
+                        URL.revokeObjectURL(blobUrl);
+
+                        successfulDownloads++;
+
+                        await new Promise(
+                            resolve =>
+                                setTimeout(resolve, 500)
+                        );
+
+                    } catch (photoError) {
+
+                        console.error(
+                            "Failed to download photo:",
+                            photoError
+                        );
+                    }
+                }
+
+                alert(
+                    `${successfulDownloads} of ${photosToDownload.length} photos downloaded.`
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Download all error:",
+                    error
+                );
+
+                alert(
+                    "Unable to download the photos."
+                );
+
+            } finally {
+
+                downloadAllBtn.disabled = false;
+
+                downloadAllBtn.innerHTML =
+                    originalText;
+            }
+        }
+        const paymentNoticeStep =
+            document.getElementById("paymentNoticeStep");
+
+        const btnPayMongo =
+            document.getElementById("btnPayMongo");
+
+        const summaryOrderId =
+            document.getElementById("summaryOrderId");
+
+        const summaryClientName =
+            document.getElementById("summaryClientName");
+
+        const summaryAmount =
+            document.getElementById("summaryAmount");
+
+        const paymentErrorMsg =
+            document.getElementById("paymentErrorMsg");
+
 
         function openPaymentModal() {
             if (!paymentModal) return;
 
             if (currentBooking) {
-                if (summaryOrderId) summaryOrderId.textContent = currentBooking.id ? `#ORD-${String(currentBooking.id).slice(-3)}` : "#ORD-001";
-                if (summaryClientName) summaryClientName.textContent = currentBooking.full_name || "Customer";
+                if (summaryOrderId) {
+                    summaryOrderId.textContent =
+                        currentBooking.id
+                            ? `#ORD-${String(currentBooking.id).slice(-3)}`
+                            : "#ORD-001";
+                }
 
-                const dueAmount = currentBooking.total_amount || currentBooking.amount || 0;
-                if (summaryAmount) summaryAmount.textContent = `₱${parseFloat(dueAmount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                if (summaryClientName) {
+                    summaryClientName.textContent =
+                        currentBooking.full_name || "Customer";
+                }
             }
 
-            if (paymentNoticeStep) paymentNoticeStep.style.display = "flex";
-            if (qrPaymentStep) qrPaymentStep.style.display = "none";
-            if (paymentFormStep) paymentFormStep.style.display = "none";
-            if (paymentReceiptStep) paymentReceiptStep.style.display = "none";
-            if (paymentErrorMsg) paymentErrorMsg.style.display = "none";
+            if (summaryAmount) {
+                summaryAmount.textContent = "₱1.00";
+            }
+
             paymentModal.classList.add("active");
         }
-
         function closePaymentModal() {
-            if (!paymentModal) return;
-            paymentModal.classList.remove("active");
+
+            if (paymentModal) {
+                paymentModal.classList.remove("active");
+            }
         }
+
 
         if (closeButton) {
-            closeButton.addEventListener("click", closePaymentModal);
+
+            closeButton.addEventListener(
+                "click",
+                closePaymentModal
+            );
         }
-
-        document.querySelectorAll(".btn-payment-method").forEach(button => {
-            button.addEventListener("click", (e) => {
-                const targetBtn = e.currentTarget;
-                const selectedMethod = targetBtn.getAttribute("data-method");
-                const labelText = targetBtn.getAttribute("data-label");
-
-                if (selectedMethodLabel) {
-                    selectedMethodLabel.textContent = labelText;
-                }
-
-                if (paymentQrImage) {
-                    paymentQrImage.src = `/images/payment_qr_${selectedMethod}.png`;
-                    paymentQrImage.onerror = function () {
-                        this.onerror = null;
-                        this.src = "/images/gcash_qr.jpeg";
-                    };
-                }
-
-                if (paymentNoticeStep) paymentNoticeStep.style.display = "none";
-                if (qrPaymentStep) qrPaymentStep.style.display = "flex";
-                if (paymentFormStep) paymentFormStep.style.display = "none";
-                if (paymentReceiptStep) paymentReceiptStep.style.display = "none";
-            });
-        });
-
-        if (btnBackToNotice) {
-            btnBackToNotice.addEventListener("click", () => {
-                if (qrPaymentStep) qrPaymentStep.style.display = "none";
-                if (paymentNoticeStep) paymentNoticeStep.style.display = "flex";
-            });
-        }
-
-        if (btnGoToForm) {
-            btnGoToForm.addEventListener("click", () => {
-                if (qrPaymentStep) qrPaymentStep.style.display = "none";
-                if (paymentFormStep) paymentFormStep.style.display = "flex";
-            });
-        }
-
-        if (btnBackToQR) {
-            btnBackToQR.addEventListener("click", () => {
-                if (paymentFormStep) paymentFormStep.style.display = "none";
-                if (qrPaymentStep) qrPaymentStep.style.display = "flex";
-            });
-        }
-
-        if (btnSubmitPayment) {
-            btnSubmitPayment.addEventListener("click", async () => {
-                const enteredAmount = parseFloat(paymentAmountInput.value);
-                const file = paymentReceiptInput.files[0];
-
-                if (!enteredAmount || isNaN(enteredAmount)) {
-                    paymentErrorMsg.textContent = "Please enter the payment amount.";
-                    paymentErrorMsg.style.display = "block";
-                    return;
-                }
-
-                if (!file) {
-                    paymentErrorMsg.textContent = "Please upload a proof of payment image.";
-                    paymentErrorMsg.style.display = "block";
-                    return;
-                }
-
-                const targetStudioAmount = currentBooking?.total_amount || currentBooking?.amount || 0;
-
-                if (targetStudioAmount > 0 && enteredAmount !== targetStudioAmount) {
-                    paymentErrorMsg.textContent = `Transaction failed: Payment amount must match the required studio amount (₱${targetStudioAmount}).`;
-                    paymentErrorMsg.style.display = "block";
-                    return;
-                }
-
-                if (currentRepository) {
-                    currentRepository.download_access = true;
-                }
-
-                const formattedAmount = `₱${enteredAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                const formattedOrderId = currentBooking?.id ? `#ORD-${String(currentBooking.id).slice(-3)}` : "#ORD-001";
-                const clientNameStr = currentBooking?.full_name || "Customer";
-
-                if (receiptPaidAmount) receiptPaidAmount.textContent = formattedAmount;
-                if (receiptOrderId) receiptOrderId.textContent = formattedOrderId;
-                if (receiptDetailOrderId) receiptDetailOrderId.textContent = formattedOrderId;
-                if (receiptDetailClient) receiptDetailClient.textContent = clientNameStr;
-                if (receiptDetailAmount) receiptDetailAmount.textContent = formattedAmount;
-
-                if (paymentFormStep) paymentFormStep.style.display = "none";
-                if (paymentReceiptStep) paymentReceiptStep.style.display = "flex";
-
-                renderGalleryPhotos(currentPhotos);
-            });
-        }
-
-        if (btnCloseReceipt) {
-            btnCloseReceipt.addEventListener("click", closePaymentModal);
+        if (btnPayMongo) {
+            btnPayMongo.addEventListener(
+                "click",
+                startPayMongoGalleryPayment
+            );
         }
 
         if (paymentModal) {
@@ -1015,23 +1180,13 @@
         }
 
         if (downloadAllBtn) {
-            downloadAllBtn.addEventListener("click", () => {
-                if (canAccessHighQuality()) {
-                    if (currentPhotos && currentPhotos.length > 0) {
-                        currentPhotos.forEach(photo => {
-                            if (photo.image_url) {
-                                window.open(photo.image_url, "_blank");
-                            }
-                        });
-                    } else {
-                        alert("No photos available to download.");
-                    }
-                } else {
-                    openPaymentModal();
-                }
-            });
-        }
 
+            downloadAllBtn.addEventListener(
+                "click",
+                downloadAllPhotos
+            );
+
+        }
         function showGalleryError(title, message) {
             galleryTitle.textContent = title;
             gallerySubtitle.textContent = message;
@@ -1081,9 +1236,225 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+        async function checkGalleryPayment() {
 
+            const params =
+                new URLSearchParams(window.location.search);
+
+            if (params.get("payment") !== "success") {
+                return;
+            }
+
+            const requestId =
+                params.get("requestId") ||
+                sessionStorage.getItem(
+                    "galleryPaymentRequestId"
+                );
+
+            const token =
+                params.get("token");
+
+            if (!requestId) return;
+
+            for (let i = 0; i < 10; i++) {
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${SERVER_URL}/api/gallery-access/payment-status/${requestId}?token=${encodeURIComponent(token || "")}`
+                        )
+
+                    const result =
+                        await response.json();
+
+                    if (
+                        result.paymentConfirmed === true
+                    ) {
+
+                        currentAccessRequest.payment_confirmed =
+                            true;
+
+                        currentAccessRequest.payment_status =
+                            "paid";
+
+                        renderGalleryPhotos(
+                            currentPhotos
+                        );
+
+                        sessionStorage.removeItem(
+                            "galleryPaymentRequestId"
+                        );
+
+                        alert(
+                            "Payment confirmed! Your gallery is unlocked and can now download your high-qualityphotos."
+                        );
+
+                        return;
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "Payment verification error:",
+                        error
+                    );
+
+                }
+
+                await new Promise(
+                    resolve => setTimeout(resolve, 1500)
+                );
+            }
+
+            alert(
+                "Payment is still being verified. Please refresh shortly."
+            );
+        }
+        async function startPayMongoGalleryPayment() {
+
+            if (!currentAccessRequest) {
+
+                alert(
+                    "Your gallery access request could not be verified."
+                );
+
+                return;
+            }
+
+            if (
+                currentAccessRequest.payment_required !== true
+            ) {
+
+                alert(
+                    "Payment is not required for this gallery request."
+                );
+
+                return;
+            }
+
+            if (
+                currentAccessRequest.payment_confirmed === true
+            ) {
+
+                alert(
+                    "Your gallery payment has already been confirmed."
+                );
+
+                return;
+            }
+
+            try {
+
+                const button =
+                    document.getElementById(
+                        "btnPayMongo"
+                    );
+
+                if (button) {
+
+                    button.disabled = true;
+
+                    button.innerHTML =
+                        `<i class="fa-solid fa-spinner fa-spin"></i>
+                 Creating Payment...`;
+                }
+
+                const token =
+                    new URLSearchParams(
+                        window.location.search
+                    ).get("token");
+
+                const response =
+                    await fetch(
+                        `${SERVER_URL}/api/gallery-access/create-payment`,
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                requestId:
+                                    currentAccessRequest.id,
+
+                                token:
+                                    token
+
+                            })
+                        }
+                    );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok || !result.success) {
+
+                    throw new Error(
+                        result.message ||
+                        "Unable to create payment."
+                    );
+                }
+
+                if (!result.checkoutUrl) {
+
+                    throw new Error(
+                        "PayMongo checkout URL was not returned."
+                    );
+                }
+
+                sessionStorage.setItem(
+                    "galleryPaymentRequestId",
+                    currentAccessRequest.id
+                );
+
+                window.location.href =
+                    result.checkoutUrl;
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "PayMongo gallery payment error:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "Unable to start payment."
+                );
+
+                const button =
+                    document.getElementById(
+                        "btnPayMongo"
+                    );
+
+                if (button) {
+
+                    button.disabled = false;
+
+                    button.innerHTML =
+                        `<i class="fa-solid fa-credit-card"></i>
+                 Pay with PayMongo`;
+                }
+            }
+        }
         document.getElementById("logoutBtn").addEventListener("click", () => {
             window.location.href = "customer_homepage.html";
+        });
+        window.addEventListener("DOMContentLoaded", async () => {
+
+            console.log("====================================");
+            console.log("CUSTOMER GALLERY INITIALIZING");
+            console.log("URL:", window.location.href);
+            console.log("====================================");
+            await initializeGallery();
+
         });
     </script>
 

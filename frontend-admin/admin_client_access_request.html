@@ -629,18 +629,13 @@
             return repository;
         }
 
-        function getClientRepositoryLink(repository) {
+        function getClientRepositoryLink(repository, booking = null) {
+            const email = booking?.email || "";
 
-            if (!repository || !repository.access_token) {
-                console.error("Repository token is missing:", repository);
-                return null;
-            }
-
-            return (
-                window.location.origin +
-                "/frontend-customer/client-gallery.html?token=" +
-                encodeURIComponent(repository.access_token)
-            );
+            return window.location.origin +
+                "/frontend-customer/customer_gallery_view.html?token=" +
+                encodeURIComponent(repository.access_token) +
+                (email ? "&email=" + encodeURIComponent(email) : "");
         }
 
         async function autoArchiveAccessRequests() {
@@ -707,9 +702,12 @@
 
             console.log("Loading access requests...");
 
-
+            /*
+             * Keep the automatic expiry/archive check.
+             * Expired requests will still remain visible
+             * in the Admin page as history.
+             */
             await autoArchiveAccessRequests();
-
 
             const {
                 data: requests,
@@ -717,7 +715,6 @@
             } = await supabaseClient
                 .from("gallery_access_requests")
                 .select("*")
-                .neq("status", "expired")
                 .order("created_at", {
                     ascending: true
                 });
@@ -782,19 +779,22 @@
                     booking: booking || null
                 };
             });
-            const requestCounter = {};
 
-
+            /*
+             * Keep the request_number saved in the database.
+             * Do NOT replace it with 1 when it exists.
+             */
             allAccessRequests = rawRequests.map(request => {
 
                 return {
                     ...request,
 
                     request_number:
-                        Number(request.request_number || 1)
+                        Number(request.request_number)
                 };
 
             });
+
             console.log(
                 "Access requests loaded:",
                 allAccessRequests
@@ -934,6 +934,7 @@
                             booking.email,
                             request.customer_email,
                             request.booking_id,
+                            request.request_number,
                             booking.session_type,
                             booking.booking_date,
                             booking.booking_time,
@@ -961,7 +962,7 @@
                 tbody.innerHTML = `
             <tr>
                 <td
-                    colspan="7"
+                    colspan="9"
                     style="
                         text-align:center;
                         padding:30px;
@@ -1017,14 +1018,18 @@
                             : "-";
 
                     const requestNumber =
-                        Number(request.request_number || 1);
+                        Number(request.request_number);
 
                     const requestLabel =
                         requestNumber === 1
                             ? "1st Request"
                             : requestNumber === 2
                                 ? "2nd Request"
-                                : `${requestNumber}th Request`;
+                                : requestNumber === 3
+                                    ? "3rd Request"
+                                    : `${requestNumber}th Request`;
+                    const isFirstRequest = requestNumber === 1;
+                    const paymentRequired = requestNumber >= 2;
                     const approvedAt =
                         request.approved_at
                             ? new Date(
@@ -1259,6 +1264,42 @@
                         );
                     }
 
+                    const requestNumber =
+                        Number(request.request_number || 1);
+
+                    const isFirstRequest =
+                        requestNumber === 1;
+
+                    const paymentRequired =
+                        requestNumber >= 2;
+
+
+                    // GET CURRENT ADMIN USER
+                    const {
+                        data: { user: currentUser },
+                        error: authError
+                    } = await supabaseClient.auth.getUser();
+
+                    if (authError) {
+                        console.error(
+                            "AUTHENTICATION ERROR:",
+                            authError
+                        );
+
+                        throw authError;
+                    }
+
+                    if (!currentUser) {
+                        throw new Error(
+                            "Admin user is not authenticated."
+                        );
+                    }
+
+                    console.log(
+                        "CURRENT ADMIN:",
+                        currentUser.id
+                    );
+
 
                     if (request.status === "approved") {
 
@@ -1294,7 +1335,7 @@
                         );
 
                     const clientLink =
-                        getClientRepositoryLink(repository);
+                        getClientRepositoryLink(repository, booking);
                     const approvedAt = new Date();
 
                     const expiresAt = new Date(
@@ -1311,27 +1352,23 @@
                     } = await supabaseClient
                         .from("gallery_access_requests")
                         .update({
-
                             status: "approved",
-
                             repository_id: repository.id,
 
                             approved_at: approvedAt.toISOString(),
-
                             access_started_at: approvedAt.toISOString(),
-
                             access_expires_at: expiresAt.toISOString(),
-
                             expires_at: expiresAt.toISOString(),
-
                             archive_at: archiveAt.toISOString(),
-
                             is_expired: false,
-
-                            approved_by:
-                                (await supabaseClient.auth.getUser())
-                                    .data.user?.id || null
-
+                            approved_by: currentUser.id,
+                            payment_required: paymentRequired,
+                            payment_confirmed: isFirstRequest,
+                            payment_status: isFirstRequest ? "paid" : "unpaid",
+                            paid_at: isFirstRequest ? approvedAt.toISOString() : null,
+                            access_granted_at: isFirstRequest
+                                ? approvedAt.toISOString()
+                                : null
                         })
                         .eq("id", requestId);
                     if (updateError) {
