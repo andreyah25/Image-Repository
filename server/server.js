@@ -3764,6 +3764,7 @@ app.post(
             const normalizedName =
                 fullName
                     .trim()
+                    .replace(/\s+/g, " ")
                     .toLowerCase();
 
 
@@ -3781,6 +3782,7 @@ app.post(
                                 candidate.full_name || ""
                             )
                                 .trim()
+                                .replace(/\s+/g, " ")
                                 .toLowerCase();
 
 
