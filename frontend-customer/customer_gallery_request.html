@@ -729,12 +729,6 @@
                     "GALLERY REQUEST CREATED SUCCESSFULLY:",
                     newRequest
                 );
-
-
-                /* =====================================================
-                   UPDATE SCREEN
-                ===================================================== */
-
                 if (requestNumber === 1) {
 
                     showMessage(
@@ -751,12 +745,6 @@
                     );
 
                 }
-
-
-                /* =====================================================
-                   START APPROVAL CHECKING
-                ===================================================== */
-
                 startApprovalChecker(
                     newRequest.id
                 );
@@ -777,10 +765,6 @@
 
             }
         }
-
-        /* =========================================================
-           APPROVAL CHECKER
-           ========================================================= */
 
         function startApprovalChecker(
             requestId
@@ -921,14 +905,6 @@
                                 60 *
                                 1000
                             );
-
-
-                        /*
-                            Do NOT update Supabase directly
-                            from the customer browser.
-        
-                            The server endpoint will handle it.
-                        */
 
                         request.access_granted_at =
                             grantedAt.toISOString();
@@ -1079,11 +1055,6 @@
             );
         }
 
-
-        /* =========================================================
-           COUNTDOWN
-           ========================================================= */
-
         function startCountdown(
             expiresAt
         ) {
@@ -1194,12 +1165,6 @@
                 "info"
             );
         }
-
-
-        /* =========================================================
-           OPEN GALLERY
-           ========================================================= */
-
         async function openGallery(
             request
         ) {

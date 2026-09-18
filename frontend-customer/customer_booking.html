@@ -1639,24 +1639,6 @@
 
                 }
 
-
-                /* =====================================================
-                   EXISTING BOOKING RANGES
-        
-                   IMPORTANT:
-        
-                   5-minute preparation time is included.
-        
-                   Example:
-        
-                   10:00
-                   20 min booking
-                   + 5 min preparation
-        
-                   occupied:
-                   10:00 → 10:25
-                ===================================================== */
-
                 const existingBookingRanges =
                     existingBookings
                         .map(
@@ -1766,10 +1748,6 @@
                         BOOKING_PREPARATION_TIME;
 
 
-                    /* -------------------------------------------------
-                       Must finish by 7:00 PM
-                    ------------------------------------------------- */
-
                     if (
                         candidateEnd >
                         BOOKING_END_MINUTES
@@ -1778,10 +1756,6 @@
                         continue;
                     }
 
-
-                    /* -------------------------------------------------
-                       Check all existing bookings
-                    ------------------------------------------------- */
 
                     let conflict =
                         false;
@@ -1833,11 +1807,6 @@
                     }
 
                 }
-
-
-                /* =====================================================
-                   NO AVAILABLE TIMES
-                ===================================================== */
 
                 if (
                     availableTimes.length === 0
@@ -2653,13 +2622,32 @@
 
                     return;
                 }
-                /* =====================================================
-     CHECK PACKAGE AVAILABILITY AGAIN
-     Prevents booking a package that admin disabled
-     while the customer page was open.
-     ===================================================== */
+
 
                 if (photoPackage) {
+                    const photoPackageSelect =
+                        document.getElementById("photoPackage");
+
+                    const selectedPackageOption =
+                        photoPackageSelect.options[
+                        photoPackageSelect.selectedIndex
+                        ];
+
+                    const packageId =
+                        selectedPackageOption?.dataset.packageId;
+
+                    if (!packageId) {
+                        console.error(
+                            "No package ID found for selected package:",
+                            photoPackage
+                        );
+
+                        alert(
+                            "Unable to identify the selected package. Please select the package again."
+                        );
+
+                        return;
+                    }
 
                     const {
                         data: currentPackage,
@@ -2667,11 +2655,10 @@
                     } = await supabaseClient
                         .from("packages")
                         .select("id, name, price, duration, status")
-                        .eq("name", getPackageDisplayName(photoPackage))
+                        .eq("id", packageId)
                         .maybeSingle();
 
                     if (packageAvailabilityError) {
-
                         console.error(
                             "Package availability check failed:",
                             packageAvailabilityError
@@ -2688,7 +2675,6 @@
                         !currentPackage ||
                         currentPackage.status !== "Available"
                     ) {
-
                         alert(
                             "Sorry, this package is no longer available. Please select another package."
                         );
@@ -2702,6 +2688,11 @@
 
                         return;
                     }
+
+                    console.log(
+                        "Package availability confirmed:",
+                        currentPackage
+                    );
                 }
                 if (
                     requiredBackdrops > 0 &&
@@ -2741,13 +2732,6 @@
                 }
 
 
-                /* =====================================================
-                   5. VALIDATE REQUIRED FIELDS
-                ===================================================== */
-
-                /* =====================================================
-    REQUIRED INFORMATION VALIDATION
-    ===================================================== */
 
                 if (!fullName) {
 
