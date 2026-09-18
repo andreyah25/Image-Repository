@@ -142,8 +142,15 @@ app.get("/gallery", (req, res) => {
     );
 });
 app.get("/gallery-requests", (req, res) => {
+    console.log("GALLERY REQUEST PAGE ROUTE HIT");
+
     res.sendFile(
-        path.join(__dirname, "..", "frontend-customer", "customer_gallery_request.html")
+        path.join(
+            __dirname,
+            "..",
+            "frontend-customer",
+            "customer_gallery_request.html"
+        )
     );
 });
 async function requireAdmin(req, res, next) {
