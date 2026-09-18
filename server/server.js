@@ -3661,28 +3661,15 @@ app.post(
 
         try {
 
-            console.log(
-                "========================================"
-            );
-
-            console.log(
-                "CUSTOMER GALLERY ACCESS REQUEST"
-            );
-
-            console.log(
-                "========================================"
-            );
+            console.log("========================================");
+            console.log("CUSTOMER GALLERY ACCESS REQUEST");
+            console.log("========================================");
 
 
             const {
                 email,
                 fullName,
-                bookingDate,
-                bookingId,
-                repositoryId,
-                requestNumber,
-                accessType,
-                paymentRequired
+                bookingDate
             } = req.body;
 
 
@@ -3697,6 +3684,7 @@ app.post(
             ) {
 
                 return res.status(400).json({
+                    success: false,
                     error:
                         "Email, full name, and booking date are required."
                 });
@@ -3704,20 +3692,25 @@ app.post(
             }
 
 
-            console.log(
-                "EMAIL:",
-                email
-            );
+            const normalizedEmail =
+                String(email)
+                    .trim()
+                    .toLowerCase();
 
-            console.log(
-                "FULL NAME:",
-                fullName
-            );
+            const normalizedName =
+                String(fullName)
+                    .trim()
+                    .replace(/\s+/g, " ")
+                    .toLowerCase();
 
-            console.log(
-                "BOOKING DATE:",
-                bookingDate
-            );
+            const normalizedDate =
+                String(bookingDate)
+                    .substring(0, 10);
+
+
+            console.log("EMAIL:", normalizedEmail);
+            console.log("FULL NAME:", normalizedName);
+            console.log("BOOKING DATE:", normalizedDate);
 
 
             /* =====================================================
@@ -3732,7 +3725,7 @@ app.post(
                 .select("*")
                 .ilike(
                     "email",
-                    email.trim()
+                    normalizedEmail
                 )
                 .eq(
                     "status",
@@ -3754,6 +3747,7 @@ app.post(
                 );
 
                 return res.status(500).json({
+                    success: false,
                     error:
                         "Unable to verify your booking."
                 });
@@ -3761,17 +3755,15 @@ app.post(
             }
 
 
-            const normalizedName =
-                fullName
-                    .trim()
-                    .replace(/\s+/g, " ")
-                    .toLowerCase();
+            console.log(
+                "COMPLETED BOOKINGS FOUND:",
+                bookings?.length || 0
+            );
 
 
-            const normalizedDate =
-                String(bookingDate)
-                    .substring(0, 10);
-
+            /* =====================================================
+               3. MATCH NAME + DATE
+            ===================================================== */
 
             const booking =
                 (bookings || []).find(
@@ -3793,12 +3785,19 @@ app.post(
                                 .substring(0, 10);
 
 
+                        console.log(
+                            "COMPARING:",
+                            candidateName,
+                            candidateDate
+                        );
+
+
                         return (
-                            candidateDate ===
-                            normalizedDate
-                            &&
                             candidateName ===
                             normalizedName
+                            &&
+                            candidateDate ===
+                            normalizedDate
                         );
 
                     }
@@ -3812,6 +3811,7 @@ app.post(
                 );
 
                 return res.status(404).json({
+                    success: false,
                     error:
                         "We could not find a completed booking matching your email, full name, and booking date."
                 });
@@ -3823,23 +3823,6 @@ app.post(
                 "BOOKING VERIFIED:",
                 booking.id
             );
-
-
-            /* =====================================================
-               3. VERIFY BOOKING ID IF PROVIDED
-            ===================================================== */
-
-            if (
-                bookingId &&
-                booking.id !== bookingId
-            ) {
-
-                return res.status(400).json({
-                    error:
-                        "The booking information could not be verified."
-                });
-
-            }
 
 
             /* =====================================================
@@ -3867,6 +3850,7 @@ app.post(
                 );
 
                 return res.status(500).json({
+                    success: false,
                     error:
                         "Unable to find your photo gallery."
                 });
@@ -3877,21 +3861,9 @@ app.post(
             if (!repository) {
 
                 return res.status(404).json({
+                    success: false,
                     error:
                         "Your booking was found, but your photo folder has not been created yet."
-                });
-
-            }
-
-
-            if (
-                repositoryId &&
-                repository.id !== repositoryId
-            ) {
-
-                return res.status(400).json({
-                    error:
-                        "The gallery information could not be verified."
                 });
 
             }
@@ -3904,7 +3876,7 @@ app.post(
 
 
             /* =====================================================
-               5. CHECK PREVIOUS REQUESTS
+               5. FIND PREVIOUS REQUESTS
             ===================================================== */
 
             const {
@@ -3919,7 +3891,7 @@ app.post(
                 )
                 .ilike(
                     "customer_email",
-                    email.trim()
+                    normalizedEmail
                 )
                 .order(
                     "created_at",
@@ -3937,6 +3909,7 @@ app.post(
                 );
 
                 return res.status(500).json({
+                    success: false,
                     error:
                         "Unable to check your previous gallery requests."
                 });
@@ -3947,140 +3920,201 @@ app.post(
             const allRequests =
                 previousRequests || [];
 
+
+            console.log(
+                "EXISTING REQUESTS:",
+                allRequests
+            );
+
+
+            /* =====================================================
+               6. CHECK PENDING REQUEST
+            ===================================================== */
+
             const pendingRequest =
                 allRequests.find(
                     request =>
-                       String(request.status || "").toLowerCase() === "pending"
+                        String(
+                            request.status || ""
+                        ).toLowerCase() ===
+                        "pending"
                 );
 
 
             if (pendingRequest) {
 
                 return res.status(409).json({
+
+                    success: false,
+
                     error:
                         `Your gallery access request #${pendingRequest.request_number} is already pending. Please wait for the admin to approve it.`,
-                    request: pendingRequest
+
+                    request:
+                        pendingRequest
+
                 });
 
             }
-const requestNumbers = allRequests
-    .map(request => Number(request.request_number))
-    .filter(number =>
-        Number.isFinite(number) &&
-        number > 0
-    );
-
-const highestRequestNumber =
-    requestNumbers.length > 0
-        ? Math.max(...requestNumbers)
-        : 0;
-
-        
-const finalRequestNumber =
-    highestRequestNumber + 1;
-
-console.log(
-    "TOTAL PREVIOUS REQUESTS:",
-    allRequests.length
-);
-
-console.log(
-    "PREVIOUS REQUEST NUMBERS:",
-    requestNumbers
-);
-
-console.log(
-    "HIGHEST REQUEST NUMBER:",
-    highestRequestNumber
-);
-
-console.log(
-    "NEW REQUEST NUMBER:",
-    finalRequestNumber
-);
 
 
-if (finalRequestNumber > 2) {
+            /* =====================================================
+               7. DETERMINE REQUEST NUMBER
+            ===================================================== */
 
-    return res.status(409).json({
-        error:
-            "You have already used your two gallery access requests for this booking."
-    });
-
-}
-
-let finalAccessType;
-let finalPaymentRequired;
-
-
-if (finalRequestNumber === 1) {
-
-    finalAccessType = "free";
-    finalPaymentRequired = false;
-
-}
-else {
-
-    /* =================================================
-       REQUEST #2 CAN ONLY HAPPEN AFTER REQUEST #1
-       HAS EXPIRED
-    ================================================= */
-
-    const firstRequest =
-        allRequests.find(
-            request =>
-                Number(request.request_number) === 1
-        );
+            const requestNumbers =
+                allRequests
+                    .map(
+                        request =>
+                            Number(
+                                request.request_number
+                            )
+                    )
+                    .filter(
+                        number =>
+                            Number.isFinite(number) &&
+                            number > 0
+                    );
 
 
-    if (
-        firstRequest &&
-        firstRequest.access_expires_at
-    ) {
+            const highestRequestNumber =
+                requestNumbers.length > 0
+                    ? Math.max(
+                        ...requestNumbers
+                    )
+                    : 0;
 
-        const expiresAt =
-            new Date(
-                firstRequest.access_expires_at
+
+            const finalRequestNumber =
+                highestRequestNumber + 1;
+
+
+            console.log(
+                "PREVIOUS REQUEST NUMBERS:",
+                requestNumbers
+            );
+
+            console.log(
+                "HIGHEST REQUEST NUMBER:",
+                highestRequestNumber
+            );
+
+            console.log(
+                "NEW REQUEST NUMBER:",
+                finalRequestNumber
             );
 
 
-        if (
-            expiresAt > new Date()
-        ) {
-
-            return res.status(409).json({
-                error:
-                    "You already have an active gallery access."
-            });
-
-        }
-
-    }
-
-
-    finalAccessType = "paid";
-    finalPaymentRequired = true;
-
-}
+            /* =====================================================
+               8. ONLY TWO REQUESTS ALLOWED
+            ===================================================== */
 
             if (
-                requestNumber &&
-                Number(requestNumber) !==
-                finalRequestNumber
+                finalRequestNumber > 2
             ) {
 
-                console.log(
-                    "REQUEST NUMBER FROM CLIENT:",
-                    requestNumber
-                );
+                return res.status(409).json({
 
-                console.log(
-                    "SERVER REQUEST NUMBER:",
-                    finalRequestNumber
-                );
+                    success: false,
+
+                    error:
+                        "You have already used your two gallery access requests for this booking."
+
+                });
 
             }
 
+
+            /* =====================================================
+               9. DETERMINE FREE / PAID ACCESS
+            ===================================================== */
+
+            let finalAccessType;
+            let finalPaymentRequired;
+
+
+            if (
+                finalRequestNumber === 1
+            ) {
+
+                finalAccessType =
+                    "free";
+
+                finalPaymentRequired =
+                    false;
+
+            }
+            else {
+
+                /* =================================================
+                   REQUEST #2 REQUIRES EXPIRED REQUEST #1
+                ================================================= */
+
+                const firstRequest =
+                    allRequests.find(
+                        request =>
+                            Number(
+                                request.request_number
+                            ) === 1
+                    );
+
+
+                if (
+                    !firstRequest
+                ) {
+
+                    return res.status(409).json({
+
+                        success: false,
+
+                        error:
+                            "The first gallery access request could not be found."
+
+                    });
+
+                }
+
+
+                if (
+                    firstRequest.access_expires_at
+                ) {
+
+                    const expiresAt =
+                        new Date(
+                            firstRequest.access_expires_at
+                        );
+
+
+                    if (
+                        expiresAt > new Date()
+                    ) {
+
+                        return res.status(409).json({
+
+                            success: false,
+
+                            error:
+                                "You already have an active gallery access."
+
+                        });
+
+                    }
+
+                }
+
+
+                finalAccessType =
+                    "paid";
+
+                finalPaymentRequired =
+                    true;
+
+            }
+
+
+            /* =====================================================
+               10. CREATE REQUEST
+            ===================================================== */
 
             const requestId =
                 crypto.randomUUID();
@@ -4095,7 +4129,7 @@ else {
                     null,
 
                 customer_email:
-                    email.trim(),
+                    normalizedEmail,
 
                 booking_id:
                     booking.id,
@@ -4152,10 +4186,15 @@ else {
                 );
 
                 return res.status(500).json({
+
+                    success: false,
+
                     error:
                         "Unable to create your gallery access request.",
+
                     details:
                         requestError.message
+
                 });
 
             }
@@ -4166,6 +4205,10 @@ else {
                 newRequest.id
             );
 
+
+            /* =====================================================
+               11. CREATE ADMIN NOTIFICATION
+            ===================================================== */
 
             const {
                 error: notificationError
@@ -4186,7 +4229,7 @@ else {
                                 : "New PAID Gallery Access Request",
 
                         message:
-                            `${fullName.trim()} (${email.trim()}) requested gallery access for booking ${booking.id}. Request #${finalRequestNumber}. ${finalPaymentRequired
+                            `${fullName.trim()} (${normalizedEmail}) requested gallery access for booking ${booking.id}. Request #${finalRequestNumber}. ${finalPaymentRequired
                                 ? "₱100 payment will be required for downloads."
                                 : "First access is free for 24 hours."
                             }`,
@@ -4204,9 +4247,13 @@ else {
                     notificationError
                 );
 
-                
-
             }
+
+
+            /* =====================================================
+               12. RETURN JSON TO CUSTOMER PAGE
+            ===================================================== */
+
             return res.status(201).json({
 
                 success:
@@ -4218,6 +4265,7 @@ else {
             });
 
         }
+
         catch (error) {
 
             console.error(
@@ -4226,6 +4274,9 @@ else {
             );
 
             return res.status(500).json({
+
+                success:
+                    false,
 
                 error:
                     "An unexpected error occurred while creating your gallery access request."
@@ -4236,6 +4287,7 @@ else {
 
     }
 );
+
 app.get("/api/gallery-access/test", (req, res) => {
     res.json({
         success: true,
