@@ -20,6 +20,16 @@ app.use( express.json({
         }
     })
 );
+app.get("/gallery-requests", (req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            "..",
+            "frontend-customer",
+            "customer_gallery_request.html"
+        )
+    );
+});
 
 const PORT = process.env.PORT || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -138,15 +148,6 @@ app.get("/booking-cancelled", (req, res) => {
 app.get("/gallery", (req, res) => {
     res.sendFile(
         path.join(__dirname, "..", "frontend-customer", "customer_gallery_view.html")
-    );
-});
-app.get("/gallery-requests", (req, res) => {
-    res.sendFile(
-        path.join(
-            __dirname,
-            "frontend-customer",
-            "customer_gallery_request.html"
-        )
     );
 });
 
