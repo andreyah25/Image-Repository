@@ -3,6 +3,7 @@ require("dotenv").config();
 const crypto = require("crypto");
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const { Resend } = require("resend");
 const { createClient } = require("@supabase/supabase-js");
 
@@ -10,6 +11,7 @@ const app = express();
 
 
 app.use(cors());
+app.use(express.static(path.join(__dirname, "..")));
 app.use( express.json({
         verify: (req, res, buf) => {
             if (req.originalUrl === "/api/paymongo/webhook") {
@@ -18,6 +20,7 @@ app.use( express.json({
         }
     })
 );
+
 
 const PORT = process.env.PORT || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -40,7 +43,109 @@ const supabaseAdmin = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+app.get("/admin/dashboard", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_dashboard.html")
+    );
+});
+app.get("/admin/login", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_login.html")
+    );
+});
 
+app.get("/admin/clients", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_client.html")
+    );
+});
+
+app.get("/admin/repository", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_repository.html")
+    );
+});
+
+app.get("/admin/payments", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_payment.html")
+    );
+});
+
+app.get("/admin/archives", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_archives.html")
+    );
+});
+
+app.get("/admin/packages", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_packages.html")
+    );
+});
+
+app.get("/admin/profile", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_profile.html")
+    );
+});
+
+app.get("/admin/settings", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_settings.html")
+    );
+});
+app.get("/admin/auth-callback", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "auth_callback.html")
+    );
+});
+app.get("/admin/customer-folders", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_customer_folders.html")
+    );
+});
+app.get("/admin/access-request", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_client_access_request.html")
+    );
+});
+// CUSTOMER PAGES
+
+app.get("/home", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-customer", "customer_homepage.html")
+    );
+});
+
+app.get("/booking", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-customer", "customer_booking.html")
+    );
+});
+
+app.get("/booking-success", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-customer", "customer_booking_success.html")
+    );
+});
+
+app.get("/booking-cancelled", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-customer", "customer_booking_cancel.html")
+    );
+});
+
+app.get("/gallery", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-customer", "customer_gallery_view.html")
+    );
+});
+app.get("/gallery-requests", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-customer", "customer_gallery_request.html")
+    );
+});
 async function requireAdmin(req, res, next) {
 
     try {
@@ -4329,7 +4434,9 @@ app.post("/api/gallery-access/create-payment", async (req, res) => {
             )}` +
             `&email=${encodeURIComponent(
                 accessRequest.customer_email || ""
-            )}`;
+            )}`; +
+            `&payment=success` +
+         `&requestId=${encodeURIComponent(accessRequest.id)}`;
 
         const paymongoResponse =
             await fetch(

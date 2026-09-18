@@ -221,20 +221,54 @@
     </header>
 
     <div class="dashboard-wrapper">
+
+
         <aside class="sidebar">
             <nav>
-                <a href="admin_dashboard.html"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
-                <a href="admin_client.html" class="">
-                    <i class="fa-solid fa-calendar-check"></i> Booked Sessions
+
+                <a href="/admin/dashboard" class="active">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Dashboard
                 </a>
-                <a href="admin_repository.html"><i class="fa-solid fa-book"></i> Repository</a>
-                <a href="admin_payment.html"><i class="fa-solid fa-credit-card"></i> Payments</a>
-                <a href="admin_archives.html"><i class="fa-solid fa-box-archive"></i> Archives</a>
-                <a href="admin_profile.html"><i class="fa-solid fa-user"></i> Profile</a>
-                <a href="admin_settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+
+                <a href="/admin/clients">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+
+                <a href="/admin/repository">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+
+                <a href="/admin/payments">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+
+                <a href="/admin/archives">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+
+                <a href="/admin/packages">
+                    <i class="fa-solid fa-box"></i>
+                    Packages
+                </a>
+
+                <a href="/admin/profile">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+
+                <a href="/admin/settings">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+
             </nav>
 
-            <a href="admin_dashboard.html" class="logout-btn" id="logoutBtn">
+            <a href="/admin/login" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
             </a>
@@ -247,8 +281,8 @@
                     <p>Review and manage customer gallery access requests.</p>
 
                     <div class="page-switch">
-                        <a href="admin_client.html" class="">All Booked Sessions</a>
-                        <a href="admin_client_access_request.html" class="active">All Access Requests</a>
+                        <a href="/admin/clients" class="">All Booked Sessions</a>
+                        <a href="/admin/access-request" class="active">All Access Requests</a>
                     </div>
                 </div>
 
@@ -354,7 +388,7 @@
             (window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1")
                 ? "http://localhost:3000"
-                : "";
+                : "https://captured-server.onrender.com";
 
         let allBookedSessions = [];
         let allAccessRequests = [];
@@ -628,14 +662,19 @@
 
             return repository;
         }
+        const CUSTOMER_FRONTEND_URL =
+            "https://captured-photo-studio.onrender.com";
 
         function getClientRepositoryLink(repository, booking = null) {
+
             const email = booking?.email || "";
 
-            return window.location.origin +
+            return CUSTOMER_FRONTEND_URL +
                 "/frontend-customer/customer_gallery_view.html?token=" +
                 encodeURIComponent(repository.access_token) +
-                (email ? "&email=" + encodeURIComponent(email) : "");
+                (email
+                    ? "&email=" + encodeURIComponent(email)
+                    : "");
         }
 
         async function autoArchiveAccessRequests() {

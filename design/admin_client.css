@@ -770,75 +770,7 @@ span.notification-badge,
     cursor: pointer;
     transition: 0.2s ease;
 }
-/* =========================================================
-   CLIENT TABLE - AUTO SIZE BASED ON CONTENT
-========================================================= */
 
-.ui-table-card-panel {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: visible;
-}
-
-.ui-data-grid {
-    width: max-content;
-    min-width: 100%;
-    table-layout: auto;
-    border-collapse: collapse;
-}
-
-/* Let columns size according to their content */
-.ui-data-grid th,
-.ui-data-grid td {
-    width: auto;
-    white-space: nowrap;
-    vertical-align: middle;
-}
-
-/* Header */
-.ui-data-grid th {
-    white-space: nowrap;
-}
-
-/* Normal table text */
-.ui-data-grid td {
-    white-space: nowrap;
-}
-
-/* Long notes should have a reasonable maximum */
-.ui-data-grid td:nth-child(12) {
-    white-space: normal;
-    min-width: 150px;
-    max-width: 350px;
-    overflow-wrap: break-word;
-}
-
-/* Email can be long, but don't let it destroy the table */
-.ui-data-grid td:nth-child(4) {
-    max-width: 280px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Contact number */
-.ui-data-grid td:nth-child(3) {
-    min-width: 130px;
-}
-
-/* Buttons should stay on one line */
-.ui-data-grid button {
-    white-space: nowrap;
-}
-
-/* Keep action buttons together */
-.ui-data-grid td:last-child {
-    white-space: nowrap;
-}
-
-/* Status badges */
-.ui-data-grid .status-badge {
-    white-space: nowrap;
-}
 .payment-status-badge {
     display: inline-block;
     padding: 6px 10px;
@@ -1125,4 +1057,179 @@ span.notification-badge,
         width: 100%;
         justify-content: flex-start;
     }
+}
+/* =========================================================
+   CLIENT TABLE - HORIZONTAL SCROLL
+   ========================================================= */
+
+.ui-table-card-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    box-sizing: border-box;
+    overflow: hidden !important;
+}
+
+/* ACTUAL SCROLL AREA */
+.table-scroll-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    display: block !important;
+    box-sizing: border-box;
+
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: auto;
+}
+
+/* Make the table wider than the screen */
+.table-scroll-container .ui-data-grid {
+    width: 1900px !important;
+    min-width: 1900px !important;
+    max-width: none !important;
+
+    table-layout: auto !important;
+    border-collapse: collapse;
+}
+
+/* Keep columns from shrinking */
+.table-scroll-container .ui-data-grid th,
+.table-scroll-container .ui-data-grid td {
+    white-space: nowrap !important;
+    vertical-align: middle;
+}
+
+/* Email */
+.table-scroll-container .ui-data-grid td:nth-child(4) {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Contact */
+.table-scroll-container .ui-data-grid td:nth-child(3) {
+    min-width: 130px;
+}
+
+/* Notes */
+.table-scroll-container .ui-data-grid td:nth-child(12) {
+    white-space: normal !important;
+    min-width: 150px;
+    max-width: 350px;
+    overflow-wrap: break-word;
+}
+
+/* Buttons */
+.table-scroll-container .ui-data-grid button {
+    white-space: nowrap !important;
+}
+
+/* Chrome / Edge scrollbar */
+.table-scroll-container::-webkit-scrollbar {
+    height: 14px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #e5e5e5 !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #639A88 !important;
+    border-radius: 7px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #528373 !important;
+}
+/* =========================================================
+   FIX TABLE HORIZONTAL SCROLL
+   ========================================================= */
+
+/* Allow the main content area to shrink */
+.content {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+/* The card itself stays within the content width */
+.ui-table-card-panel {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+}
+
+/* THIS is the scrolling element */
+.table-scroll-container {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    box-sizing: border-box !important;
+
+    -webkit-overflow-scrolling: touch !important;
+
+    scrollbar-width: auto !important;
+}
+
+/* Force the table to be wider than the screen */
+.table-scroll-container .ui-data-grid {
+    display: table !important;
+
+    width: 1900px !important;
+    min-width: 1900px !important;
+    max-width: none !important;
+
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+}
+
+/* Prevent columns from shrinking */
+.table-scroll-container .ui-data-grid th,
+.table-scroll-container .ui-data-grid td {
+    white-space: nowrap !important;
+}
+
+/* Keep buttons together */
+.table-scroll-container .ui-data-grid button {
+    white-space: nowrap !important;
+}
+
+/* Make scrollbar visible in Chrome / Edge */
+.table-scroll-container::-webkit-scrollbar {
+    height: 16px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #e5e5e5 !important;
+    border-radius: 8px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #639A88 !important;
+    border-radius: 8px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #528373 !important;
 }

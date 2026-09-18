@@ -63,8 +63,7 @@
         </div>
 
         <div class="forgot-password-wrapper">
-          <a href="admin_forgotpw.html" class="forgot-link">
-            Forgot Password
+          <a href="/admin/forgot-password" class="forgot-link"> Forgot Password
           </a>
         </div>
 
@@ -153,7 +152,7 @@
 
             options: {
 
-              redirectTo: "http://localhost:5500/frontend-admin/auth_callback.html",
+              redirectTo: "http://localhost:3000/admin/auth-callback",
               queryParams: {
                 access_type: "offline",
                 prompt: "select_account"
@@ -230,15 +229,14 @@
 
           localStorage.setItem("verification_email", user.email);
 
-          window.location.href = "verification_code.html";
+          window.location.href = "/admin/verification";
           return;
         }
         localStorage.setItem("loggedInUserId", user.id);
         localStorage.setItem("loggedInUserEmail", user.email);
         localStorage.setItem("staffProfile", JSON.stringify(finalProfile));
 
-        window.location.href = "/frontend-admin/admin_dashboard.html";
-
+        window.location.href = "/admin/dashboard";
       } catch (err) {
         console.error(err);
         alert("Unexpected error occurred.");

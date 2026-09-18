@@ -39,9 +39,7 @@
             border-color: #639A88;
         }
 
-        .ui-table-card-panel {
-            overflow-x: auto;
-        }
+
 
         .payment-proof-btn {
             border: 0;
@@ -221,21 +219,57 @@
     </header>
 
     <div class="dashboard-wrapper">
+
+        <button id="sidebarToggle" class="sidebar-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
         <aside class="sidebar">
             <nav>
-                <a href="admin_dashboard.html"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
-                <a href="admin_client_booked_sessions.html" class="active">
-                    <i class="fa-solid fa-calendar-check"></i> Booked Sessions
+
+                <a href="/admin/dashboard" class="active">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Dashboard
                 </a>
-               
-                <a href="admin_repository.html"><i class="fa-solid fa-book"></i> Repository</a>
-                <a href="admin_payment.html"><i class="fa-solid fa-credit-card"></i> Payments</a>
-                <a href="admin_archives.html"><i class="fa-solid fa-box-archive"></i> Archives</a>
-                <a href="admin_profile.html"><i class="fa-solid fa-user"></i> Profile</a>
-                <a href="admin_settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+
+                <a href="/admin/clients">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+
+                <a href="/admin/repository">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+
+                <a href="/admin/payments">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+
+                <a href="/admin/archives">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+
+                <a href="/admin/packages">
+                    <i class="fa-solid fa-box"></i>
+                    Packages
+                </a>
+
+                <a href="/admin/profile">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+
+                <a href="/admin/settings">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+
             </nav>
 
-            <a href="admin_dashboard.html" class="logout-btn" id="logoutBtn">
+            <a href="/admin/login" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
             </a>
@@ -248,8 +282,8 @@
                     <p>View and manage customer booking sessions.</p>
 
                     <div class="page-switch">
-                        <a href="admin_client_booked_sessions.html" class="active">All Booked Sessions</a>
-                        <a href="admin_client_access_request.html" class="">All Access Requests</a>
+                        <a href="/admin/client" class="active">All Booked Sessions</a>
+                        <a href="/admin/access-request" class="">All Access Requests</a>
                     </div>
                 </div>
 
@@ -286,10 +320,12 @@
             </div>
 
             <div class="ui-table-card-panel">
-                <table class="ui-data-grid">
-                    <thead id="clientTableHeader"></thead>
-                    <tbody id="clientTableBody"></tbody>
-                </table>
+                <div class="table-scroll-container">
+                    <table class="ui-data-grid">
+                        <thead id="clientTableHeader"></thead>
+                        <tbody id="clientTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
@@ -928,15 +964,6 @@
                     No proof
                 </span>
             `;
-
-
-                /* ---------------------------------------------
-                   PAYMENT AMOUNT
-                --------------------------------------------- */
-
-                /* ---------------------------------------------
-     ADD-ONS
-  --------------------------------------------- */
 
                 let addonsText = "-";
 

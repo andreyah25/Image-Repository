@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Packages - Captured Admin Studio</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="/design/admin_packages.css">
+    <link rel="stylesheet" href="/design/admin_dashboard.css">
+
+
+
+
+</head>
+
+
+<body>
+
+    <header class="top-header">
+
+        <div class="logo-section">
+            <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
+            <span>Captured Admin Studio</span>
+        </div>
+
+
+
+        <div class="admin-profile">
+
+            <div id="adminAvatar" class="admin-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+            <span id="adminName">
+                Loading...
+            </span>
+
+        </div>
+
+    </header>
+
+
+
+    <div class="dashboard-wrapper">
+
+        <button id="sidebarToggle" class="sidebar-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <aside class="sidebar">
+            <nav>
+
+                <a href="/admin/dashboard" class="active">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    Dashboard
+                </a>
+
+                <a href="/admin/clients">
+                    <i class="fa-solid fa-users"></i>
+                    Clients
+                </a>
+
+                <a href="/admin/repository">
+                    <i class="fa-solid fa-book"></i>
+                    Repository
+                </a>
+
+                <a href="/admin/payments">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payments
+                </a>
+
+                <a href="/admin/archives">
+                    <i class="fa-solid fa-box-archive"></i>
+                    Archives
+                </a>
+
+                <a href="/admin/packages">
+                    <i class="fa-solid fa-box"></i>
+                    Packages
+                </a>
+
+                <a href="/admin/profile">
+                    <i class="fa-solid fa-user"></i>
+                    Profile
+                </a>
+
+                <a href="/admin/settings">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+
+            </nav>
+
+            <a href="/admin/login" class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
+                <span>Log out</span>
+            </a>
+        </aside>
+
+
+        <main class="main-content">
+
+
+            <h1 class="page-title">
+                Packages
+            </h1>
+
+
+            <p class="page-description">
+                Manage photography packages, prices, durations, and availability.
+            </p>
+
+
+            <div class="content-header">
+
+
+                <h2 class="section-title">
+                    Photography Packages
+                </h2>
+
+
+                <button class="add-package-btn" onclick="openAddModal()">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Package
+
+                </button>
+
+
+            </div>
+
+
+            <div id="packageGrid" class="package-grid">
+
+                <div class="loading-state">
+
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+
+                    Loading packages...
+
+                </div>
+
+            </div>
+
+
+        </main>
+
+
+    </div>
+
+
+
+    <!-- =========================
+     ADD / EDIT MODAL
+========================= -->
+
+    <div id="packageModal" class="modal-overlay">
+
+        <div class="modal">
+
+
+            <div class="modal-header">
+
+
+                <h2 id="modalTitle" class="modal-title">
+                    Add Package
+                </h2>
+
+
+                <button class="close-modal" onclick="closeModal()">
+                    &times;
+                </button>
+
+
+            </div>
+
+
+
+            <form id="packageForm">
+
+
+                <input type="hidden" id="packageId">
+
+
+                <div class="form-group">
+
+                    <label for="packageName">
+                        Package Name
+                    </label>
+
+
+                    <input type="text" id="packageName" placeholder="Example: Basic 1" required>
+
+                </div>
+
+
+
+                <div class="form-row">
+
+
+                    <div class="form-group">
+
+                        <label for="packagePrice">
+                            Price (₱)
+                        </label>
+
+
+                        <input type="number" id="packagePrice" min="0" step="1" placeholder="399" required>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="packageDuration">
+                            Duration
+                        </label>
+
+                        <select id="packageDuration" required>
+
+                            <option value="">
+                                Select duration
+                            </option>
+
+                            <option value="15">
+                                15 minutes
+                            </option>
+
+                            <option value="20">
+                                20 minutes
+                            </option>
+
+                            <option value="30">
+                                30 minutes
+                            </option>
+
+                            <option value="60">
+                                1 hour
+                            </option>
+
+                            <option value="90">
+                                1 hour 30 minutes
+                            </option>
+
+                            <option value="120">
+                                2 hours
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="packageDescription">
+                        Package Description
+                    </label>
+
+
+                    <textarea id="packageDescription"
+                        placeholder="Describe what is included in this package..."></textarea>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="packageStatus">
+                        Status
+                    </label>
+
+
+                    <select id="packageStatus">
+
+                        <option value="Available">
+                            Available
+                        </option>
+
+
+                        <option value="Not Available">
+                            Not Available
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="modal-actions">
+
+
+                    <button type="button" class="cancel-btn" onclick="closeModal()">
+                        Cancel
+                    </button>
+
+
+                    <button type="submit" class="save-btn" id="savePackageBtn">
+                        Save Package
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+     TOAST
+========================= -->
+
+    <div id="toast" class="toast"></div>
+
+
+
+    <script>
+
+
+        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        )
+
+        let packages = [];
+
+        let currentUser = null;
+
+        let currentAdmin = null;
+
+
+
+        /* =========================================================
+           DEFAULT PACKAGES
+           Used only when the database is empty.
+        ========================================================= */
+
+        const defaultPackages = [
+
+            {
+                name: "Basic 1",
+                price: 399,
+                duration: 15,
+                description: "Basic photography session.",
+                status: "Available"
+            },
+
+            {
+                name: "Basic 2",
+                price: 599,
+                duration: 20,
+                description: "Extended basic photography session.",
+                status: "Available"
+            },
+
+            {
+                name: "Basic 3",
+                price: 799,
+                duration: 20,
+                description: "Premium basic photography session.",
+                status: "Available"
+            },
+
+            {
+                name: "Group",
+                price: 1999,
+                duration: 90,
+                description: "Group photography session.",
+                status: "Available"
+            },
+
+            {
+                name: "Classic 1",
+                price: 1199,
+                duration: 30,
+                description: "Classic studio photography package.",
+                status: "Available"
+            },
+
+            {
+                name: "Classic 2",
+                price: 1799,
+                duration: 60,
+                description: "Extended classic photography package.",
+                status: "Available"
+            },
+
+            {
+                name: "Classic 3",
+                price: 3499,
+                duration: 90,
+                description: "Premium classic photography package.",
+                status: "Available"
+            },
+
+            {
+                name: "Kids",
+                price: 1699,
+                duration: 30,
+                description: "Photography package designed for children.",
+                status: "Available"
+            },
+
+            {
+                name: "Pre-Birthday",
+                price: 999,
+                duration: 30,
+                description: "Pre-birthday studio photography session.",
+                status: "Available"
+            },
+
+            {
+                name: "Theme / Holiday",
+                price: 1699,
+                duration: 30,
+                description: "Themed and seasonal photography session.",
+                status: "Available"
+            },
+
+            {
+                name: "Maternity",
+                price: 999,
+                duration: 30,
+                description: "Maternity studio photography session.",
+                status: "Available"
+            }
+
+        ];
+
+        /* =========================================================
+           TOAST
+        ========================================================= */
+
+        function showToast(message, type = "success") {
+
+            const toast =
+                document.getElementById("toast");
+
+            toast.textContent = message;
+
+            toast.className =
+                `toast show ${type}`;
+
+            setTimeout(() => {
+
+                toast.classList.remove("show");
+
+            }, 3000);
+
+        }
+
+
+
+        /* =========================================================
+           AUTHENTICATION
+        ========================================================= */
+
+        async function checkAdminAccess() {
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth.getUser();
+
+
+                if (error) {
+
+                    console.error(
+                        "Auth error:",
+                        error
+                    );
+
+                    redirectToLogin();
+
+                    return false;
+
+                }
+
+
+                const user = data.user;
+
+
+                if (!user) {
+
+                    redirectToLogin();
+
+                    return false;
+
+                }
+
+
+                currentUser = user;
+
+                const {
+                    data: staffProfile,
+                    error: staffError
+                } =
+                    await supabaseClient
+                        .from("staff_profiles")
+                        .select("*")
+                        .eq("id", user.id)
+                        .maybeSingle();
+
+
+                if (staffError) {
+
+                    console.error(
+                        "Staff profile error:",
+                        staffError
+                    );
+
+                    alert(
+                        "Unable to verify your admin account."
+                    );
+
+                    redirectToLogin();
+
+                    return false;
+
+                }
+
+
+                if (!staffProfile) {
+
+                    alert(
+                        "You are not registered as an administrator."
+                    );
+
+                    redirectToDashboard();
+
+                    return false;
+
+                }
+
+
+                /*
+                 * ADMIN ONLY
+                 */
+
+                if (
+                    String(staffProfile.role).toLowerCase()
+                    !== "admin"
+                ) {
+
+                    alert(
+                        "Access denied. Only administrators can manage packages."
+                    );
+
+                    redirectToDashboard();
+
+                    return false;
+
+                }
+
+
+                /*
+                 * ACTIVE ADMIN ONLY
+                 */
+
+                if (
+                    staffProfile.status &&
+                    String(staffProfile.status).toLowerCase()
+                    !== "active"
+                ) {
+
+                    alert(
+                        "Your admin account is not active."
+                    );
+
+                    redirectToDashboard();
+
+                    return false;
+
+                }
+
+
+                currentAdmin = staffProfile;
+
+
+                updateAdminHeader(
+                    staffProfile,
+                    user
+                );
+
+
+                return true;
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Admin verification error:",
+                    error
+                );
+
+                alert(
+                    "Unable to verify administrator access."
+                );
+
+                redirectToLogin();
+
+                return false;
+
+            }
+
+        }
+
+
+
+        /* =========================================================
+           ADMIN HEADER
+        ========================================================= */
+
+        function updateAdminHeader(
+            staffProfile,
+            user
+        ) {
+
+            const adminName =
+                document.getElementById("adminName");
+
+            const adminAvatar =
+                document.getElementById("adminAvatar");
+
+
+            /*
+             * Try common name fields.
+             */
+
+            const name =
+                staffProfile.full_name ||
+                staffProfile.name ||
+                staffProfile.display_name ||
+                user.email ||
+                "Captured Admin";
+
+
+            adminName.textContent = name;
+
+
+            /*
+             * If staff_profiles has avatar_url,
+             * use it.
+             */
+
+            const avatar =
+                staffProfile.avatar_url ||
+                staffProfile.profile_image ||
+                staffProfile.image_url;
+
+
+            if (avatar) {
+
+                adminAvatar.src = avatar;
+
+            }
+
+        }
+
+
+
+        /* =========================================================
+           LOAD PACKAGES
+        ========================================================= */
+
+        async function loadPackages() {
+
+            const grid =
+                document.getElementById("packageGrid");
+
+
+            grid.innerHTML = `
+
+        <div class="loading-state">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            Loading packages...
+
+        </div>
+
+    `;
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .from("packages")
+                        .select("*")
+                        .order("name", {
+                            ascending: true
+                        });
+
+
+                if (error) {
+
+                    console.error(
+                        "Load packages error:",
+                        error
+                    );
+
+                    grid.innerHTML = `
+
+                <div class="empty-state">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <p>
+                        Unable to load packages.
+                    </p>
+
+                </div>
+
+            `;
+
+                    showToast(
+                        error.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+
+                packages = data || [];
+
+
+                /*
+                 * If database is empty,
+                 * insert the default Captured packages.
+                 */
+
+                if (packages.length === 0) {
+
+                    await createDefaultPackages();
+
+                    return;
+
+                }
+
+
+                renderPackages();
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Unexpected load error:",
+                    error
+                );
+
+                showToast(
+                    "Unable to load packages.",
+                    "error"
+                );
+
+            }
+
+        }
+
+
+
+        /* =========================================================
+           CREATE DEFAULT PACKAGES
+        ========================================================= */
+
+        async function createDefaultPackages() {
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .from("packages")
+                        .insert(defaultPackages)
+                        .select();
+
+
+                if (error) {
+
+                    console.error(
+                        "Default package error:",
+                        error
+                    );
+
+                    showToast(
+                        "Unable to create default packages: "
+                        + error.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+
+                packages = data || [];
+
+
+                renderPackages();
+
+
+                showToast(
+                    "Default photography packages added."
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                showToast(
+                    "Unable to create default packages.",
+                    "error"
+                );
+
+            }
+
+        }
+        function formatDuration(minutes) {
+
+            minutes = Number(minutes);
+
+            if (!minutes || minutes <= 0) {
+                return "";
+            }
+
+            if (minutes < 60) {
+                return `${minutes} minutes`;
+            }
+
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+
+            if (remainingMinutes === 0) {
+                return hours === 1
+                    ? "1 hour"
+                    : `${hours} hours`;
+            }
+
+            return `${hours} hour${hours > 1 ? "s" : ""} ${remainingMinutes} minutes`;
+        }
+
+        function renderPackages() {
+
+            const grid =
+                document.getElementById("packageGrid");
+
+
+            grid.innerHTML = "";
+
+
+            if (!packages.length) {
+
+                grid.innerHTML = `
+
+            <div class="empty-state">
+
+                <i class="fa-solid fa-camera"></i>
+
+                <p>
+                    No packages available.
+                </p>
+
+            </div>
+
+        `;
+
+                return;
+
+            }
+
+
+            packages.forEach(packageItem => {
+
+
+                const card =
+                    document.createElement("div");
+
+
+                card.className =
+                    "package-card";
+
+
+                const statusClass =
+                    packageItem.status === "Available"
+                        ? "available"
+                        : "not-available";
+
+
+                const toggleText =
+                    packageItem.status === "Available"
+                        ? "Set not Available"
+                        : "Set Available";
+
+
+                card.innerHTML = `
+
+            <div class="package-header">
+
+                <div class="package-name">
+
+                    ${escapeHTML(
+                    packageItem.name
+                )}
+
+                </div>
+
+
+                <span
+                    class="status ${statusClass}"
+                >
+
+                    ${escapeHTML(
+                    packageItem.status
+                )}
+
+                </span>
+
+            </div>
+
+
+            <div class="package-price">
+
+                ₱${Number(
+                    packageItem.price || 0
+                ).toLocaleString()}
+
+            </div>
+
+
+            <div class="package-duration">
+
+                <i class="fa-regular fa-clock"></i>
+
+                ${escapeHTML(
+                    formatDuration(packageItem.duration)
+                )}
+
+            </div>
+
+
+            <div class="package-description">
+
+                ${escapeHTML(
+                    packageItem.description ||
+                    "No description provided."
+                )}
+
+            </div>
+
+
+            <div class="package-actions">
+
+
+                <button
+                    class="edit-btn"
+                    onclick="editPackage('${packageItem.id}')"
+                >
+
+                    <i class="fa-solid fa-pen"></i>
+
+                    Edit
+
+                </button>
+
+
+                <button
+                    class="toggle-btn"
+                    onclick="togglePackage('${packageItem.id}')"
+                >
+
+                    ${toggleText}
+
+                </button>
+
+
+                <button
+                    class="delete-btn"
+                    onclick="deletePackage('${packageItem.id}')"
+                >
+
+                    <i class="fa-solid fa-trash"></i>
+
+                    Delete
+
+                </button>
+
+
+            </div>
+
+        `;
+
+
+                grid.appendChild(card);
+
+            });
+
+        }
+
+
+
+        /* =========================================================
+           OPEN ADD MODAL
+        ========================================================= */
+
+        function openAddModal() {
+
+            document.getElementById(
+                "modalTitle"
+            ).textContent =
+                "Add Package";
+
+
+            document.getElementById(
+                "packageForm"
+            ).reset();
+
+
+            document.getElementById(
+                "packageId"
+            ).value = "";
+
+
+            document.getElementById(
+                "packageStatus"
+            ).value = "Available";
+
+
+            document.getElementById(
+                "packageModal"
+            ).classList.add("show");
+
+        }
+
+
+
+        /* =========================================================
+           CLOSE MODAL
+        ========================================================= */
+
+        function closeModal() {
+
+            document.getElementById(
+                "packageModal"
+            ).classList.remove("show");
+
+        }
+
+
+
+        /* =========================================================
+           EDIT PACKAGE
+        ========================================================= */
+
+        function editPackage(id) {
+
+            const packageItem =
+                packages.find(
+                    item => item.id === id
+                );
+
+
+            if (!packageItem) {
+
+                showToast(
+                    "Package not found.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            document.getElementById(
+                "modalTitle"
+            ).textContent =
+                "Edit Package";
+
+
+            document.getElementById(
+                "packageId"
+            ).value =
+                packageItem.id;
+
+
+            document.getElementById(
+                "packageName"
+            ).value =
+                packageItem.name || "";
+
+
+            document.getElementById(
+                "packagePrice"
+            ).value =
+                packageItem.price || 0;
+
+
+            document.getElementById(
+                "packageDuration"
+            ).value =
+                packageItem.duration || "";
+
+
+            document.getElementById(
+                "packageDescription"
+            ).value =
+                packageItem.description || "";
+
+
+            document.getElementById(
+                "packageStatus"
+            ).value =
+                packageItem.status || "Available";
+
+
+            document.getElementById(
+                "packageModal"
+            ).classList.add("show");
+
+        }
+
+
+
+        /* =========================================================
+           ADD / UPDATE PACKAGE
+        ========================================================= */
+
+        document
+            .getElementById("packageForm")
+            .addEventListener(
+                "submit",
+                async function (event) {
+
+                    event.preventDefault();
+
+
+                    const saveButton =
+                        document.getElementById(
+                            "savePackageBtn"
+                        );
+
+
+                    const id =
+                        document.getElementById(
+                            "packageId"
+                        ).value;
+
+
+                    const name =
+                        document.getElementById(
+                            "packageName"
+                        ).value.trim();
+
+
+                    const price =
+                        Number(
+                            document.getElementById(
+                                "packagePrice"
+                            ).value
+                        );
+
+
+                    const duration =
+                        document.getElementById(
+                            "packageDuration"
+                        ).value;
+
+
+                    const description =
+                        document.getElementById(
+                            "packageDescription"
+                        ).value.trim();
+
+
+                    const status =
+                        document.getElementById(
+                            "packageStatus"
+                        ).value;
+
+
+                    if (!name) {
+
+                        showToast(
+                            "Package name is required.",
+                            "error"
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (price < 0 || Number.isNaN(price)) {
+
+                        showToast(
+                            "Please enter a valid price.",
+                            "error"
+                        );
+
+                        return;
+
+                    }
+
+
+                    saveButton.disabled = true;
+
+                    saveButton.textContent =
+                        id
+                            ? "Updating..."
+                            : "Saving...";
+
+
+                    try {
+
+
+                        /* =========================
+                           UPDATE
+                        ========================= */
+
+                        if (id) {
+
+                            const {
+                                data,
+                                error
+                            } =
+                                await supabaseClient
+                                    .from("packages")
+                                    .update({
+
+                                        name: name,
+
+                                        price: price,
+
+                                        duration: duration,
+
+                                        description:
+                                            description,
+
+                                        status: status
+
+                                    })
+                                    .eq(
+                                        "id",
+                                        id
+                                    )
+                                    .select()
+                                    .single();
+
+
+                            if (error) {
+
+                                console.error(
+                                    "Update error:",
+                                    error
+                                );
+
+                                showToast(
+                                    "Update failed: "
+                                    + error.message,
+                                    "error"
+                                );
+
+                                return;
+
+                            }
+
+
+                            /*
+                             * Update local display
+                             */
+
+                            const index =
+                                packages.findIndex(
+                                    item =>
+                                        item.id === id
+                                );
+
+
+                            if (index !== -1) {
+
+                                packages[index] =
+                                    data;
+
+                            }
+
+
+                            showToast(
+                                "Package updated successfully."
+                            );
+
+                        }
+
+
+                        /* =========================
+                           ADD
+                        ========================= */
+
+                        else {
+
+                            const {
+                                data,
+                                error
+                            } =
+                                await supabaseClient
+                                    .from("packages")
+                                    .insert({
+
+                                        name: name,
+
+                                        price: price,
+
+                                        duration: duration,
+
+                                        description:
+                                            description,
+
+                                        status: status
+
+                                    })
+                                    .select()
+                                    .single();
+
+
+                            if (error) {
+
+                                console.error(
+                                    "Insert error:",
+                                    error
+                                );
+
+                                showToast(
+                                    "Add failed: "
+                                    + error.message,
+                                    "error"
+                                );
+
+                                return;
+
+                            }
+
+
+                            packages.push(data);
+
+
+                            showToast(
+                                "Package added successfully."
+                            );
+
+                        }
+
+
+                        renderPackages();
+
+                        closeModal();
+
+                    }
+
+                    catch (error) {
+
+                        console.error(
+                            "Save package error:",
+                            error
+                        );
+
+                        showToast(
+                            "Something went wrong while saving.",
+                            "error"
+                        );
+
+                    }
+
+                    finally {
+
+                        saveButton.disabled = false;
+
+                        saveButton.textContent =
+                            "Save Package";
+
+                    }
+
+                }
+            );
+
+
+
+        /* =========================================================
+           DELETE PACKAGE
+        ========================================================= */
+
+        async function deletePackage(id) {
+
+            const packageItem =
+                packages.find(
+                    item => item.id === id
+                );
+
+
+            if (!packageItem) {
+
+                return;
+
+            }
+
+
+            const confirmed =
+                confirm(
+                    `Are you sure you want to delete "${packageItem.name}"?`
+                );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            try {
+
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from("packages")
+                        .delete()
+                        .eq(
+                            "id",
+                            id
+                        );
+
+
+                if (error) {
+
+                    console.error(
+                        "Delete error:",
+                        error
+                    );
+
+                    showToast(
+                        "Delete failed: "
+                        + error.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+
+                packages =
+                    packages.filter(
+                        item =>
+                            item.id !== id
+                    );
+
+
+                renderPackages();
+
+
+                showToast(
+                    "Package deleted successfully."
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                showToast(
+                    "Unable to delete package.",
+                    "error"
+                );
+
+            }
+
+        }
+
+
+
+        /* =========================================================
+           ACTIVATE / DEACTIVATE
+        ========================================================= */
+
+        async function togglePackage(id) {
+
+            const packageItem =
+                packages.find(
+                    item => item.id === id
+                );
+
+
+            if (!packageItem) {
+
+                return;
+
+            }
+
+
+            const newStatus =
+                packageItem.status === "Available"
+                    ? "Not Available"
+                    : "Available";
+
+
+            try {
+
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .from("packages")
+                        .update({
+
+                            status: newStatus
+
+                        })
+                        .eq("id", id)
+                        .select()
+                        .single();
+
+
+                if (error) {
+
+                    console.error(
+                        "Toggle error:",
+                        error
+                    );
+
+                    showToast(
+                        "Unable to update status: "
+                        + error.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+
+                const index =
+                    packages.findIndex(
+                        item =>
+                            item.id === id
+                    );
+
+
+                if (index !== -1) {
+
+                    packages[index] =
+                        data;
+
+                }
+
+
+                renderPackages();
+
+
+                showToast(
+                    `${data.name} is now ${data.status}.`
+                );
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showToast(
+                    "Unable to update package status.",
+                    "error"
+                );
+
+            }
+
+        }
+
+
+
+        /* =========================================================
+           ESCAPE HTML
+        ========================================================= */
+
+        function escapeHTML(value) {
+
+            return String(value)
+
+                .replaceAll(
+                    "&",
+                    "&amp;"
+                )
+
+                .replaceAll(
+                    "<",
+                    "&lt;"
+                )
+
+                .replaceAll(
+                    ">",
+                    "&gt;"
+                )
+
+                .replaceAll(
+                    '"',
+                    "&quot;"
+                )
+
+                .replaceAll(
+                    "'",
+                    "&#039;"
+                );
+
+        }
+
+
+
+        /* =========================================================
+           LOGOUT
+        ========================================================= */
+
+        async function logout() {
+
+            const confirmed =
+                confirm(
+                    "Are you sure you want to log out?"
+                );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            try {
+
+                await supabaseClient.auth.signOut();
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+            }
+
+
+            window.location.href =
+                "admin_login.html";
+
+        }
+
+
+
+        /* =========================================================
+           REDIRECT HELPERS
+        ========================================================= */
+
+        function redirectToLogin() {
+
+            window.location.href =
+                "admin_login.html";
+
+        }
+
+
+        function redirectToDashboard() {
+
+            window.location.href =
+                "admin_dashboard.html";
+
+        }
+
+
+
+        /* =========================================================
+           CLOSE MODAL WHEN CLICKING OUTSIDE
+        ========================================================= */
+
+        document
+            .getElementById("packageModal")
+            .addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === this
+                    ) {
+
+                        closeModal();
+
+                    }
+
+                }
+            );
+
+
+
+        /* =========================================================
+           INITIALIZATION
+        ========================================================= */
+
+        async function initializePage() {
+
+            /*
+             * First verify login and admin role.
+             */
+
+            const isAdmin =
+                await checkAdminAccess();
+
+
+            if (!isAdmin) {
+
+                return;
+
+            }
+
+
+            /*
+             * Then load packages from Supabase.
+             */
+
+            await loadPackages();
+
+        }
+
+
+        initializePage();
+
+
+    </script>
+
+</body>
+
+</html>

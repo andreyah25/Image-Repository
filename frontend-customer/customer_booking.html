@@ -23,19 +23,20 @@
 
         <aside class="sidebar">
             <nav>
-                <a href="customer_booking.html" class="active">
+                <a href="/booking" class="active">
                     <i class="fa-regular fa-calendar-check"></i>
                     <span>Book a Session</span>
                 </a>
             </nav>
-               <nav>
-                <a href="customer_gallery_request.html" class="active">
+
+            <nav>
+                <a href="/gallery-requests">
                     <i class="fa-regular fa-calendar-check"></i>
                     <span>View Gallery</span>
                 </a>
             </nav>
 
-            <a href="customer_homepage.html" class="logout-btn">
+            <a href="/home" class="logout-btn">
                 <i class="fa-solid fa-house logout-icon"></i>
                 <span>Back to Home</span>
             </a>
@@ -2213,13 +2214,154 @@
                 });
 
             });
-
-
         /* Initial state */
 
         updateBackdropUI();
 
-        document.addEventListener("DOMContentLoaded", function () {
+        async function loadAvailablePackages() {
+
+            const photoPackageSelect =
+                document.getElementById("photoPackage");
+
+            if (!photoPackageSelect) {
+                console.error("Photo package select not found.");
+                return;
+            }
+
+            try {
+
+                const {
+                    data: packages,
+                    error
+                } = await supabaseClient
+                    .from("packages")
+                    .select("id, name, price, duration, description, status")
+                    .eq("status", "Available")
+                    .order("name", { ascending: true });
+
+                if (error) {
+                    console.error(
+                        "Error loading available packages:",
+                        error
+                    );
+
+                    return;
+                }
+
+
+                photoPackageSelect.innerHTML = `
+            <option value="">Select a photo package</option>
+        `;
+
+                /*
+                 * Convert database package names into the
+                 * existing package keys used by your booking logic.
+                 */
+                const packageKeyMap = {
+
+                    "Basic 1": "basic_1",
+                    "Basic 2": "basic_2",
+                    "Basic 3": "basic_3",
+
+                    "Group": "group_package",
+                    "Group Package": "group_package",
+
+                    "Classic 1": "classic_1",
+                    "Classic 2": "classic_2",
+                    "Classic 3": "classic_3",
+
+                    "Kids": "kids",
+                    "Pre-birthday": "pre_birthday",
+                    "Pre Birthday": "pre_birthday",
+
+                    "Theme/Holiday": "theme_holiday",
+                    "Theme Holiday": "theme_holiday",
+
+                    "Maternity": "maternity"
+                };
+
+                (packages || []).forEach(packageItem => {
+
+                    const packageKey =
+                        packageKeyMap[packageItem.name];
+
+                    /*
+                     * Skip packages that do not have a matching
+                     * existing package key.
+                     */
+                    if (!packageKey) {
+                        console.warn(
+                            "No package key mapping found for:",
+                            packageItem.name
+                        );
+                        return;
+                    }
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = packageKey;
+
+                    option.textContent =
+                        `${packageItem.name} - ₱${Number(packageItem.price).toLocaleString()}`;
+
+                    /*
+                     * Store database information on the option
+                     * so it can be accessed later if needed.
+                     */
+                    option.dataset.packageId =
+                        packageItem.id;
+
+                    option.dataset.price =
+                        packageItem.price;
+
+                    option.dataset.duration =
+                        packageItem.duration;
+
+                    option.dataset.status =
+                        packageItem.status;
+
+                    photoPackageSelect.appendChild(option);
+                });
+
+                /*
+                 * If there are no available packages.
+                 */
+                if (!packages || packages.length === 0) {
+
+                    const unavailableOption =
+                        document.createElement("option");
+
+                    unavailableOption.value = "";
+                    unavailableOption.textContent =
+                        "No photography packages currently available";
+                    unavailableOption.disabled = true;
+
+                    photoPackageSelect.appendChild(
+                        unavailableOption
+                    );
+                }
+
+                console.log(
+                    "Available photography packages:",
+                    packages
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load packages:",
+                    error
+                );
+
+            }
+        }
+
+
+        document.addEventListener("DOMContentLoaded", async function () {
+
+            // LOAD ONLY PACKAGES MARKED AVAILABLE BY ADMIN
+            await loadAvailablePackages();
 
             // Policy Modal Agreement Handling
             const modalCheck = document.getElementById('modalPolicyCheck');
@@ -2251,29 +2393,12 @@
                 });
             }
 
-            /* =========================================================
-               BOOKING DATE AVAILABILITY
-               ========================================================= */
-
             const bookingDate =
                 document.getElementById("bookingDate");
 
             const bookingTime =
                 document.getElementById("bookingTime");
 
-
-            /* =========================================================
-               SET MINIMUM BOOKING DATE
-               
-               Customers can book:
-               - Today
-               - Tomorrow
-               - Any future date
-        
-               Customers CANNOT book:
-               - Yesterday
-               - Any date before today
-               ========================================================= */
 
             if (bookingDate) {
 
@@ -2528,9 +2653,55 @@
                     return;
                 }
                 /* =====================================================
-   VALIDATE BACKDROP SELECTION
-   ===================================================== */
+     CHECK PACKAGE AVAILABILITY AGAIN
+     Prevents booking a package that admin disabled
+     while the customer page was open.
+     ===================================================== */
 
+                if (photoPackage) {
+
+                    const {
+                        data: currentPackage,
+                        error: packageAvailabilityError
+                    } = await supabaseClient
+                        .from("packages")
+                        .select("id, name, price, duration, status")
+                        .eq("name", getPackageDisplayName(photoPackage))
+                        .maybeSingle();
+
+                    if (packageAvailabilityError) {
+
+                        console.error(
+                            "Package availability check failed:",
+                            packageAvailabilityError
+                        );
+
+                        alert(
+                            "Unable to verify package availability. Please try again."
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        !currentPackage ||
+                        currentPackage.status !== "Available"
+                    ) {
+
+                        alert(
+                            "Sorry, this package is no longer available. Please select another package."
+                        );
+
+                        await loadAvailablePackages();
+
+                        photoPackageSelect.value = "";
+
+                        updateDownpaymentUI();
+                        updateBackdropUI();
+
+                        return;
+                    }
+                }
                 if (
                     requiredBackdrops > 0 &&
                     selectedBackdrops.length !== requiredBackdrops
@@ -2798,7 +2969,7 @@
                     (existingBookings || [])
                         .filter(booking => {
 
-                           const status =
+                            const status =
                                 (booking.status || "")
                                     .toLowerCase()
                                     .trim();

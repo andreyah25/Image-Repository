@@ -53,47 +53,54 @@
     <div class="dashboard-wrapper">
 
         <aside class="sidebar">
-
             <nav>
 
-                <a href="admin_dashboard.html">
+                <a href="/admin/dashboard" class="active">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
-                <a href="admin_client.html">
+
+                <a href="/admin/clients">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
-                <a href="admin_repository.html" class="active">
+
+                <a href="/admin/repository">
                     <i class="fa-solid fa-book"></i>
                     Repository
                 </a>
-                <a href="admin_payment.html">
+
+                <a href="/admin/payments">
                     <i class="fa-solid fa-credit-card"></i>
                     Payments
                 </a>
-                <a href="admin_archives.html">
+
+                <a href="/admin/archives">
                     <i class="fa-solid fa-box-archive"></i>
                     Archives
                 </a>
-                <a href="admin_profile.html">
+
+                <a href="/admin/packages">
+                    <i class="fa-solid fa-box"></i>
+                    Packages
+                </a>
+
+                <a href="/admin/profile">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
-                <a href="admin_settings.html">
+
+                <a href="/admin/settings">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
+
             </nav>
-            <a href="admin_login.html" class="logout-btn" id="logoutBtn">
+
+            <a href="/admin/login" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
-
-                <span>
-                    Log out
-                </span>
-
+                <span>Log out</span>
             </a>
-
         </aside>
         <main class="content">
 
@@ -178,7 +185,7 @@
 
 
                         <button type="button" class="back-to-folders-btn" id="backToFoldersBtn">
-
+                            <a href="/admin/customer-folders"></a>
                             <i class="fa-solid fa-arrow-left"></i>
 
                             Back to Folders
@@ -373,19 +380,19 @@
 
                 if (error) {
 
-                    console.error( "Session error:",error );
+                    console.error("Session error:", error);
 
-                    window.location.href ="admin_login.html"; return; 
+                    window.location.href = "admin_login.html"; return;
                 }
 
                 if (!session) {
-                     window.location.href = "admin_login.html";
+                    window.location.href = "admin_login.html";
 
                     return;
                 }
                 currentUser = session.user;
-                  await loadAdminProfile();
-                  await loadCompletedClients();
+                await loadAdminProfile();
+                await loadCompletedClients();
             } catch (error) {
 
                 console.error(
@@ -414,9 +421,9 @@
 
 
             if (error) {
-                  console.warn( "Could not load staff profile:", error.message
+                console.warn("Could not load staff profile:", error.message
                 );
-                 return;
+                return;
             }
             if (!profile) {
                 return;
@@ -1642,7 +1649,7 @@
                     verifiedPhoto
                 );
 
-                console.log( "=================================");
+                console.log("=================================");
                 if (!verifiedPhoto) {
 
                     throw new Error(
@@ -2334,7 +2341,7 @@
 
                 foldersView.style.display =
                     "grid";
-                window.location.href = "admin_repository.html"
+                window.location.href = "/admin/repository"
 
                 await loadCompletedClients();
 
