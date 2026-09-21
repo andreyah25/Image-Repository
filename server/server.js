@@ -1,9 +1,11 @@
-require("dotenv").config();
+const path = require("path");
 
+require("dotenv").config({
+    path: path.join(__dirname, ".env")
+});
 const crypto = require("crypto");
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const { Resend } = require("resend");
 const { createClient } = require("@supabase/supabase-js");
 
@@ -51,7 +53,11 @@ const supabaseAdmin = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
+app.get("/admin", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_dashboard.html")
+    );
+});
 app.get("/admin/dashboard", (req, res) => {
     res.sendFile(
         path.join(__dirname, "..", "frontend-admin", "admin_dashboard.html")
@@ -60,6 +66,17 @@ app.get("/admin/dashboard", (req, res) => {
 app.get("/admin/login", (req, res) => {
     res.sendFile(
         path.join(__dirname, "..", "frontend-admin", "admin_login.html")
+    );
+});
+app.get("/admin/forgot-password", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_forgotpw.html")
+    );
+});
+
+app.get("/admin/verification", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "verification_code.html")
     );
 });
 
@@ -126,7 +143,16 @@ app.get("/home", (req, res) => {
         path.join(__dirname, "..", "frontend-customer", "customer_homepage.html")
     );
 });
-
+app.get("/", (req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            "..",
+            "frontend-customer",
+            "customer_homepage.html"
+        )
+    );
+});
 app.get("/booking", (req, res) => {
     res.sendFile(
         path.join(__dirname, "..", "frontend-customer", "customer_booking.html")
