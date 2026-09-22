@@ -609,8 +609,8 @@
         }
 
 
-        button.addEventListener(
-            "click",
+        form.addEventListener(
+            "submit",
             async function (event) {
 
                 event.preventDefault();
@@ -1213,12 +1213,19 @@
                     repository.id
                 );
 
-                window.location.href =
-                    "/gallery?token=" +
-                    encodeURIComponent(repository.access_token) +
-                    "&request=" +
-                    encodeURIComponent(request.id);
+                const CUSTOMER_FRONTEND_URL =
+                    "https://captured-photo-studio.onrender.com";
 
+                window.location.href =
+                    CUSTOMER_FRONTEND_URL +
+                    "/frontend-customer/customer_gallery_view.html?token=" +
+                    encodeURIComponent(
+                        repository.access_token
+                    ) +
+                    "&request=" +
+                    encodeURIComponent(
+                        request.id
+                    );
             }
 
             catch (error) {
