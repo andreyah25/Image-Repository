@@ -3,6 +3,7 @@ const path = require("path");
 require("dotenv").config({
     path: path.join(__dirname, ".env")
 });
+
 const crypto = require("crypto");
 const express = require("express");
 const cors = require("cors");
@@ -11,8 +12,7 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-
-app.use(cors({
+const corsOptions = {
     origin: [
         "https://captured-photo-studio.onrender.com",
         "http://localhost:3000",
@@ -33,7 +33,22 @@ app.use(cors({
         "Authorization"
     ],
     credentials: false
-}));
+};
+
+app.use(cors(corsOptions));
+
+app.options(/.*/, cors(corsOptions));
+
+app.use((req, res, next) => {
+    console.log(
+        "REQUEST:",
+        req.method,
+        req.originalUrl,
+        "ORIGIN:",
+        req.headers.origin
+    );
+    next();
+});
 
 app.use(express.static(path.join(__dirname, "..")));
 
