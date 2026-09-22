@@ -176,7 +176,16 @@ app.get("/gallery", (req, res) => {
         path.join(__dirname, "..", "frontend-customer", "customer_gallery_view.html")
     );
 });
-
+app.get("/gallery-requests", (req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            "..",
+            "frontend-customer",
+            "customer_gallery_request.html"
+        )
+    );
+});
 async function requireAdmin(req, res, next) {
 
     try {
@@ -277,6 +286,832 @@ async function requireAdmin(req, res, next) {
         });
     }
 }
+async function recordStaffActivity({
+    staffId,
+    action,
+    module = null,
+    page = null,
+    details = null
+}) {
+    try {
+
+        const {
+            data: staff,
+            error: staffError
+        } = await supabaseAdmin
+            .from("staff_profiles")
+            .select(`
+                id,
+                full_name,
+                email
+            `)
+            .eq("id", staffId)
+            .maybeSingle();
+
+        if (staffError || !staff) {
+            console.warn(
+                "Unable to load staff for activity log:",
+                staffError
+            );
+            return;
+        }
+
+        const {
+            error
+        } = await supabaseAdmin
+            .from("staff_activity_logs")
+            .insert({
+                staff_id: staff.id,
+                staff_name: staff.full_name,
+                staff_email: staff.email,
+                action,
+                module,
+                page,
+                details
+            });
+
+        if (error) {
+            console.warn(
+                "Staff activity log error:",
+                error
+            );
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "Staff activity logging failed:",
+            error
+        );
+
+    }
+}
+app.post(
+    "/api/admin/staff/presence",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const staffId = req.authUser.id;
+
+            const currentPage =
+                String(
+                    req.body?.page ||
+                    ""
+                ).trim();
+
+            const now =
+                new Date().toISOString();
+
+            const {
+                error
+            } = await supabaseAdmin
+                .from("staff_presence")
+                .upsert(
+                    {
+                        staff_id: staffId,
+                        is_online: true,
+                        last_active_at: now,
+                        current_page:
+                            currentPage || null,
+                        updated_at: now
+                    },
+                    {
+                        onConflict: "staff_id"
+                    }
+                );
+
+            if (error) {
+
+                console.error(
+                    "STAFF PRESENCE UPDATE ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Unable to update staff presence."
+                });
+            }
+
+            return res.json({
+                success: true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "STAFF PRESENCE ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to update staff presence."
+            });
+        }
+    }
+);
+app.post(
+    "/api/admin/staff/presence/offline",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const staffId =
+                req.authUser.id;
+
+            const now =
+                new Date().toISOString();
+
+            const {
+                error
+            } = await supabaseAdmin
+                .from("staff_presence")
+                .upsert(
+                    {
+                        staff_id: staffId,
+                        is_online: false,
+                        last_active_at: now,
+                        updated_at: now
+                    },
+                    {
+                        onConflict: "staff_id"
+                    }
+                );
+
+            if (error) {
+
+                console.error(
+                    "STAFF OFFLINE UPDATE ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Unable to update staff status."
+                });
+            }
+
+            await recordStaffActivity({
+                staffId,
+                action: "Logout",
+                module: "Admin System",
+                page: "Admin System"
+            });
+
+            return res.json({
+                success: true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "STAFF OFFLINE ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to update staff status."
+            });
+        }
+    }
+);
+app.post(
+    "/api/admin/staff/activity",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const staffId =
+                req.authUser.id;
+
+            const action =
+                String(
+                    req.body?.action ||
+                    "Accessed"
+                ).trim();
+
+            const module =
+                String(
+                    req.body?.module ||
+                    ""
+                ).trim();
+
+            const page =
+                String(
+                    req.body?.page ||
+                    ""
+                ).trim();
+
+            const details =
+                String(
+                    req.body?.details ||
+                    ""
+                ).trim();
+
+            await recordStaffActivity({
+                staffId,
+                action,
+                module:
+                    module || null,
+                page:
+                    page || null,
+                details:
+                    details || null
+            });
+
+            return res.json({
+                success: true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "STAFF ACTIVITY API ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to record staff activity."
+            });
+        }
+    }
+);
+async function recordStaffActivity({
+    staffId,
+    staffName,
+    staffEmail,
+    action,
+    module = null,
+    page = null,
+    details = null
+}) {
+
+    try {
+
+        const {
+            error
+        } = await supabaseAdmin
+            .from("staff_activity_logs")
+            .insert({
+                staff_id: staffId,
+                staff_name: staffName,
+                staff_email: staffEmail,
+                action: action,
+                module: module,
+                page: page,
+                details: details
+            });
+
+        if (error) {
+
+            console.error(
+                "STAFF ACTIVITY LOG ERROR:",
+                error
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "STAFF ACTIVITY EXCEPTION:",
+            error
+        );
+
+    }
+
+}
+
+
+// ------------------------------------------------------------
+// STAFF HEARTBEAT
+// ------------------------------------------------------------
+
+app.post(
+    "/api/admin/staff/presence",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const staffId =
+                req.authUser.id;
+
+            const staffName =
+                req.profile.full_name || "";
+
+            const staffEmail =
+                req.profile.email || "";
+
+            const currentPage =
+                String(
+                    req.body?.page || ""
+                ).trim();
+
+
+            const now =
+                new Date().toISOString();
+
+
+            // Check whether this staff account already
+            // has a presence record.
+
+            const {
+                data: existingPresence,
+                error: lookupError
+            } = await supabaseAdmin
+                .from("staff_presence")
+                .select(`
+                    staff_id,
+                    is_online,
+                    session_started_at
+                `)
+                .eq("staff_id", staffId)
+                .maybeSingle();
+
+
+            if (lookupError) {
+
+                console.error(
+                    "STAFF PRESENCE LOOKUP ERROR:",
+                    lookupError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to check staff presence."
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // FIRST HEARTBEAT / NEW SESSION
+            // ------------------------------------------------
+
+            if (!existingPresence) {
+
+                const {
+                    error: insertError
+                } = await supabaseAdmin
+                    .from("staff_presence")
+                    .insert({
+
+                        staff_id:
+                            staffId,
+
+                        is_online:
+                            true,
+
+                        last_active_at:
+                            now,
+
+                        current_page:
+                            currentPage || null,
+
+                        session_started_at:
+                            now,
+
+                        updated_at:
+                            now
+
+                    });
+
+
+                if (insertError) {
+
+                    console.error(
+                        "STAFF PRESENCE INSERT ERROR:",
+                        insertError
+                    );
+
+                    return res.status(500).json({
+                        success: false,
+                        error:
+                            "Unable to start staff presence."
+                    });
+
+                }
+
+
+                await recordStaffActivity({
+
+                    staffId:
+                        staffId,
+
+                    staffName:
+                        staffName,
+
+                    staffEmail:
+                        staffEmail,
+
+                    action:
+                        "Online",
+
+                    module:
+                        "Admin System",
+
+                    page:
+                        currentPage,
+
+                    details:
+                        "Staff account became online."
+
+                });
+
+
+            } else {
+
+                // ------------------------------------------------
+                // EXISTING SESSION
+                // ------------------------------------------------
+
+                const {
+                    error: updateError
+                } = await supabaseAdmin
+                    .from("staff_presence")
+                    .update({
+
+                        is_online:
+                            true,
+
+                        last_active_at:
+                            now,
+
+                        current_page:
+                            currentPage || null,
+
+                        updated_at:
+                            now
+
+                    })
+                    .eq(
+                        "staff_id",
+                        staffId
+                    );
+
+
+                if (updateError) {
+
+                    console.error(
+                        "STAFF PRESENCE UPDATE ERROR:",
+                        updateError
+                    );
+
+                    return res.status(500).json({
+                        success: false,
+                        error:
+                            "Unable to update staff presence."
+                    });
+
+                }
+
+
+                // If the previous state was offline,
+                // record that the staff member came back online.
+
+                if (
+                    existingPresence.is_online === false
+                ) {
+
+                    await recordStaffActivity({
+
+                        staffId:
+                            staffId,
+
+                        staffName:
+                            staffName,
+
+                        staffEmail:
+                            staffEmail,
+
+                        action:
+                            "Online",
+
+                        module:
+                            "Admin System",
+
+                        page:
+                            currentPage,
+
+                        details:
+                            "Staff account became online again."
+
+                    });
+
+                }
+
+            }
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                online:
+                    true,
+
+                last_active_at:
+                    now
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "STAFF PRESENCE ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+
+                success:
+                    false,
+
+                error:
+                    "Server error while updating staff presence."
+
+            });
+
+        }
+
+    }
+);
+
+
+// ------------------------------------------------------------
+// MARK STAFF OFFLINE
+// ------------------------------------------------------------
+
+app.post(
+    "/api/admin/staff/presence/offline",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const staffId =
+                req.authUser.id;
+
+            const staffName =
+                req.profile.full_name || "";
+
+            const staffEmail =
+                req.profile.email || "";
+
+
+            const now =
+                new Date().toISOString();
+
+
+            const {
+                data: existingPresence,
+                error: lookupError
+            } = await supabaseAdmin
+                .from("staff_presence")
+                .select(`
+                    staff_id,
+                    is_online
+                `)
+                .eq(
+                    "staff_id",
+                    staffId
+                )
+                .maybeSingle();
+
+
+            if (lookupError) {
+
+                console.error(
+                    "OFFLINE PRESENCE LOOKUP ERROR:",
+                    lookupError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to check staff presence."
+                });
+
+            }
+
+
+            const {
+                error: updateError
+            } = await supabaseAdmin
+                .from("staff_presence")
+                .upsert({
+
+                    staff_id:
+                        staffId,
+
+                    is_online:
+                        false,
+
+                    last_active_at:
+                        now,
+
+                    current_page:
+                        null,
+
+                    updated_at:
+                        now
+
+                }, {
+                    onConflict:
+                        "staff_id"
+                });
+
+
+            if (updateError) {
+
+                console.error(
+                    "MARK OFFLINE ERROR:",
+                    updateError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to mark staff offline."
+                });
+
+            }
+
+
+            if (
+                existingPresence?.is_online === true
+            ) {
+
+                await recordStaffActivity({
+
+                    staffId:
+                        staffId,
+
+                    staffName:
+                        staffName,
+
+                    staffEmail:
+                        staffEmail,
+
+                    action:
+                        "Offline",
+
+                    module:
+                        "Admin System",
+
+                    page:
+                        null,
+
+                    details:
+                        "Staff account went offline."
+
+                });
+
+            }
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                online:
+                    false
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "STAFF OFFLINE ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+
+                success:
+                    false,
+
+                error:
+                    "Server error while marking staff offline."
+
+            });
+
+        }
+
+    }
+);
+
+
+// ------------------------------------------------------------
+// STAFF ACTIVITY LOG
+// ------------------------------------------------------------
+
+app.post(
+    "/api/admin/staff/activity",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const staffId =
+                req.authUser.id;
+
+            const staffName =
+                req.profile.full_name || "";
+
+            const staffEmail =
+                req.profile.email || "";
+
+
+            const action =
+                String(
+                    req.body?.action || "Accessed"
+                ).trim();
+
+            const moduleName =
+                String(
+                    req.body?.module || ""
+                ).trim();
+
+            const pageName =
+                String(
+                    req.body?.page || ""
+                ).trim();
+
+            const details =
+                String(
+                    req.body?.details || ""
+                ).trim();
+
+
+            await recordStaffActivity({
+
+                staffId:
+                    staffId,
+
+                staffName:
+                    staffName,
+
+                staffEmail:
+                    staffEmail,
+
+                action:
+                    action,
+
+                module:
+                    moduleName || null,
+
+                page:
+                    pageName || null,
+
+                details:
+                    details || null
+
+            });
+
+
+            return res.json({
+
+                success:
+                    true
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "STAFF ACTIVITY ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+
+                success:
+                    false,
+
+                error:
+                    "Server error while recording staff activity."
+
+            });
+
+        }
+
+    }
+);
 app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
     try {
         const { fullName, password } = req.body;
@@ -467,6 +1302,10 @@ app.get(
 
         try {
 
+            // ==================================================
+            // GET STAFF LIST
+            // ==================================================
+
             const {
                 data: staffList,
                 error
@@ -484,6 +1323,7 @@ app.get(
                     ascending: true
                 });
 
+
             if (error) {
 
                 console.error(
@@ -496,7 +1336,179 @@ app.get(
                     error:
                         "Unable to load staff list."
                 });
+
             }
+
+
+            // ==================================================
+            // GET STAFF IDS
+            // ==================================================
+
+            const staffIds =
+                (staffList || [])
+                    .map(staff => staff.id)
+                    .filter(Boolean);
+
+
+            // ==================================================
+            // GET STAFF PRESENCE
+            // ==================================================
+
+            let presenceList = [];
+
+
+            if (staffIds.length > 0) {
+
+                const {
+                    data,
+                    error: presenceError
+                } = await supabaseAdmin
+                    .from("staff_presence")
+                    .select(`
+                        staff_id,
+                        is_online,
+                        last_active_at,
+                        current_page,
+                        session_started_at,
+                        updated_at
+                    `)
+                    .in(
+                        "staff_id",
+                        staffIds
+                    );
+
+
+                if (presenceError) {
+
+                    console.error(
+                        "Staff presence error:",
+                        presenceError
+                    );
+
+                    return res.status(500).json({
+                        success: false,
+                        error:
+                            "Unable to load staff presence."
+                    });
+
+                }
+
+
+                presenceList =
+                    data || [];
+
+            }
+
+
+            // ==================================================
+            // CREATE PRESENCE MAP
+            // ==================================================
+
+            const presenceMap = {};
+
+
+            presenceList.forEach(
+                presence => {
+
+                    presenceMap[
+                        presence.staff_id
+                    ] = presence;
+
+                }
+            );
+
+
+            // ==================================================
+            // COMBINE STAFF + PRESENCE
+            // ==================================================
+
+            const staffWithPresence =
+                (staffList || []).map(
+                    staff => {
+
+                        const presence =
+                            presenceMap[
+                                staff.id
+                            ] || null;
+
+
+                        let isOnline =
+                            presence?.is_online === true;
+
+
+                        // --------------------------------------
+                        // AUTOMATIC OFFLINE CHECK
+                        // --------------------------------------
+
+                        if (
+                            isOnline &&
+                            presence?.last_active_at
+                        ) {
+
+                            const lastActive =
+                                new Date(
+                                    presence.last_active_at
+                                ).getTime();
+
+
+                            const now =
+                                Date.now();
+
+
+                            const secondsSinceActive =
+                                (
+                                    now -
+                                    lastActive
+                                ) / 1000;
+
+
+                            // 90 seconds without heartbeat
+                            // = offline
+
+                            if (
+                                secondsSinceActive > 90
+                            ) {
+
+                                isOnline =
+                                    false;
+
+                            }
+
+                        }
+
+
+                        return {
+
+                            ...staff,
+
+                            is_online:
+                                isOnline,
+
+                            last_active_at:
+                                presence?.last_active_at ||
+                                null,
+
+                            current_page:
+                                isOnline
+                                    ? (
+                                        presence?.current_page ||
+                                        null
+                                    )
+                                    : null,
+
+                            session_started_at:
+                                presence?.session_started_at ||
+                                null
+
+                        };
+
+                    }
+                );
+
+
+            // ==================================================
+            // RETURN STAFF LIST
+            // ==================================================
 
             return res.json({
 
@@ -504,9 +1516,10 @@ app.get(
                     true,
 
                 staff:
-                    staffList || []
+                    staffWithPresence
 
             });
+
 
         } catch (error) {
 
@@ -516,15 +1529,108 @@ app.get(
             );
 
             return res.status(500).json({
+
+                success:
+                    false,
+
+                error:
+                    error.message ||
+                    "Server error while loading staff."
+
+            });
+
+        }
+
+    }
+);
+app.get(
+    "/api/admin/staff/activity-logs",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const staffId =
+                String(
+                    req.query.staff_id ||
+                    ""
+                ).trim();
+
+            let query =
+                supabaseAdmin
+                    .from("staff_activity_logs")
+                    .select(`
+                        id,
+                        staff_id,
+                        staff_name,
+                        staff_email,
+                        action,
+                        module,
+                        page,
+                        details,
+                        created_at
+                    `)
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    )
+                    .limit(200);
+
+            if (staffId) {
+
+                query =
+                    query.eq(
+                        "staff_id",
+                        staffId
+                    );
+            }
+
+            const {
+                data: logs,
+                error
+            } = await query;
+
+            if (error) {
+
+                console.error(
+                    "STAFF ACTIVITY LOGS ERROR:",
+                    error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load staff activity logs."
+                });
+            }
+
+            return res.json({
+
+                success:
+                    true,
+
+                logs:
+                    logs || []
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET STAFF LOGS ERROR:",
+                error
+            );
+
+            return res.status(500).json({
                 success: false,
                 error:
-                    "Server error while loading staff."
+                    "Unable to load staff activity logs."
             });
         }
     }
 );
-
-
 app.delete(
     "/api/admin/staff/:staffId",
     requireAdmin,
@@ -4995,532 +6101,306 @@ app.post(
 
             const { requestId } = req.params;
 
-            console.log(
-                "========================================"
-            );
-
-            console.log(
-                "SENDING APPROVED GALLERY EMAIL"
-            );
-
-            console.log(
-                "REQUEST ID:",
-                requestId
-            );
-
-            console.log(
-                "========================================"
-            );
-
-
             if (!requestId) {
-
                 return res.status(400).json({
                     success: false,
-                    error: "Gallery access request ID is required."
+                    error: "Missing request ID."
                 });
-
             }
 
-
-            /* =====================================================
-               2. GET GALLERY ACCESS REQUEST
-            ===================================================== */
+            // -----------------------------------------
+            // 1. GET ACCESS REQUEST
+            // -----------------------------------------
 
             const {
                 data: request,
                 error: requestError
-            } = await supabase
+            } = await supabaseAdmin
                 .from("gallery_access_requests")
                 .select("*")
                 .eq("id", requestId)
-                .maybeSingle();
-
+                .single();
 
             if (requestError) {
-
                 console.error(
-                    "GALLERY REQUEST LOOKUP ERROR:",
+                    "Gallery access request error:",
                     requestError
                 );
-
-                return res.status(500).json({
-                    success: false,
-                    error: "Unable to find the gallery access request.",
-                    details: requestError.message
-                });
-
-            }
-
-
-            if (!request) {
 
                 return res.status(404).json({
                     success: false,
                     error: "Gallery access request was not found."
                 });
-
             }
 
+            if (!request) {
+                return res.status(404).json({
+                    success: false,
+                    error: "Gallery access request was not found."
+                });
+            }
 
             if (request.status !== "approved") {
-
                 return res.status(400).json({
                     success: false,
-                    error:
-                        "The gallery access request must be approved before an email can be sent."
+                    error: "This gallery access request is not approved."
                 });
-
-            }
-            const customerEmail =
-                String(
-                    request.customer_email || ""
-                ).trim();
-
-
-            if (!customerEmail) {
-
-                return res.status(400).json({
-                    success: false,
-                    error:
-                        "The customer's email address is missing from the gallery access request."
-                });
-
             }
 
+            // -----------------------------------------
+            // 2. GET REPOSITORY
+            // -----------------------------------------
 
-            console.log(
-                "CUSTOMER EMAIL:",
-                customerEmail
-            );
-            const {
-                data: booking,
-                error: bookingError
-            } = await supabase
-                .from("bookings")
-                .select("*")
-                .eq("id", request.booking_id)
-                .maybeSingle();
+            let repository = null;
 
+            // First use repository_id saved on the request
+            if (request.repository_id) {
 
-            if (bookingError) {
+                const {
+                    data: repositoryData,
+                    error: repositoryError
+                } = await supabaseAdmin
+                    .from("repository_client_links")
+                    .select("*")
+                    .eq("id", request.repository_id)
+                    .single();
 
-                console.error(
-                    "BOOKING LOOKUP ERROR:",
-                    bookingError
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error:
-                        "Unable to retrieve the customer's booking.",
-                    details:
-                        bookingError.message
-                });
-
-            }
-
-
-            if (!booking) {
-
-                return res.status(404).json({
-                    success: false,
-                    error:
-                        "The booking connected to this gallery request was not found."
-                });
-
-            }
-
-
-            /* =====================================================
-               6. GET REPOSITORY
-            ===================================================== */
-
-            const {
-                data: repository,
-                error: repositoryError
-            } = await supabase
-                .from("repository_client_links")
-                .select("*")
-                .eq("id", request.repository_id)
-                .eq("booking_id", booking.id)
-                .maybeSingle();
-
-
-            if (repositoryError) {
-
-                console.error(
-                    "REPOSITORY LOOKUP ERROR:",
-                    repositoryError
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error:
-                        "Unable to retrieve the customer's gallery.",
-                    details:
-                        repositoryError.message
-                });
-
-            }
-
-
-            if (!repository) {
-
-                return res.status(404).json({
-                    success: false,
-                    error:
-                        "The customer's gallery repository was not found."
-                });
-
-            }
-
-
-            if (!repository.access_token) {
-
-                return res.status(500).json({
-                    success: false,
-                    error:
-                        "The gallery access token is missing."
-                });
-
-            }
-
-            const frontendUrl =
-                (
-                    process.env.FRONTEND_URL ||
-                    "http://localhost:5500"
-                ).replace(/\/+$/, "");
-
-
-            const galleryLink =
-                frontendUrl +
-                "/frontend-customer/customer_gallery_view.html?token=" +
-                encodeURIComponent(
-                    repository.access_token
-                );
-
-
-            console.log(
-                "GALLERY LINK:",
-                galleryLink
-            );
-
-            let expirationText =
-                "24 hours";
-
-
-            if (request.access_expires_at) {
-
-                const expirationDate =
-                    new Date(
-                        request.access_expires_at
+                if (repositoryError) {
+                    console.error(
+                        "Repository lookup error:",
+                        repositoryError
                     );
 
-
-                if (!Number.isNaN(
-                    expirationDate.getTime()
-                )) {
-
-                    expirationText =
-                        expirationDate.toLocaleString(
-                            "en-US",
-                            {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit"
-                            }
-                        );
-
+                    return res.status(404).json({
+                        success: false,
+                        error: "Gallery repository was not found."
+                    });
                 }
 
+                repository = repositoryData;
             }
 
+            // -----------------------------------------
+            // 3. FALLBACK: FIND REPOSITORY BY BOOKING
+            // -----------------------------------------
 
-            /* =====================================================
-               9. SEND EMAIL THROUGH RESEND
-            ===================================================== */
+            if (!repository && request.booking_id) {
 
-            if (!resend) {
+                const {
+                    data: repositoryData,
+                    error: repositoryError
+                } = await supabaseAdmin
+                    .from("repository_client_links")
+                    .select("*")
+                    .eq("booking_id", request.booking_id)
+                    .maybeSingle();
 
-                console.error(
-                    "RESEND IS NOT INITIALIZED."
-                );
+                if (repositoryError) {
+                    console.error(
+                        "Repository booking lookup error:",
+                        repositoryError
+                    );
 
-                return res.status(500).json({
+                    return res.status(500).json({
+                        success: false,
+                        error: "Could not find the gallery repository."
+                    });
+                }
+
+                repository = repositoryData;
+            }
+
+            if (!repository) {
+                return res.status(404).json({
                     success: false,
-                    error:
-                        "Email service is not configured."
+                    error: "No gallery repository exists for this booking."
                 });
-
             }
 
+            // -----------------------------------------
+            // 4. GET BOOKING
+            // -----------------------------------------
 
-            const customerName =
-                booking.full_name ||
-                "Customer";
+            let booking = null;
 
+            if (request.booking_id) {
 
-            const emailResult =
-                await resend.emails.send({
+                const {
+                    data: bookingData,
+                    error: bookingError
+                } = await supabaseAdmin
+                    .from("bookings")
+                    .select("*")
+                    .eq("id", request.booking_id)
+                    .single();
 
-                    from:
-                        "Captured Photography Studio <onboarding@resend.dev>",
+                if (bookingError) {
+                    console.error(
+                        "Booking lookup error:",
+                        bookingError
+                    );
+                } else {
+                    booking = bookingData;
+                }
+            }
 
-                    to:
-                        [customerEmail],
+            // -----------------------------------------
+            // 5. CUSTOMER EMAIL
+            // -----------------------------------------
 
-                    subject:
-                        "Your Captured Studio Gallery Is Ready",
+            const customerEmail =
+                request.customer_email ||
+                booking?.email ||
+                null;
 
-                    html: `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Your Gallery Is Ready
-    </title>
-</head>
-
-<body
-    style="
-        margin:0;
-        padding:0;
-        background:#f7f7f7;
-        font-family:Arial,Helvetica,sans-serif;
-        color:#333;
-    "
->
-
-    <div
-        style="
-            max-width:600px;
-            margin:40px auto;
-            background:#ffffff;
-            border-radius:12px;
-            padding:35px;
-            box-sizing:border-box;
-        "
-    >
-
-        <h2
-            style="
-                margin-top:0;
-                color:#333;
-            "
-        >
-            Your Gallery Is Ready
-        </h2>
-
-
-        <p>
-            Hello
-            <strong>
-                ${String(customerName)
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;")}
-            </strong>,
-        </p>
-
-
-        <p>
-            Your gallery access request has been
-            <strong>approved</strong>.
-        </p>
-
-
-        <p>
-            You can now access your photos using
-            the button below.
-        </p>
-
-
-        <div
-            style="
-                text-align:center;
-                margin:30px 0;
-            "
-        >
-
-            <a
-                href="${galleryLink}"
-                style="
-                    display:inline-block;
-                    padding:13px 24px;
-                    background:#639A88;
-                    color:#ffffff;
-                    text-decoration:none;
-                    border-radius:7px;
-                    font-weight:bold;
-                "
-            >
-                Open My Gallery
-            </a>
-
-        </div>
-
-
-        <p
-            style="
-                font-size:14px;
-                color:#666;
-            "
-        >
-            Your gallery access is available for
-            <strong>24 hours</strong>.
-        </p>
-
-
-        <p
-            style="
-                font-size:14px;
-                color:#666;
-            "
-        >
-            Access expires on:
-            <strong>
-                ${expirationText}
-            </strong>
-        </p>
-
-
-        <p
-            style="
-                font-size:13px;
-                color:#888;
-                word-break:break-all;
-            "
-        >
-            If the button does not work, copy and
-            paste this link into your browser:
-            <br><br>
-
-            ${galleryLink}
-        </p>
-
-
-        <hr
-            style="
-                border:0;
-                border-top:1px solid #eee;
-                margin:30px 0;
-            "
-        >
-
-
-        <p
-            style="
-                font-size:13px;
-                color:#888;
-                margin-bottom:0;
-            "
-        >
-            Thank you for choosing
-            Captured Photography Studio.
-        </p>
-
-    </div>
-
-</body>
-</html>
-                    `
-
-                });
-
-
-            console.log(
-                "RESEND RESULT:",
-                emailResult
-            );
-
-
-            /* =====================================================
-               10. CHECK RESEND ERROR
-            ===================================================== */
-
-            if (emailResult?.error) {
-
-                console.error(
-                    "RESEND EMAIL ERROR:",
-                    emailResult.error
-                );
-
-                return res.status(500).json({
+            if (!customerEmail) {
+                return res.status(400).json({
                     success: false,
-                    error:
-                        "The gallery was approved, but the email could not be sent.",
-                    details:
-                        emailResult.error.message ||
-                        String(emailResult.error)
+                    error: "Customer email is missing."
                 });
-
             }
 
+            // -----------------------------------------
+            // 6. ALWAYS USE PRODUCTION CUSTOMER SITE
+            // -----------------------------------------
 
-            /* =====================================================
-               11. SUCCESS
-            ===================================================== */
+            const CUSTOMER_FRONTEND_URL =
+                "https://captured-photo-studio.onrender.com";
 
-            console.log(
-                "GALLERY ACCESS EMAIL SENT SUCCESSFULLY TO:",
-                customerEmail
-            );
+            // -----------------------------------------
+            // 7. USE THE EXISTING REPOSITORY TOKEN
+            // -----------------------------------------
 
+            const galleryLink =
+                CUSTOMER_FRONTEND_URL +
+                "/frontend-customer/customer_gallery_view.html?token=" +
+                encodeURIComponent(repository.access_token);
 
-            return res.json({
+            // -----------------------------------------
+            // 8. SEND EMAIL
+            // -----------------------------------------
 
-                success: true,
+            const emailResponse = await resend.emails.send({
 
-                message:
-                    "Gallery access email sent successfully.",
+                from: "Captured Photography Studio <onboarding@resend.dev>",
 
-                email:
-                    customerEmail,
+                to: [customerEmail],
 
-                galleryLink:
-                    galleryLink,
+                subject: "Your Captured Photography Studio Gallery",
 
-                emailId:
-                    emailResult?.data?.id || null
+                html: `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+
+                        <h2>Your Gallery Access Has Been Approved</h2>
+
+                        <p>
+                            Your gallery access request has been approved.
+                        </p>
+
+                        <p>
+                            You can access your gallery using the button below:
+                        </p>
+
+                        <p>
+                            <a
+                                href="${galleryLink}"
+                                style="
+                                    display:inline-block;
+                                    padding:12px 18px;
+                                    background:#639A88;
+                                    color:#ffffff;
+                                    text-decoration:none;
+                                    border-radius:6px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Open My Gallery
+                            </a>
+                        </p>
+
+                        <p>
+                            You may also open this link directly:
+                        </p>
+
+                        <p style="word-break:break-all;">
+                            ${galleryLink}
+                        </p>
+
+                        ${
+                            Number(request.request_number) >= 2
+                                ? `
+                                    <p>
+                                        This is a subsequent gallery access request.
+                                        Any required access payment will be handled
+                                        through the gallery.
+                                    </p>
+                                `
+                                : ""
+                        }
+
+                        <p>
+                            Captured Photography Studio
+                        </p>
+
+                    </div>
+                `
 
             });
 
+            if (emailResponse.error) {
 
-        }
-        catch (error) {
+                console.error(
+                    "Resend email error:",
+                    emailResponse.error
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error: emailResponse.error.message ||
+                        "Failed to send gallery email."
+                });
+            }
+
+            console.log(
+                "Gallery email sent:",
+                customerEmail
+            );
+
+            console.log(
+                "Gallery link:",
+                galleryLink
+            );
+
+            console.log(
+                "Repository ID:",
+                repository.id
+            );
+
+            console.log(
+                "Repository token:",
+                repository.access_token
+            );
+
+            return res.json({
+                success: true,
+                email: customerEmail,
+                galleryLink: galleryLink,
+                repositoryId: repository.id
+            });
+
+        } catch (error) {
 
             console.error(
                 "SEND APPROVED GALLERY EMAIL ERROR:",
                 error
             );
 
-
             return res.status(500).json({
-
                 success: false,
-
-                error:
-                    "An unexpected error occurred while sending the gallery access email.",
-
-                details:
-                    error.message
-
+                error: error.message ||
+                    "Failed to send gallery access email."
             });
-
         }
-
     }
 );
 app.listen(

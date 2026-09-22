@@ -334,5 +334,41 @@
         width: auto !important;
         max-width: none !important;
     }
+ /* =====================================================
+   STATUS BADGES (GLOBAL STYLES)
+   ===================================================== */
 
+.status-badge {
+    display: inline-block !important;
+    padding: 6px 14px !important;
+    border-radius: 30px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    text-align: center !important;
+    min-width: 110px !important;
+    white-space: nowrap !important;
 }
+
+/* Yellow Badge for Pending */
+.status-badge.pending {
+    background-color: #fff3cd !important;
+    color: #b7791f !important;
+    border: 1px solid #f6d365 !important;
+}
+
+/* Red Badge for Payment Failed */
+.status-badge.payment-failed {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5 !important;
+}
+
+/* Green Badge for Paid */
+.status-badge.paid {
+    background-color: #d1e7dd !important;
+    color: #0f5132 !important;
+    border: 1px solid #badbcc !important;
+}
+}
+

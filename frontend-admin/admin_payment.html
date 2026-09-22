@@ -276,7 +276,7 @@
                             <td colspan="7" style="text-align:center;">
                                 Loading payments...
                             </td>
-
+                    
                         </tr>
 
                     </tbody>
@@ -997,7 +997,7 @@
                             // STATUS
                             // =================================
 
-                            const status =
+                        const status =
                                 payment.status ||
                                 "Pending";
 
@@ -1074,7 +1074,7 @@
                                     <td>
 
                                         <span
-                                            class="payment-status ${getStatusClass(status)}"
+                                            class="status-badge ${getStatusClass(status)}"
                                         >
                                             ${escapeHtml(
                                 status
@@ -1097,7 +1097,6 @@
                     .join("");
 
         }
-
         function formatPaymentMethod(method) {
 
             if (!method) {

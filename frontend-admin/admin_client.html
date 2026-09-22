@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captured Admin Studio</title>
+    <title>Client List - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,188 +13,23 @@
 
     <link rel="stylesheet" href="/design/admin_dashboard.css">
     <link rel="stylesheet" href="/design/admin_client.css">
-
-    <style>
-        .page-switch {
-            display: flex;
-            gap: 10px;
-            margin-top: 18px;
-            flex-wrap: wrap;
-        }
-
-        .page-switch a {
-            text-decoration: none;
-            padding: 9px 14px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            color: #555;
-            background: #fff;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .page-switch a.active {
-            background: #639A88;
-            color: #fff;
-            border-color: #639A88;
-        }
-
-
-
-        .payment-proof-btn {
-            border: 0;
-            background: #639A88;
-            color: #fff;
-            border-radius: 6px;
-            padding: 7px 10px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .payment-proof-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            background: rgba(0, 0, 0, .72);
-        }
-
-        .payment-proof-modal.show {
-            display: flex;
-        }
-
-        .payment-proof-card {
-            width: min(920px, 96vw);
-            max-height: 94vh;
-            overflow: auto;
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
-            position: relative;
-            padding: 20px;
-        }
-
-        .payment-proof-close {
-            position: absolute;
-            top: 12px;
-            right: 14px;
-            width: 36px;
-            height: 36px;
-            border: 0;
-            border-radius: 50%;
-            background: #f1f1f1;
-            color: #333;
-            font-size: 22px;
-            cursor: pointer;
-            z-index: 2;
-        }
-
-        .payment-proof-header {
-            padding: 0 48px 14px 4px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 16px;
-        }
-
-        .payment-proof-header h2 {
-            margin: 0 0 5px;
-            font-size: 20px;
-            color: #353535;
-        }
-
-        .payment-proof-details {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px 20px;
-            margin-bottom: 18px;
-            font-size: 13px;
-            color: #555;
-        }
-
-        .payment-proof-image-wrap {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 250px;
-            background: #f7f7f7;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .payment-proof-image {
-            display: block;
-            max-width: 100%;
-            max-height: 68vh;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-        }
-
-        .simple-rejection-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 100000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, .55);
-            padding: 20px;
-        }
-
-        .simple-rejection-modal.show {
-            display: flex;
-        }
-
-        .simple-rejection-card {
-            width: min(520px, 96vw);
-            background: #fff;
-            border-radius: 14px;
-            padding: 24px;
-        }
-
-        .simple-rejection-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 18px;
-        }
-
-        .simple-rejection-actions button {
-            border: 0;
-            border-radius: 8px;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        #cancelRejectionBtn {
-            background: #eee;
-            color: #333;
-        }
-
-        #confirmRejectionBtn {
-            background: #b84b4b;
-            color: #fff;
-        }
-
-        @media(max-width:700px) {
-            .payment-proof-details {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
+
+<script>
+    // Run immediately before DOM rendering to avoid layout shift/flicker
+    (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+            document.documentElement.classList.add("sidebar-is-collapsed");
+        }
+    })();
+</script>
 
 <body>
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
         </div>
 
         <div class="navbar-right">
@@ -224,15 +59,15 @@
             <i class="fa-solid fa-bars"></i>
         </button>
 
+        <!-- SIDEBAR -->
         <aside class="sidebar">
             <nav>
-
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
 
-                <a href="/admin/clients">
+                <a href="/admin/clients" class="active">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
@@ -266,7 +101,6 @@
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
-
             </nav>
 
             <a href="/admin/login" class="logout-btn" id="logoutBtn">
@@ -278,41 +112,43 @@
         <main class="content">
             <div class="client-header-container">
                 <div class="page-header">
-                    <h1>All Booked Sessions</h1>
-                    <p>View and manage customer booking sessions.</p>
+                    <h1>Client List</h1>
+                    <p>Monitor customer booked sessions and studio access requests.</p>
 
-                    <div class="page-switch">
-                        <a href="/admin/client" class="active">All Booked Sessions</a>
-                        <a href="/admin/access-request" class="">All Access Requests</a>
+                    <div class="tab-navigation">
+                        <a href="/admin/client" class="tab-btn active">All Booked Sessions</a>
+                        <a href="/admin/access-request" class="tab-btn">All Access Requests</a>
                     </div>
                 </div>
 
-                <div class="client-actions-row">
-                    <div class="table-search-box">
-                        <input type="text" id="clientSearchInput" placeholder="Search" autocomplete="off">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </div>
+                <div class="client-controls-bar">
+                    <div class="client-actions-row">
+                        <div class="table-search-box">
+                            <input type="text" id="clientSearchInput" placeholder="Search a record" autocomplete="off">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
 
-                    <div class="filter-dropdown-wrapper" id="filterWrapper">
-                        <button class="table-filter-btn" id="filterBtn" type="button">
-                            <i class="fa-solid fa-sliders"></i> Filter
-                        </button>
-                        <div class="filter-dropdown-menu" id="filterDropdown">
-                            <div class="dropdown-section-title">Select Month</div>
-                            <div class="dropdown-scroll-area">
-                                <a href="#" data-filter="1">January</a>
-                                <a href="#" data-filter="2">February</a>
-                                <a href="#" data-filter="3">March</a>
-                                <a href="#" data-filter="4">April</a>
-                                <a href="#" data-filter="5">May</a>
-                                <a href="#" data-filter="6">June</a>
-                                <a href="#" data-filter="7">July</a>
-                                <a href="#" data-filter="8">August</a>
-                                <a href="#" data-filter="9">September</a>
-                                <a href="#" data-filter="10">October</a>
-                                <a href="#" data-filter="11">November</a>
-                                <a href="#" data-filter="12">December</a>
-                                <a href="#" class="clear-filter" data-filter="all">All Months</a>
+                        <div class="filter-dropdown-wrapper" id="filterWrapper">
+                            <button class="table-filter-btn" id="filterBtn" type="button">
+                                <i class="fa-solid fa-sliders"></i> Filter
+                            </button>
+                            <div class="filter-dropdown-menu" id="filterDropdown">
+                                <div class="dropdown-section-title">Select Month</div>
+                                <div class="dropdown-scroll-area">
+                                    <a href="#" data-filter="1">January</a>
+                                    <a href="#" data-filter="2">February</a>
+                                    <a href="#" data-filter="3">March</a>
+                                    <a href="#" data-filter="4">April</a>
+                                    <a href="#" data-filter="5">May</a>
+                                    <a href="#" data-filter="6">June</a>
+                                    <a href="#" data-filter="7">July</a>
+                                    <a href="#" data-filter="8">August</a>
+                                    <a href="#" data-filter="9">September</a>
+                                    <a href="#" data-filter="10">October</a>
+                                    <a href="#" data-filter="11">November</a>
+                                    <a href="#" data-filter="12">December</a>
+                                    <a href="#" class="clear-filter" data-filter="all">All Months</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -342,7 +178,7 @@
         <div class="payment-proof-card">
             <button type="button" class="payment-proof-close" id="closePaymentProofModal">&times;</button>
             <div class="payment-proof-header">
-                <h2>Payment Proof</h2>
+                <h2>Uploaded Photo of the Client’s Payment</h2>
                 <div id="paymentProofName">Customer</div>
             </div>
             <div class="payment-proof-details" id="paymentProofDetails"></div>
@@ -1082,43 +918,28 @@
                    PAYMENT STATUS
                 --------------------------------------------- */
 
-                const paymentStatusText =
-                    String(
-                        booking.payment_status || "Pending"
-                    )
-                        .trim();
+                const paymentStatusText = String(booking.payment_status || "Pending Verification").trim();
+                const paymentStatusLower = paymentStatusText.toLowerCase();
 
-                const paymentStatusLower =
-                    paymentStatusText.toLowerCase();
+                let bgStyle = "background-color: #fff3cd !important; color: #b7791f !important; border: 1px solid #f6d365 !important;"; // Default Yellow (Pending)
 
-                let paymentStatusHTML = "";
-
+                // Green: Only if fully paid, verified, or succeeded WITHOUT "pending" in the string
                 if (
-                    paymentStatusLower === "paid" ||
-                    paymentStatusLower === "succeeded" ||
-                    paymentStatusLower === "success"
+                    (paymentStatusLower.includes("paid") || paymentStatusLower.includes("verified") || paymentStatusLower.includes("success"))
+                    && !paymentStatusLower.includes("pending")
                 ) {
-                    paymentStatusHTML = `
-                        <span class="status-badge paid">
-                            ${escapeHtml(paymentStatusText)}
-                        </span>
-                    `;
-                } else if (
-                    paymentStatusLower === "pending"
-                ) {
-                    paymentStatusHTML = `
-                        <span class="status-badge pending">
-                            ${escapeHtml(paymentStatusText)}
-                        </span>
-                    `;
-                } else {
-                    paymentStatusHTML = `
-                        <span class="status-badge">
-                            ${escapeHtml(paymentStatusText)}
-                        </span>
-                    `;
+                    bgStyle = "background-color: rgba(34, 197, 94, 0.15) !important; color: #16a34a !important; border: 1px solid #6ee7b7 !important;";
+                }
+                // Red: Failed or Rejected
+                else if (paymentStatusLower.includes("failed") || paymentStatusLower.includes("reject")) {
+                    bgStyle = "background-color: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5 !important;";
                 }
 
+                const paymentStatusHTML = `
+                <span class="status-badge ${escapeHtml(paymentStatusLower)}" style="${bgStyle}">
+                    ${escapeHtml(paymentStatusText)}
+                    </span>
+                    `;
 
                 /* =====================================================
                    TABLE ROW
@@ -1226,31 +1047,27 @@
 <td>
     ${booking.rejection_reason
                         ? `
-                <span
-                    style="
-                        display:inline-block;
-                        max-width:250px;
-                        padding:6px 10px;
-                        border-radius:6px;
-                        background:#f8dddd;
-                        color:black;
-                        font-size:12px;
-                        line-height:1.4;
-                    "
-                    title="${escapeHtml(
-                            booking.rejection_reason
-                        )}"
-                >
-                    ${escapeHtml(
-                            booking.rejection_reason
-                        )}
-                </span>
-            `
+        <span
+            style="
+                display:inline-block;
+                max-width:250px;
+                padding:6px 10px;
+                border-radius:6px;
+                background:transparent;
+                border:1px solid #b91c1c;
+                color:#b91c1c;
+                font-size:12px;
+                font-weight:600;
+                line-height:1.4;
+            "
+            title="${escapeHtml(booking.rejection_reason)}"
+        >
+            ${escapeHtml(booking.rejection_reason)}
+        </span>
+    `
                         : `
-                <span style="color:#999;">
-                    -
-                </span>
-            `
+        <span style="color:#999;">-</span>
+    `
                     }
 </td>
 
@@ -2188,6 +2005,28 @@
                 );
             }
         });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
+
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("collapsed");
+
+                    const icon = sidebarToggle.querySelector("i");
+
+                    if (sidebar.classList.contains("collapsed")) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-chevron-right");
+                    } else {
+                        icon.classList.remove("fa-chevron-right");
+                        icon.classList.add("fa-bars");
+                    }
+                });
+            }
+        });
+
 
     </script>
 </body>

@@ -777,3 +777,131 @@
     }
 
 }
+/* =========================================================
+   STAFF ONLINE / OFFLINE STATUS
+========================================================= */
+
+.staff-online-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.staff-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.staff-status-dot.online {
+    background: #2e9b62;
+    box-shadow: 0 0 0 3px rgba(46, 155, 98, 0.12);
+}
+
+.staff-status-dot.offline {
+    background: #a7adb4;
+}
+
+.staff-last-active {
+    display: block;
+    font-size: 11px;
+    color: #8b9298;
+    margin-top: 3px;
+}
+
+.staff-current-page {
+    font-size: 11px;
+    color: #639A88;
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   ACTIVITY LOGS
+========================================================= */
+
+.staff-logs-button {
+    margin-top: 15px;
+    padding: 10px 16px;
+    border: 1px solid #639A88;
+    background: white;
+    color: #639A88;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.staff-logs-button:hover {
+    background: #639A88;
+    color: white;
+}
+
+.staff-log-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.staff-log-modal.show {
+    display: flex;
+}
+
+.staff-log-box {
+    width: min(1000px, 92vw);
+    max-height: 85vh;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.staff-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    border-bottom: 1px solid #e8ecea;
+}
+
+.staff-log-header h3 {
+    margin: 0;
+}
+
+.staff-log-close {
+    border: none;
+    background: none;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.staff-log-content {
+    padding: 20px;
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+.staff-log-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.staff-log-table th,
+.staff-log-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #edf0ef;
+    font-size: 13px;
+}
+
+.staff-log-table th {
+    background: #f7f9f8;
+    font-weight: 700;
+}
