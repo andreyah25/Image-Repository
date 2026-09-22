@@ -12,16 +12,38 @@ const { createClient } = require("@supabase/supabase-js");
 const app = express();
 
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        "https://captured-photo-studio.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
+    ],
+    methods: [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+    ],
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization"
+    ],
+    credentials: false
+}));
+
 app.use(express.static(path.join(__dirname, "..")));
-app.use( express.json({
-        verify: (req, res, buf) => {
-            if (req.originalUrl === "/api/paymongo/webhook") {
-                req.rawBody = buf;
-            }
+
+app.use(express.json({
+    verify: (req, res, buf) => {
+        if (req.originalUrl === "/api/paymongo/webhook") {
+            req.rawBody = buf;
         }
-    })
-);
+    }
+}));
 
 const PORT = process.env.PORT || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
