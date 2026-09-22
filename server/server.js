@@ -1443,12 +1443,6 @@ app.get(
 
                 }
             );
-
-
-            // ==================================================
-            // COMBINE STAFF + PRESENCE
-            // ==================================================
-
             const staffWithPresence =
                 (staffList || []).map(
                     staff => {
@@ -4925,10 +4919,6 @@ app.post(
             );
 
 
-            /* =====================================================
-               3. MATCH NAME + DATE
-            ===================================================== */
-
             const booking =
                 (bookings || []).find(
                     candidate => {
@@ -5120,12 +5110,6 @@ app.post(
                 });
 
             }
-
-
-            /* =====================================================
-               7. DETERMINE REQUEST NUMBER
-            ===================================================== */
-
             const requestNumbers =
                 allRequests
                     .map(
@@ -5168,13 +5152,10 @@ app.post(
                 finalRequestNumber
             );
 
-
-            /* =====================================================
-               8. ONLY TWO REQUESTS ALLOWED
-            ===================================================== */
+       const MAX_GALLERY_REQUESTS = 3;
 
             if (
-                finalRequestNumber > 2
+                finalRequestNumber > MAX_GALLERY_REQUESTS
             ) {
 
                 return res.status(409).json({
@@ -5182,75 +5163,41 @@ app.post(
                     success: false,
 
                     error:
-                        "You have already used your two gallery access requests for this booking."
+                        "You have already used all three gallery access requests for this booking."
 
                 });
 
             }
 
 
-            /* =====================================================
-               9. DETERMINE FREE / PAID ACCESS
-            ===================================================== */
-
-            let finalAccessType;
-            let finalPaymentRequired;
-
-
-            if (
-                finalRequestNumber === 1
-            ) {
-
-                finalAccessType =
-                    "free";
-
-                finalPaymentRequired =
-                    false;
-
-            }
-            else {
-
-                /* =================================================
-                   REQUEST #2 REQUIRES EXPIRED REQUEST #1
-                ================================================= */
-
-                const firstRequest =
-                    allRequests.find(
-                        request =>
-                            Number(
-                                request.request_number
-                            ) === 1
-                    );
+                let finalAccessType;
+                let finalPaymentRequired;
 
 
                 if (
-                    !firstRequest
+                    finalRequestNumber === 1
                 ) {
 
-                    return res.status(409).json({
+                    finalAccessType =
+                        "free";
 
-                        success: false,
-
-                        error:
-                            "The first gallery access request could not be found."
-
-                    });
+                    finalPaymentRequired =
+                        false;
 
                 }
+                else {
 
-
-                if (
-                    firstRequest.access_expires_at
-                ) {
-
-                    const expiresAt =
-                        new Date(
-                            firstRequest.access_expires_at
+                    const previousRequest =
+                        allRequests.find(
+                            request =>
+                                Number(
+                                    request.request_number
+                                ) === finalRequestNumber - 1
                         );
 
 
                     if (
-                        expiresAt > new Date()
+                        !previousRequest
                     ) {
 
                         return res.status(409).json({
@@ -5258,29 +5205,46 @@ app.post(
                             success: false,
 
                             error:
-                                "You already have an active gallery access."
+                                `The previous gallery access request #${finalRequestNumber - 1} could not be found.`
 
                         });
 
                     }
 
+                    if (
+                        previousRequest.access_expires_at
+                    ) {
+
+                        const expiresAt =
+                            new Date(
+                                previousRequest.access_expires_at
+                            );
+
+
+                        if (
+                            expiresAt > new Date()
+                        ) {
+
+                            return res.status(409).json({
+
+                                success: false,
+
+                                error:
+                                    "You already have an active gallery access."
+
+                            });
+
+                        }
+
+                    }
+                    finalAccessType =
+                        "paid";
+
+                    finalPaymentRequired =
+                        true;
+
                 }
-
-
-                finalAccessType =
-                    "paid";
-
-                finalPaymentRequired =
-                    true;
-
-            }
-
-
-            /* =====================================================
-               10. CREATE REQUEST
-            ===================================================== */
-
-            const requestId =
+                            const requestId =
                 crypto.randomUUID();
 
 
@@ -5368,12 +5332,6 @@ app.post(
                 "GALLERY REQUEST CREATED:",
                 newRequest.id
             );
-
-
-            /* =====================================================
-               11. CREATE ADMIN NOTIFICATION
-            ===================================================== */
-
             const {
                 error: notificationError
             } =
@@ -5412,12 +5370,6 @@ app.post(
                 );
 
             }
-
-
-            /* =====================================================
-               12. RETURN JSON TO CUSTOMER PAGE
-            ===================================================== */
-
             return res.status(201).json({
 
                 success:
@@ -5540,7 +5492,390 @@ app.get("/api/gallery-access/request/:requestId", async (req, res) => {
         });
     }
 });
+app.get("/api/gallery-access/open/:requestId", async (req, res) => {
+    try {
+        const requestId = String(req.params.requestId || "").trim();
 
+        if (!requestId) {
+            return res.status(400).json({
+                success: false,
+                error: "Gallery request ID is required."
+            });
+        }
+
+        // Get the approved access request
+        const { data: accessRequest, error: requestError } =
+            await supabase
+                .from("gallery_access_requests")
+                .select(`
+                    id,
+                    booking_id,
+                    repository_id,
+                    status,
+                    request_number,
+                    payment_required,
+                    payment_confirmed,
+                    payment_status,
+                    access_started_at,
+                    access_granted_at,
+                    access_expires_at
+                `)
+                .eq("id", requestId)
+                .maybeSingle();
+
+        if (requestError) {
+            console.error("Gallery request lookup error:", requestError);
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify gallery request."
+            });
+        }
+
+        if (!accessRequest) {
+            return res.status(404).json({
+                success: false,
+                error: "Gallery access request not found."
+            });
+        }
+
+        if (
+            String(accessRequest.status || "").toLowerCase() !==
+            "approved"
+        ) {
+            return res.status(403).json({
+                success: false,
+                error: "Gallery access has not been approved."
+            });
+        }
+
+        // Request #2 and #3 require payment
+        const requestNumber =
+            Number(accessRequest.request_number || 0);
+
+        if (requestNumber >= 2) {
+            const paymentConfirmed =
+                accessRequest.payment_confirmed === true;
+
+            const paymentPaid =
+                String(accessRequest.payment_status || "").toLowerCase() ===
+                "paid";
+
+            if (!paymentConfirmed || !paymentPaid) {
+                return res.status(403).json({
+                    success: false,
+                    error: "Payment is required before accessing this gallery."
+                });
+            }
+        }
+
+        // Verify expiration
+        if (accessRequest.access_expires_at) {
+            const expiresAt =
+                new Date(accessRequest.access_expires_at);
+
+            if (
+                Number.isNaN(expiresAt.getTime()) ||
+                new Date() >= expiresAt
+            ) {
+                return res.status(403).json({
+                    success: false,
+                    error: "Your gallery access has expired."
+                });
+            }
+        }
+
+        // Get the repository token
+        const { data: repository, error: repositoryError } =
+            await supabase
+                .from("repository_client_links")
+                .select(`
+                    id,
+                    booking_id,
+                    access_token
+                `)
+                .eq("id", accessRequest.repository_id)
+                .eq("booking_id", accessRequest.booking_id)
+                .maybeSingle();
+
+        if (repositoryError) {
+            console.error(
+                "Gallery repository lookup error:",
+                repositoryError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to open gallery."
+            });
+        }
+
+        if (!repository) {
+            return res.status(404).json({
+                success: false,
+                error: "Gallery repository not found."
+            });
+        }
+
+        return res.json({
+            success: true,
+
+            token: repository.access_token,
+
+            request: {
+                id: accessRequest.id,
+                booking_id: accessRequest.booking_id,
+                repository_id: accessRequest.repository_id,
+                request_number: accessRequest.request_number,
+                payment_required:
+                    accessRequest.payment_required,
+                payment_confirmed:
+                    accessRequest.payment_confirmed,
+                payment_status:
+                    accessRequest.payment_status,
+                access_started_at:
+                    accessRequest.access_started_at ||
+                    accessRequest.access_granted_at,
+                access_expires_at:
+                    accessRequest.access_expires_at
+            }
+        });
+
+    } catch (error) {
+        console.error(
+            "Gallery open authorization error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: "Unable to open gallery."
+        });
+    }
+});
+app.get("/api/gallery-access/photo/:photoId", async (req, res) => {
+    try {
+        const photoId =
+            String(req.params.photoId || "").trim();
+
+        const token =
+            String(req.query.token || "").trim();
+
+        if (!photoId || !token) {
+            return res.status(400).json({
+                success: false,
+                error: "Photo access information is required."
+            });
+        }
+
+        // 1. Find the repository belonging to this token
+        const {
+            data: repository,
+            error: repositoryError
+        } = await supabase
+            .from("repository_client_links")
+            .select(`
+                id,
+                booking_id,
+                access_token
+            `)
+            .eq("access_token", token)
+            .maybeSingle();
+
+        if (repositoryError) {
+            console.error(
+                "Photo repository lookup error:",
+                repositoryError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify gallery access."
+            });
+        }
+
+        if (!repository) {
+            return res.status(403).json({
+                success: false,
+                error: "Invalid gallery access."
+            });
+        }
+
+        // 2. Find the photo ONLY inside this repository
+        const {
+            data: photo,
+            error: photoError
+        } = await supabase
+            .from("repository_photos")
+            .select(`
+                id,
+                repository_id,
+                storage_path,
+                original_name,
+                mime_type
+            `)
+            .eq("id", photoId)
+            .eq("repository_id", repository.id)
+            .maybeSingle();
+
+        if (photoError) {
+            console.error(
+                "Photo lookup error:",
+                photoError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to locate photo."
+            });
+        }
+
+        if (!photo) {
+            return res.status(404).json({
+                success: false,
+                error: "Photo not found."
+            });
+        }
+
+        if (!photo.storage_path) {
+            return res.status(404).json({
+                success: false,
+                error: "Photo storage path is missing."
+            });
+        }
+
+        // 3. Find an approved gallery access request
+        const {
+            data: accessRequests,
+            error: requestError
+        } = await supabase
+            .from("gallery_access_requests")
+            .select(`
+                id,
+                booking_id,
+                repository_id,
+                status,
+                request_number,
+                payment_required,
+                payment_confirmed,
+                payment_status,
+                access_started_at,
+                access_granted_at,
+                access_expires_at
+            `)
+            .eq("repository_id", repository.id)
+            .eq("booking_id", repository.booking_id)
+            .eq("status", "approved")
+            .order("request_number", {
+                ascending: false
+            });
+
+        if (requestError) {
+            console.error(
+                "Gallery access request lookup error:",
+                requestError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify gallery access."
+            });
+        }
+
+        const now = new Date();
+
+        // 4. Find the currently active request
+        const activeRequest =
+            (accessRequests || []).find(request => {
+                const requestNumber =
+                    Number(request.request_number || 0);
+
+                // Paid requests require payment
+                if (requestNumber >= 2) {
+                    const paid =
+                        request.payment_confirmed === true &&
+                        String(
+                            request.payment_status || ""
+                        ).toLowerCase() === "paid";
+
+                    if (!paid) {
+                        return false;
+                    }
+                }
+
+                // Check expiration
+                if (request.access_expires_at) {
+                    const expiresAt =
+                        new Date(
+                            request.access_expires_at
+                        );
+
+                    if (
+                        Number.isNaN(
+                            expiresAt.getTime()
+                        ) ||
+                        now >= expiresAt
+                    ) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+        if (!activeRequest) {
+            return res.status(403).json({
+                success: false,
+                error:
+                    "Your gallery access is not currently active."
+            });
+        }
+
+        // 5. Generate a SHORT-LIVED signed URL
+        const {
+            data: signedUrlData,
+            error: signedUrlError
+        } = await supabase.storage
+            .from("client-photos")
+            .createSignedUrl(
+                photo.storage_path,
+                60
+            );
+
+        if (
+            signedUrlError ||
+            !signedUrlData?.signedUrl
+        ) {
+            console.error(
+                "Signed photo URL error:",
+                signedUrlError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "Unable to generate secure photo access."
+            });
+        }
+
+        // 6. Redirect to the temporary signed URL
+        return res.redirect(
+            signedUrlData.signedUrl
+        );
+
+    } catch (error) {
+        console.error(
+            "Secure photo download error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error:
+                "Unable to securely access the photo."
+        });
+    }
+});
 app.post("/api/gallery-access/create-payment", async (req, res) => {
 
     try {
@@ -5641,20 +5976,20 @@ app.post("/api/gallery-access/create-payment", async (req, res) => {
 
         const referenceNumber =
             `GALLERY-${accessRequest.id}`;
-        const frontendUrl =
-            process.env.FRONTEND_URL ||
-            "http://localhost:5500";
+       const frontendUrl =
+    process.env.FRONTEND_URL ||
+    "http://localhost:5500";
 
-        const galleryUrl =
-            `${frontendUrl}/frontend-customer/customer_gallery_view.html` +
-            `?token=${encodeURIComponent(
-                req.body.token || ""
-            )}` +
-            `&email=${encodeURIComponent(
-                accessRequest.customer_email || ""
-            )}`; +
-            `&payment=success` +
-         `&requestId=${encodeURIComponent(accessRequest.id)}`;
+const galleryUrl =
+    `${frontendUrl}/gallery` +
+    `?token=${encodeURIComponent(
+        req.body.token || ""
+    )}` +
+    `&email=${encodeURIComponent(
+        accessRequest.customer_email || ""
+    )}` +
+    `&payment=success` +
+    `&request=${encodeURIComponent(accessRequest.id)}`;
 
         const paymongoResponse =
             await fetch(
@@ -5942,32 +6277,53 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
                     received: true
                 });
             }
-            const paidAt =
-                new Date().toISOString();
+           const paidAt = new Date();
 
-            const {
-                error: updateError
-            } = await supabase
-                .from("gallery_access_requests")
-                .update({
+const expiresAt =
+    new Date(
+        paidAt.getTime() +
+        3 * 24 * 60 * 60 * 1000
+    );
+const archiveAt = new Date(
+    expiresAt.getTime() + (24 * 60 * 60 * 1000)
+);
+const {
+    error: updateError
+} = await supabase
+    .from("gallery_access_requests")
+    .update({
 
-                    payment_confirmed:
-                        true,
+        payment_confirmed:
+            true,
 
-                    payment_status:
-                        "paid",
+        payment_status:
+            "paid",
 
-                    paid_at:
-                        paidAt,
+        paid_at:
+            paidAt.toISOString(),
 
-                    access_granted_at:
-                        paidAt
+        access_started_at:
+            paidAt.toISOString(),
 
-                })
-                .eq(
-                    "id",
-                    requestId
-                );
+        access_granted_at:
+            paidAt.toISOString(),
+
+        access_expires_at:
+            expiresAt.toISOString(),
+         expires_at:
+            expiresAt.toISOString(),
+
+        archive_at:
+            archiveAt.toISOString(),
+
+        is_expired:
+            false
+
+    })
+    .eq(
+        "id",
+        requestId
+    );
 
             if (updateError) {
 
@@ -6021,105 +6377,7 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         });
     }
 });
-app.get(
-    "/api/gallery-access/payment-status/:requestId",
-    async (req, res) => {
 
-        try {
-
-            const {
-                requestId
-            } = req.params;
-
-            if (!requestId) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Request ID is required."
-                });
-            }
-
-            const {
-                data: accessRequest,
-                error
-            } = await supabase
-                .from("gallery_access_requests")
-                .select(`
-                    id,
-                    status,
-                    request_number,
-                    payment_required,
-                    payment_confirmed,
-                    payment_status,
-                    paid_at,
-                    access_granted_at,
-                    access_expires_at
-                `)
-                .eq(
-                    "id",
-                    requestId
-                )
-                .maybeSingle();
-
-            if (error) {
-
-                console.error(
-                    "Payment status lookup error:",
-                    error
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    message:
-                        "Unable to check payment status."
-                });
-            }
-
-            if (!accessRequest) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Gallery access request not found."
-                });
-            }
-
-            return res.json({
-
-                success: true,
-
-                paymentConfirmed:
-                    accessRequest.payment_confirmed === true,
-
-                paymentStatus:
-                    accessRequest.payment_status,
-
-                accessGranted:
-                    accessRequest.payment_confirmed === true,
-
-                accessExpiresAt:
-                    accessRequest.access_expires_at
-
-            });
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Payment status error:",
-                error
-            );
-
-            return res.status(500).json({
-                success: false,
-                message:
-                    "Unable to check payment status."
-            });
-        }
-    }
-);
 app.post(
     "/api/gallery-access/send-approved-email/:requestId",
     async (req, res) => {
@@ -6207,10 +6465,6 @@ app.post(
                 repository = repositoryData;
             }
 
-            // -----------------------------------------
-            // 3. FALLBACK: FIND REPOSITORY BY BOOKING
-            // -----------------------------------------
-
             if (!repository && request.booking_id) {
 
                 const {
@@ -6244,10 +6498,6 @@ app.post(
                 });
             }
 
-            // -----------------------------------------
-            // 4. GET BOOKING
-            // -----------------------------------------
-
             let booking = null;
 
             if (request.booking_id) {
@@ -6271,10 +6521,6 @@ app.post(
                 }
             }
 
-            // -----------------------------------------
-            // 5. CUSTOMER EMAIL
-            // -----------------------------------------
-
             const customerEmail =
                 request.customer_email ||
                 booking?.email ||
@@ -6287,25 +6533,16 @@ app.post(
                 });
             }
 
-            // -----------------------------------------
-            // 6. ALWAYS USE PRODUCTION CUSTOMER SITE
-            // -----------------------------------------
 
             const CUSTOMER_FRONTEND_URL =
                 "https://captured-photo-studio.onrender.com";
 
-            // -----------------------------------------
-            // 7. USE THE EXISTING REPOSITORY TOKEN
-            // -----------------------------------------
-
             const galleryLink =
-                CUSTOMER_FRONTEND_URL +
-                "/frontend-customer/customer_gallery_view.html?token=" +
-                encodeURIComponent(repository.access_token);
-
-            // -----------------------------------------
-            // 8. SEND EMAIL
-            // -----------------------------------------
+            CUSTOMER_FRONTEND_URL +
+            "/gallery?token=" +
+            encodeURIComponent(repository.access_token) +
+            "&request=" +
+            encodeURIComponent(requestId);
 
             const emailResponse = await resend.emails.send({
 
@@ -6430,6 +6667,280 @@ app.post(
         }
     }
 );
+app.get("/api/gallery-access/photos", async (req, res) => {
+    try {
+        const token = String(req.query.token || "").trim();
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                error: "Gallery token is required."
+            });
+        }
+
+        // -----------------------------------------
+        // 1. FIND THE REPOSITORY USING THE TOKEN
+        // -----------------------------------------
+
+        const { data: repository, error: repositoryError } =
+            await supabase
+                .from("repository_client_links")
+                .select(`
+                    id,
+                    booking_id,
+                    access_token
+                `)
+                .eq("access_token", token)
+                .maybeSingle();
+
+        if (repositoryError) {
+            console.error(
+                "Gallery repository lookup error:",
+                repositoryError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify gallery."
+            });
+        }
+
+        if (!repository) {
+            return res.status(403).json({
+                success: false,
+                error: "Invalid or expired gallery link."
+            });
+        }
+
+        // -----------------------------------------
+        // 2. FIND APPROVED ACCESS REQUESTS
+        // -----------------------------------------
+
+        const { data: requests, error: requestError } =
+            await supabase
+                .from("gallery_access_requests")
+                .select(`
+                    id,
+                    booking_id,
+                    repository_id,
+                    status,
+                    request_number,
+                    payment_required,
+                    payment_confirmed,
+                    payment_status,
+                    access_started_at,
+                    access_granted_at,
+                    access_expires_at
+                `)
+                .eq("booking_id", repository.booking_id)
+                .eq("repository_id", repository.id)
+                .eq("status", "approved")
+                .order("request_number", {
+                    ascending: false
+                });
+
+        if (requestError) {
+            console.error(
+                "Gallery access request lookup error:",
+                requestError
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify gallery access."
+            });
+        }
+
+        if (!requests || requests.length === 0) {
+            return res.status(403).json({
+                success: false,
+                error: "Gallery access has not been approved."
+            });
+        }
+
+        // -----------------------------------------
+        // 3. FIND THE CURRENT REQUEST
+        // -----------------------------------------
+
+        const now = new Date();
+
+        let validRequest = null;
+
+        for (const request of requests) {
+
+            const requestNumber =
+                Number(request.request_number || 0);
+
+            const expiresAt =
+                request.access_expires_at
+                    ? new Date(request.access_expires_at)
+                    : null;
+
+            // Must have a valid expiration
+            if (
+                !expiresAt ||
+                Number.isNaN(expiresAt.getTime()) ||
+                now >= expiresAt
+            ) {
+                continue;
+            }
+
+            // -----------------------------------------
+            // REQUEST #1 = FREE
+            // -----------------------------------------
+
+            if (requestNumber === 1) {
+
+                validRequest = request;
+                break;
+            }
+
+            if (requestNumber >= 2) {
+
+                const paymentConfirmed =
+                    request.payment_confirmed === true;
+
+                const paymentPaid =
+                    String(
+                        request.payment_status || ""
+                    ).toLowerCase() === "paid";
+
+                if (
+                    paymentConfirmed &&
+                    paymentPaid
+                ) {
+                    validRequest = request;
+                    break;
+                }
+            }
+        }
+
+        if (!validRequest) {
+
+            return res.status(403).json({
+                success: false,
+                error:
+                    "Your gallery access has expired or payment is still required."
+            });
+        }
+
+       const { data: photos, error: photoError } =
+    await supabase
+        .from("repository_photos")
+        .select(`
+            id,
+            repository_id,
+            booking_id,
+            storage_path,
+            original_name,
+            mime_type,
+            file_size,
+            processing_status,
+            detected_objects,
+            detected_faces,
+            face_count,
+            created_at
+        `)
+        .eq("repository_id", repository.id)
+        .order("created_at", {
+            ascending: true
+        });
+
+if (photoError) {
+    console.error(
+        "Photo lookup error:",
+        photoError
+    );
+
+    return res.status(500).json({
+        success: false,
+        error: "Unable to load gallery photos."
+    });
+}
+const photosWithSignedUrls = [];
+
+for (const photo of photos || []) {
+
+    if (!photo.storage_path) {
+        continue;
+    }
+
+    const {
+        data: signedUrlData,
+        error: signedUrlError
+    } = await supabase.storage
+        .from("client-photos")
+        .createSignedUrl(
+            photo.storage_path,
+            60
+        );
+
+    if (signedUrlError) {
+        console.error(
+            "Signed URL error:",
+            signedUrlError
+        );
+
+        continue;
+    }
+
+    photosWithSignedUrls.push({
+        id: photo.id,
+        repository_id: photo.repository_id,
+        booking_id: photo.booking_id,
+        storage_path: photo.storage_path,
+        original_name: photo.original_name,
+        mime_type: photo.mime_type,
+        file_size: photo.file_size,
+        processing_status: photo.processing_status,
+        detected_objects: photo.detected_objects,
+        detected_faces: photo.detected_faces,
+        face_count: photo.face_count,
+        created_at: photo.created_at,
+
+        image_url:
+            signedUrlData?.signedUrl || null
+    });
+}
+
+
+return res.json({
+    success: true,
+
+    request: {
+        id: validRequest.id,
+        request_number:
+            validRequest.request_number,
+        payment_required:
+            validRequest.payment_required,
+        payment_confirmed:
+            validRequest.payment_confirmed,
+        payment_status:
+            validRequest.payment_status,
+        access_started_at:
+            validRequest.access_started_at ||
+            validRequest.access_granted_at,
+        access_expires_at:
+            validRequest.access_expires_at
+    },
+
+    photos:
+        photosWithSignedUrls
+});
+
+    } catch (error) {
+
+        console.error(
+            "Gallery photos authorization error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: "Unable to open gallery."
+        });
+    }
+});
 app.listen(
     PORT,
     "0.0.0.0",

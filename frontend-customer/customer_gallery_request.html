@@ -97,13 +97,28 @@
 
                             <li>
                                 After the first 24-hour free access expires,
-                                another access request may be submitted.
+                                a second gallery access request may be submitted.
                             </li>
 
                             <li>
-                                The second approved access requires a
-                                <strong>₱100 payment</strong> before photos
-                                can be downloaded.
+                                The second gallery access requires a
+                                <strong>₱100 payment</strong>. Once payment is
+                                confirmed, the second access is valid for
+                                <strong>3 days</strong>.
+                            </li>
+
+                            <li>
+                                After the second access expires, a third and
+                                <strong>final gallery access request</strong> may
+                                be submitted. The third access also requires a
+                                <strong>₱100 payment</strong> and is valid for
+                                <strong>3 days after payment confirmation</strong>.
+                            </li>
+
+                            <li>
+                                After the third gallery access expires, no
+                                additional gallery access requests will be
+                                available for the booking.
                             </li>
 
                             <li>
@@ -304,9 +319,9 @@
 
         const FREE_ACCESS_HOURS = 24;
 
-
-        const SECOND_ACCESS_PRICE = 100;
-
+        const PAID_ACCESS_DAYS = 3;
+        const PAID_ACCESS_PRICE = 100;
+        const MAX_GALLERY_REQUESTS = 3;
 
         let approvalChecker = null;
 
@@ -450,20 +465,6 @@
                 console.log("CUSTOMER NAME:", fullName);
                 console.log("BOOKING DATE:", bookingDate);
 
-
-                /* =====================================================
-                   SEND EVERYTHING TO SERVER
-        
-                   The server will:
-                   1. Verify completed booking
-                   2. Verify name/date
-                   3. Find repository
-                   4. Check previous requests
-                   5. Determine request number
-                   6. Determine free/paid access
-                   7. Create the request
-                ===================================================== */
-
                 const response =
                     await fetch(
                         `${SERVER_URL}/api/gallery-access/request`,
@@ -547,11 +548,6 @@
                     request
                 );
 
-
-                /* =====================================================
-                   DISPLAY MESSAGE
-                ===================================================== */
-
                 if (
                     Number(request.request_number) === 1
                 ) {
@@ -562,20 +558,22 @@
                     );
 
                 }
-                else {
+                else if (Number(request.request_number) === 2) {
 
                     showMessage(
-                        "Your second gallery access request has been sent to the admin. Once approved, a ₱100 payment will be required before photos can be downloaded.",
+                        "Your second gallery access request has been sent to the admin. Once approved, a ₱100 payment will be required. After payment confirmation, your access will be valid for 3 days.",
                         "info"
                     );
 
                 }
+                else if (Number(request.request_number) === 3) {
 
+                    showMessage(
+                        "Your third and final gallery access request has been sent to the admin. A ₱100 payment will be required. After payment confirmation, your final access will be valid for 3 days.",
+                        "info"
+                    );
 
-                /* =====================================================
-                   START APPROVAL CHECKER
-                ===================================================== */
-
+                }
                 startApprovalChecker(
                     request.id
                 );
@@ -715,26 +713,33 @@
 
                 }
 
-
-                const newRequest = result.request;
-
-
                 console.log(
                     "GALLERY REQUEST CREATED SUCCESSFULLY:",
                     newRequest
                 );
+                const requestNumber =
+                    Number(request.request_number);
+
                 if (requestNumber === 1) {
 
                     showMessage(
-                        "Your first gallery access request has been sent to the admin. Once approved, you will receive access to your folder for 24 hours free of charge.",
+                        "Your first gallery access request has been sent to the admin. Once approved, you will receive free access to your folder for 24 hours.",
                         "info"
                     );
 
                 }
-                else {
+                else if (requestNumber === 2) {
 
                     showMessage(
-                        "Your second gallery access request has been sent to the admin. Once approved, a ₱100 payment will be required before photos can be downloaded.",
+                        "Your second gallery access request has been sent to the admin. Once approved, a ₱100 payment will be required. After payment confirmation, your access will be valid for 3 days.",
+                        "info"
+                    );
+
+                }
+                else if (requestNumber === 3) {
+
+                    showMessage(
+                        "Your third and final gallery access request has been sent to the admin. A ₱100 payment will be required. After payment confirmation, your final access will be valid for 3 days.",
                         "info"
                     );
 
@@ -849,10 +854,6 @@
                 );
 
 
-                /* =====================================================
-                   ADMIN APPROVED
-                ===================================================== */
-
                 if (
                     request.status ===
                     "approved"
@@ -869,17 +870,8 @@
 
                     }
 
-
-                    /*
-                        The admin approval process should already
-                        set the expiration fields.
-        
-                        Only calculate the 24-hour expiration here
-                        if the field is still missing.
-                    */
-
                     if (
-                        request.request_number === 1 &&
+                        Number(request.request_number) === 1 &&
                         !request.access_expires_at
                     ) {
 
@@ -926,84 +918,294 @@
             }
 
         }
+        function startPaymentChecker(requestId) {
 
+            if (approvalChecker) {
 
-        function showApprovedRequest(
-            request
-        ) {
-
-            if (
-                Number(
-                    request.request_number
-                ) === 1
-            ) {
-
-                showMessage(
-                    "Your gallery access has been approved. You have FREE access for 24 hours.",
-                    "success"
+                clearInterval(
+                    approvalChecker
                 );
+            }
 
 
-                showActiveAccess(
-                    request
-                );
+            console.log(
+                "STARTING PAYMENT CHECKER:",
+                requestId
+            );
 
 
-                setTimeout(
+            /*
+                Check immediately.
+            */
+
+            checkPaymentStatus(
+                requestId
+            );
+
+
+            /*
+                Continue checking every 8 seconds.
+            */
+
+            approvalChecker =
+                setInterval(
                     () => {
 
-                        openGallery(
-                            request
+                        checkPaymentStatus(
+                            requestId
                         );
 
                     },
-                    1500
+                    8000
+                );
+        }
+        async function checkPaymentStatus(
+            requestId
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${SERVER_URL}/api/gallery-access/request/${encodeURIComponent(requestId)}`
+                    );
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        "Payment check HTTP error:",
+                        response.status
+                    );
+
+                    return;
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                const request =
+                    result.request;
+
+
+                if (!request) {
+
+                    return;
+                }
+
+
+                console.log(
+                    "GALLERY PAYMENT STATUS:",
+                    request.payment_status
                 );
 
+
+                /*
+                    Payment confirmed.
+                */
+
+                if (
+                    request.payment_status === "paid" &&
+                    request.access_expires_at
+                ) {
+
+                    if (approvalChecker) {
+
+                        clearInterval(
+                            approvalChecker
+                        );
+
+                        approvalChecker =
+                            null;
+                    }
+
+
+                    showApprovedRequest(
+                        request
+                    );
+                }
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Payment checker error:",
+                    error
+                );
+            }
+        }
+
+        function showApprovedRequest(request) {
+
+            const requestNumber =
+                Number(request.request_number);
+
+
+            /* =========================================================
+               REQUEST #1
+               FREE - 24 HOURS
+            ========================================================= */
+
+            if (requestNumber === 1) {
+
+                showMessage(
+                    "Your first gallery access has been approved. You have FREE access for 24 hours.",
+                    "success"
+                );
+
+                showActiveAccess(request);
+
+                setTimeout(() => {
+
+                    openGallery(request);
+
+                }, 1500);
 
                 return;
             }
 
 
-            showMessage(
-                "Your second gallery access has been approved. A ₱100 payment is required before photos can be downloaded.",
-                "success"
-            );
+            /* =========================================================
+               REQUEST #2 OR #3
+               ₱100 - 3 DAYS
+            ========================================================= */
+
+            if (
+                requestNumber === 2 ||
+                requestNumber === 3
+            ) {
+
+                const isFinalAccess =
+                    requestNumber === 3;
 
 
-            statusBox.style.display =
-                "flex";
+                /*
+                    Payment has NOT been confirmed yet.
+                */
+
+                if (
+                    request.payment_status !== "paid" &&
+                    request.payment_confirmed !== true
+                ) {
+
+                    showMessage(
+                        isFinalAccess
+
+                            ? "Your third and final gallery access has been approved. A ₱100 payment is required. Your 3-day final access will begin after payment is confirmed."
+
+                            : "Your second gallery access has been approved. A ₱100 payment is required. Your 3-day access will begin after payment is confirmed.",
+
+                        "info"
+                    );
 
 
-            statusTitle.textContent =
-                "Second Gallery Access Approved";
+                    statusBox.style.display =
+                        "flex";
 
 
-            statusText.textContent =
-                "Gallery viewing is available. Photo downloads require a ₱100 payment.";
+                    statusTitle.textContent =
+                        isFinalAccess
+
+                            ? "Final Gallery Access - Payment Required"
+
+                            : "Second Gallery Access - Payment Required";
 
 
-            countdown.textContent =
-                "Payment required before downloading.";
+                    statusText.textContent =
+                        "A ₱100 payment is required before your 3-day gallery access begins.";
 
 
-            setTimeout(
-                () => {
+                    countdown.textContent =
+                        "Waiting for payment confirmation.";
 
-                    openGallery(
+
+                    /*
+                        Keep checking because the customer may
+                        pay after admin approval.
+                    */
+
+                    startPaymentChecker(
+                        request.id
+                    );
+
+                    return;
+                }
+
+
+                /*
+                    Payment is confirmed.
+                */
+
+                if (
+                    request.access_expires_at
+                ) {
+
+                    const expiresAt =
+                        new Date(
+                            request.access_expires_at
+                        );
+
+
+                    /*
+                        Access already expired.
+                    */
+
+                    if (
+                        expiresAt <= new Date()
+                    ) {
+
+                        if (isFinalAccess) {
+
+                            showFinalAccessExpired();
+
+                        }
+                        else {
+
+                            showPaidAccessExpired();
+
+                        }
+
+                        return;
+                    }
+
+
+                    /*
+                        Access is currently active.
+                    */
+
+                    showMessage(
+                        isFinalAccess
+
+                            ? "Your ₱100 payment has been confirmed. Your final gallery access is valid for 3 days."
+
+                            : "Your ₱100 payment has been confirmed. Your second gallery access is valid for 3 days.",
+
+                        "success"
+                    );
+
+
+                    showPaidAccess(
                         request
                     );
 
-                },
-                1500
-            );
+
+                    setTimeout(() => {
+
+                        openGallery(request);
+
+                    }, 1500);
+
+
+                    return;
+                }
+                showMessage(
+                    "Your payment has been confirmed. Your gallery access is being activated. Please wait for the system to update.",
+                    "info"
+                );
+            }
         }
-
-
-        /* =========================================================
-           SHOW ACTIVE FREE ACCESS
-           ========================================================= */
-
         function showActiveAccess(
             request
         ) {
@@ -1047,6 +1249,213 @@
             startCountdown(
                 expiresAt
             );
+        }
+        function showPaidAccess(request) {
+
+            if (
+                !request.access_expires_at
+            ) {
+
+                return;
+            }
+
+
+            const expiresAt =
+                new Date(
+                    request.access_expires_at
+                );
+
+
+            if (
+                expiresAt <= new Date()
+            ) {
+
+                if (
+                    Number(request.request_number) === 3
+                ) {
+
+                    showFinalAccessExpired();
+
+                }
+                else {
+
+                    showPaidAccessExpired();
+
+                }
+
+                return;
+            }
+
+
+            statusBox.style.display =
+                "flex";
+
+
+            const requestNumber =
+                Number(request.request_number);
+
+
+            if (
+                requestNumber === 3
+            ) {
+
+                statusTitle.textContent =
+                    "FINAL Gallery Access Active";
+
+
+                statusText.textContent =
+                    "Your ₱100 payment has been confirmed. This is your third and final gallery access. It is valid for 3 days.";
+
+            }
+            else {
+
+                statusTitle.textContent =
+                    "SECOND Gallery Access Active";
+
+
+                statusText.textContent =
+                    "Your ₱100 payment has been confirmed. Your second gallery access is valid for 3 days.";
+
+            }
+
+
+            startPaidAccessCountdown(
+                expiresAt,
+                requestNumber
+            );
+        }
+        function startPaidAccessCountdown(
+            expiresAt,
+            requestNumber
+        ) {
+
+            if (countdownTimer) {
+
+                clearInterval(
+                    countdownTimer
+                );
+            }
+
+            function showPaidAccessExpired() {
+
+                statusBox.style.display =
+                    "flex";
+
+
+                statusTitle.textContent =
+                    "Second Gallery Access Expired";
+
+
+                statusText.textContent =
+                    "Your 3-day second gallery access has expired. You may now request your third and final gallery access."
+
+
+                countdown.textContent =
+                    "Third access: ₱100 payment, valid for 3 days.";
+
+
+                showMessage(
+                    "Your second gallery access has expired. You may now submit your third and final gallery access request.",
+                    "info"
+                );
+            }
+            function updatePaidCountdown() {
+
+                const now =
+                    new Date();
+
+
+                let remaining =
+                    expiresAt.getTime() -
+                    now.getTime();
+
+
+                if (
+                    remaining <= 0
+                ) {
+
+                    clearInterval(
+                        countdownTimer
+                    );
+
+                    countdownTimer =
+                        null;
+
+
+                    if (
+                        requestNumber === 3
+                    ) {
+
+                        showFinalAccessExpired();
+
+                    }
+                    else {
+
+                        showPaidAccessExpired();
+
+                    }
+
+                    return;
+                }
+
+
+                const days =
+                    Math.floor(
+                        remaining /
+                        (1000 * 60 * 60 * 24)
+                    );
+
+
+                remaining %=
+                    1000 * 60 * 60 * 24;
+
+
+                const hours =
+                    Math.floor(
+                        remaining /
+                        (1000 * 60 * 60)
+                    );
+
+
+                remaining %=
+                    1000 * 60 * 60;
+
+
+                const minutes =
+                    Math.floor(
+                        remaining /
+                        (1000 * 60)
+                    );
+
+
+                remaining %=
+                    1000 * 60;
+
+
+                const seconds =
+                    Math.floor(
+                        remaining /
+                        1000
+                    );
+
+
+                countdown.textContent =
+                    requestNumber === 3
+
+                        ? `FINAL access remaining: ${days}d ${hours}h ${minutes}m ${seconds}s`
+
+                        : `Paid access remaining: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+
+
+            updatePaidCountdown();
+
+
+            countdownTimer =
+                setInterval(
+                    updatePaidCountdown,
+                    1000
+                );
         }
 
         function startCountdown(
@@ -1130,12 +1539,95 @@
                     1000
                 );
         }
+        function startFinalCountdown(expiresAt) {
 
+            if (countdownTimer) {
 
-        /* =========================================================
-           EXPIRED
-           ========================================================= */
+                clearInterval(countdownTimer);
+            }
 
+            function updateFinalCountdown() {
+
+                const now = new Date();
+
+                let remaining =
+                    expiresAt.getTime() -
+                    now.getTime();
+
+                if (remaining <= 0) {
+
+                    clearInterval(countdownTimer);
+
+                    countdownTimer = null;
+
+                    showFinalAccessExpired();
+
+                    return;
+                }
+
+                const days =
+                    Math.floor(
+                        remaining /
+                        (1000 * 60 * 60 * 24)
+                    );
+
+                remaining %=
+                    1000 * 60 * 60 * 24;
+
+                const hours =
+                    Math.floor(
+                        remaining /
+                        (1000 * 60 * 60)
+                    );
+
+                remaining %=
+                    1000 * 60 * 60;
+
+                const minutes =
+                    Math.floor(
+                        remaining /
+                        (1000 * 60)
+                    );
+
+                remaining %=
+                    1000 * 60;
+
+                const seconds =
+                    Math.floor(
+                        remaining /
+                        1000
+                    );
+
+                countdown.textContent =
+                    `Final access remaining: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            updateFinalCountdown();
+
+            countdownTimer =
+                setInterval(
+                    updateFinalCountdown,
+                    1000
+                );
+        }
+        function showFinalAccessExpired() {
+
+            statusBox.style.display = "flex";
+
+            statusTitle.textContent =
+                "Final Gallery Access Expired";
+
+            statusText.textContent =
+                "Your final 3-day gallery access has expired.";
+
+            countdown.textContent =
+                "No further gallery access is available for this booking.";
+
+            showMessage(
+                "Your final gallery access has expired. No further gallery access requests are available for this booking.",
+                "error"
+            );
+        }
         function showExpiredAccess() {
 
             statusBox.style.display =
@@ -1159,86 +1651,46 @@
                 "info"
             );
         }
-        async function openGallery(
-            request
-        ) {
-
+        async function openGallery(request) {
             try {
-
-                console.log(
-                    "OPENING GALLERY:",
-                    request
-                );
-
-
-                const {
-                    data: repository,
-                    error
-                } =
-                    await supabaseClient
-                        .from(
-                            "repository_client_links"
-                        )
-                        .select(
-                            "id, access_token"
-                        )
-                        .eq(
-                            "id",
-                            request.repository_id
-                        )
-                        .maybeSingle();
-
-
-                if (error) {
-                    throw error;
-                }
-
-
-                if (
-                    !repository ||
-                    !repository.access_token
-                ) {
-
-                    showMessage(
-                        "Your gallery link is not available yet.",
-                        "error"
-                    );
-
+                if (!request || !request.id) {
+                    alert("Invalid gallery access request.");
                     return;
                 }
 
-
-                console.log(
-                    "GALLERY REPOSITORY FOUND:",
-                    repository.id
+                const response = await fetch(
+                    `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(request.id)}`
                 );
 
-                const CUSTOMER_FRONTEND_URL =
-                    "https://captured-photo-studio.onrender.com";
+                const result = await response.json();
 
-                window.location.href =
-                    CUSTOMER_FRONTEND_URL +
-                    "/frontend-customer/customer_gallery_view.html?token=" +
-                    encodeURIComponent(
-                        repository.access_token
-                    ) +
-                    "&request=" +
-                    encodeURIComponent(
-                        request.id
+                if (!response.ok || !result.success) {
+                    alert(
+                        result.error ||
+                        "Your gallery cannot be opened at this time."
                     );
-            }
+                    return;
+                }
 
-            catch (error) {
+                const token = result.token;
 
-                console.error(
-                    "OPEN GALLERY ERROR:",
-                    error
-                );
+                if (!token) {
+                    alert("Gallery token is missing.");
+                    return;
+                }
 
+                const galleryUrl =
+                    `/frontend-customer/customer_gallery_view.html` +
+                    `?token=${encodeURIComponent(token)}` +
+                    `&request=${encodeURIComponent(request.id)}`;
 
-                showMessage(
-                    "Unable to open your gallery.",
-                    "error"
+                window.location.href = galleryUrl;
+
+            } catch (error) {
+                console.error("Open gallery error:", error);
+
+                alert(
+                    "Unable to open the gallery. Please try again."
                 );
             }
         }

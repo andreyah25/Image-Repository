@@ -879,11 +879,17 @@
         `;
             }
         }
-        function renderGlobalSearchResults(photos, searchTerm) {
+        async function renderGlobalSearchResults(
+            photos,
+            searchTerm
+        ) {
 
             customerFoldersContainer.innerHTML = "";
 
-            if (!photos || photos.length === 0) {
+            if (
+                !photos ||
+                photos.length === 0
+            ) {
 
                 customerFoldersContainer.innerHTML = `
             <div class="customer-folder-empty">
@@ -923,10 +929,7 @@
         </span>
     `;
 
-            customerFoldersContainer.appendChild(
-                header
-            );
-
+            customerFoldersContainer.appendChild(header);
 
             const grid =
                 document.createElement("div");
@@ -935,7 +938,10 @@
                 "photos-grid repository-search-results";
 
 
-            photos.forEach(photo => {
+            for (const photo of photos) {
+
+                const imageUrl =
+                    await getPhotoSignedUrl(photo);
 
                 const card =
                     document.createElement("div");
@@ -973,16 +979,26 @@
 
             <div class="photo-image-wrapper">
 
-                <img
-                    src="${escapeHTML(
-                    photo.image_url || ""
-                )}"
-                    alt="${escapeHTML(
-                    photo.original_name ||
-                    "Photo"
-                )}"
-                    loading="lazy"
-                >
+                ${imageUrl
+                        ? `
+                            <img
+                                src="${escapeHTML(imageUrl)}"
+                                alt="${escapeHTML(
+                            photo.original_name ||
+                            "Photo"
+                        )}"
+                                loading="lazy"
+                            >
+                        `
+                        : `
+                            <div class="customer-folder-empty">
+                                <i class="fa-regular fa-image"></i>
+                                <div>
+                                    Photo unavailable
+                                </div>
+                            </div>
+                        `
+                    }
 
             </div>
 
@@ -992,9 +1008,9 @@
                 <div class="photo-name">
 
                     ${escapeHTML(
-                    photo.original_name ||
-                    "Unnamed photo"
-                )}
+                        photo.original_name ||
+                        "Unnamed photo"
+                    )}
 
                 </div>
 
@@ -1004,9 +1020,9 @@
                     <i class="fa-solid fa-user"></i>
 
                     ${escapeHTML(
-                    photo.client_name ||
-                    "Unknown client"
-                )}
+                        photo.client_name ||
+                        "Unknown client"
+                    )}
 
                 </div>
 
@@ -1017,17 +1033,17 @@
 
                         ? objectNames.map(
                             name => `
-                                <span class="photo-tag">
-                                    ${escapeHTML(name)}
-                                </span>
-                            `
+                                    <span class="photo-tag">
+                                        ${escapeHTML(name)}
+                                    </span>
+                                `
                         ).join("")
 
                         : `
-                            <span class="photo-tag">
-                                No objects detected
-                            </span>
-                        `
+                                <span class="photo-tag">
+                                    No objects detected
+                                </span>
+                            `
                     }
 
                 </div>
@@ -1036,11 +1052,6 @@
 
         `;
 
-
-                /*
-                 * Clicking the photo opens the
-                 * customer's folder.
-                 */
 
                 card.addEventListener(
                     "click",
@@ -1072,84 +1083,13 @@
 
                 grid.appendChild(card);
 
-            });
+            }
 
 
             customerFoldersContainer.appendChild(
                 grid
             );
         }
-        async function openCustomerFolder(
-            client
-        ) {
-
-            try {
-
-                selectedClient =
-                    client;
-
-
-                selectedRepository =
-                    await getOrCreateRepository(
-                        client
-                    );
-                customerPhotoSearchInput.value = "";
-
-                clearPhotoSearch.style.display = "none";
-
-                photoSearchInfo.textContent = "";
-
-                selectedCustomerName.textContent =
-                    client.full_name ||
-                    "Customer";
-
-
-                selectedCustomerDetails.textContent =
-                    "Booking ID: " +
-                    client.id +
-                    " • " +
-                    (client.session_type || "Session");
-
-
-                const link =
-                    makeClientLink(
-                        selectedRepository.access_token
-                    );
-
-
-                clientLinkInput.value =
-                    link;
-
-
-                foldersView.style.display =
-                    "none";
-
-
-                photosView.style.display =
-                    "block";
-
-                await loadPhotos(
-                    selectedRepository.id
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Open customer folder error:",
-                    error
-                );
-
-                alert(
-                    "Could not open customer folder.\n\n" +
-                    error.message
-                );
-
-            }
-
-        }
-
-
         async function getOrCreateRepository(client) {
 
             if (!client || !client.id) {
@@ -1242,17 +1182,23 @@
 
 
 
-        function makeClientLink(token) {
+        function makeClientLink(token, requestId = "") {
 
             const siteURL =
                 "https://captured-photo-studio.onrender.com";
 
-            return (
+            let link =
                 siteURL +
                 "/frontend-customer/customer_gallery_view.html?token=" +
-                encodeURIComponent(token)
-            );
+                encodeURIComponent(token);
 
+            if (requestId) {
+                link +=
+                    "&request=" +
+                    encodeURIComponent(requestId);
+            }
+
+            return link;
         }
 
 
@@ -1744,6 +1690,34 @@
             }
 
         }
+        async function getPhotoSignedUrl(photo) {
+
+            if (!photo || !photo.storage_path) {
+                return null;
+            }
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .storage
+                .from("client-photos")
+                .createSignedUrl(
+                    photo.storage_path,
+                    60 * 5
+                );
+
+            if (error) {
+                console.error(
+                    "Could not create photo signed URL:",
+                    error
+                );
+
+                return null;
+            }
+
+            return data?.signedUrl || null;
+        }
         async function loadPhotos(repositoryId, searchQuery = "") {
 
             photoGrid.innerHTML = `
@@ -1917,12 +1891,9 @@
             }
         );
 
-        function renderPhotos(
-            photos
-        ) {
+        async function renderPhotos(photos) {
 
             photoGrid.innerHTML = "";
-
 
             if (
                 !photos ||
@@ -1950,56 +1921,68 @@
                 return;
             }
 
+            const photoCards = await Promise.all(
 
-            photos.forEach(
-                photo => {
+                photos.map(async photo => {
+
+                    const imageUrl =
+                        await getPhotoSignedUrl(photo);
 
                     const card =
                         document.createElement("div");
 
-
                     card.className =
                         "customer-photo-card";
 
-
                     card.innerHTML = `
 
-                <div
-                    class="photo-processing-badge"
-                >
+                <div class="photo-processing-badge">
+
                     ${escapeHTML(
                         photo.processing_status ||
                         "pending"
                     )}
+
                 </div>
 
-                <img
-                    src="${escapeHTML(
-                        photo.image_url || ""
-                    )}"
-                    alt="${escapeHTML(
-                        photo.original_name ||
-                        "Customer photo"
-                    )}"
-                >
+                ${imageUrl
+                            ? `
+                            <img
+                                src="${escapeHTML(imageUrl)}"
+                                alt="${escapeHTML(
+                                photo.original_name ||
+                                "Customer photo"
+                            )}"
+                                loading="lazy"
+                            >
+                        `
+                            : `
+                            <div class="customer-folder-empty">
+                                <i class="fa-regular fa-image"></i>
+                                <div>
+                                    Photo unavailable
+                                </div>
+                            </div>
+                        `
+                        }
 
                 <div class="photo-information">
 
                     <div class="photo-name">
 
                         ${escapeHTML(
-                        photo.original_name ||
-                        "Photo"
-                    )}
+                            photo.original_name ||
+                            "Photo"
+                        )}
 
                     </div>
 
                     <div class="photo-status">
 
                         ${escapeHTML(
-                        photo.processing_status ||
-                        "Pending processing"
-                    )}
+                            photo.processing_status ||
+                            "Pending processing"
+                        )}
 
                     </div>
 
@@ -2007,16 +1990,19 @@
 
             `;
 
+                    return card;
 
-                    photoGrid.appendChild(
-                        card
-                    );
+                })
 
-                }
             );
 
-        }
+            photoCards.forEach(card => {
 
+                photoGrid.appendChild(card);
+
+            });
+
+        }
         function startPhotoUpload() {
 
             if (
@@ -2164,21 +2150,28 @@
 
                     }
 
-
-
                     const {
-                        data: publicUrlData
-                    } =
-                        supabaseClient
-                            .storage
-                            .from("client-photos")
-                            .getPublicUrl(
-                                storagePath
-                            );
+                        data: signedUrlData,
+                        error: signedUrlError
+                    } = await supabaseClient
+                        .storage
+                        .from("client-photos")
+                        .createSignedUrl(
+                            storagePath,
+                            60 * 5
+                        );
 
+                    if (
+                        signedUrlError ||
+                        !signedUrlData?.signedUrl
+                    ) {
+                        throw signedUrlError || new Error(
+                            "Unable to create temporary photo URL."
+                        );
+                    }
 
                     const imageUrl =
-                        publicUrlData.publicUrl;
+                        signedUrlData.signedUrl;
 
                     const {
                         data: photoRecord,
@@ -2189,7 +2182,7 @@
                             repository_id: selectedRepository.id,
                             booking_id: selectedClient.id,
                             storage_path: storagePath,
-                            image_url: imageUrl,
+                            image_url: null,
                             original_name: file.name,
                             mime_type: file.type,
                             file_size: file.size,

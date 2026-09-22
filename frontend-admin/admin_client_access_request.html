@@ -1283,6 +1283,9 @@
 
                 try {
 
+                    // ============================================
+                    // GET ACCESS REQUEST
+                    // ============================================
 
                     const {
                         data: request,
@@ -1313,7 +1316,10 @@
                         requestNumber >= 2;
 
 
-                    // GET CURRENT ADMIN USER
+                    // ============================================
+                    // CHECK CURRENT ADMIN
+                    // ============================================
+
                     const {
                         data: { user: currentUser },
                         error: authError
@@ -1334,11 +1340,10 @@
                         );
                     }
 
-                    console.log(
-                        "CURRENT ADMIN:",
-                        currentUser.id
-                    );
 
+                    // ============================================
+                    // PREVENT DOUBLE APPROVAL
+                    // ============================================
 
                     if (request.status === "approved") {
 
@@ -1349,6 +1354,12 @@
 
                         return;
                     }
+
+
+                    // ============================================
+                    // GET BOOKING
+                    // ============================================
+
                     const {
                         data: booking,
                         error: bookingError
@@ -1368,52 +1379,161 @@
                         );
                     }
 
+
+                    // ============================================
+                    // CREATE / GET REPOSITORY
+                    // ============================================
+
                     const repository =
                         await createClientRepository(
                             booking
                         );
 
-                    const clientLink =
-                        getClientRepositoryLink(repository, booking);
-                    const approvedAt = new Date();
 
-                    const expiresAt = new Date(
-                        approvedAt.getTime() +
-                        (24 * 60 * 60 * 1000)
-                    );
+                    // ============================================
+                    // APPROVAL TIME
+                    // ============================================
 
-                    const archiveAt = new Date(
-                        approvedAt.getTime() +
-                        (2 * 24 * 60 * 60 * 1000)
-                    );
+                    const approvedAt =
+                        new Date();
+
+                    let accessStartedAt = null;
+                    let accessExpiresAt = null;
+                    let archiveAt = null;
+
+
+                    // ============================================
+                    // REQUEST #1
+                    // FREE ACCESS — 24 HOURS
+                    // ============================================
+
+                    if (isFirstRequest) {
+
+                        accessStartedAt =
+                            approvedAt;
+
+                        accessExpiresAt =
+                            new Date(
+                                approvedAt.getTime() +
+                                (24 * 60 * 60 * 1000)
+                            );
+
+                        archiveAt =
+                            new Date(
+                                accessExpiresAt.getTime() +
+                                (24 * 60 * 60 * 1000)
+                            );
+
+                    }
+
+                    // ============================================
+                    // REQUEST #2 / #3
+                    // PAYMENT REQUIRED
+                    // ACCESS STARTS AFTER PAYMENT
+                    // ============================================
+
+                    else {
+
+                        accessStartedAt = null;
+
+                        accessExpiresAt = null;
+
+                        /*
+                         * Keep the approved request visible
+                         * while the customer completes payment.
+                         */
+                        archiveAt =
+                            new Date(
+                                approvedAt.getTime() +
+                                (4 * 24 * 60 * 60 * 1000)
+                            );
+                    }
+
+
+                    // ============================================
+                    // UPDATE ACCESS REQUEST
+                    // ============================================
+
                     const {
                         error: updateError
                     } = await supabaseClient
                         .from("gallery_access_requests")
                         .update({
-                            status: "approved",
-                            repository_id: repository.id,
 
-                            approved_at: approvedAt.toISOString(),
-                            access_started_at: approvedAt.toISOString(),
-                            access_expires_at: expiresAt.toISOString(),
-                            expires_at: expiresAt.toISOString(),
-                            archive_at: archiveAt.toISOString(),
-                            is_expired: false,
-                            approved_by: currentUser.id,
-                            payment_required: paymentRequired,
-                            payment_confirmed: isFirstRequest,
-                            payment_status: isFirstRequest ? "paid" : "unpaid",
-                            paid_at: isFirstRequest ? approvedAt.toISOString() : null,
-                            access_granted_at: isFirstRequest
-                                ? approvedAt.toISOString()
-                                : null
+                            status:
+                                "approved",
+
+                            repository_id:
+                                repository.id,
+
+                            approved_at:
+                                approvedAt.toISOString(),
+
+                            access_started_at:
+                                accessStartedAt
+                                    ? accessStartedAt.toISOString()
+                                    : null,
+
+                            access_expires_at:
+                                accessExpiresAt
+                                    ? accessExpiresAt.toISOString()
+                                    : null,
+
+                            expires_at:
+                                accessExpiresAt
+                                    ? accessExpiresAt.toISOString()
+                                    : null,
+
+                            archive_at:
+                                archiveAt
+                                    ? archiveAt.toISOString()
+                                    : null,
+
+                            is_expired:
+                                false,
+
+                            approved_by:
+                                currentUser.id,
+
+                            payment_required:
+                                paymentRequired,
+
+                            payment_confirmed:
+                                isFirstRequest,
+
+                            payment_status:
+                                isFirstRequest
+                                    ? "paid"
+                                    : "unpaid",
+
+                            paid_at:
+                                isFirstRequest
+                                    ? approvedAt.toISOString()
+                                    : null,
+
+                            access_granted_at:
+                                isFirstRequest
+                                    ? approvedAt.toISOString()
+                                    : null
+
                         })
                         .eq("id", requestId);
+
                     if (updateError) {
-                        console.error("Access request update error:", updateError);
+
+                        console.error(
+                            "Access request update error:",
+                            updateError
+                        );
+
                         throw updateError;
                     }
+
+
+                    // ============================================
+                    // SEND APPROVAL EMAIL
+                    // ============================================
+
                     console.log(
                         "Sending approved gallery email..."
                     );
@@ -1431,11 +1551,13 @@
                                 method: "POST",
 
                                 headers: {
-                                    "Content-Type": "application/json"
+                                    "Content-Type":
+                                        "application/json"
                                 },
 
                                 body: JSON.stringify({
-                                    requestId: requestId
+                                    requestId:
+                                        requestId
                                 })
                             }
                         );
@@ -1490,11 +1612,43 @@
                     );
 
 
-                    showToast(
-                        "Access Approved",
-                        "The customer's gallery access has been approved."
-                    );
+                    // ============================================
+                    // SUCCESS MESSAGE
+                    // ============================================
 
+                    if (requestNumber === 1) {
+
+                        showToast(
+                            "Access Approved",
+                            "The customer's free 24-hour gallery access has been approved."
+                        );
+
+                    } else if (requestNumber === 2) {
+
+                        showToast(
+                            "Access Approved",
+                            "Request #2 was approved. The customer must complete the ₱100 payment before 3-day access begins."
+                        );
+
+                    } else if (requestNumber === 3) {
+
+                        showToast(
+                            "Final Access Approved",
+                            "Request #3 was approved. The customer must complete the ₱100 payment before the final 3-day access begins."
+                        );
+
+                    } else {
+
+                        showToast(
+                            "Access Approved",
+                            "The customer's gallery access request has been approved."
+                        );
+                    }
+
+
+                    // ============================================
+                    // REFRESH TABLE
+                    // ============================================
 
                     await loadAccessRequests();
 

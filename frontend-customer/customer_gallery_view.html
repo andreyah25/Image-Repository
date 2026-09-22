@@ -217,67 +217,103 @@
                     booking.full_name || "Customer";
             }
         }
-        async function loadRepositoryPhotos(repositoryId) {
+        async function loadRepositoryPhotos() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get("token");
 
-            if (!repositoryId) {
-                console.error("No repository ID provided.");
-                return;
+            if (!token || token.trim() === "") {
+                console.error("No gallery token provided.");
+
+                showGalleryError(
+                    "Invalid Gallery Link",
+                    "Your gallery link is missing or invalid."
+                );
+
+                return false;
             }
 
-            console.log(
-                "Loading photos for repository:",
-                repositoryId
-            );
+            try {
+                const response =
+                    await fetch(
+                        `${SERVER_URL}/api/gallery-access/photos?token=${encodeURIComponent(token)}`
+                    );
 
-            const {
-                data: photos,
-                error
-            } = await supabaseClient
-                .from("repository_photos")
-                .select("*")
-                .eq("repository_id", repositoryId)
-                .order("created_at", {
-                    ascending: true
-                });
+                const result =
+                    await response.json();
 
-            if (error) {
+                if (!response.ok || !result.success) {
+
+                    showGalleryError(
+                        "Gallery Access Expired",
+                        result.error ||
+                        "Your gallery access has expired or payment is still required."
+                    );
+
+                    return false;
+                }
+
+                if (result.request) {
+
+                    currentAccessRequest = {
+                        ...currentAccessRequest,
+                        ...result.request
+                    };
+
+                    galleryAccessNumber =
+                        Number(
+                            result.request.request_number || 0
+                        );
+
+                    galleryPreviewMode =
+                        galleryAccessNumber >= 2 &&
+                        !(
+                            result.request.payment_confirmed === true &&
+                            String(
+                                result.request.payment_status || ""
+                            ).toLowerCase() === "paid"
+                        );
+                }
+
+                currentPhotos =
+                    result.photos || [];
+
+                renderGalleryPhotos(
+                    currentPhotos
+                );
+
+                return true;
+
+            } catch (error) {
 
                 console.error(
-                    "Repository photos error:",
+                    "Authorized gallery loading error:",
                     error
                 );
 
-                galleryGrid.innerHTML = `
-            <div class="gallery-loading">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <p>Unable to load gallery photos.</p>
-                <small>${escapeHTML(error.message)}</small>
-            </div>
-        `;
+                showGalleryError(
+                    "Unable to Open Gallery",
+                    "We could not verify your gallery access."
+                );
 
-                return;
+                return false;
             }
-
-            currentPhotos =
-                photos || [];
-
-            console.log(
-                "Photos loaded:",
-                currentPhotos.length
-            );
-
-            renderGalleryPhotos(
-                currentPhotos
-            );
         }
         async function initializeGallery() {
 
-            const urlParams = new URLSearchParams(window.location.search);
+            const urlParams =
+                new URLSearchParams(window.location.search);
 
-            const token = urlParams.get("token");
-            const email = urlParams.get("email");
+            const token =
+                urlParams.get("token");
 
-            if ((!token || token.trim() === "") && (!email || email.trim() === "")) {
+            const requestId =
+                urlParams.get("request");
+
+            // --------------------------------------------------
+            // TOKEN IS REQUIRED
+            // --------------------------------------------------
+
+            if (!token || token.trim() === "") {
 
                 showGalleryError(
                     "Invalid Gallery Link",
@@ -287,186 +323,88 @@
                 return;
             }
 
+            // --------------------------------------------------
+            // REQUEST ID IS REQUIRED
+            // --------------------------------------------------
+
+            if (!requestId || requestId.trim() === "") {
+
+                showGalleryError(
+                    "Invalid Gallery Link",
+                    "This gallery link is missing the access request."
+                );
+
+                return;
+            }
+
             try {
 
-                let repositories = [];
-                if (token && token.trim() !== "") {
+                console.log(
+                    "Opening authorized gallery..."
+                );
 
-                    console.log("Opening gallery using access token.");
+                console.log(
+                    "Request ID:",
+                    requestId
+                );
 
-                    const {
-                        data: repository,
-                        error
-                    } = await supabaseClient
-                        .from("repository_client_links")
-                        .select(`
-                    id,
-                    booking_id,
-                    access_token,
-                    download_access
-                    
-                `)
-                        .eq("access_token", token.trim())
-                        .maybeSingle();
+                // --------------------------------------------------
+                // FIRST: VERIFY THE REQUEST THROUGH THE BACKEND
+                // --------------------------------------------------
 
-                    if (error) {
-
-                        console.error(
-                            "Repository validation error:",
-                            error
-                        );
-
-                        console.error(
-                            "Repository validation error message:",
-                            error?.message
-                        );
-
-                        console.error(
-                            "Repository validation error code:",
-                            error?.code
-                        );
-
-                        console.error(
-                            "Repository validation error details:",
-                            error?.details
-                        );
-
-                        console.error(
-                            "Repository validation error hint:",
-                            error?.hint
-                        );
-                        showGalleryError(
-                            "Unable to Open Gallery",
-                            "We could not verify this gallery link."
-                        );
-
-                        return;
-                    }
-                    repositories = [repository];
-                    if (!repository) {
-
-                        showGalleryError(
-                            "Invalid Gallery Link",
-                            "This gallery link does not exist or may have expired."
-                        );
-
-                        return;
-                    }
-
-                    repositories = [repository];
-                }
-                else if (email && email.trim() !== "") {
-
-                    const customerEmail =
-                        decodeURIComponent(email.trim()).toLowerCase();
-
-                    console.log(
-                        "Opening gallery using customer email:",
-                        customerEmail
+                const openResponse =
+                    await fetch(
+                        `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
+                        `?token=${encodeURIComponent(token)}`
                     );
 
-                    const {
-                        data: bookings,
-                        error: bookingSearchError
-                    } = await supabaseClient
-                        .from("bookings")
-                        .select("id, full_name, email")
-                        .ilike("email", customerEmail);
+                const openResult =
+                    await openResponse.json();
 
-                    if (bookingSearchError) {
+                console.log(
+                    "Gallery open authorization:",
+                    openResult
+                );
 
-                        console.error(
-                            "Customer booking lookup error:",
-                            bookingSearchError
-                        );
-
-                        showGalleryError(
-                            "Unable to Open Gallery",
-                            "We could not find the customer gallery."
-                        );
-
-                        return;
-                    }
-
-                    if (!bookings || bookings.length === 0) {
-
-                        showGalleryError(
-                            "Gallery Not Found",
-                            "No gallery is associated with this email address."
-                        );
-
-                        return;
-                    }
-
-                    const bookingIds =
-                        bookings.map(
-                            booking => booking.id
-                        );
-                    const {
-                        data: repositoryList,
-                        error: repositoryError
-                    } = await supabaseClient
-                        .from("repository_client_links")
-                        .select(`
-                    id,
-                    booking_id,
-                    access_token,
-                    download_access
-                    
-                `)
-                        .in("booking_id", bookingIds);
-
-                    if (repositoryError) {
-
-                        console.error(
-                            "Repository lookup error:",
-                            repositoryError
-                        );
-
-                        showGalleryError(
-                            "Unable to Open Gallery",
-                            "We could not load the customer's gallery folder."
-                        );
-
-                        return;
-                    }
-
-                    if (!repositoryList || repositoryList.length === 0) {
-
-                        showGalleryError(
-                            "Gallery Not Found",
-                            "No gallery folder has been created for this email address yet."
-                        );
-
-                        return;
-                    }
-
-                    repositories = repositoryList;
-                }
-                if (!repositories || repositories.length === 0) {
+                if (
+                    !openResponse.ok ||
+                    !openResult.success
+                ) {
 
                     showGalleryError(
-                        "Gallery Not Found",
-                        "No gallery folder was found."
+                        "Gallery Access Denied",
+                        openResult.error ||
+                        "Your gallery access is not currently available."
                     );
 
                     return;
                 }
-                const validRepositories = repositories;
 
 
-                if (validRepositories.length === 0) {
+                if (openResult.request) {
 
-                    showGalleryError(
-                        "Gallery Access Expired",
-                        "Your gallery access has expired. Please request access again from the studio."
-                    );
+                    currentAccessRequest =
+                        openResult.request;
 
-                    return;
+                    galleryAccessNumber =
+                        Number(
+                            openResult.request.request_number || 0
+                        );
+
+                    galleryPreviewMode =
+                        galleryAccessNumber >= 2 &&
+                        !(
+                            openResult.request.payment_confirmed === true &&
+                            String(
+                                openResult.request.payment_status || ""
+                            ).toLowerCase() === "paid"
+                        );
+
                 }
-                currentRepository =
-                    validRepositories[0];
 
+                // --------------------------------------------------
+                // LOAD BOOKING INFORMATION
+                // --------------------------------------------------
 
                 const {
                     data: booking,
@@ -476,10 +414,9 @@
                     .select("*")
                     .eq(
                         "id",
-                        currentRepository.booking_id
+                        openResult.request.booking_id
                     )
                     .maybeSingle();
-
 
                 if (bookingError) {
 
@@ -496,7 +433,6 @@
                     return;
                 }
 
-
                 if (!booking) {
 
                     showGalleryError(
@@ -507,120 +443,32 @@
                     return;
                 }
 
-
                 currentBooking =
                     booking;
 
-                const {
-                    data: approvedRequests,
-                    error: accessRequestError
-                } = await supabaseClient
-                    .from("gallery_access_requests")
-                    .select(`
-        id,
-        customer_email,
-        booking_id,
-        repository_id,
-        status,
-        request_number,
-        payment_required,
-        payment_confirmed,
-        payment_status,
-        paid_at,
-        access_granted_at,
-        access_expires_at,
-        created_at
-    `)
-                    .eq("booking_id", currentRepository.booking_id)
-                    .eq("repository_id", currentRepository.id)
-                    .eq("status", "approved")
-                    .order("created_at", {
-                        ascending: true
-                    });
-
-                if (accessRequestError) {
-
-                    console.error(
-                        "Gallery access request lookup error:",
-                        accessRequestError
-                    );
-
-                    showGalleryError(
-                        "Unable to Verify Gallery Access",
-                        "We could not verify your gallery access status."
-                    );
-
-                    return;
-                }
-
-                if (!approvedRequests || approvedRequests.length === 0) {
-
-                    showGalleryError(
-                        "Gallery Access Not Approved",
-                        "Your gallery access has not been approved yet."
-                    );
-
-                    return;
-                }
-
-                currentAccessRequest =
-                    approvedRequests[approvedRequests.length - 1];
-
-                galleryAccessNumber =
-                    Number(currentAccessRequest.request_number || 0);
-
-                galleryPreviewMode =
-                    galleryAccessNumber >= 2;
-
-                if (galleryAccessNumber >= 2) {
-                    currentAccessRequest.payment_required = true;
-                }
-                console.log("====================================");
-
-                console.log(
-                    "APPROVED REQUEST COUNT:",
-                    galleryAccessNumber
-                );
-
-                console.log(
-                    "LATEST REQUEST ID:",
-                    currentAccessRequest.id
-                );
-
-                console.log(
-                    "REQUEST NUMBER:",
-                    currentAccessRequest.request_number
-                );
-
-                console.log(
-                    "PAYMENT REQUIRED:",
-                    currentAccessRequest.payment_required
-                );
-
-                console.log(
-                    "PAYMENT CONFIRMED:",
-                    currentAccessRequest.payment_confirmed
-                );
-
-                console.log(
-                    "PAYMENT STATUS:",
-                    currentAccessRequest.payment_status
-                );
-
-                console.log(
-                    "GALLERY PREVIEW MODE:",
-                    galleryPreviewMode
-                );
-
-                console.log("====================================");
+                // --------------------------------------------------
+                // DISPLAY CUSTOMER INFORMATION
+                // --------------------------------------------------
 
                 displayClientInformation(
                     booking
                 );
 
-                await loadRepositoryPhotos(
-                    currentRepository.id
-                );
+                // --------------------------------------------------
+                // LOAD PHOTOS THROUGH AUTHORIZED BACKEND ROUTE
+                // --------------------------------------------------
+
+                const galleryLoaded =
+                    await loadRepositoryPhotos();
+
+                if (!galleryLoaded) {
+                    return;
+                }
+
+                // --------------------------------------------------
+                // CHECK PAYMONGO RETURN STATUS
+                // --------------------------------------------------
+
                 await checkGalleryPayment();
 
             }
@@ -673,14 +521,11 @@
                     const image =
                         document.createElement("img");
 
+                    const canViewFullQuality =
+                        canAccessHighQuality();
 
-                    const firstApprovedRequest =
-                        galleryAccessNumber === 1;
+                    if (canViewFullQuality) {
 
-                    if (firstApprovedRequest) {
-
-                        // REQUEST #1
-                        // Full-quality photo
                         image.src =
                             photo.image_url || "";
 
@@ -691,9 +536,6 @@
                             "1";
 
                     } else {
-
-                        // REQUEST #2+
-                        // Preview only
                         image.src =
                             photo.preview_url || "";
 
@@ -895,85 +737,9 @@
             }
             return false;
         }
-        async function downloadPhoto(photo) {
 
-            if (!canAccessHighQuality()) {
-
-                openPaymentModal();
-
-                return;
-            }
-
-            // Make sure this photo exists
-            if (!photo || !photo.image_url) {
-
-                alert(
-                    "High-quality photo is unavailable."
-                );
-
-                return;
-            }
-
-            try {
-
-                console.log(
-                    "Downloading photo:",
-                    photo.original_name || photo.image_url
-                );
-
-                const response =
-                    await fetch(photo.image_url);
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        "Unable to download the photo."
-                    );
-                }
-
-                const blob =
-                    await response.blob();
-
-                const blobUrl =
-                    URL.createObjectURL(blob);
-
-                const link =
-                    document.createElement("a");
-
-                link.href =
-                    blobUrl;
-
-                link.download =
-                    photo.original_name ||
-                    `gallery-photo-${Date.now()}.jpg`;
-
-                document.body.appendChild(link);
-
-                link.click();
-
-                document.body.removeChild(link);
-
-                URL.revokeObjectURL(blobUrl);
-
-                console.log(
-                    "Photo downloaded successfully."
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Individual photo download error:",
-                    error
-                );
-
-                alert(
-                    "Unable to download this photo."
-                );
-            }
-        }
         async function downloadAllPhotos() {
 
-            // Check payment/access
             if (!canAccessHighQuality()) {
 
                 openPaymentModal();
@@ -1032,11 +798,15 @@
 
                     try {
 
+                        const token =
+                            new URLSearchParams(
+                                window.location.search
+                            ).get("token");
+
                         const response =
                             await fetch(
-                                photo.image_url
+                                `${SERVER_URL}/api/gallery-access/photo/${encodeURIComponent(photo.id)}?token=${encodeURIComponent(token || "")}`
                             );
-
                         if (!response.ok) {
 
                             throw new Error(
@@ -1144,7 +914,7 @@
             }
 
             if (summaryAmount) {
-                summaryAmount.textContent = "₱1.00";
+                summaryAmount.textContent = "₱100.00";
             }
 
             paymentModal.classList.add("active");
@@ -1277,6 +1047,13 @@
 
                         currentAccessRequest.payment_status =
                             "paid";
+
+                        if (result.accessExpiresAt) {
+                            currentAccessRequest.access_expires_at =
+                                result.accessExpiresAt;
+                        }
+
+                        galleryPreviewMode = false;
 
                         renderGalleryPhotos(
                             currentPhotos
