@@ -300,38 +300,19 @@
         }
         async function initializeGallery() {
 
-            const urlParams =
-                new URLSearchParams(window.location.search);
-
-            const token =
-                urlParams.get("token");
-
-            const requestId =
-                urlParams.get("request");
-
-            // --------------------------------------------------
-            // TOKEN IS REQUIRED
-            // --------------------------------------------------
-
-            if (!token || token.trim() === "") {
-
-                showGalleryError(
-                    "Invalid Gallery Link",
-                    "Please use the gallery link provided by the studio."
+            const params =
+                new URLSearchParams(
+                    window.location.search
                 );
 
-                return;
-            }
+            const token =
+                params.get("token");
 
-            // --------------------------------------------------
-            // REQUEST ID IS REQUIRED
-            // --------------------------------------------------
-
-            if (!requestId || requestId.trim() === "") {
+            if (!token) {
 
                 showGalleryError(
                     "Invalid Gallery Link",
-                    "This gallery link is missing the access request."
+                    "Your gallery link is missing or invalid."
                 );
 
                 return;
@@ -339,141 +320,63 @@
 
             try {
 
-                console.log(
-                    "Opening authorized gallery..."
-                );
-
-                console.log(
-                    "Request ID:",
-                    requestId
-                );
-
-                // --------------------------------------------------
-                // FIRST: VERIFY THE REQUEST THROUGH THE BACKEND
-                // --------------------------------------------------
-
-                const openResponse =
-                    await fetch(
-                        `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
-                        `?token=${encodeURIComponent(token)}`
-                    );
-
-                const openResult =
-                    await openResponse.json();
-
-                console.log(
-                    "Gallery open authorization:",
-                    openResult
-                );
-
-                if (
-                    !openResponse.ok ||
-                    !openResult.success
-                ) {
-
-                    showGalleryError(
-                        "Gallery Access Denied",
-                        openResult.error ||
-                        "Your gallery access is not currently available."
-                    );
-
-                    return;
-                }
-
-
-                if (openResult.request) {
-
-                    currentAccessRequest =
-                        openResult.request;
-
-                    galleryAccessNumber =
-                        Number(
-                            openResult.request.request_number || 0
-                        );
-
-                    galleryPreviewMode =
-                        galleryAccessNumber >= 2 &&
-                        !(
-                            openResult.request.payment_confirmed === true &&
-                            String(
-                                openResult.request.payment_status || ""
-                            ).toLowerCase() === "paid"
-                        );
-
-                }
-
-                // --------------------------------------------------
-                // LOAD BOOKING INFORMATION
-                // --------------------------------------------------
-
-                const {
-                    data: booking,
-                    error: bookingError
-                } = await supabaseClient
-                    .from("bookings")
-                    .select("*")
-                    .eq(
-                        "id",
-                        openResult.request.booking_id
-                    )
-                    .maybeSingle();
-
-                if (bookingError) {
-
-                    console.error(
-                        "Booking error:",
-                        bookingError
-                    );
-
-                    showGalleryError(
-                        "Unable to Load Gallery",
-                        "The booking information could not be loaded."
-                    );
-
-                    return;
-                }
-
-                if (!booking) {
-
-                    showGalleryError(
-                        "Gallery Not Found",
-                        "The booking associated with this gallery could not be found."
-                    );
-
-                    return;
-                }
-
-                currentBooking =
-                    booking;
-
-                // --------------------------------------------------
-                // DISPLAY CUSTOMER INFORMATION
-                // --------------------------------------------------
-
-                displayClientInformation(
-                    booking
-                );
-
-                // --------------------------------------------------
-                // LOAD PHOTOS THROUGH AUTHORIZED BACKEND ROUTE
-                // --------------------------------------------------
-
-                const galleryLoaded =
+                const photosLoaded =
                     await loadRepositoryPhotos();
 
-                if (!galleryLoaded) {
+                if (!photosLoaded) {
                     return;
                 }
 
-                // --------------------------------------------------
-                // CHECK PAYMONGO RETURN STATUS
-                // --------------------------------------------------
+                if (!currentAccessRequest) {
+
+                    showGalleryError(
+                        "Gallery Access Required",
+                        "Your gallery access has not been approved yet."
+                    );
+
+                    return;
+                }
+
+                /*
+                 * The backend already verified:
+                 * - gallery token
+                 * - booking
+                 * - approved request
+                 * - expiration
+                 * - payment for request #2/#3
+                 */
+
+                const bookingId =
+                    currentAccessRequest.booking_id;
+
+                if (bookingId) {
+
+                    const {
+                        data: booking,
+                        error: bookingError
+                    } =
+                        await supabaseClient
+                            .from("bookings")
+                            .select("*")
+                            .eq("id", bookingId)
+                            .maybeSingle();
+
+                    if (!bookingError && booking) {
+
+                        currentBooking =
+                            booking;
+
+                        displayClientInformation(
+                            booking
+                        );
+
+                    }
+
+                }
 
                 await checkGalleryPayment();
 
-            }
-
-            catch (error) {
+            } catch (error) {
 
                 console.error(
                     "Gallery initialization error:",
@@ -482,7 +385,7 @@
 
                 showGalleryError(
                     "Unable to Open Gallery",
-                    "Something went wrong while opening your gallery."
+                    "We could not verify your gallery access."
                 );
 
             }

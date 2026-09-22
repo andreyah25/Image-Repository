@@ -1182,25 +1182,17 @@
 
 
 
-        function makeClientLink(token, requestId = "") {
+        function makeClientLink(token) {
 
             const siteURL =
                 "https://captured-photo-studio.onrender.com";
 
-            let link =
+            return (
                 siteURL +
-                "/frontend-customer/customer_gallery_view.html?token=" +
-                encodeURIComponent(token);
-
-            if (requestId) {
-                link +=
-                    "&request=" +
-                    encodeURIComponent(requestId);
-            }
-
-            return link;
+                "/gallery?token=" +
+                encodeURIComponent(token)
+            );
         }
-
 
         async function copyClientLink(
             repository
