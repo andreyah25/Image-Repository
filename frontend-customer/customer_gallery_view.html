@@ -176,6 +176,8 @@
 
         const summaryAmount =
             document.getElementById("summaryAmount");
+        const userName =
+            document.getElementById("userName");
 
 
         let currentBooking = null;
@@ -474,14 +476,31 @@
                     );
 
                 }
+                const controller = new AbortController();
 
+                const timeout = setTimeout(() => {
+                    controller.abort();
+                }, 30000);
 
-                // Load gallery from backend
-                const response = await fetch(
-                    `${SERVER_URL}/api/gallery-access/photos` +
-                    `?token=${encodeURIComponent(token)}` +
-                    `&request=${encodeURIComponent(requestId)}`
-                );
+                let response;
+
+                try {
+
+                    response = await fetch(
+                        `${SERVER_URL}/api/gallery-access/photos` +
+                        `?token=${encodeURIComponent(token)}` +
+                        `&request=${encodeURIComponent(requestId)}`,
+                        {
+                            method: "GET",
+                            signal: controller.signal
+                        }
+                    );
+
+                } finally {
+
+                    clearTimeout(timeout);
+
+                }
 
 
                 console.log(
