@@ -1750,10 +1750,15 @@
 
 
             if (!photosLoaded) {
+
+                console.warn(
+                    "GALLERY: Photo loading failed. Initialization stopped."
+                );
+
                 return;
+
             }
 
-            await loadBookingInformation();
             await checkGalleryPayment();
 
             renderGalleryPhotos(
@@ -1766,15 +1771,6 @@
             );
 
         }
-
-        window.addEventListener(
-            "DOMContentLoaded",
-            async () => {
-
-                await initializeGallery();
-
-            }
-        );
 
     </script>
 </body>
