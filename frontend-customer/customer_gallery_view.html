@@ -436,8 +436,51 @@
 
             try {
 
+                // Get token and request directly from the current URL
+                const params = new URLSearchParams(
+                    window.location.search
+                );
+
+                const token =
+                    params.get("token") || "";
+
+                const requestId =
+                    params.get("request") ||
+                    params.get("requestId") ||
+                    "";
+
+                console.log(
+                    "GALLERY: Token exists:",
+                    !!token
+                );
+
+                console.log(
+                    "GALLERY: Request ID:",
+                    requestId
+                );
+
+                if (!token) {
+
+                    throw new Error(
+                        "Gallery token is missing."
+                    );
+
+                }
+
+                if (!requestId) {
+
+                    throw new Error(
+                        "Gallery access request ID is missing."
+                    );
+
+                }
+
+
+                // Load gallery from backend
                 const response = await fetch(
-                    `${SERVER_URL}/api/gallery-access/photos?token=${encodeURIComponent(galleryToken)}&request=${encodeURIComponent(requestId)}`
+                    `${SERVER_URL}/api/gallery-access/photos` +
+                    `?token=${encodeURIComponent(token)}` +
+                    `&request=${encodeURIComponent(requestId)}`
                 );
 
 
@@ -457,10 +500,14 @@
                 );
 
 
-                if (!response.ok || !result.success) {
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
 
                     throw new Error(
                         result.error ||
+                        result.message ||
                         "Unable to load gallery."
                     );
 
@@ -544,6 +591,11 @@
                 );
 
                 console.log(
+                    "GALLERY: Payment paid:",
+                    paymentPaid
+                );
+
+                console.log(
                     "GALLERY: Full quality:",
                     fullQuality
                 );
@@ -574,9 +626,7 @@
                         result.booking
                     );
 
-                }
-
-                else {
+                } else {
 
                     console.warn(
                         "GALLERY: Server did not return booking information."
@@ -608,6 +658,11 @@
                     "GALLERY: Gallery loading complete."
                 );
 
+
+                // IMPORTANT:
+                // initializeGallery() expects true here.
+                return true;
+
             }
 
             catch (error) {
@@ -633,10 +688,12 @@
 
                 }
 
+
+                return false;
+
             }
 
         }
-
         function canAccessHighQuality() {
 
             if (!currentAccessRequest) {
