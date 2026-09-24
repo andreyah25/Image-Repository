@@ -142,164 +142,420 @@
                 SUPABASE_URL,
                 SUPABASE_ANON_KEY
             );
-        const SERVER_URL = "https://image-repository-1.onrender.com";
-        const galleryTitle =
+            const SERVER_URL =
+            "https://image-repository-1.onrender.com";
+
+
+            /* =========================================================
+               PAGE ELEMENTS
+            ========================================================= */
+
+            const galleryTitle =
             document.getElementById("galleryTitle");
 
-        const gallerySubtitle =
+            const gallerySubtitle =
             document.getElementById("gallerySubtitle");
 
-        const galleryGrid =
+            const galleryGrid =
             document.getElementById("galleryGrid");
 
-        const downloadAllBtn =
+            const downloadAllBtn =
             document.getElementById("downloadAllBtn");
 
-        const paymentModal =
+            const paymentModal =
             document.getElementById("paymentModal");
 
-        const closeButton =
+            const closeButton =
             document.getElementById("btnMaybeLater");
 
-        let currentRepository = null;
+            const paymentNoticeStep =
+            document.getElementById("paymentNoticeStep");
 
-        let currentBooking = null;
+            const btnPayMongo =
+            document.getElementById("btnPayMongo");
 
-        let currentPhotos = [];
-        let currentAccessRequest = null;
+            const summaryOrderId =
+            document.getElementById("summaryOrderId");
 
-        let galleryPreviewMode = false;
-        let galleryAccessNumber = 0;
+            const summaryClientName =
+            document.getElementById("summaryClientName");
 
-        function displayClientInformation(booking) {
+            const summaryAmount =
+            document.getElementById("summaryAmount");
 
-            if (!booking) {
-                return;
-            }
+            const paymentErrorMsg =
+            document.getElementById("paymentErrorMsg");
+
+
+            /* =========================================================
+               GALLERY STATE
+            ========================================================= */
+
+            let currentRepository = null;
+            let currentBooking = null;
+            let currentPhotos = [];
+            let currentAccessRequest = null;
+
+            let galleryPreviewMode = false;
+            let galleryAccessNumber = 0;
+
+
+            /* =========================================================
+               DISPLAY CUSTOMER INFORMATION
+            ========================================================= */
+
+            function displayClientInformation(booking, packageName = null) {
+
+        if (!booking) {
+            return;
+        }
+
+            const customerName =
+            booking.full_name ||
+            "Customer";
+
+            const sessionType =
+            booking.session_type ||
+            "Photography Session";
+
+            const sessionDate =
+            booking.booking_date
+            ? formatDate(booking.booking_date)
+            : "Date not specified";
+
+            /*
+             * Try several possible package fields.
+             * This prevents the page from breaking if the
+             * booking table uses a different package field.
+             */
+            const finalPackageName =
+            packageName ||
+            booking.package_name ||
+            booking.package ||
+            booking.package_type ||
+            "Photography Package";
+
+
+            /* CUSTOMER NAME */
 
             if (galleryTitle) {
+
                 galleryTitle.textContent =
-                    `${booking.full_name || "Customer"}'s Gallery`;
-            }
+                `${customerName}'s Gallery`;
+        }
+
+
+            /* PACKAGE + SESSION + DATE */
 
             if (gallerySubtitle) {
 
-                const sessionDate = booking.booking_date
-                    ? formatDate(booking.booking_date)
-                    : "Date not specified";
-
-                const packageName =
-                    booking.packages?.name ||
-                    "Photography Package";
-
-                const sessionType =
-                    booking.session_type ||
-                    "Photography Session";
-
                 gallerySubtitle.textContent =
-                    `${packageName} • ${sessionType} • ${sessionDate}`;
-            }
+                `${finalPackageName} • ${sessionType} • ${sessionDate}`;
+        }
+
+
+            /* TOP RIGHT CUSTOMER NAME */
 
             const userName =
-                document.getElementById("userName");
+            document.getElementById("userName");
 
             if (userName) {
+
                 userName.textContent =
-                    booking.full_name || "Customer";
-            }
+                customerName;
         }
-        async function loadRepositoryPhotos() {
-            const params = new URLSearchParams(window.location.search);
+    }
 
-            const token = params.get("token");
-            const requestId = params.get("request");
-            if (!token || token.trim() === "") {
-                console.error("No gallery token provided.");
 
-                showGalleryError(
-                    "Invalid Gallery Link",
-                    "Your gallery link is missing or invalid."
-                );
+            /* =========================================================
+               LOAD CUSTOMER + PACKAGE INFORMATION
+            ========================================================= */
 
-                return false;
-            }
+            async function loadBookingInformation(bookingId) {
+
+        if (!bookingId) {
+            return;
+        }
 
             try {
-                const response =
-                    await fetch(
-                        `${SERVER_URL}/api/gallery-access/photos` +
-                        `?token=${encodeURIComponent(token)}` +
-                        `&request=${encodeURIComponent(requestId || "")}`
-                    );
-                const result =
-                    await response.json();
 
-                if (!response.ok || !result.success) {
+            const {
+                data: booking,
+            error: bookingError
+            } =
+            await supabaseClient
+            .from("bookings")
+            .select("*")
+            .eq("id", bookingId)
+            .maybeSingle();
 
-                    showGalleryError(
-                        "Gallery Access Expired",
-                        result.error ||
-                        "Your gallery access has expired or payment is still required."
-                    );
 
-                    return false;
-                }
+            if (bookingError) {
 
-                if (result.request) {
-
-                    currentAccessRequest = {
-                        ...currentAccessRequest,
-                        ...result.request
-                    };
-
-                    galleryAccessNumber =
-                        Number(
-                            result.request.request_number || 0
-                        );
-
-                    galleryPreviewMode =
-                        galleryAccessNumber >= 2 &&
-                        !(
-                            result.request.payment_confirmed === true &&
-                            String(
-                                result.request.payment_status || ""
-                            ).toLowerCase() === "paid"
-                        );
-                }
-
-                currentPhotos =
-                    result.photos || [];
-
-                renderGalleryPhotos(
-                    currentPhotos
+                console.error(
+                    "Booking information error:",
+                    bookingError
                 );
 
-                return true;
+            return;
+            }
 
-            } catch (error) {
+
+            if (!booking) {
+
+                console.warn(
+                    "Booking not found:",
+                    bookingId
+                );
+
+            return;
+            }
+
+
+            currentBooking =
+            booking;
+
+
+            /*
+             * Try to get the package name from the
+             * booking record first.
+             */
+            let packageName =
+            booking.package_name ||
+            booking.package ||
+            booking.package_type ||
+            null;
+
+
+            /*
+             * If booking has package_id, get the
+             * actual package name from packages table.
+             */
+            if (
+            !packageName &&
+            booking.package_id
+            ) {
+
+                try {
+
+                    const {
+                data: packageData,
+            error: packageError
+                    } =
+            await supabaseClient
+            .from("packages")
+            .select("*")
+            .eq(
+            "id",
+            booking.package_id
+            )
+            .maybeSingle();
+
+
+            if (
+            !packageError &&
+            packageData
+            ) {
+
+                packageName =
+                packageData.name ||
+                packageData.package_name ||
+                packageData.title ||
+                null;
+                    }
+
+                } catch (packageError) {
+
+                console.warn(
+                    "Could not load package:",
+                    packageError
+                );
+                }
+            }
+
+
+            displayClientInformation(
+            booking,
+            packageName
+            );
+
+
+        } catch (error) {
+
+                console.error(
+                    "Load booking information error:",
+                    error
+                );
+        }
+    }
+
+
+            /* =========================================================
+               LOAD GALLERY PHOTOS
+            ========================================================= */
+
+            async function loadRepositoryPhotos() {
+
+        const params =
+            new URLSearchParams(
+            window.location.search
+            );
+
+            const token =
+            params.get("token");
+
+            const requestId =
+            params.get("request");
+
+
+            if (
+            !token ||
+            token.trim() === ""
+            ) {
+
+                console.error(
+                    "No gallery token provided."
+                );
+
+            showGalleryError(
+            "Invalid Gallery Link",
+            "Your gallery link is missing or invalid."
+            );
+
+            return false;
+        }
+
+
+            try {
+
+                console.log(
+                    "GALLERY: Loading gallery..."
+                );
+
+
+            const response =
+            await fetch(
+            `${SERVER_URL}/api/gallery-access/photos` +
+            `?token=${encodeURIComponent(token)}` +
+            `&request=${encodeURIComponent(requestId || "")}`
+            );
+
+
+            console.log(
+            "GALLERY: Server response:",
+            response.status
+            );
+
+
+            const result =
+            await response.json();
+
+
+            console.log(
+            "GALLERY: Gallery result:",
+            result
+            );
+
+
+            if (
+            !response.ok ||
+            !result.success
+            ) {
+
+                showGalleryError(
+                    "Gallery Access Expired",
+                    result.error ||
+                    "Your gallery access has expired or payment is still required."
+                );
+
+            return false;
+            }
+
+
+            /* =================================================
+               ACCESS REQUEST
+            ================================================= */
+
+            if (result.request) {
+
+                currentAccessRequest = {
+                    ...currentAccessRequest,
+                    ...result.request
+                };
+
+
+            galleryAccessNumber =
+            Number(
+            result.request.request_number || 0
+            );
+
+
+            galleryPreviewMode =
+                    galleryAccessNumber >= 2 &&
+            !(
+            result.request.payment_confirmed === true &&
+            String(
+            result.request.payment_status || ""
+            ).toLowerCase() === "paid"
+            );
+            }
+
+
+            /* =================================================
+               PHOTOS
+            ================================================= */
+
+            currentPhotos =
+            result.photos || [];
+
+
+            console.log(
+            "GALLERY: Photos:",
+            currentPhotos
+            );
+
+
+            renderGalleryPhotos(
+            currentPhotos
+            );
+
+
+            return true;
+
+
+        } catch (error) {
 
                 console.error(
                     "Authorized gallery loading error:",
                     error
                 );
 
-                showGalleryError(
-                    "Unable to Open Gallery",
-                    "We could not verify your gallery access."
-                );
 
-                return false;
-            }
+            showGalleryError(
+            "Unable to Open Gallery",
+            "We could not verify your gallery access."
+            );
+
+
+            return false;
         }
-        async function initializeGallery() {
+    }
 
-            const params =
-                new URLSearchParams(
-                    window.location.search
-                );
+
+            /* =========================================================
+               INITIALIZE GALLERY
+            ========================================================= */
+
+            async function initializeGallery() {
+
+        const params =
+            new URLSearchParams(
+            window.location.search
+            );
 
             const token =
-                params.get("token");
+            params.get("token");
+
 
             if (!token) {
 
@@ -308,713 +564,974 @@
                     "Your gallery link is missing or invalid."
                 );
 
-                return;
-            }
+            return;
+        }
+
 
             try {
 
-                const photosLoaded =
-                    await loadRepositoryPhotos();
+                console.log(
+                    "GALLERY: Starting initialization..."
+                );
 
-                if (!photosLoaded) {
-                    return;
-                }
 
-                if (!currentAccessRequest) {
+            /* LOAD PHOTOS + ACCESS */
 
-                    showGalleryError(
-                        "Gallery Access Required",
-                        "Your gallery access has not been approved yet."
-                    );
+            const photosLoaded =
+            await loadRepositoryPhotos();
 
-                    return;
-                }
 
-                const bookingId =
-                    currentAccessRequest.booking_id;
+            if (!photosLoaded) {
 
-                if (bookingId) {
+                console.error(
+                    "GALLERY: Photos could not be loaded."
+                );
 
-                    const {
-                        data: booking,
-                        error: bookingError
-                    } =
-                        await supabaseClient
-                            .from("bookings")
-                            .select(`
-                                *,
-                                packages (
-                                    id,
-                                    name
-                                )
-                            `)
-                            .eq("id", bookingId)
-                            .maybeSingle();
+            return;
+            }
 
-                    if (!bookingError && booking) {
 
-                        currentBooking =
-                            booking;
+            /* CHECK ACCESS */
 
-                        displayClientInformation(
-                            booking
-                        );
+            if (!currentAccessRequest) {
 
-                    }
+                showGalleryError(
+                    "Gallery Access Required",
+                    "Your gallery access has not been approved yet."
+                );
 
-                }
+            return;
+            }
 
-                await checkGalleryPayment();
 
-            } catch (error) {
+            /* LOAD BOOKING + PACKAGE */
+
+            const bookingId =
+            currentAccessRequest.booking_id;
+
+
+            if (bookingId) {
+
+                await loadBookingInformation(
+                    bookingId
+                );
+            }
+
+
+            /* CHECK PAYMENT */
+
+            await checkGalleryPayment();
+
+
+            console.log(
+            "GALLERY: Initialization complete."
+            );
+
+
+        } catch (error) {
 
                 console.error(
                     "Gallery initialization error:",
                     error
                 );
 
-                showGalleryError(
-                    "Unable to Open Gallery",
-                    "We could not verify your gallery access."
-                );
 
-            }
+            showGalleryError(
+            "Unable to Open Gallery",
+            "We could not verify your gallery access."
+            );
         }
-        function renderGalleryPhotos(
-            photos
-        ) {
+    }
 
-            galleryGrid.innerHTML = "";
+
+            /* =========================================================
+               RENDER PHOTOS
+            ========================================================= */
+
+            function renderGalleryPhotos(photos) {
+
+                galleryGrid.innerHTML = "";
+
 
             if (
-                !photos ||
-                photos.length === 0
+            !photos ||
+            photos.length === 0
             ) {
 
                 galleryGrid.innerHTML = `
-                    <div class="gallery-loading">
-                        <i class="fa-regular fa-images"></i>
-                        <p>No photos have been uploaded yet.</p>
-                        <small>Please check again later.</small>
-                    </div>
-                `;
+                <div class="gallery-loading">
+                    <i class="fa-regular fa-images"></i>
+                    <p>No photos have been uploaded yet.</p>
+                    <small>Please check again later.</small>
+                </div>
+            `;
 
-                return;
+            return;
+        }
+
+
+        photos.forEach(photo => {
+
+            const card =
+            document.createElement("div");
+
+            card.className =
+            "photo-card";
+
+
+            const image =
+            document.createElement("img");
+
+
+            const canViewFullQuality =
+            canAccessHighQuality();
+
+
+            if (canViewFullQuality) {
+
+                image.src =
+                photo.image_url || "";
+
+            image.style.filter =
+            "none";
+
+            image.style.opacity =
+            "1";
+
+            } else {
+
+                image.src =
+                photo.preview_url ||
+                photo.image_url ||
+                "";
+
+            image.style.filter =
+            "blur(8px)";
+
+            image.style.opacity =
+            "0.75";
             }
 
-            photos.forEach(
-                photo => {
 
-                    const card =
-                        document.createElement("div");
+            image.alt =
+            photo.original_name ||
+            "Gallery Photo";
 
-                    card.className =
-                        "photo-card";
+            image.loading =
+            "lazy";
 
-                    const image =
-                        document.createElement("img");
 
-                    const canViewFullQuality =
-                        canAccessHighQuality();
+            card.appendChild(
+            image
+            );
 
-                    if (canViewFullQuality) {
 
-                        image.src =
-                            photo.image_url || "";
+            /* =================================================
+               PREVIEW WATERMARK
+            ================================================= */
 
-                        image.style.filter =
-                            "none";
+            if (galleryPreviewMode) {
 
-                        image.style.opacity =
-                            "1";
+                const watermark =
+            document.createElement("div");
 
-                    } else {
-                        image.src =
-                            photo.preview_url || "";
+            watermark.textContent =
+            "CAPTURED PHOTOGRAPHY STUDIO • PREVIEW";
 
-                        image.style.filter =
-                            "blur(8px)";
+            watermark.style.position =
+            "absolute";
 
-                        image.style.opacity =
-                            "0.75";
-                    }
+            watermark.style.top =
+            "50%";
 
-                    image.alt =
-                        photo.original_name ||
-                        "Gallery Photo";
+            watermark.style.left =
+            "50%";
 
-                    image.loading =
-                        "lazy";
+            watermark.style.transform =
+            "translate(-50%, -50%) rotate(-25deg)";
 
-                    const button =
-                        document.createElement("button");
+            watermark.style.fontSize =
+            "18px";
 
-                    button.type =
-                        "button";
+            watermark.style.fontWeight =
+            "700";
 
-                    button.className =
-                        "individual-download-btn";
+            watermark.style.color =
+            "rgba(255,255,255,0.75)";
 
-                    button.innerHTML =
-                        `<i class="fa-solid fa-download"></i>`;
+            watermark.style.textAlign =
+            "center";
 
-                    button.addEventListener(
-                        "click",
-                        event => {
+            watermark.style.whiteSpace =
+            "nowrap";
 
-                            event.stopPropagation();
+            watermark.style.pointerEvents =
+            "none";
 
-                            downloadPhoto(
-                                photo
-                            );
+            watermark.style.textShadow =
+            "0 1px 4px rgba(0,0,0,0.7)";
 
-                        }
-                    );
+            watermark.style.zIndex =
+            "5";
 
-                    card.appendChild(
-                        image
-                    );
-                    if (galleryPreviewMode) {
+            card.appendChild(
+            watermark
+            );
+            }
 
-                        const watermark =
-                            document.createElement("div");
 
-                        watermark.textContent =
-                            "CAPTURED PHOTOGRAPHY STUDIO • PREVIEW";
+            /* =================================================
+               PREVIEW LOCK
+            ================================================= */
 
-                        watermark.style.position =
-                            "absolute";
+            if (galleryPreviewMode) {
 
-                        watermark.style.top =
-                            "50%";
+                const lockOverlay =
+            document.createElement("div");
 
-                        watermark.style.left =
-                            "50%";
+            lockOverlay.style.position =
+            "absolute";
 
-                        watermark.style.transform =
-                            "translate(-50%, -50%) rotate(-25deg)";
+            lockOverlay.style.inset =
+            "0";
 
-                        watermark.style.fontSize =
-                            "18px";
+            lockOverlay.style.display =
+            "flex";
 
-                        watermark.style.fontWeight =
-                            "700";
+            lockOverlay.style.flexDirection =
+            "column";
 
-                        watermark.style.color =
-                            "rgba(255,255,255,0.75)";
+            lockOverlay.style.alignItems =
+            "center";
 
-                        watermark.style.textAlign =
-                            "center";
+            lockOverlay.style.justifyContent =
+            "center";
 
-                        watermark.style.whiteSpace =
-                            "nowrap";
+            lockOverlay.style.background =
+            "rgba(0, 0, 0, 0.20)";
 
-                        watermark.style.pointerEvents =
-                            "none";
+            lockOverlay.style.color =
+            "#ffffff";
 
-                        watermark.style.textShadow =
-                            "0 1px 4px rgba(0,0,0,0.7)";
+            lockOverlay.style.textAlign =
+            "center";
 
-                        watermark.style.zIndex =
-                            "5";
+            lockOverlay.style.pointerEvents =
+            "none";
 
-                        card.appendChild(
-                            watermark
-                        );
-                    }
-                    if (galleryPreviewMode) {
 
-                        const lockOverlay =
-                            document.createElement("div");
+            lockOverlay.innerHTML = `
+            <i class="fa-solid fa-eye-slash"
+                style="font-size:28px; margin-bottom:8px;">
+            </i>
 
-                        lockOverlay.style.position = "absolute";
-                        lockOverlay.style.inset = "0";
-                        lockOverlay.style.display = "flex";
-                        lockOverlay.style.flexDirection = "column";
-                        lockOverlay.style.alignItems = "center";
-                        lockOverlay.style.justifyContent = "center";
-                        lockOverlay.style.background = "rgba(0, 0, 0, 0.20)";
-                        lockOverlay.style.color = "#ffffff";
-                        lockOverlay.style.textAlign = "center";
-                        lockOverlay.style.pointerEvents = "none";
+            <strong style="font-size:14px;">
+                Preview Mode
+            </strong>
 
-                        lockOverlay.innerHTML = galleryPreviewMode
-                            ? `
-        <i class="fa-solid fa-eye-slash"
-           style="font-size:28px; margin-bottom:8px;"></i>
+            <span style="font-size:11px; margin-top:4px;">
+                High-quality downloads require payment
+            </span>
+            `;
 
-        <strong style="font-size:14px;">
-            Preview Mode
-        </strong>
 
-        <span style="font-size:11px; margin-top:4px;">
-         High-quality downloads require payment        </span>
-      `
-                            : `
-        <i class="fa-solid fa-lock"
-           style="font-size:28px; margin-bottom:8px;"></i>
+            card.style.position =
+            "relative";
 
-        <strong style="font-size:14px;">
-            Payment Required
-        </strong>
 
-        <span style="font-size:11px; margin-top:4px;">
-            Complete payment to view and download
-        </span>
-      `;
-                        card.style.position = "relative";
+            card.appendChild(
+            lockOverlay
+            );
+            }
 
-                        card.appendChild(
-                            lockOverlay
-                        );
-                    }
-                    card.appendChild(
-                        button
-                    );
 
-                    galleryGrid.appendChild(
-                        card
-                    );
+            /* =================================================
+               DOWNLOAD BUTTON
+            ================================================= */
 
+            const button =
+            document.createElement("button");
+
+            button.type =
+            "button";
+
+            button.className =
+            "individual-download-btn";
+
+            button.innerHTML =
+            `<i class="fa-solid fa-download"></i>`;
+
+
+            button.addEventListener(
+            "click",
+                event => {
+
+                event.stopPropagation();
+
+            downloadPhoto(
+            photo
+            );
                 }
             );
 
-        }
 
-        function canAccessHighQuality() {
+            card.appendChild(
+            button
+            );
 
-            if (!currentAccessRequest) {
-                return false;
-            }
 
-            if (currentAccessRequest.status !== "approved") {
-                return false;
-            }
-            if (currentAccessRequest.access_expires_at) {
+            galleryGrid.appendChild(
+            card
+            );
 
-                const expiresAt =
-                    new Date(
-                        currentAccessRequest.access_expires_at
-                    );
+        });
+    }
 
-                if (
-                    Number.isNaN(expiresAt.getTime()) ||
-                    new Date() >= expiresAt
-                ) {
-                    return false;
-                }
-            }
-            const requestNumber =
-                Number(
-                    currentAccessRequest.request_number || 0
-                );
 
-            if (requestNumber === 1) {
-                return true;
-            }
+            /* =========================================================
+               CHECK HIGH QUALITY ACCESS
+            ========================================================= */
 
-            if (requestNumber >= 2) {
+            function canAccessHighQuality() {
 
-                const paymentConfirmed =
-                    currentAccessRequest.payment_confirmed === true;
-
-                const paymentPaid =
-                    String(
-                        currentAccessRequest.payment_status || ""
-                    ).toLowerCase() === "paid";
-
-                return (
-                    paymentConfirmed &&
-                    paymentPaid
-                );
-            }
+        if (!currentAccessRequest) {
             return false;
         }
 
-        async function downloadAllPhotos() {
 
-            if (!canAccessHighQuality()) {
+            if (
+            currentAccessRequest.status !==
+            "approved"
+            ) {
 
-                openPaymentModal();
+            return false;
+        }
 
-                return;
-            }
 
-            // Check photos
-            if (!currentPhotos || currentPhotos.length === 0) {
+            if (
+            currentAccessRequest.access_expires_at
+            ) {
 
-                alert(
-                    "No photos available to download."
-                );
+            const expiresAt =
+            new Date(
+            currentAccessRequest.access_expires_at
+            );
 
-                return;
-            }
 
-            const photosToDownload =
-                currentPhotos.filter(
-                    photo =>
-                        photo &&
-                        photo.image_url
-                );
+            if (
+            Number.isNaN(
+            expiresAt.getTime()
+            ) ||
+                new Date() >= expiresAt
+            ) {
 
-            if (photosToDownload.length === 0) {
-
-                alert(
-                    "No downloadable photos are available."
-                );
-
-                return;
-            }
-
-            const originalText =
-                downloadAllBtn.innerHTML;
-
-            downloadAllBtn.disabled = true;
-
-            downloadAllBtn.innerHTML = `
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        Downloading...
-    `;
-
-            let successfulDownloads = 0;
-
-            try {
-
-                for (
-                    let i = 0;
-                    i < photosToDownload.length;
-                    i++
-                ) {
-
-                    const photo =
-                        photosToDownload[i];
-
-                    try {
-
-                        const params =
-                            new URLSearchParams(window.location.search);
-
-                        const token =
-                            params.get("token");
-
-                        const requestId =
-                            currentAccessRequest?.id;
-
-                        if (!requestId) {
-                            throw new Error("Gallery access request ID is missing.");
-                        }
-
-                        const openResponse =
-                            await fetch(
-                                `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
-                                `?token=${encodeURIComponent(token)}`
-                            );
-
-                        if (!openResponse.ok) {
-                            throw new Error(
-                                "Unable to download photo."
-                            );
-                        }
-
-                        const blob =
-                            await openResponse.blob();
-
-                        const blobUrl =
-                            URL.createObjectURL(blob);
-
-                        const link =
-                            document.createElement("a");
-
-                        link.href =
-                            blobUrl;
-
-                        link.download =
-                            photo.original_name ||
-                            `gallery-photo-${i + 1}.jpg`;
-
-                        document.body.appendChild(link);
-
-                        link.click();
-
-                        document.body.removeChild(link);
-
-                        URL.revokeObjectURL(blobUrl);
-
-                        successfulDownloads++;
-
-                        await new Promise(
-                            resolve =>
-                                setTimeout(resolve, 500)
-                        );
-
-                    } catch (photoError) {
-
-                        console.error(
-                            "Failed to download photo:",
-                            photoError
-                        );
-                    }
-                }
-
-                alert(
-                    `${successfulDownloads} of ${photosToDownload.length} photos downloaded.`
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Download all error:",
-                    error
-                );
-
-                alert(
-                    "Unable to download the photos."
-                );
-
-            } finally {
-
-                downloadAllBtn.disabled = false;
-
-                downloadAllBtn.innerHTML =
-                    originalText;
+                return false;
             }
         }
-        async function downloadPhoto(photo) {
 
-            if (!canAccessHighQuality()) {
+
+            const requestNumber =
+            Number(
+            currentAccessRequest.request_number || 0
+            );
+
+
+            /* FIRST REQUEST = FREE */
+
+            if (requestNumber === 1) {
+            return true;
+        }
+
+
+        /* SECOND REQUEST+ = PAYMENT */
+
+        if (requestNumber >= 2) {
+
+            const paymentConfirmed =
+            currentAccessRequest.payment_confirmed === true;
+
+
+            const paymentPaid =
+            String(
+            currentAccessRequest.payment_status || ""
+            ).toLowerCase() === "paid";
+
+
+            return (
+            paymentConfirmed &&
+            paymentPaid
+            );
+        }
+
+
+            return false;
+    }
+
+
+            /* =========================================================
+               DOWNLOAD SINGLE PHOTO
+            ========================================================= */
+
+            async function downloadPhoto(photo) {
+
+        if (!canAccessHighQuality()) {
 
                 openPaymentModal();
 
-                return;
-            }
+            return;
+        }
+
 
             if (!photo) {
-                alert("Photo is not available.");
-                return;
-            }
+
+                alert(
+                    "Photo is not available."
+                );
+
+            return;
+        }
+
 
             try {
 
-                const params =
-                    new URLSearchParams(
-                        window.location.search
-                    );
+            const params =
+            new URLSearchParams(
+            window.location.search
+            );
 
-                const token =
-                    params.get("token");
 
-                const requestId =
-                    currentAccessRequest?.id;
+            const token =
+            params.get("token");
 
-                if (!token) {
-                    throw new Error(
-                        "Gallery token is missing."
-                    );
-                }
 
-                if (!requestId) {
-                    throw new Error(
-                        "Gallery access request ID is missing."
-                    );
-                }
+            const requestId =
+            currentAccessRequest?.id;
 
-                const response =
-                    await fetch(
-                        `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
-                        `?token=${encodeURIComponent(token)}`
-                    );
 
-                if (!response.ok) {
+            if (!token) {
 
-                    const errorText =
-                        await response.text();
+                throw new Error(
+            "Gallery token is missing."
+            );
+            }
 
-                    console.error(
-                        "Download response:",
-                        errorText
-                    );
 
-                    throw new Error(
-                        "Unable to download photo."
-                    );
-                }
+            if (!requestId) {
 
-                const blob =
-                    await response.blob();
+                throw new Error(
+            "Gallery access request ID is missing."
+            );
+            }
 
-                const blobUrl =
-                    URL.createObjectURL(blob);
 
-                const link =
-                    document.createElement("a");
+            const response =
+            await fetch(
+            `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
+            `?token=${encodeURIComponent(token)}`
+            );
 
-                link.href =
-                    blobUrl;
 
-                link.download =
-                    photo.original_name ||
-                    "gallery-photo.jpg";
+            if (!response.ok) {
 
-                document.body.appendChild(link);
+                const errorText =
+            await response.text();
 
-                link.click();
 
-                document.body.removeChild(link);
+            console.error(
+            "Download response:",
+            errorText
+            );
 
-                setTimeout(() => {
-                    URL.revokeObjectURL(blobUrl);
-                }, 1000);
 
-            } catch (error) {
+            throw new Error(
+            "Unable to download photo."
+            );
+            }
+
+
+            const blob =
+            await response.blob();
+
+
+            const blobUrl =
+            URL.createObjectURL(
+            blob
+            );
+
+
+            const link =
+            document.createElement("a");
+
+
+            link.href =
+            blobUrl;
+
+
+            link.download =
+            photo.original_name ||
+            "gallery-photo.jpg";
+
+
+            document.body.appendChild(
+            link
+            );
+
+
+            link.click();
+
+
+            document.body.removeChild(
+            link
+            );
+
+
+            setTimeout(() => {
+
+                URL.revokeObjectURL(
+                    blobUrl
+                );
+
+            }, 1000);
+
+
+        } catch (error) {
 
                 console.error(
                     "Photo download error:",
                     error
                 );
 
-                alert(
-                    error.message ||
-                    "Unable to download the photo."
-                );
-            }
+
+            alert(
+            error.message ||
+            "Unable to download the photo."
+            );
         }
-        const paymentNoticeStep =
-            document.getElementById("paymentNoticeStep");
-
-        const btnPayMongo =
-            document.getElementById("btnPayMongo");
-
-        const summaryOrderId =
-            document.getElementById("summaryOrderId");
-
-        const summaryClientName =
-            document.getElementById("summaryClientName");
-
-        const summaryAmount =
-            document.getElementById("summaryAmount");
-
-        const paymentErrorMsg =
-            document.getElementById("paymentErrorMsg");
+    }
 
 
-        function openPaymentModal() {
-            if (!paymentModal) return;
+            /* =========================================================
+               DOWNLOAD ALL
+            ========================================================= */
+
+            async function downloadAllPhotos() {
+
+        if (!canAccessHighQuality()) {
+
+                openPaymentModal();
+
+            return;
+        }
+
+
+            if (
+            !currentPhotos ||
+            currentPhotos.length === 0
+            ) {
+
+                alert(
+                    "No photos available to download."
+                );
+
+            return;
+        }
+
+
+            const photosToDownload =
+            currentPhotos.filter(
+                photo =>
+            photo
+            );
+
+
+            if (
+            photosToDownload.length === 0
+            ) {
+
+                alert(
+                    "No downloadable photos are available."
+                );
+
+            return;
+        }
+
+
+            const originalText =
+            downloadAllBtn.innerHTML;
+
+
+            downloadAllBtn.disabled =
+            true;
+
+
+            downloadAllBtn.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Downloading...
+            `;
+
+
+            let successfulDownloads =
+            0;
+
+
+            try {
+
+            for (
+            let i = 0;
+            i < photosToDownload.length;
+            i++
+            ) {
+
+                const photo =
+            photosToDownload[i];
+
+
+            try {
+
+                    const params =
+            new URLSearchParams(
+            window.location.search
+            );
+
+
+            const token =
+            params.get("token");
+
+
+            const requestId =
+            currentAccessRequest?.id;
+
+
+            if (!requestId) {
+
+                        throw new Error(
+            "Gallery access request ID is missing."
+            );
+                    }
+
+
+            const openResponse =
+            await fetch(
+            `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
+            `?token=${encodeURIComponent(token)}`
+            );
+
+
+            if (!openResponse.ok) {
+
+                        throw new Error(
+            "Unable to download photo."
+            );
+                    }
+
+
+            const blob =
+            await openResponse.blob();
+
+
+            const blobUrl =
+            URL.createObjectURL(
+            blob
+            );
+
+
+            const link =
+            document.createElement("a");
+
+
+            link.href =
+            blobUrl;
+
+
+            link.download =
+            photo.original_name ||
+            `gallery-photo-${i + 1}.jpg`;
+
+
+            document.body.appendChild(
+            link
+            );
+
+
+            link.click();
+
+
+            document.body.removeChild(
+            link
+            );
+
+
+                    setTimeout(() => {
+
+                URL.revokeObjectURL(
+                    blobUrl
+                );
+
+                    }, 1000);
+
+
+            successfulDownloads++;
+
+
+            await new Promise(
+                        resolve =>
+            setTimeout(
+            resolve,
+            500
+            )
+            );
+
+
+                } catch (photoError) {
+
+                console.error(
+                    "Failed to download photo:",
+                    photoError
+                );
+                }
+            }
+
+
+            alert(
+            `${successfulDownloads} of ${photosToDownload.length} photos downloaded.`
+            );
+
+
+        } catch (error) {
+
+                console.error(
+                    "Download all error:",
+                    error
+                );
+
+
+            alert(
+            "Unable to download the photos."
+            );
+
+
+        } finally {
+
+                downloadAllBtn.disabled =
+                false;
+
+
+            downloadAllBtn.innerHTML =
+            originalText;
+        }
+    }
+
+
+            /* =========================================================
+               PAYMENT MODAL
+            ========================================================= */
+
+            function openPaymentModal() {
+
+        if (!paymentModal) {
+            return;
+        }
+
 
             if (currentBooking) {
-                if (summaryOrderId) {
-                    summaryOrderId.textContent =
-                        currentBooking.id
-                            ? `#ORD-${String(currentBooking.id).slice(-3)}`
-                            : "#ORD-001";
-                }
 
-                if (summaryClientName) {
-                    summaryClientName.textContent =
-                        currentBooking.full_name || "Customer";
-                }
+            if (summaryOrderId) {
+
+                summaryOrderId.textContent =
+                currentBooking.id
+                    ? `#ORD-${String(currentBooking.id).slice(-3)}`
+                    : "#ORD-001";
             }
+
+
+            if (summaryClientName) {
+
+                summaryClientName.textContent =
+                currentBooking.full_name ||
+                "Customer";
+            }
+        }
+
 
             if (summaryAmount) {
-                summaryAmount.textContent = "₱1.00";
-            }
 
-            paymentModal.classList.add("active");
-        }
-        function closePaymentModal() {
-
-            if (paymentModal) {
-                paymentModal.classList.remove("active");
-            }
+                summaryAmount.textContent =
+                "₱1.00";
         }
 
 
-        if (closeButton) {
-
-            closeButton.addEventListener(
-                "click",
-                closePaymentModal
+            paymentModal.classList.add(
+            "active"
             );
-        }
-        if (btnPayMongo) {
-            btnPayMongo.addEventListener(
-                "click",
-                startPayMongoGalleryPayment
-            );
-        }
+    }
+
+
+            function closePaymentModal() {
 
         if (paymentModal) {
-            paymentModal.addEventListener("click", event => {
-                if (event.target === paymentModal) {
-                    closePaymentModal();
-                }
-            });
+
+                paymentModal.classList.remove(
+                    "active"
+                );
+        }
+    }
+
+
+            /* =========================================================
+               SHOW GALLERY ERROR
+            ========================================================= */
+
+            function showGalleryError(
+            title,
+            message
+            ) {
+
+        if (galleryTitle) {
+
+                galleryTitle.textContent =
+                title;
         }
 
-        if (downloadAllBtn) {
 
-            downloadAllBtn.addEventListener(
-                "click",
-                downloadAllPhotos
-            );
+            if (gallerySubtitle) {
 
+                gallerySubtitle.textContent =
+                message;
         }
-        function showGalleryError(title, message) {
-            galleryTitle.textContent = title;
-            gallerySubtitle.textContent = message;
+
 
             if (downloadAllBtn) {
-                downloadAllBtn.style.display = "none";
-            }
+
+                downloadAllBtn.style.display =
+                "none";
+        }
+
 
             if (!galleryGrid) {
-                return;
-            }
+            return;
+        }
+
 
             galleryGrid.innerHTML = `
-                <div class="gallery-loading">
-                    <i class="fa-solid fa-link-slash"></i>
-                    <p>${escapeHTML(message)}</p>
-                    <a href="customer_gallery_request.html" style="display:inline-block; margin-top:15px; padding:10px 18px; background:#639A88; color:white; text-decoration:none; border-radius:8px;">
-                        Enter Gallery Link
-                    </a>
-                </div>
+            <div class="gallery-loading">
+
+                <i class="fa-solid fa-link-slash"></i>
+
+                <p>
+                    ${escapeHTML(message)}
+                </p>
+
+                <a
+                    href="customer_gallery_request.html"
+                    style="
+                        display:inline-block;
+                        margin-top:15px;
+                        padding:10px 18px;
+                        background:#639A88;
+                        color:white;
+                        text-decoration:none;
+                        border-radius:8px;
+                    "
+                >
+                    Enter Gallery Link
+                </a>
+
+            </div>
             `;
+    }
+
+
+            /* =========================================================
+               FORMAT DATE
+            ========================================================= */
+
+            function formatDate(dateString) {
+
+        if (!dateString) {
+
+            return "Date not specified";
         }
 
-        function formatDate(dateString) {
-            if (!dateString) {
-                return "Date not specified";
-            }
 
-            const date = new Date(dateString + "T00:00:00");
+            const date =
+            new Date(
+            dateString + "T00:00:00"
+            );
 
-            if (Number.isNaN(date.getTime())) {
-                return dateString;
-            }
 
-            return date.toLocaleDateString("en-US", {
+            if (
+            Number.isNaN(
+            date.getTime()
+            )
+            ) {
+
+            return dateString;
+        }
+
+
+            return date.toLocaleDateString(
+            "en-US",
+            {
                 month: "long",
-                day: "numeric",
-                year: "numeric"
-            });
-        }
+            day: "numeric",
+            year: "numeric"
+            }
+            );
+    }
 
-        function escapeHTML(value) {
-            return String(value ?? "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
+
+            /* =========================================================
+               ESCAPE HTML
+            ========================================================= */
+
+            function escapeHTML(value) {
+
+        return String(
+            value ?? ""
+            )
+            .replace(
+            /&/g,
+            "&amp;"
+            )
+            .replace(
+            /</g,
+            "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    }
+
+
+        /* =========================================================
+           PAYMENT VERIFICATION
+        ========================================================= */
+
         async function checkGalleryPayment() {
 
             const params =
-                new URLSearchParams(window.location.search);
+                new URLSearchParams(
+                    window.location.search
+                );
 
-            if (params.get("payment") !== "success") {
+
+            if (
+                params.get("payment") !==
+                "success"
+            ) {
+
                 return;
             }
+
 
             const requestId =
                 params.get("requestId") ||
@@ -1022,54 +1539,79 @@
                     "galleryPaymentRequestId"
                 );
 
+
             const token =
                 params.get("token");
 
-            if (!requestId) return;
 
-            for (let i = 0; i < 10; i++) {
+            if (!requestId) {
+                return;
+            }
+
+
+            for (
+                let i = 0;
+                i < 10;
+                i++
+            ) {
 
                 try {
 
                     const response =
                         await fetch(
-                            `${SERVER_URL}/api/gallery-access/payment-status/${requestId}?token=${encodeURIComponent(token || "")}`
-                        )
+                            `${SERVER_URL}/api/gallery-access/payment-status/${requestId}` +
+                            `?token=${encodeURIComponent(token || "")}`
+                        );
+
 
                     const result =
                         await response.json();
 
+
                     if (
-                        result.paymentConfirmed === true
+                        result.paymentConfirmed ===
+                        true
                     ) {
 
                         currentAccessRequest.payment_confirmed =
                             true;
 
+
                         currentAccessRequest.payment_status =
                             "paid";
 
-                        if (result.accessExpiresAt) {
+
+                        if (
+                            result.accessExpiresAt
+                        ) {
+
                             currentAccessRequest.access_expires_at =
                                 result.accessExpiresAt;
                         }
 
-                        galleryPreviewMode = false;
+
+                        galleryPreviewMode =
+                            false;
+
 
                         renderGalleryPhotos(
                             currentPhotos
                         );
 
+
                         sessionStorage.removeItem(
                             "galleryPaymentRequestId"
                         );
 
+
                         alert(
-                            "Payment confirmed! Your gallery is unlocked and can now download your high-qualityphotos."
+                            "Payment confirmed! Your gallery is unlocked and you can now download your high-quality photos."
                         );
+
 
                         return;
                     }
+
 
                 } catch (error) {
 
@@ -1077,18 +1619,29 @@
                         "Payment verification error:",
                         error
                     );
-
                 }
 
+
                 await new Promise(
-                    resolve => setTimeout(resolve, 1500)
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1500
+                        )
                 );
             }
+
 
             alert(
                 "Payment is still being verified. Please refresh shortly."
             );
         }
+
+
+        /* =========================================================
+           START PAYMONGO PAYMENT
+        ========================================================= */
+
         async function startPayMongoGalleryPayment() {
 
             if (!currentAccessRequest) {
@@ -1100,8 +1653,10 @@
                 return;
             }
 
+
             if (
-                currentAccessRequest.payment_required !== true
+                currentAccessRequest.payment_required !==
+                true
             ) {
 
                 alert(
@@ -1111,8 +1666,10 @@
                 return;
             }
 
+
             if (
-                currentAccessRequest.payment_confirmed === true
+                currentAccessRequest.payment_confirmed ===
+                true
             ) {
 
                 alert(
@@ -1122,6 +1679,7 @@
                 return;
             }
 
+
             try {
 
                 const button =
@@ -1129,54 +1687,66 @@
                         "btnPayMongo"
                     );
 
+
                 if (button) {
 
-                    button.disabled = true;
+                    button.disabled =
+                        true;
 
-                    button.innerHTML =
-                        `<i class="fa-solid fa-spinner fa-spin"></i>
-                 Creating Payment...`;
+
+                    button.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Creating Payment...
+                `;
                 }
+
 
                 const token =
                     new URLSearchParams(
                         window.location.search
                     ).get("token");
 
+
                 const response =
                     await fetch(
                         `${SERVER_URL}/api/gallery-access/create-payment`,
                         {
 
-                            method: "POST",
+                            method:
+                                "POST",
 
                             headers: {
                                 "Content-Type":
                                     "application/json"
                             },
 
-                            body: JSON.stringify({
+                            body:
+                                JSON.stringify({
+                                    requestId:
+                                        currentAccessRequest.id,
 
-                                requestId:
-                                    currentAccessRequest.id,
-
-                                token:
-                                    token
-
-                            })
+                                    token:
+                                        token
+                                })
                         }
                     );
+
 
                 const result =
                     await response.json();
 
-                if (!response.ok || !result.success) {
+
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
 
                     throw new Error(
                         result.message ||
                         "Unable to create payment."
                     );
                 }
+
 
                 if (!result.checkoutUrl) {
 
@@ -1185,55 +1755,132 @@
                     );
                 }
 
+
                 sessionStorage.setItem(
                     "galleryPaymentRequestId",
                     currentAccessRequest.id
                 );
 
+
                 window.location.href =
                     result.checkoutUrl;
 
-            }
 
-            catch (error) {
+            } catch (error) {
 
                 console.error(
                     "PayMongo gallery payment error:",
                     error
                 );
 
+
                 alert(
                     error.message ||
                     "Unable to start payment."
                 );
+
 
                 const button =
                     document.getElementById(
                         "btnPayMongo"
                     );
 
+
                 if (button) {
 
-                    button.disabled = false;
+                    button.disabled =
+                        false;
 
-                    button.innerHTML =
-                        `<i class="fa-solid fa-credit-card"></i>
-                 Pay with PayMongo`;
+
+                    button.innerHTML = `
+                    <i class="fa-solid fa-credit-card"></i>
+                    Pay with PayMongo
+                `;
                 }
             }
         }
 
-        window.addEventListener("DOMContentLoaded", async () => {
 
-            console.log("====================================");
-            console.log("CUSTOMER GALLERY INITIALIZING");
-            console.log("URL:", window.location.href);
-            console.log("====================================");
-            await initializeGallery();
+        /* =========================================================
+           BUTTON EVENTS
+        ========================================================= */
 
-        });
+        if (closeButton) {
+
+            closeButton.addEventListener(
+                "click",
+                closePaymentModal
+            );
+        }
+
+
+        if (btnPayMongo) {
+
+            btnPayMongo.addEventListener(
+                "click",
+                startPayMongoGalleryPayment
+            );
+        }
+
+
+        if (paymentModal) {
+
+            paymentModal.addEventListener(
+                "click",
+                event => {
+
+                    if (
+                        event.target ===
+                        paymentModal
+                    ) {
+
+                        closePaymentModal();
+                    }
+                }
+            );
+        }
+
+
+        if (downloadAllBtn) {
+
+            downloadAllBtn.addEventListener(
+                "click",
+                downloadAllPhotos
+            );
+        }
+
+
+        /* =========================================================
+           START GALLERY
+        ========================================================= */
+
+        window.addEventListener(
+            "DOMContentLoaded",
+            async () => {
+
+                console.log(
+                    "===================================="
+                );
+
+                console.log(
+                    "CUSTOMER GALLERY INITIALIZING"
+                );
+
+                console.log(
+                    "URL:",
+                    window.location.href
+                );
+
+                console.log(
+                    "===================================="
+                );
+
+
+                await initializeGallery();
+            }
+        );
+
     </script>
-
 </body>
 
 </html>
