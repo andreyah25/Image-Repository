@@ -2796,9 +2796,6 @@ if (!Number.isFinite(existingDuration) || existingDuration <= 0) {
         // IMPORTANT: correct column name
         payment_status:
             "Pending Payment",
-
-       // Booking is immediately recorded and visible
-// in the Admin Booked Sessions table.
 status:
     "Pending Payment",
 
@@ -5080,11 +5077,6 @@ app.post(
                 allRequests
             );
 
-
-            /* =====================================================
-               6. CHECK PENDING REQUEST
-            ===================================================== */
-
             const pendingRequest =
                 allRequests.find(
                     request =>
@@ -5946,14 +5938,6 @@ app.post("/api/gallery-access/create-payment", async (req, res) => {
             });
         }
 
-        if (accessRequest.payment_required !== true) {
-
-            return res.status(400).json({
-                success: false,
-                message: "Payment is not required for this request."
-            });
-        }
-
         if (accessRequest.payment_confirmed === true) {
 
             return res.status(400).json({
@@ -6705,6 +6689,7 @@ app.post(
 app.get("/api/gallery-access/photos", async (req, res) => {
     try {
         const token = String(req.query.token || "").trim();
+        const requestId = String(req.query.request || "").trim();
 
         if (!token) {
             return res.status(400).json({
@@ -6712,11 +6697,6 @@ app.get("/api/gallery-access/photos", async (req, res) => {
                 error: "Gallery token is required."
             });
         }
-
-        // -----------------------------------------
-        // 1. FIND THE REPOSITORY USING THE TOKEN
-        // -----------------------------------------
-
         const { data: repository, error: repositoryError } =
             await supabase
                 .from("repository_client_links")
@@ -6746,141 +6726,140 @@ app.get("/api/gallery-access/photos", async (req, res) => {
                 error: "Invalid or expired gallery link."
             });
         }
+// -----------------------------------------
+// 2. FIND THE SPECIFIC ACCESS REQUEST
+// -----------------------------------------
 
-        // -----------------------------------------
-        // 2. FIND APPROVED ACCESS REQUESTS
-        // -----------------------------------------
+let requestQuery =
+    supabase
+        .from("gallery_access_requests")
+        .select(`
+            id,
+            booking_id,
+            repository_id,
+            status,
+            request_number,
+            payment_required,
+            payment_confirmed,
+            payment_status,
+            access_started_at,
+            access_granted_at,
+            access_expires_at
+        `)
+        .eq("booking_id", repository.booking_id)
+        .eq("repository_id", repository.id)
+        .eq("status", "approved");
 
-        const { data: requests, error: requestError } =
-            await supabase
-                .from("gallery_access_requests")
-                .select(`
-                    id,
-                    booking_id,
-                    repository_id,
-                    status,
-                    request_number,
-                    payment_required,
-                    payment_confirmed,
-                    payment_status,
-                    access_started_at,
-                    access_granted_at,
-                    access_expires_at
-                `)
-                .eq("booking_id", repository.booking_id)
-                .eq("repository_id", repository.id)
-                .eq("status", "approved")
-                .order("request_number", {
-                    ascending: false
-                });
+if (requestId) {
+    requestQuery = requestQuery.eq("id", requestId);
+} else {
+    requestQuery = requestQuery.order("request_number", {
+        ascending: false
+    });
+}
 
-        if (requestError) {
-            console.error(
-                "Gallery access request lookup error:",
-                requestError
-            );
+const { data: requests, error: requestError } =
+    await requestQuery;
 
-            return res.status(500).json({
-                success: false,
-                error: "Unable to verify gallery access."
-            });
-        }
+if (requestError) {
 
-        if (!requests || requests.length === 0) {
-            return res.status(403).json({
-                success: false,
-                error: "Gallery access has not been approved."
-            });
-        }
+    console.error(
+        "Gallery access request lookup error:",
+        requestError
+    );
 
-        // -----------------------------------------
-        // 3. FIND THE CURRENT REQUEST
-        // -----------------------------------------
+    return res.status(500).json({
+        success: false,
+        error: "Unable to verify gallery access."
+    });
+}
 
-        const now = new Date();
+if (!requests || requests.length === 0) {
 
-        let validRequest = null;
+    return res.status(403).json({
+        success: false,
+        error: requestId
+            ? "The specified gallery access request was not found or is not approved."
+            : "Gallery access has not been approved."
+    });
+}
+// -----------------------------------------
+// 3. VALIDATE THE CURRENT REQUEST
+// -----------------------------------------
 
-        for (const request of requests) {
+const now = new Date();
 
-            const requestNumber =
-                Number(request.request_number || 0);
+let validRequest = null;
 
-            const expiresAt =
-                request.access_expires_at
-                    ? new Date(request.access_expires_at)
-                    : null;
+for (const request of requests) {
 
-            // Must have a valid expiration
-            if (
-                !expiresAt ||
-                Number.isNaN(expiresAt.getTime()) ||
-                now >= expiresAt
-            ) {
-                continue;
-            }
-if (requestNumber === 1) {
+    const requestNumber =
+        Number(request.request_number || 0);
+
+    const expiresAt =
+        request.access_expires_at
+            ? new Date(request.access_expires_at)
+            : null;
 
     if (
-        expiresAt &&
-        !Number.isNaN(expiresAt.getTime()) &&
-        now < expiresAt
+        !expiresAt ||
+        Number.isNaN(expiresAt.getTime()) ||
+        now >= expiresAt
     ) {
+        continue;
+    }
+
+    // -----------------------------------------
+    // REQUEST #1
+    // -----------------------------------------
+
+    if (requestNumber === 1) {
+
         validRequest = request;
         break;
     }
-}
 
-if (requestNumber >= 2) {
+    // -----------------------------------------
+    // REQUEST #2+
+    // -----------------------------------------
 
-    /*
-     * Approved paid request:
-     * access is already active and has an expiration.
-     */
-    if (
-        request.payment_confirmed === true &&
-        String(
-            request.payment_status || ""
-        ).toLowerCase() === "paid"
-    ) {
+    if (requestNumber >= 2) {
 
+        // Paid request
         if (
-            expiresAt &&
-            !Number.isNaN(expiresAt.getTime()) &&
-            now < expiresAt
+            request.payment_confirmed === true &&
+            String(
+                request.payment_status || ""
+            ).toLowerCase() === "paid"
         ) {
+
             validRequest = request;
             break;
         }
 
-    }
+        // Approved but unpaid request
+        if (
+            request.payment_required === true &&
+            request.payment_confirmed !== true &&
+            String(
+                request.payment_status || ""
+            ).toLowerCase() !== "paid"
+        ) {
 
-    /*
-     * Approved but unpaid request:
-     * The customer is allowed to OPEN and VIEW
-     * the gallery, but downloading remains locked.
-     */
-    if (
-        request.payment_required === true &&
-        request.payment_confirmed === false &&
-        String(
-            request.payment_status || ""
-        ).toLowerCase() !== "paid"
-    ) {
-
-        validRequest = request;
-        break;
+            validRequest = request;
+            break;
+        }
     }
 }
-        }
-        if (!validRequest) {
 
-            return res.status(403).json({
-                success: false,
-                error:
-                    "Your gallery access has expired or payment is still required."
-            });
-        }
+if (!validRequest) {
+
+    return res.status(403).json({
+        success: false,
+        error:
+            "Your gallery access has expired or payment is still required."
+    });
+}
 
        const { data: photos, error: photoError } =
     await supabase

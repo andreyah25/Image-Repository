@@ -201,8 +201,9 @@
         }
         async function loadRepositoryPhotos() {
             const params = new URLSearchParams(window.location.search);
-            const token = params.get("token");
 
+            const token = params.get("token");
+            const requestId = params.get("request");
             if (!token || token.trim() === "") {
                 console.error("No gallery token provided.");
 
@@ -217,9 +218,10 @@
             try {
                 const response =
                     await fetch(
-                        `${SERVER_URL}/api/gallery-access/photos?token=${encodeURIComponent(token)}`
+                        `${SERVER_URL}/api/gallery-access/photos` +
+                        `?token=${encodeURIComponent(token)}` +
+                        `&request=${encodeURIComponent(requestId || "")}`
                     );
-
                 const result =
                     await response.json();
 
@@ -1115,9 +1117,7 @@
                 }
             }
         }
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            window.location.href = "customer_homepage.html";
-        });
+
         window.addEventListener("DOMContentLoaded", async () => {
 
             console.log("====================================");
