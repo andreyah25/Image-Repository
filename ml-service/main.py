@@ -17,6 +17,8 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "http://localhost:5500",
         "http://127.0.0.1:5500",
         "https://captured-photo-studio.onrender.com"
@@ -25,7 +27,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class AnalyzeRequest(BaseModel):
     image_url: str
@@ -40,11 +41,9 @@ def root():
 
 @app.post("/analyze")
 def analyze_image(request: AnalyzeRequest):
-
     image_path = None
 
     try:
-
         print("=================================")
         print("ML ANALYSIS STARTED")
         print("Image URL:", request.image_url)
@@ -57,14 +56,14 @@ def analyze_image(request: AnalyzeRequest):
             timeout=30
         )
 
-        print(
-            "Supabase image response:",
-            response.status_code
-        )
+        print("Supabase image response:", response.status_code)
 
         if response.status_code != 200:
+            print("Supabase error response:")
+            print(response.text[:1000])
+
             raise Exception(
-                f"Could not download image. HTTP {response.status_code}"
+                f"Could not download image. HTTP {response.status_code}: {response.text[:500]}"
             )
 
         print("Image downloaded successfully.")
@@ -82,17 +81,13 @@ def analyze_image(request: AnalyzeRequest):
 
         print("Starting object detection...")
 
-        objects = detect_objects(
-            str(image_path)
-        )
+        objects = detect_objects(str(image_path))
 
         print("Objects:", objects)
 
         print("Starting face detection...")
 
-        faces = detect_faces(
-            str(image_path)
-        )
+        faces = detect_faces(str(image_path))
 
         print("Faces:", faces)
         print("Face count:", len(faces))
@@ -109,7 +104,6 @@ def analyze_image(request: AnalyzeRequest):
         }
 
     except Exception as error:
-
         print("=================================")
         print("ML ANALYSIS FAILED")
         print("ERROR:", repr(error))
@@ -121,9 +115,7 @@ def analyze_image(request: AnalyzeRequest):
         )
 
     finally:
-
         if image_path and image_path.exists():
-
             try:
                 image_path.unlink()
                 print("Temporary image deleted.")

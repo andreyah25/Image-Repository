@@ -2175,18 +2175,23 @@
 
 
                     const {
-                        data: publicUrlData
-                    } =
-                        supabaseClient
-                            .storage
-                            .from("client-photos")
-                            .getPublicUrl(
-                                storagePath
-                            );
+                        data: signedUrlData,
+                        error: signedUrlError
+                    } = await supabaseClient
+                        .storage
+                        .from("client-photos")
+                        .createSignedUrl(
+                            storagePath,
+                            300
+                        );
 
+                    if (signedUrlError) {
+                        throw signedUrlError;
+                    }
 
-                    const imageUrl =
-                        publicUrlData.publicUrl;
+                    const imageUrl = signedUrlData.signedUrl;
+
+                    console.log("SIGNED IMAGE URL:", imageUrl);
 
                     const {
                         data: photoRecord,
