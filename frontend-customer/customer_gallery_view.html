@@ -35,24 +35,6 @@
 
     <div class="dashboard-wrapper">
 
-        <aside class="sidebar">
-            <nav>
-                <a href="customer_booking.html">
-                    <i class="fa-regular fa-calendar-check"></i>
-                    <span>Book a Session</span>
-                </a>
-            </nav>
-            <nav>
-                <a href="customer_gallery_view.html"
-                    style="display:inline-block; margin-top:15px; padding:10px 18px; background:#639A88; color:white; text-decoration:none; border-radius:8px;">
-                    Enter Gallery Link
-                </a>
-            </nav>
-            <button type="button" class="logout-btn" id="logoutBtn">
-                <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
-                <span>Log out</span>
-            </button>
-        </aside>
         <main class="content">
 
             <div class="gallery-header">
@@ -160,7 +142,7 @@
                 SUPABASE_URL,
                 SUPABASE_ANON_KEY
             );
-        const SERVER_URL = "https://image-repository-1.onrender.com";
+        const SERVER_URL = "https://captured-server.onrender.com";
         const galleryTitle =
             document.getElementById("galleryTitle");
 
@@ -701,26 +683,33 @@
 
                     try {
 
+                        const params =
+                            new URLSearchParams(window.location.search);
+
                         const token =
-                            new URLSearchParams(
-                                window.location.search
-                            ).get("token");
+                            params.get("token");
+
                         const requestId =
-                            params.get("request");
+                            currentAccessRequest?.id;
+
+                        if (!requestId) {
+                            throw new Error("Gallery access request ID is missing.");
+                        }
+
                         const openResponse =
                             await fetch(
                                 `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
                                 `?token=${encodeURIComponent(token)}`
                             );
-                        if (!response.ok) {
 
+                        if (!openResponse.ok) {
                             throw new Error(
                                 "Unable to download photo."
                             );
                         }
 
                         const blob =
-                            await response.blob();
+                            await openResponse.blob();
 
                         const blobUrl =
                             URL.createObjectURL(blob);
@@ -819,7 +808,7 @@
             }
 
             if (summaryAmount) {
-                summaryAmount.textContent = "₱100.00";
+                summaryAmount.textContent = "₱1.00";
             }
 
             paymentModal.classList.add("active");

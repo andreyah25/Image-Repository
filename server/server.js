@@ -5963,7 +5963,7 @@ app.post("/api/gallery-access/create-payment", async (req, res) => {
         }
         const amount =
             Number(
-                process.env.GALLERY_ACCESS_AMOUNT || 100
+                process.env.GALLERY_ACCESS_AMOUNT || 1
             );
 
         if (!amount || amount <= 0) {
@@ -5975,21 +5975,56 @@ app.post("/api/gallery-access/create-payment", async (req, res) => {
         }
 
         const referenceNumber =
-            `GALLERY-${accessRequest.id}`;
-       const frontendUrl =
-    process.env.FRONTEND_URL ||
-    "http://localhost:5500";
+    `GALLERY-${accessRequest.id}`;
 
-const galleryUrl =
-    `${frontendUrl}/gallery` +
-    `?token=${encodeURIComponent(
-        req.body.token || ""
-    )}` +
-    `&email=${encodeURIComponent(
-        accessRequest.customer_email || ""
-    )}` +
-    `&payment=success` +
-    `&request=${encodeURIComponent(accessRequest.id)}`;
+// Get the repository belonging to this gallery request
+const { data: repository, error: repositoryError } =
+    await supabase
+        .from("repository_client_links")
+        .select(`
+            id,
+            booking_id,
+            access_token
+        `)
+        .eq("id", accessRequest.repository_id)
+        .eq("booking_id", accessRequest.booking_id)
+        .maybeSingle();
+
+if (repositoryError) {
+    console.error(
+        "Gallery repository lookup error:",
+        repositoryError
+    );
+
+    return res.status(500).json({
+        success: false,
+        message: "Unable to verify gallery repository."
+    });
+}
+
+        if (!repository) {
+            return res.status(404).json({
+                success: false,
+                message: "Gallery repository was not found."
+            });
+        }
+
+        const frontendUrl =
+            process.env.FRONTEND_URL ||
+            "http://localhost:5500";
+
+        const galleryUrl =
+            `${frontendUrl}/gallery` +
+            `?token=${encodeURIComponent(
+                repository.access_token
+            )}` +
+            `&email=${encodeURIComponent(
+                accessRequest.customer_email || ""
+            )}` +
+            `&payment=success` +
+            `&request=${encodeURIComponent(
+                accessRequest.id
+            )}`;
 
         const paymongoResponse =
             await fetch(
@@ -6020,7 +6055,7 @@ const galleryUrl =
                                             "Gallery Access",
 
                                         amount:
-                                            amount,
+                                            amount * 100,
 
                                         currency:
                                             "PHP",
