@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+    <title>Profile - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,12 +15,22 @@
     <link rel="stylesheet" href="/design/admin_profile.css">
 </head>
 
+<script>
+    // Run immediately to load persisted state
+    (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+            document.documentElement.classList.add("sidebar-is-collapsed");
+        }
+    })();
+</script>
+
 <body>
 
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
         </div>
         <div class="navbar-right">
 
@@ -35,10 +45,14 @@
 
     <div class="dashboard-wrapper">
 
+        <button id="sidebarToggle" class="sidebar-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
         <aside class="sidebar">
             <nav>
 
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
@@ -68,7 +82,7 @@
                     Packages
                 </a>
 
-                <a href="/admin/profile">
+                <a href="/admin/profile" class="active">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
@@ -837,6 +851,44 @@
             await supabaseClient.auth.signOut();
             window.location.href = "admin_login.html";
         });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
+
+            if (sidebarToggle && sidebar) {
+                const icon = sidebarToggle.querySelector("i");
+
+                // 1. Restore saved collapsed state from localStorage on page load
+                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                if (isCollapsed) {
+                    sidebar.classList.add("collapsed");
+                    if (icon) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-chevron-right");
+                    }
+                }
+
+                // 2. Toggle state and save preference to localStorage on click
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("collapsed");
+                    const collapsed = sidebar.classList.contains("collapsed");
+
+                    localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
+
+                    if (icon) {
+                        if (collapsed) {
+                            icon.classList.remove("fa-bars");
+                            icon.classList.add("fa-chevron-right");
+                        } else {
+                            icon.classList.remove("fa-chevron-right");
+                            icon.classList.add("fa-bars");
+                        }
+                    }
+                });
+            }
+        });
+
     </script>
 </body>
 

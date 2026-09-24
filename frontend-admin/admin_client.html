@@ -16,7 +16,7 @@
 </head>
 
 <script>
-    // Run immediately before DOM rendering to avoid layout shift/flicker
+    // Run immediately to load persisted state
     (function () {
         const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
         if (isCollapsed) {
@@ -40,7 +40,7 @@
                 </button>
                 <div id="notificationDropdown" class="notification-dropdown">
                     <div class="notification-header">
-                        <h3>Notifications</h3>
+                        <strong>Notifications</strong>
                     </div>
                     <div id="notificationList"></div>
                 </div>
@@ -67,7 +67,7 @@
                     Dashboard
                 </a>
 
-                <a href="/admin/clients" class="active">
+                <a href="/admin/client" class="active">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
@@ -114,10 +114,41 @@
                 <div class="page-header">
                     <h1>Client List</h1>
                     <p>Monitor customer booked sessions and studio access requests.</p>
-
                     <div class="tab-navigation">
-                        <a href="/admin/client" class="tab-btn active">All Booked Sessions</a>
-                        <a href="/admin/access-request" class="tab-btn">All Access Requests</a>
+
+                        <a href="/admin/client" class="tab-btn active">
+                            All Booked Sessions
+                        </a>
+
+                        <a href="/admin/access-request" class="tab-btn">
+                            All Access Requests
+                        </a>
+
+                    </div>
+
+                    <!-- BOOKING STATUS SUB-TABS -->
+                    <div class="booking-status-tabs">
+
+                        <button type="button" class="booking-status-tab active" data-status="all">
+                            All
+                        </button>
+
+                        <button type="button" class="booking-status-tab" data-status="completed">
+                            Completed
+                        </button>
+
+                        <button type="button" class="booking-status-tab" data-status="pending">
+                            Pending
+                        </button>
+
+                        <button type="button" class="booking-status-tab" data-status="rejected">
+                            Rejected
+                        </button>
+
+                        <button type="button" class="booking-status-tab" data-status="upcoming">
+                            Upcoming
+                        </button>
+
                     </div>
                 </div>
 
@@ -224,6 +255,104 @@
                 </div>
             </form>
         </div>
+    </div>
+    <!-- =========================================================
+     BOOKING DETAILS MODAL
+========================================================= -->
+    <div class="booking-details-modal" id="bookingDetailsModal">
+
+        <div class="booking-details-card">
+
+            <!-- CLOSE BUTTON -->
+            <button type="button" class="booking-details-close" id="closeBookingDetailsModal">
+                &times;
+            </button>
+
+
+            <!-- HEADER -->
+            <div class="booking-details-header">
+
+                <div>
+                    <span class="booking-details-eyebrow">
+                        BOOKING DETAILS
+                    </span>
+
+                    <h2 id="bookingDetailsTitle">
+                        Booking Details
+                    </h2>
+
+                    <p id="bookingDetailsSubtitle">
+                        -
+                    </p>
+                </div>
+
+                <span id="bookingDetailsStatus" class="booking-status pending">
+                    Pending
+                </span>
+
+            </div>
+
+
+            <!-- DETAILS -->
+            <div class="booking-details-grid" id="bookingDetailsGrid">
+            </div>
+
+
+            <!-- PAYMENT SUMMARY -->
+            <div class="booking-payment-summary">
+
+                <div class="booking-payment-box">
+
+                    <span>
+                        Total Price
+                    </span>
+
+                    <strong id="detailsTotalPrice">
+                        ₱0.00
+                    </strong>
+
+                </div>
+
+
+                <div class="booking-payment-box">
+
+                    <span>
+                        Downpayment
+                    </span>
+
+                    <strong id="detailsDownpayment">
+                        ₱0.00
+                    </strong>
+
+                </div>
+
+
+                <div class="booking-payment-box">
+
+                    <span>
+                        Balance
+                    </span>
+
+                    <strong id="detailsBalance">
+                        ₱0.00
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- PAYMENT PROOF -->
+            <div class="booking-details-proof" id="bookingDetailsProof">
+            </div>
+
+
+            <!-- ACTIONS -->
+            <div class="booking-details-actions" id="bookingDetailsActions">
+            </div>
+
+        </div>
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -540,20 +669,36 @@
                     error
                 );
             }
-        } function renderBookedSessions() {
+        }
+        function renderBookedSessions() {
 
-            const tbody = document.getElementById("clientTableBody");
+            const tbody =
+                document.getElementById("clientTableBody");
 
             if (!tbody) return;
 
-            tbody.innerHTML = "";
+
+            /* =========================================================
+               CURRENT FILTER
+            ========================================================= */
+
+            const activeTab =
+                document.querySelector(
+                    ".booking-status-tab.active"
+                );
+
+            const selectedStatus =
+                activeTab?.dataset.status || "all";
+
 
             /* =========================================================
                SEARCH
             ========================================================= */
 
             const searchInput =
-                document.getElementById("clientSearchInput");
+                document.getElementById(
+                    "clientSearchInput"
+                );
 
             const searchTerm =
                 searchInput
@@ -561,149 +706,220 @@
                     : "";
 
 
-            const sortedBookings = [...allBookedSessions].sort((a, b) => {
-
-                const statusA =
-                    String(a.status || "").toLowerCase();
-
-                const statusB =
-                    String(b.status || "").toLowerCase();
-
-
-                /*
-                 * Pending/new bookings get priority.
-                 */
-
-                const priorityA =
-                    statusA === "pending" ? 0 :
-                        statusA === "confirmed" ? 2 :
-                            1;
-
-                const priorityB =
-                    statusB === "pending" ? 0 :
-                        statusB === "confirmed" ? 2 :
-                            1;
-
-
-                if (priorityA !== priorityB) {
-                    return priorityA - priorityB;
-                }
-
-
-                const dateA = new Date(
-                    a.created_at ||
-                    `${a.booking_date || "9999-12-31"}T${a.booking_time || "23:59"}`
-                );
-
-                const dateB = new Date(
-                    b.created_at ||
-                    `${b.booking_date || "9999-12-31"}T${b.booking_time || "23:59"}`
-                );
-
-                return dateA - dateB;
-            });
-
-
             /* =========================================================
-               SEARCH + MONTH FILTER
+               FILTER BOOKINGS
             ========================================================= */
 
-            const filteredBookings =
-                sortedBookings.filter(booking => {
+            let filteredBookings =
+                [...allBookedSessions];
 
-                    /* ---------------------------------------------
-                       SEARCH
-                    --------------------------------------------- */
 
-                    if (searchTerm) {
+            /*
+            ---------------------------------------------------------
+            STATUS FILTER
+            ---------------------------------------------------------
+            */
+
+            if (selectedStatus !== "all") {
+
+                filteredBookings =
+                    filteredBookings.filter(booking => {
+
+                        const status =
+                            String(
+                                booking.status || ""
+                            )
+                                .trim()
+                                .toLowerCase();
+
+
+                        /*
+                        UPCOMING
+        
+                        Upcoming means:
+                        - booking is confirmed
+                        - booking date is today or later
+                        */
+
+                        if (
+                            selectedStatus === "upcoming"
+                        ) {
+
+                            if (status !== "confirmed") {
+                                return false;
+                            }
+
+                            if (!booking.booking_date) {
+                                return false;
+                            }
+
+                            const today =
+                                new Date();
+
+                            today.setHours(
+                                0, 0, 0, 0
+                            );
+
+                            const bookingDate =
+                                new Date(
+                                    `${booking.booking_date}T00:00:00`
+                                );
+
+                            return bookingDate >= today;
+                        }
+
+
+                        /*
+                        REJECTED
+        
+                        Treat Cancelled as rejected
+                        in the filter.
+                        */
+
+                        if (
+                            selectedStatus === "rejected"
+                        ) {
+
+                            return (
+                                status === "rejected" ||
+                                status === "cancelled"
+                            );
+                        }
+
+
+                        /*
+                        NORMAL STATUS
+                        */
+
+                        return status === selectedStatus;
+
+                    });
+            }
+
+
+            /*
+            ---------------------------------------------------------
+            SEARCH FILTER
+            ---------------------------------------------------------
+            */
+
+            if (searchTerm) {
+
+                filteredBookings =
+                    filteredBookings.filter(booking => {
 
                         const searchableText = [
+
                             booking.full_name,
-                            booking.contact_number,
+
                             booking.email,
-                            booking.booking_date,
-                            booking.booking_time,
+
+                            booking.contact_number,
+
                             booking.session_type,
 
-                            Array.isArray(booking.backdrops)
-                                ? booking.backdrops.join(" ")
-                                : booking.backdrops,
+                            booking.booking_date,
 
-                            Array.isArray(booking.addons)
-                                ? booking.addons.join(" ")
-                                : booking.addons,
+                            booking.booking_time,
 
-                            booking.payment_method,
-                            booking.total_price,
-                            booking.downpayment_amount,
-                            booking.remaining_balance,
                             booking.payment_status,
-                            booking.status,
-                            booking.notes
+
+                            booking.status
+
                         ]
-                            .filter(value =>
-                                value !== null &&
-                                value !== undefined
+                            .filter(
+                                value =>
+                                    value !== null &&
+                                    value !== undefined
                             )
                             .join(" ")
                             .toLowerCase();
 
-                        if (!searchableText.includes(searchTerm)) {
-                            return false;
-                        }
-                    }
+
+                        return searchableText
+                            .includes(searchTerm);
+
+                    });
+            }
 
 
-                    /* ---------------------------------------------
-                       MONTH FILTER
-                    --------------------------------------------- */
+            /*
+            ---------------------------------------------------------
+            MONTH FILTER
+            ---------------------------------------------------------
+            */
 
-                    if (selectedMonth !== "all") {
+            if (
+                selectedMonth !== "all"
+            ) {
 
-                        if (!booking.booking_date) {
-                            return false;
-                        }
+                filteredBookings =
+                    filteredBookings.filter(
+                        booking => {
 
-                        /*
-                         * Get month directly from YYYY-MM-DD.
-                         * This avoids timezone problems.
-                         */
+                            if (
+                                !booking.booking_date
+                            ) {
+                                return false;
+                            }
 
-                        const month =
-                            Number(
-                                String(
-                                    booking.booking_date
-                                ).substring(5, 7)
+                            const month =
+                                Number(
+                                    String(
+                                        booking.booking_date
+                                    ).substring(5, 7)
+                                );
+
+                            return (
+                                month ===
+                                Number(selectedMonth)
                             );
 
-                        if (
-                            month !==
-                            Number(selectedMonth)
-                        ) {
-                            return false;
                         }
-                    }
+                    );
+            }
 
 
-                    return true;
-                });
+            /*
+            =========================================================
+               SORT
+            =========================================================
+            */
+
+            filteredBookings.sort(
+                (a, b) => {
+
+                    const dateA =
+                        new Date(
+                            `${a.booking_date || "9999-12-31"}T${a.booking_time || "23:59"}`
+                        );
+
+                    const dateB =
+                        new Date(
+                            `${b.booking_date || "9999-12-31"}T${b.booking_time || "23:59"}`
+                        );
+
+                    return dateA - dateB;
+
+                }
+            );
 
 
-            /* =========================================================
+            /*
+            =========================================================
                NO RESULTS
-            ========================================================= */
+            =========================================================
+            */
 
-            if (filteredBookings.length === 0) {
+            if (
+                filteredBookings.length === 0
+            ) {
 
                 tbody.innerHTML = `
             <tr>
                 <td
-                    colspan="19"
-                    style="
-                        text-align:center;
-                        padding:30px;
-                        color:#888;
-                    "
+                    colspan="10"
+                    class="empty-table-message"
                 >
                     No booked sessions found.
                 </td>
@@ -714,371 +930,951 @@
             }
 
 
-            /* =========================================================
-               RENDER BOOKINGS
-            ========================================================= */
+            /*
+            =========================================================
+               RENDER
+            =========================================================
+            */
 
-            filteredBookings.forEach((booking, index) => {
-
-                const status =
-                    String(
-                        booking.status || ""
-                    ).toLowerCase();
+            tbody.innerHTML = "";
 
 
-                /* ---------------------------------------------
-                   ACTION BUTTON
-                --------------------------------------------- */
+            filteredBookings.forEach(
+                (booking, index) => {
 
-                let actionHTML = "-";
+                    const status =
+                        String(
+                            booking.status || "Pending"
+                        )
+                            .trim()
+                            .toLowerCase();
+                    const totalPrice =
+                        Number(
+                            booking.total_price || 0
+                        );
+                    const downpaymentAmount =
+                        Number(booking.downpayment_amount) || 0
+                    const remainingBalance =
+                        Math.max(totalPrice - downpaymentAmount, 0);
+
+                    const paymentStatus =
+                        String(
+                            booking.payment_status ||
+                            "Pending Verification"
+                        );
 
 
-                if (status === "pending") {
+                    const paymentLower =
+                        paymentStatus.toLowerCase();
 
-                    actionHTML = `
-        <div style="
-            display:flex;
-            gap:6px;
-            flex-wrap:wrap;
-        ">
 
-            <button
-                type="button"
-                class="confirm-btn"
-                data-id="${escapeHtml(booking.id)}"
-            >
-                Confirm
-            </button>
+                    let paymentClass =
+                        "pending";
 
-            <button
-                type="button"
-                class="reject-btn"
-                data-id="${escapeHtml(booking.id)}"
-            >
-                Reject
-            </button>
 
-        </div>
-    `;
+                    if (
+                        paymentLower.includes("paid")
+                    ) {
 
-                } else if (status === "confirmed") {
+                        paymentClass = "paid";
 
-                    actionHTML = `
-        <button
-            type="button"
-            class="complete-btn"
-            data-id="${escapeHtml(booking.id)}"
-        >
-            Complete
-        </button>
-    `;
+                    } else if (
+                        paymentLower.includes("failed") ||
+                        paymentLower.includes("reject")
+                    ) {
+
+                        paymentClass = "failed";
+                    }
+
+
+                    let actionHTML = `
+                        <button
+                            type="button"
+                            class="booking-view-btn"
+                            data-id="${escapeHtml(booking.id)}"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                            View
+                        </button>
+                    `;
+
+                    const statusLabel =
+                        booking.status ||
+                        "Pending";
+
+
+                    const statusClass =
+                        status.replace(
+                            /\s+/g,
+                            "-"
+                        ).toLowerCase();
+
+
+                    /*
+                    -------------------------------------------------
+                    TABLE ROW
+                    -------------------------------------------------
+                    */
+
+                    tbody.innerHTML += `
+
+                <tr>
+
+                    <!-- NUMBER -->
+
+                    <td>
+                        ${index + 1}
+                    </td>
+
+
+                    <!-- CLIENT -->
+
+                    <td>
+
+                        <div
+                            class="client-name-cell"
+                        >
+
+                            <strong>
+                                ${escapeHtml(
+                        booking.full_name ||
+                        "-"
+                    )}
+                            </strong>
+
+                            <span>
+                                ${escapeHtml(
+                        booking.email ||
+                        "-"
+                    )}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- DATE + TIME -->
+
+                    <td>
+
+                        <div
+                            class="booking-date-cell"
+                        >
+
+                            <strong>
+                                ${escapeHtml(
+                        formatBookingDate(
+                            booking.booking_date
+                        )
+                    )}
+                            </strong>
+
+                            <span>
+                                ${escapeHtml(
+                        formatBookingTime(
+                            booking.booking_time
+                        )
+                    )}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- SESSION -->
+
+                    <td>
+                        ${escapeHtml(
+                        booking.session_type ||
+                        "-"
+                    )}
+                  </td>
+                    <!-- TOTAL -->
+
+                    <td>
+                        <strong>
+                            ₱${totalPrice.toLocaleString(
+                        "en-PH",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}
+                        </strong>
+                    </td>
+
+
+                    <!-- DOWNPAYMENT -->
+
+                    <td>
+                        <strong>
+                            ₱${downpaymentAmount.toLocaleString(
+                        "en-PH",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}
+                        </strong>
+                    </td>
+
+
+                    <!-- BALANCE -->
+
+                    <td>
+                        <strong>
+                            ₱${remainingBalance.toLocaleString(
+                        "en-PH",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}
+                        </strong>
+                    </td>
+
+<!-- PAYMENT -->
+
+                        <td>
+
+                            <div class="payment-cell">
+
+                                <span class="payment-method">
+                                    ${escapeHtml(
+                                                booking.payment_method || "Not specified"
+                                            )}
+                                </span>
+
+                                <span
+                                    class="
+                                        payment-status
+                                        ${paymentClass}
+                                    "
+                                >
+                                    ${escapeHtml(paymentStatus)}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        <span
+                            class="
+                                booking-status
+                                ${escapeHtml(
+                        statusClass
+                    )}
+                            "
+                        >
+                            ${escapeHtml(
+                        statusLabel
+                    )}
+                        </span>
+
+                    </td>
+
+
+                    <!-- ACTION -->
+
+                    <td>
+                        ${actionHTML}
+                    </td>
+
+                </tr>
+
+            `;
+
                 }
+            );
+        }
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
 
-                /* ---------------------------------------------
-                   PAYMENT PROOF
-                --------------------------------------------- */
+                const statusTabs =
+                    document.querySelectorAll(
+                        ".booking-status-tab"
+                    );
 
-                const proofURL =
+
+                statusTabs.forEach(tab => {
+
+                    tab.addEventListener(
+                        "click",
+                        () => {
+
+                            statusTabs.forEach(
+                                item => {
+                                    item.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+                            tab.classList.add(
+                                "active"
+                            );
+                            renderBookedSessions();
+
+                        }
+                    );
+
+                });
+
+            }
+        );
+        /* =========================================================
+   BOOKING DETAILS MODAL
+========================================================= */
+
+        let currentViewedBookingId = null;
+
+
+        function formatCurrency(value) {
+
+            return `₱${Number(value || 0).toLocaleString(
+                "en-PH",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            )}`;
+
+        }
+
+
+        function openBookingDetailsModal(bookingId) {
+
+            const booking =
+                allBookedSessions.find(
+                    item =>
+                        String(item.id) ===
+                        String(bookingId)
+                );
+
+            if (!booking) {
+
+                console.error(
+                    "Booking not found:",
+                    bookingId
+                );
+
+                return;
+            }
+
+
+            currentViewedBookingId =
+                booking.id;
+
+
+            const modal =
+                document.getElementById(
+                    "bookingDetailsModal"
+                );
+
+            if (!modal) return;
+
+
+            const status =
+                String(
+                    booking.status ||
+                    "Pending"
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            const statusLabel =
+                booking.status ||
+                "Pending";
+
+
+            const totalPrice =
+                Number(
+                    booking.total_price || 0
+                );
+
+
+            const downpaymentAmount =
+                Number(
+                    booking.downpayment_amount || 0
+                );
+
+
+            const remainingBalance =
+                Math.max(
+                    totalPrice -
+                    downpaymentAmount,
+                    0
+                );
+
+
+            const paymentStatus =
+                booking.payment_status ||
+                "Pending Verification";
+
+
+            /* =====================================================
+               HEADER
+            ===================================================== */
+
+            const title =
+                document.getElementById(
+                    "bookingDetailsTitle"
+                );
+
+            const subtitle =
+                document.getElementById(
+                    "bookingDetailsSubtitle"
+                );
+
+            const statusElement =
+                document.getElementById(
+                    "bookingDetailsStatus"
+                );
+
+
+            if (title) {
+
+                title.textContent =
+                    booking.full_name ||
+                    "Booking Details";
+
+            }
+
+
+            if (subtitle) {
+
+                subtitle.textContent =
+                    `${formatBookingDate(
+                        booking.booking_date
+                    )} • ${formatBookingTime(
+                        booking.booking_time
+                    )}`;
+
+            }
+
+
+            if (statusElement) {
+
+                const statusClass =
+                    status
+                        .replace(
+                            /\s+/g,
+                            "-"
+                        );
+
+                statusElement.className =
+                    `booking-status ${statusClass}`;
+
+                statusElement.textContent =
+                    statusLabel;
+
+            }
+
+
+            /* =====================================================
+               DETAILS
+            ===================================================== */
+
+            const detailsGrid =
+                document.getElementById(
+                    "bookingDetailsGrid"
+                );
+
+
+            if (detailsGrid) {
+
+                detailsGrid.innerHTML = `
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Client Name
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    booking.full_name ||
+                    "-"
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Session / Package
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    booking.session_type ||
+                    "-"
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Email
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    booking.email ||
+                    "-"
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Contact Number
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    booking.contact_number ||
+                    "-"
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Booking Date
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    formatBookingDate(
+                        booking.booking_date
+                    )
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Booking Time
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    formatBookingTime(
+                        booking.booking_time
+                    )
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Payment Method
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    booking.payment_method ||
+                    "-"
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Payment Status
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    paymentStatus
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Duration
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    booking.duration
+                        ? `${booking.duration} minutes`
+                        : "-"
+                )}
+                </span>
+
+            </div>
+
+
+            <div class="booking-detail-item">
+
+                <span class="booking-detail-label">
+                    Booking ID
+                </span>
+
+                <span class="booking-detail-value">
+                    ${escapeHtml(
+                    booking.id ||
+                    "-"
+                )}
+                </span>
+
+            </div>
+
+
+            ${booking.notes
+                        ? `
+                    <div class="booking-detail-item full-width">
+
+                        <span class="booking-detail-label">
+                            Customer Notes
+                        </span>
+
+                        <span class="booking-detail-value">
+                            ${escapeHtml(
+                            booking.notes
+                        )}
+                        </span>
+
+                    </div>
+                    `
+                        : ""
+                    }
+
+
+            ${booking.rejection_reason
+                        ? `
+                    <div class="booking-detail-item full-width">
+
+                        <span class="booking-detail-label">
+                            Rejection Reason
+                        </span>
+
+                        <span class="booking-detail-value">
+                            ${escapeHtml(
+                            booking.rejection_reason
+                        )}
+                        </span>
+
+                    </div>
+                    `
+                        : ""
+                    }
+
+        `;
+
+            }
+
+
+            /* =====================================================
+               PAYMENT SUMMARY
+            ===================================================== */
+
+            const totalElement =
+                document.getElementById(
+                    "detailsTotalPrice"
+                );
+
+            const downpaymentElement =
+                document.getElementById(
+                    "detailsDownpayment"
+                );
+
+            const balanceElement =
+                document.getElementById(
+                    "detailsBalance"
+                );
+
+
+            if (totalElement) {
+
+                totalElement.textContent =
+                    formatCurrency(
+                        totalPrice
+                    );
+
+            }
+
+
+            if (downpaymentElement) {
+
+                downpaymentElement.textContent =
+                    formatCurrency(
+                        downpaymentAmount
+                    );
+
+            }
+
+
+            if (balanceElement) {
+
+                balanceElement.textContent =
+                    formatCurrency(
+                        remainingBalance
+                    );
+
+            }
+
+
+            /* =====================================================
+               PAYMENT PROOF
+            ===================================================== */
+
+            const proofArea =
+                document.getElementById(
+                    "bookingDetailsProof"
+                );
+
+
+            if (proofArea) {
+
+                const hasProof =
                     booking.payment_proof ||
-                    booking.payment_proof_url ||
-                    "";
+                    booking.payment_proof_url;
 
 
-                const proofHTML = proofURL
-                    ? `
+                if (hasProof) {
+
+                    proofArea.innerHTML = `
+
                 <button
                     type="button"
                     class="payment-proof-btn"
-                    data-id="${escapeHtml(booking.id)}"
+                    data-id="${escapeHtml(
+                        booking.id
+                    )}"
                 >
                     <i class="fa-solid fa-image"></i>
-                    View Proof
+                    View Payment Proof
                 </button>
-            `
-                    : `
-                <span style="color:#999;">
-                    No proof
-                </span>
+
             `;
 
-                let addonsText = "-";
+                } else {
 
-                if (Array.isArray(booking.addons)) {
-
-                    if (booking.addons.length > 0) {
-
-                        addonsText = booking.addons
-                            .map(addon => {
-
-                                if (typeof addon === "string") {
-                                    return addon;
-                                }
-
-                                if (addon && typeof addon === "object") {
-
-                                    const name =
-                                        addon.name ||
-                                        addon.key ||
-                                        "Add-on";
-
-                                    const quantity =
-                                        Number(addon.quantity) || 1;
-
-                                    if (quantity > 1) {
-                                        return `${name} x${quantity}`;
-                                    }
-
-                                    return name;
-                                }
-
-                                return "";
-
-                            })
-                            .filter(Boolean)
-                            .join(", ");
-
-                    } else {
-
-                        addonsText = "-";
-
-                    }
-
-                } else if (
-                    booking.addons !== null &&
-                    booking.addons !== undefined &&
-                    String(booking.addons).trim() !== ""
-                ) {
-
-                    addonsText = String(booking.addons);
+                    proofArea.innerHTML = "";
 
                 }
-                /* ---------------------------------------------
-                   TOTAL PRICE
-                --------------------------------------------- */
 
-                const totalPriceValue =
-                    booking.total_price !== null &&
-                        booking.total_price !== undefined
-                        ? Number(booking.total_price)
-                        : 0;
-
-                const totalPrice =
-                    `₱${totalPriceValue.toLocaleString(
-                        "en-PH",
-                        {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }
-                    )}`;
+            }
 
 
-                /* ---------------------------------------------
-                   DOWN PAYMENT
-                --------------------------------------------- */
+            /* =====================================================
+               ACTION BUTTONS
+            ===================================================== */
 
-                const downpaymentValue =
-                    booking.downpayment_amount !== null &&
-                        booking.downpayment_amount !== undefined
-                        ? Number(booking.downpayment_amount)
-                        : 0;
-
-                const paymentAmount =
-                    `₱${downpaymentValue.toLocaleString(
-                        "en-PH",
-                        {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }
-                    )}`;
+            const actions =
+                document.getElementById(
+                    "bookingDetailsActions"
+                );
 
 
-                /* ---------------------------------------------
-                   REMAINING BALANCE
-                --------------------------------------------- */
+            if (actions) {
 
-                const remainingBalanceValue =
-                    booking.remaining_balance !== null &&
-                        booking.remaining_balance !== undefined
-                        ? Number(booking.remaining_balance)
-                        : Math.max(
-                            0,
-                            totalPriceValue - downpaymentValue
-                        );
+                if (status === "pending") {
 
-                const remainingBalance =
-                    `₱${remainingBalanceValue.toLocaleString(
-                        "en-PH",
-                        {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }
-                    )}`;
+                    actions.innerHTML = `
 
-                /* ---------------------------------------------
-                   PAYMENT STATUS
-                --------------------------------------------- */
+                <button
+                    type="button"
+                    class="reject-btn"
+                    data-id="${escapeHtml(
+                        booking.id
+                    )}"
+                >
+                    Reject
+                </button>
 
-                const paymentStatusText = String(booking.payment_status || "Pending Verification").trim();
-                const paymentStatusLower = paymentStatusText.toLowerCase();
+                <button
+                    type="button"
+                    class="confirm-btn"
+                    data-id="${escapeHtml(
+                        booking.id
+                    )}"
+                >
+                    Confirm
+                </button>
 
-                let bgStyle = "background-color: #fff3cd !important; color: #b7791f !important; border: 1px solid #f6d365 !important;"; // Default Yellow (Pending)
+            `;
 
-                // Green: Only if fully paid, verified, or succeeded WITHOUT "pending" in the string
-                if (
-                    (paymentStatusLower.includes("paid") || paymentStatusLower.includes("verified") || paymentStatusLower.includes("success"))
-                    && !paymentStatusLower.includes("pending")
-                ) {
-                    bgStyle = "background-color: rgba(34, 197, 94, 0.15) !important; color: #16a34a !important; border: 1px solid #6ee7b7 !important;";
-                }
-                // Red: Failed or Rejected
-                else if (paymentStatusLower.includes("failed") || paymentStatusLower.includes("reject")) {
-                    bgStyle = "background-color: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5 !important;";
+                } else if (status === "confirmed") {
+
+                    actions.innerHTML = `
+
+                <button
+                    type="button"
+                    class="complete-btn"
+                    data-id="${escapeHtml(
+                        booking.id
+                    )}"
+                >
+                    Complete
+                </button>
+
+            `;
+
+                } else {
+
+                    actions.innerHTML = `
+
+                <button
+                    type="button"
+                    class="booking-modal-close-btn"
+                    id="closeBookingDetailsAction"
+                >
+                    Close
+                </button>
+
+            `;
+
                 }
 
-                const paymentStatusHTML = `
-                <span class="status-badge ${escapeHtml(paymentStatusLower)}" style="${bgStyle}">
-                    ${escapeHtml(paymentStatusText)}
-                    </span>
-                    `;
+            }
 
-                /* =====================================================
-                   TABLE ROW
-                ===================================================== */
 
-                tbody.innerHTML += `
-            <tr>
+            /* =====================================================
+               SHOW MODAL
+            ===================================================== */
 
-                <td>
-                    <strong>
-                        ${index + 1}
-                    </strong>
-                </td>
+            modal.classList.add("show");
 
-                <td>
-                    ${escapeHtml(
-                    booking.full_name || "-"
-                )}
-                </td>
+            document.body.style.overflow =
+                "hidden";
 
-                <td>
-                    ${escapeHtml(
-                    booking.contact_number || "-"
-                )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                    booking.email || "-"
-                )}
-                </td>
-
-                <td>
-                    ${formatBookingDate(
-                    booking.booking_date
-                )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    formatBookingTime(booking.booking_time)
-                )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                    booking.session_type || "-"
-                )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                    Array.isArray(booking.backdrops)
-                        ? (booking.backdrops.length
-                            ? booking.backdrops.join(", ")
-                            : "-")
-                        : (booking.backdrops || "-")
-                )}
-                </td>
-
-                <td>
-                    ${escapeHtml(addonsText)}
-                </td>
-                <td>
-                    ${escapeHtml(
-                    booking.payment_method || "-"
-                )}
-                </td>
-                <td>
-                       ${totalPrice}
-                </td>
-
-                <td>
-                     ${paymentAmount}
-                </td>
-                <td>
-                        ${remainingBalance}
-                </td>   
-
-                    <td>
-               ${paymentStatusHTML}
-                    </td>
-
-                <td>
-                 ${proofHTML}
-                </td>
-                <td>
-
-                    <span
-                        class="status-badge ${escapeHtml(status)}"
-                    >
-                        ${escapeHtml(
-                    booking.status || "-"
-                )}
-                    </span>
-
-                </td>
-
-                <td>
-    ${escapeHtml(
-                    booking.notes || "-"
-                )}
-</td>
-
-<td>
-    ${booking.rejection_reason
-                        ? `
-        <span
-            style="
-                display:inline-block;
-                max-width:250px;
-                padding:6px 10px;
-                border-radius:6px;
-                background:transparent;
-                border:1px solid #b91c1c;
-                color:#b91c1c;
-                font-size:12px;
-                font-weight:600;
-                line-height:1.4;
-            "
-            title="${escapeHtml(booking.rejection_reason)}"
-        >
-            ${escapeHtml(booking.rejection_reason)}
-        </span>
-    `
-                        : `
-        <span style="color:#999;">-</span>
-    `
-                    }
-</td>
-
-<td>
-    ${actionHTML}
-</td>
-
-            </tr>
-        `;
-            });
         }
+
+
+        function closeBookingDetailsModal() {
+
+            const modal =
+                document.getElementById(
+                    "bookingDetailsModal"
+                );
+
+            if (modal) {
+
+                modal.classList.remove(
+                    "show"
+                );
+
+            }
+
+            document.body.style.overflow =
+                "";
+
+            currentViewedBookingId =
+                null;
+
+        }
+
+
+        /* =========================================================
+           VIEW BUTTON
+        ========================================================= */
+
+        document.addEventListener(
+            "click",
+            function (e) {
+
+                const viewBtn =
+                    e.target.closest(
+                        ".booking-view-btn"
+                    );
+
+
+                if (viewBtn) {
+
+                    openBookingDetailsModal(
+                        viewBtn.dataset.id
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    e.target.closest(
+                        "#closeBookingDetailsModal"
+                    )
+                ) {
+
+                    closeBookingDetailsModal();
+
+                    return;
+                }
+
+
+                if (
+                    e.target.id ===
+                    "bookingDetailsModal"
+                ) {
+
+                    closeBookingDetailsModal();
+
+                    return;
+                }
+
+
+                if (
+                    e.target.closest(
+                        "#closeBookingDetailsAction"
+                    )
+                ) {
+
+                    closeBookingDetailsModal();
+
+                }
+
+            }
+        );
+
+        document.addEventListener(
+            "keydown",
+            function (e) {
+
+                if (
+                    e.key === "Escape"
+                ) {
+
+                    closeBookingDetailsModal();
+
+                }
+
+            }
+        );
         function openPaymentProofModal(booking) {
             const modal = document.getElementById("paymentProofModal");
             const image = document.getElementById("paymentProofImage");
@@ -1399,20 +2195,6 @@
                         "Client repository link:",
                         clientLink
                     );
-
-
-                    /* ---------------------------------------------
-                       SEND BOOKING CONFIRMATION EMAIL
-                    --------------------------------------------- */
-
-                    /*
-                     * The email helper is already defined above.
-                     * Call it only after the booking has successfully
-                     * changed to Confirmed.
-                     *
-                     * The helper handles its own errors so a failed
-                     * email will not undo the confirmed booking.
-                     */
                     if (updatedBooking.email) {
                         await sendPaymentConfirmationEmail(
                             updatedBooking
@@ -1485,13 +2267,9 @@
                         `${updatedBooking.full_name}'s booking has been confirmed.`
                     );
 
-
-                    /* ---------------------------------------------
-                       REFRESH TABLE
-                    --------------------------------------------- */
+                    closeBookingDetailsModal();
 
                     await loadBookedSessions();
-
 
                 } catch (error) {
 
@@ -1598,7 +2376,7 @@
                     );
 
 
-
+                    closeBookingDetailsModal();
 
                     await loadBookedSessions();
 
@@ -1797,6 +2575,7 @@
                     );
 
                     closeRejectionModal();
+                    closeBookingDetailsModal();
                     await loadBookedSessions();
 
                 } catch (error) {
@@ -1945,30 +2724,20 @@
                 }
             });
         }
-
         document.getElementById("clientTableHeader").innerHTML = `
-<tr>
-    <th>#</th>
-    <th>Full Name</th>
-    <th>Contact Number</th>
-    <th>Email Address</th>
-    <th>Date</th>
-    <th>Time</th>
-    <th>Session Type</th>
-    <th>Backdrop</th>
-    <th>Add-ons</th>
-    <th>Payment Method</th>
-    <th>Total Price</th>
-    <th>Down Payment</th>
-    <th>Remaining Balance</th>
-    <th>Payment Status</th>
-    <th>Proof of Payment</th>
-    <th>Booking Status</th>
-    <th>Note</th>
-    <th>Rejection Reason</th>
-    <th>Action</th>
-</tr>`;
-
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Date & Time</th>
+                    <th>Session</th>
+                    <th>Total</th>
+                    <th>Downpayment</th>
+                    <th>Balance</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            `;
         supabaseClient
             .channel("admin_bookings_separate_page")
             .on(
@@ -2011,17 +2780,33 @@
             const sidebarToggle = document.getElementById("sidebarToggle");
 
             if (sidebarToggle && sidebar) {
-                sidebarToggle.addEventListener("click", () => {
-                    sidebar.classList.toggle("collapsed");
+                const icon = sidebarToggle.querySelector("i");
 
-                    const icon = sidebarToggle.querySelector("i");
-
-                    if (sidebar.classList.contains("collapsed")) {
+                // 1. Restore saved collapsed state from localStorage on page load
+                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                if (isCollapsed) {
+                    sidebar.classList.add("collapsed");
+                    if (icon) {
                         icon.classList.remove("fa-bars");
                         icon.classList.add("fa-chevron-right");
-                    } else {
-                        icon.classList.remove("fa-chevron-right");
-                        icon.classList.add("fa-bars");
+                    }
+                }
+
+                // 2. Toggle state and save preference to localStorage on click
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("collapsed");
+                    const collapsed = sidebar.classList.contains("collapsed");
+
+                    localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
+
+                    if (icon) {
+                        if (collapsed) {
+                            icon.classList.remove("fa-bars");
+                            icon.classList.add("fa-chevron-right");
+                        } else {
+                            icon.classList.remove("fa-chevron-right");
+                            icon.classList.add("fa-bars");
+                        }
                     }
                 });
             }

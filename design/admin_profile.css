@@ -62,7 +62,7 @@
 .personal-info-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     width: 100%;
@@ -87,7 +87,7 @@
     background-color: #639A88;
     color: #ffffff;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     height: 36px;
     padding: 0 20px;
     font-family: inherit;
@@ -135,7 +135,7 @@
     font-size: 12px;
     font-weight: 500;
     padding: 4px 12px;
-    border-radius: 4px;
+    border-radius: 5px;
     display: inline-block;
 }
 
@@ -153,7 +153,6 @@
     z-index: 2000;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease;
 }
 
 .modal-overlay.show {
@@ -270,7 +269,7 @@
     background-color: #639A88;
     color: #ffffff;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     height: 52px;
     font-family: inherit;
     font-size: 16px;

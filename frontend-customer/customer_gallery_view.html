@@ -705,10 +705,12 @@
                             new URLSearchParams(
                                 window.location.search
                             ).get("token");
-
-                        const response =
+                        const requestId =
+                            params.get("request");
+                        const openResponse =
                             await fetch(
-                                `${SERVER_URL}/api/gallery-access/photo/${encodeURIComponent(photo.id)}?token=${encodeURIComponent(token || "")}`
+                                `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
+                                `?token=${encodeURIComponent(token)}`
                             );
                         if (!response.ok) {
 

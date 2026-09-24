@@ -4,152 +4,974 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Captured Photography Studio</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="/design/customer_homepage.css">
 </head>
 
 <body>
 
+    <!-- =========================================
+         NAVIGATION
+    ========================================== -->
+
     <header class="navbar">
+
         <div class="logo-container">
-            <img src="/images/captured.png" alt="Studio Logo" class="nav-logo">
+            <img src="/images/captured.png"
+                 alt="Captured Photography Studio"
+                 class="nav-logo">
+
+            <span class="brand-name">Captured</span>
         </div>
 
-        <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
+        <button class="hamburger"
+                id="hamburger-btn"
+                aria-label="Toggle menu">
             <i class="fa-solid fa-bars"></i>
         </button>
 
         <nav class="nav-links" id="nav-menu">
             <a href="#home">HOME</a>
+            <a href="#packages">PACKAGES</a>
             <a href="#gallery">GALLERY</a>
             <a href="#about">ABOUT</a>
+            <a href="#faq">FAQ</a>
             <a href="#contact">CONTACT</a>
         </nav>
+
     </header>
 
+
+    <!-- =========================================
+         HERO
+    ========================================== -->
+
     <section id="home" class="hero-section">
+
+        <div class="hero-overlay"></div>
+
         <div class="hero-content">
+
+            <span class="hero-small-text">
+                SELF-PHOTOGRAPHY STUDIO
+            </span>
+
             <hr class="accent-line-left">
-            <h1 class="hero-title">Welcome to Captured</h1>
-            <p class="hero-subtitle">A self-photography studio where every<br>moment is yours to create.</p>
-            <div class="hero-buttons">
-                <a href="/booking" class="btn btn-dark">Book a session</a>
-                <a href="/gallery-requests" class="btn btn-outline">Access my photos</a>
-            </div>
-        </div>
-    </section>
 
-    <section id="gallery" class="gallery-section">
-        <div class="section-container">
-            <h2 class="gallery-title">Moments Captured <span class="title-line"></span></h2>
-            <p class="gallery-subtitle">Take a look at some of the moments shared by our wonderful clients.</p>
+            <h1 class="hero-title">
+                Your moment.<br>
+                Your way.
+            </h1>
 
-            <div class="gallery-grid">
-                <div class="gallery-item"><img src="/images/feature 1.jpg" alt="Featured Work 1"></div>
-                <div class="gallery-item"><img src="/images/feature 3.jpg" alt="Featured Work 2"></div>
-                <div class="gallery-item"><img src="/images/feature 2.jpg" alt="Featured Work 3"></div>
-                <div class="gallery-item"><img src="/images/feature 4.jpg" alt="Featured Work 4"></div>
-                <div class="gallery-item"><img src="/images/feature 5.jpg" alt="Featured Work 5"></div>
-                <div class="gallery-item"><img src="/images/feature 6.jpg" alt="Featured Work 6"></div>
-            </div>
-        </div>
-    </section>
-
-    <section id="about" class="about-section">
-        <div class="section-container text-center">
-            <hr class="accent-line-center">
-            <h2 class="about-title">About Our Studio</h2>
-            <p class="about-description">
-                At Captured, we believe the best moments happen when you're being yourself. Whether you're
-                with friends, family, your fur-fam, or enjoying a solo session, our self-photography studio gives
-                you the freedom to create memories your way.
+            <p class="hero-subtitle">
+                Create beautiful memories in a private and comfortable
+                self-photography studio where you are free to be yourself.
             </p>
 
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon-circle">
-                        <i class="fa-solid fa-camera"></i>
-                    </div>
-                    <h3>Self-Photography Experience</h3>
-                    <p>Take control of your own photoshoot at your own pace.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon-circle">
-                        <i class="fa-solid fa-couch"></i>
-                    </div>
-                    <h3>Comfortable & Private Studio</h3>
-                    <p>Enjoy a relaxed space where you can be yourself.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon-circle">
-                        <i class="fa-solid fa-images"></i>
-                    </div>
-                    <h3>Easy Photo Access</h3>
-                    <p>View and download your photos whenever they're ready.</p>
-                </div>
+            <div class="hero-buttons">
+
+                <a href="/booking" class="btn btn-dark">
+                    Book a Session
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+                <a href="/gallery-requests" class="btn btn-outline">
+                    Access My Photos
+                </a>
+
             </div>
+
+            <div class="hero-trust">
+
+                <div>
+                    <strong>Private</strong>
+                    <span>Studio Experience</span>
+                </div>
+
+                <div>
+                    <strong>Self</strong>
+                    <span>Photography</span>
+                </div>
+
+                <div>
+                    <strong>Easy</strong>
+                    <span>Photo Access</span>
+                </div>
+
+            </div>
+
         </div>
+
+        <a href="#packages" class="scroll-down">
+            <span>Explore</span>
+            <i class="fa-solid fa-arrow-down"></i>
+        </a>
+
     </section>
 
+
+    <!-- =========================================
+         INTRO / HIGHLIGHTS
+    ========================================== -->
+
+    <section class="intro-section">
+
+        <div class="section-container">
+
+            <div class="intro-grid">
+
+                <div class="intro-heading">
+                    <span class="section-eyebrow">CAPTURED EXPERIENCE</span>
+
+                    <h2>
+                        More than just<br>
+                        taking pictures.
+                    </h2>
+                </div>
+
+                <div class="intro-text">
+
+                    <p>
+                        At Captured, we give you the freedom to create
+                        photographs that feel personal, natural, and fun.
+                        Whether you're celebrating with friends, spending
+                        time with family, or simply creating memories for
+                        yourself, our studio is designed around you.
+                    </p>
+
+                    <a href="#about" class="text-link">
+                        Discover our studio
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="highlight-grid">
+
+                <div class="highlight-card">
+                    <div class="highlight-icon">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+
+                    <h3>Self Photography</h3>
+
+                    <p>
+                        Take control of your session and capture moments
+                        naturally at your own pace.
+                    </p>
+                </div>
+
+                <div class="highlight-card">
+                    <div class="highlight-icon">
+                        <i class="fa-solid fa-door-closed"></i>
+                    </div>
+
+                    <h3>Private Studio</h3>
+
+                    <p>
+                        Enjoy a comfortable and private space where you
+                        can freely express yourself.
+                    </p>
+                </div>
+
+                <div class="highlight-card">
+                    <div class="highlight-icon">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+
+                    <h3>Easy Photo Access</h3>
+
+                    <p>
+                        Access your finished photos online once your
+                        gallery is ready.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         PACKAGES
+    ========================================== -->
+
+    <section id="packages" class="packages-section">
+
+        <div class="section-container">
+
+            <div class="section-heading centered">
+
+                <span class="section-eyebrow">
+                    FIND YOUR SESSION
+                </span>
+
+                <h2>Choose your experience</h2>
+
+                <p>
+                    From quick individual sessions to celebrations with
+                    family and friends, choose a package that fits your moment.
+                </p>
+
+            </div>
+
+
+            <div class="package-grid">
+
+                <!-- BASIC -->
+
+                <article class="package-card">
+
+                    <div class="package-image">
+                        <img src="/images/feature 1.jpg"
+                             alt="Basic photography session">
+
+                        <span class="package-label">
+                            SIMPLE & FUN
+                        </span>
+                    </div>
+
+                    <div class="package-content">
+
+                        <span class="package-number">01</span>
+
+                        <h3>Basic Packages</h3>
+
+                        <p>
+                            Perfect for individual sessions and simple
+                            photo moments.
+                        </p>
+
+                        <a href="/booking" class="package-link">
+                            Book this type
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </article>
+
+
+                <!-- CLASSIC -->
+
+                <article class="package-card">
+
+                    <div class="package-image">
+                        <img src="/images/feature 3.jpg"
+                             alt="Classic photography session">
+
+                        <span class="package-label">
+                            CLASSIC
+                        </span>
+                    </div>
+
+                    <div class="package-content">
+
+                        <span class="package-number">02</span>
+
+                        <h3>Classic Packages</h3>
+
+                        <p>
+                            A flexible choice for clients who want more
+                            time to create different looks and poses.
+                        </p>
+
+                        <a href="/booking" class="package-link">
+                            Book this type
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </article>
+
+
+                <!-- GROUP -->
+
+                <article class="package-card">
+
+                    <div class="package-image">
+                        <img src="/images/feature 2.jpg"
+                             alt="Group photography session">
+
+                        <span class="package-label">
+                            GROUP
+                        </span>
+                    </div>
+
+                    <div class="package-content">
+
+                        <span class="package-number">03</span>
+
+                        <h3>Group Sessions</h3>
+
+                        <p>
+                            Bring your friends and create fun memories
+                            together in one session.
+                        </p>
+
+                        <a href="/booking" class="package-link">
+                            Book this type
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </article>
+
+
+                <!-- KIDS -->
+
+                <article class="package-card">
+
+                    <div class="package-image">
+                        <img src="/images/feature 4.jpg"
+                             alt="Kids photography session">
+
+                        <span class="package-label">
+                            FAMILY
+                        </span>
+                    </div>
+
+                    <div class="package-content">
+
+                        <span class="package-number">04</span>
+
+                        <h3>Kids Sessions</h3>
+
+                        <p>
+                            A playful photography experience for children
+                            and family memories.
+                        </p>
+
+                        <a href="/booking" class="package-link">
+                            Book this type
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </article>
+
+
+                <!-- MATERNITY -->
+
+                <article class="package-card">
+
+                    <div class="package-image">
+                        <img src="/images/feature 5.jpg"
+                             alt="Maternity photography session">
+
+                        <span class="package-label">
+                            MILESTONE
+                        </span>
+                    </div>
+
+                    <div class="package-content">
+
+                        <span class="package-number">05</span>
+
+                        <h3>Maternity Sessions</h3>
+
+                        <p>
+                            Celebrate a beautiful chapter and preserve
+                            meaningful memories.
+                        </p>
+
+                        <a href="/booking" class="package-link">
+                            Book this type
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </article>
+
+
+                <!-- SPECIAL -->
+
+                <article class="package-card">
+
+                    <div class="package-image">
+                        <img src="/images/feature 6.jpg"
+                             alt="Special occasion photography">
+
+                        <span class="package-label">
+                            SPECIAL
+                        </span>
+                    </div>
+
+                    <div class="package-content">
+
+                        <span class="package-number">06</span>
+
+                        <h3>Special Sessions</h3>
+
+                        <p>
+                            Pre-birthday, themed, holiday, and other
+                            special moments worth remembering.
+                        </p>
+
+                        <a href="/booking" class="package-link">
+                            Book this type
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <div class="packages-bottom">
+
+                <p>
+                    Ready to see the available packages and session options?
+                </p>
+
+                <a href="/booking" class="btn btn-dark">
+                    View & Book a Session
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         GALLERY
+    ========================================== -->
+
+    <section id="gallery" class="gallery-section">
+
+        <div class="section-container">
+
+            <div class="section-heading">
+
+                <span class="section-eyebrow">
+                    MOMENTS CAPTURED
+                </span>
+
+                <h2>Made for memories.</h2>
+
+                <p>
+                    A glimpse of the moments you can create inside
+                    the Captured studio.
+                </p>
+
+            </div>
+
+
+            <div class="gallery-grid">
+
+                <div class="gallery-item gallery-large">
+                    <img src="/images/feature 1.jpg"
+                         alt="Captured studio moment">
+                    <div class="gallery-caption">
+                        <span>01</span>
+                        <strong>Be yourself</strong>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <img src="/images/feature 3.jpg"
+                         alt="Captured studio moment">
+                    <div class="gallery-caption">
+                        <span>02</span>
+                        <strong>Have fun</strong>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <img src="/images/feature 2.jpg"
+                         alt="Captured studio moment">
+                    <div class="gallery-caption">
+                        <span>03</span>
+                        <strong>Make memories</strong>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <img src="/images/feature 4.jpg"
+                         alt="Captured studio moment">
+                    <div class="gallery-caption">
+                        <span>04</span>
+                        <strong>Celebrate together</strong>
+                    </div>
+                </div>
+
+                <div class="gallery-item gallery-wide">
+                    <img src="/images/feature 5.jpg"
+                         alt="Captured studio moment">
+                    <div class="gallery-caption">
+                        <span>05</span>
+                        <strong>Capture the moment</strong>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <img src="/images/feature 6.jpg"
+                         alt="Captured studio moment">
+                    <div class="gallery-caption">
+                        <span>06</span>
+                        <strong>Keep it forever</strong>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         HOW IT WORKS
+    ========================================== -->
+
+    <section class="steps-section">
+
+        <div class="section-container">
+
+            <div class="section-heading centered">
+
+                <span class="section-eyebrow">
+                    SIMPLE PROCESS
+                </span>
+
+                <h2>How it works</h2>
+
+                <p>
+                    From booking to receiving your photos, we keep
+                    the process simple.
+                </p>
+
+            </div>
+
+
+            <div class="steps-grid">
+
+                <div class="step-card">
+
+                    <span class="step-number">01</span>
+
+                    <div class="step-icon">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </div>
+
+                    <h3>Book your session</h3>
+
+                    <p>
+                        Choose your preferred package, date, and available
+                        session time.
+                    </p>
+
+                </div>
+
+
+                <div class="step-card">
+
+                    <span class="step-number">02</span>
+
+                    <div class="step-icon">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+
+                    <h3>Enjoy your session</h3>
+
+                    <p>
+                        Come to the studio, get comfortable, and create
+                        your own photos.
+                    </p>
+
+                </div>
+
+
+                <div class="step-card">
+
+                    <span class="step-number">03</span>
+
+                    <div class="step-icon">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+
+                    <h3>Access your photos</h3>
+
+                    <p>
+                        Once your gallery is ready, request access and
+                        view your captured moments online.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         ABOUT
+    ========================================== -->
+
+    <section id="about" class="about-section">
+
+        <div class="about-overlay"></div>
+
+        <div class="section-container about-content">
+
+            <span class="section-eyebrow light">
+                ABOUT CAPTURED
+            </span>
+
+            <h2>
+                A space where<br>
+                you can simply be you.
+            </h2>
+
+            <p>
+                At Captured, we believe the best photographs happen
+                when you are comfortable, relaxed, and having fun.
+                Our self-photography experience gives you the freedom
+                to create memories your own way.
+            </p>
+
+            <div class="about-features">
+
+                <div>
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Self-Photography</span>
+                </div>
+
+                <div>
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Private Space</span>
+                </div>
+
+                <div>
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Memorable Moments</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         FAQ
+    ========================================== -->
+
+    <section id="faq" class="faq-section">
+
+        <div class="section-container">
+
+            <div class="faq-grid">
+
+                <div class="faq-intro">
+
+                    <span class="section-eyebrow">
+                        NEED TO KNOW?
+                    </span>
+
+                    <h2>
+                        Frequently asked questions
+                    </h2>
+
+                    <p>
+                        Here are some quick answers about booking,
+                        sessions, and accessing your photos.
+                    </p>
+
+                    <a href="/booking" class="btn btn-dark">
+                        Book a Session
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+
+                <div class="faq-list">
+
+                    <details>
+                        <summary>
+                            How do I book a session?
+                            <i class="fa-solid fa-plus"></i>
+                        </summary>
+
+                        <p>
+                            Click the Book a Session button and complete
+                            the booking form. You can choose your preferred
+                            package, date, and available time.
+                        </p>
+                    </details>
+
+
+                    <details>
+                        <summary>
+                            Is the studio private?
+                            <i class="fa-solid fa-plus"></i>
+                        </summary>
+
+                        <p>
+                            Yes. Captured is designed to provide a
+                            comfortable and private self-photography
+                            experience.
+                        </p>
+                    </details>
+
+
+                    <details>
+                        <summary>
+                            How can I access my photos?
+                            <i class="fa-solid fa-plus"></i>
+                        </summary>
+
+                        <p>
+                            Use the Access My Photos option on the
+                            homepage and submit your gallery access
+                            request using your booking information.
+                        </p>
+                    </details>
+
+
+                    <details>
+                        <summary>
+                            Can I bring friends or family?
+                            <i class="fa-solid fa-plus"></i>
+                        </summary>
+
+                        <p>
+                            Yes. Group and family-oriented session
+                            options are available depending on the
+                            package you select.
+                        </p>
+                    </details>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         FINAL CTA
+    ========================================== -->
+
+    <section class="cta-section">
+
+        <div class="cta-content">
+
+            <span class="section-eyebrow">
+                YOUR NEXT MEMORY STARTS HERE
+            </span>
+
+            <h2>
+                Ready to get Captured?
+            </h2>
+
+            <p>
+                Choose your session and create something worth remembering.
+            </p>
+
+            <div class="cta-buttons">
+
+                <a href="/booking" class="btn btn-light">
+                    Book a Session
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+                <a href="/gallery-requests" class="btn btn-ghost">
+                    Access My Photos
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
     <footer id="contact" class="footer">
+
         <div class="footer-container">
-            <div class="footer-left">
-                <div class="contact-info">
-                    <p><i class="fa-solid fa-location-dot"></i>2nd Floor, RM 12, Rental Building, Maharlika Drive, San Pedro, Laguna</p>
-                    <p><i class="fa-solid fa-phone"></i>+63 997 689 6967</p>
-                    <p><i class="fa-solid fa-envelope"></i>capturephotogstudio@gmail.com</p>
-                </div>
+
+            <div class="footer-brand">
+
+                <img src="/images/captured.png"
+                     alt="Captured Photography Studio"
+                     class="footer-logo">
+
+                <h3>Captured</h3>
+
+                <p>
+                    A self-photography studio where every moment
+                    is yours to create.
+                </p>
+
             </div>
-            <div class="footer-right">
-                <div class="footer-logo-box">
-                    <img src="/images/captured.png" alt="Footer Logo" class="footer-logo">
-                </div>
-                <div class="social-links">
-                    <a href="https://www.facebook.com/capturedphotogstudio" target="_blank" aria-label="Facebook"><i
-                            class="fa-brands fa-facebook-f"></i></a>
-                    <a href="https://www.instagram.com/captured_photostudio?fbclid=IwY2xjawTJvjJleHRuA2FlbQIxMABicmlkETFuRGlyMmxSUE5LaGtBTDhlc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHukuMe5iPpxc9XPWnk5pps3E3pFBHYDYs1Dtq4Wo_UeE1paleQQj9Hh8eUh1_aem_8XuMm6IsxXNuldQ_CiblsA"
-                        target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://www.tiktok.com/@capturedphotog?is_from_webapp=1&sender_device=pc" target="_blank"
-                        aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
-                </div>
+
+
+            <div class="footer-column">
+
+                <h4>Explore</h4>
+
+                <a href="#home">Home</a>
+                <a href="#packages">Packages</a>
+                <a href="#gallery">Gallery</a>
+                <a href="#about">About</a>
+
             </div>
+
+
+            <div class="footer-column">
+
+                <h4>Customer</h4>
+
+                <a href="/booking">Book a Session</a>
+                <a href="/gallery-requests">Access My Photos</a>
+                <a href="#faq">FAQs</a>
+
+            </div>
+
+
+            <div class="footer-column contact-column">
+
+                <h4>Visit Us</h4>
+
+                <p>
+                    <i class="fa-solid fa-location-dot"></i>
+                    2nd Floor, RM 12, Rental Building,
+                    Maharlika Drive, San Pedro, Laguna
+                </p>
+
+                <p>
+                    <i class="fa-solid fa-phone"></i>
+                    +63 997 689 6967
+                </p>
+
+                <p>
+                    <i class="fa-solid fa-envelope"></i>
+                    capturephotogstudio@gmail.com
+                </p>
+
+            </div>
+
         </div>
+
+
         <div class="footer-bottom">
-            <p>&copy; 2026 Captured. All rights reserved.</p>
+
+            <p>
+                © 2026 Captured Photography Studio.
+                All rights reserved.
+            </p>
+
+            <div class="social-links">
+
+                <a href="https://www.facebook.com/capturedphotogstudio"
+                   target="_blank"
+                   aria-label="Facebook">
+                    <i class="fa-brands fa-facebook-f"></i>
+                </a>
+
+                <a href="https://www.instagram.com/captured_photostudio"
+                   target="_blank"
+                   aria-label="Instagram">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+
+                <a href="https://www.tiktok.com/@capturedphotog"
+                   target="_blank"
+                   aria-label="TikTok">
+                    <i class="fa-brands fa-tiktok"></i>
+                </a>
+
+            </div>
+
         </div>
+
     </footer>
 
-    <script>
-        const hamburgerBtn = document.getElementById('hamburger-btn');
-        const navMenu = document.getElementById('nav-menu');
 
-        // Toggle dropdown menu visibility
+    <!-- =========================================
+         EXISTING NAVIGATION JAVASCRIPT
+    ========================================== -->
+
+    <script>
+
+        const hamburgerBtn =
+            document.getElementById('hamburger-btn');
+
+        const navMenu =
+            document.getElementById('nav-menu');
+
+
         hamburgerBtn.addEventListener('click', () => {
+
             navMenu.classList.toggle('active');
 
-            // Toggle hamburger icon to 'X' close icon
-            const icon = hamburgerBtn.querySelector('i');
+            const icon =
+                hamburgerBtn.querySelector('i');
+
             icon.classList.toggle('fa-bars');
             icon.classList.toggle('fa-xmark');
+
         });
 
-        // Close menu panel when clicking a link
-        const navLinks = document.querySelectorAll('.nav-links a');
+
+        const navLinks =
+            document.querySelectorAll('.nav-links a');
+
+
         navLinks.forEach(link => {
+
             link.addEventListener('click', () => {
+
                 navMenu.classList.remove('active');
-                const icon = hamburgerBtn.querySelector('i');
+
+                const icon =
+                    hamburgerBtn.querySelector('i');
+
                 icon.classList.add('fa-bars');
                 icon.classList.remove('fa-xmark');
+
             });
+
         });
+
     </script>
+
 </body>
 
 </html>

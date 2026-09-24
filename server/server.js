@@ -6784,37 +6784,60 @@ app.get("/api/gallery-access/photos", async (req, res) => {
             ) {
                 continue;
             }
+if (requestNumber === 1) {
 
-            // -----------------------------------------
-            // REQUEST #1 = FREE
-            // -----------------------------------------
+    if (
+        expiresAt &&
+        !Number.isNaN(expiresAt.getTime()) &&
+        now < expiresAt
+    ) {
+        validRequest = request;
+        break;
+    }
+}
 
-            if (requestNumber === 1) {
+if (requestNumber >= 2) {
 
-                validRequest = request;
-                break;
-            }
+    /*
+     * Approved paid request:
+     * access is already active and has an expiration.
+     */
+    if (
+        request.payment_confirmed === true &&
+        String(
+            request.payment_status || ""
+        ).toLowerCase() === "paid"
+    ) {
 
-            if (requestNumber >= 2) {
-
-                const paymentConfirmed =
-                    request.payment_confirmed === true;
-
-                const paymentPaid =
-                    String(
-                        request.payment_status || ""
-                    ).toLowerCase() === "paid";
-
-                if (
-                    paymentConfirmed &&
-                    paymentPaid
-                ) {
-                    validRequest = request;
-                    break;
-                }
-            }
+        if (
+            expiresAt &&
+            !Number.isNaN(expiresAt.getTime()) &&
+            now < expiresAt
+        ) {
+            validRequest = request;
+            break;
         }
 
+    }
+
+    /*
+     * Approved but unpaid request:
+     * The customer is allowed to OPEN and VIEW
+     * the gallery, but downloading remains locked.
+     */
+    if (
+        request.payment_required === true &&
+        request.payment_confirmed === false &&
+        String(
+            request.payment_status || ""
+        ).toLowerCase() !== "paid"
+    ) {
+
+        validRequest = request;
+        break;
+    }
+}
+        }
         if (!validRequest) {
 
             return res.status(403).json({

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Payments</title>
+    <title>Payments - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +19,15 @@
     <link rel="stylesheet" href="/design/admin_payment.css">
 </head>
 
+<script>
+    // Run immediately to load persisted state before body renders
+    (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+            document.documentElement.classList.add("sidebar-is-collapsed");
+        }
+    })();
+</script>
 
 <body>
 
@@ -32,55 +41,43 @@
 
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
 
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
 
         </div>
 
 
         <div class="header-right">
-
+            <!-- Notification Wrapper -->
             <div class="notification-wrapper">
                 <button class="notification-btn" id="notificationBtn" type="button" aria-label="Notifications">
                     <i class="fa-solid fa-bell"></i>
-
-                    <span id="notificationBadge" class="notification-badge" style="display: none;">
-                        0
-                    </span>
+                    <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
                 </button>
 
                 <div id="notificationPanel" class="notification-panel">
-                    ...
+                    <!-- Dropdown panel populates here -->
                 </div>
             </div>
 
-            <!-- Your existing Captured Admin profile -->
-            <div class="profile-section">
-                ...
+            <!-- User Profile Container -->
+            <div class="user-profile">
+                <img id="userAvatar" class="avatar" src="" alt="Avatar">
+                <span id="userName">Loading...</span>
             </div>
-
-        </div>
-
-        <div class="user-profile">
-
-            <img id="userAvatar" class="avatar" src="" alt="Avatar">
-
-            <span id="userName">
-                Loading...
-            </span>
-
-        </div>
-
         </div>
 
     </header>
 
     <div class="dashboard-wrapper">
 
+        <button id="sidebarToggle" class="sidebar-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
         <aside class="sidebar">
             <nav>
 
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
@@ -95,7 +92,7 @@
                     Repository
                 </a>
 
-                <a href="/admin/payments">
+                <a href="/admin/payments" class="active">
                     <i class="fa-solid fa-credit-card"></i>
                     Payments
                 </a>
@@ -144,6 +141,14 @@
                         Track and manage transaction records.
                     </p>
 
+                </div>
+
+                <div class="archive-tab-navigation">
+                    <button type="button" class="archive-tab-btn active" data-payment-type="all">All Payments</button>
+                    <button type="button" class="archive-tab-btn" data-payment-type="booking">All Booking
+                        Payments</button>
+                    <button type="button" class="archive-tab-btn" data-payment-type="gallery access">All Gallery Access
+                        Payments</button>
                 </div>
 
                 <div class="client-actions-row">
@@ -231,8 +236,7 @@
 
                     <div class="table-search-box">
 
-                        <input type="text" id="paymentSearchInput" placeholder="Search a customer or email"
-                            autocomplete="off">
+                        <input type="text" id="paymentSearchInput" placeholder="Search a client" autocomplete="off">
 
                         <i class="fa-solid fa-magnifying-glass"></i>
 
@@ -276,7 +280,7 @@
                             <td colspan="7" style="text-align:center;">
                                 Loading payments...
                             </td>
-                    
+
                         </tr>
 
                     </tbody>
@@ -363,6 +367,8 @@
         let currentMethodFilter = "all";
 
         let currentSearch = "";
+
+        let currentTypeFilter = "all";
 
 
         async function loadLoggedInUser() {
@@ -884,6 +890,17 @@
                     );
 
             }
+
+            if (currentTypeFilter !== "all") {
+                payments = payments.filter(payment => {
+                    let accessType = "booking";
+                    if (String(payment.payment_type || "").toLowerCase().includes("gallery")) {
+                        accessType = "gallery access";
+                    }
+                    return accessType === currentTypeFilter;
+                });
+            }
+
             if (
                 currentSearch.trim() !== ""
             ) {
@@ -920,27 +937,16 @@
 
             }
 
-            if (
-                payments.length === 0
-            ) {
-
+            if (payments.length === 0) {
                 tableBody.innerHTML = `
-
-                    <tr>
-
-                        <td
-                            colspan="7"
-                            style="text-align:center;"
-                        >
-                            No payment records found.
-                        </td>
-
-                    </tr>
-
-                `;
-
+            <tr>
+                <td colspan="7" class="empty-table-state">
+                    <i class="fa-regular fa-credit-card empty-state-icon"></i>
+                    <span>No payment records found.</span>
+                </td>
+            </tr>
+        `;
                 return;
-
             }
 
             tableBody.innerHTML =
@@ -997,7 +1003,7 @@
                             // STATUS
                             // =================================
 
-                        const status =
+                            const status =
                                 payment.status ||
                                 "Pending";
 
@@ -1298,6 +1304,17 @@
                 );
 
             });
+
+        document.querySelectorAll(".archive-tab-btn[data-payment-type]").forEach(button => {
+            button.addEventListener("click", function () {
+                document.querySelectorAll(".archive-tab-btn[data-payment-type]").forEach(btn => btn.classList.remove("active"));
+                this.classList.add("active");
+
+                currentTypeFilter = this.dataset.paymentType;
+                renderPayments();
+            });
+        });
+
         //payment filter
 
         document
@@ -1463,7 +1480,7 @@
             const notificationWrapper =
                 document.querySelector(".notification-wrapper");
 
-            const userProfile =
+            /*const userProfile =
                 document.querySelector(".user-profile");
 
 
@@ -1531,7 +1548,7 @@
                 headerRight.style.gap =
                     "20px";
 
-            }
+            } */
 
 
             const notificationBtn =
@@ -1786,81 +1803,47 @@
 
 
                 //content of the notif
-                notificationList.innerHTML =
-                    notifications
-                        .map(notification => {
+                notificationList.innerHTML = notifications
+                    .map(notification => {
+                        const title = escapeHtml(notification.title || "Notification");
+                        const message = escapeHtml(notification.message || "");
+                        const createdAt = formatNotificationDate(notification.created_at);
+                        const isUnread = notification.is_read !== true;
 
-                            const title =
-                                escapeHtml(
-                                    notification.title ||
-                                    "Notification"
-                                );
+                        // Determine accurate FontAwesome icon based on title/type
+                        let iconClass = "fa-solid fa-bell";
+                        const lowerTitle = title.toLowerCase();
 
+                        if (lowerTitle.includes("payment")) {
+                            iconClass = "fa-solid fa-credit-card";
+                        } else if (lowerTitle.includes("booking") || lowerTitle.includes("session")) {
+                            iconClass = "fa-solid fa-calendar-check";
+                        } else if (lowerTitle.includes("access") || lowerTitle.includes("gallery")) {
+                            iconClass = "fa-solid fa-images";
+                        } else if (lowerTitle.includes("confirm") || lowerTitle.includes("success")) {
+                            iconClass = "fa-solid fa-circle-check";
+                        }
 
-                            const message =
-                                escapeHtml(
-                                    notification.message ||
-                                    ""
-                                );
+                        return `
+            <div
+                class="notification-item ${isUnread ? "unread" : ""}"
+                data-notification-id="${escapeHtml(String(notification.id))}"
+            >
+                <div class="notification-icon">
+                    <i class="${iconClass}"></i>
+                </div>
 
-
-                            const createdAt =
-                                formatNotificationDate(
-                                    notification.created_at
-                                );
-
-
-                            const isUnread =
-                                notification.is_read !== true;
-
-
-                            return `
-
-                        <div
-                            class="notification-item ${isUnread
-                                    ? "unread"
-                                    : ""
-                                }"
-                            data-notification-id="${escapeHtml(
-                                    String(
-                                        notification.id
-                                    )
-                                )}"
-                        >
-
-                            <div class="notification-item-title">
-
-                                <strong>
-                                    ${title}
-                                </strong>
-
-                                ${isUnread
-                                    ? `
-                                            <span
-                                                class="notification-unread-dot"
-                                            ></span>
-                                        `
-                                    : ""
-                                }
-
-                            </div>
-
-
-                            <div class="notification-message">
-                                ${message}
-                            </div>
-
-
-                            <div class="notification-date">
-                                ${createdAt}
-                            </div>
-
-                        </div>
-
-                    `;
-
-                        })
-                        .join("");
+                <div class="notification-content">
+                    <h4>${title}</h4>
+                    <div class="notification-message">${message}</div>
+                    <small class="notification-date">
+                        <i class="fa-regular fa-clock"></i> ${createdAt}
+                    </small>
+                </div>
+            </div>
+        `;
+                    })
+                    .join("");
 
 
 
@@ -2129,7 +2112,49 @@
 
         });
 
+        // =====================================================
+        // SIDEBAR TOGGLE INITIALIZATION
+        // =====================================================
+        function initSidebar() {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
 
+            if (sidebarToggle && sidebar) {
+                const icon = sidebarToggle.querySelector("i");
+
+                const applyState = (collapsed) => {
+                    if (collapsed) {
+                        sidebar.classList.add("collapsed");
+                        document.documentElement.classList.add("sidebar-is-collapsed");
+                        if (icon) {
+                            icon.classList.remove("fa-bars");
+                            icon.classList.add("fa-chevron-right");
+                        }
+                    } else {
+                        sidebar.classList.remove("collapsed");
+                        document.documentElement.classList.remove("sidebar-is-collapsed");
+                        if (icon) {
+                            icon.classList.remove("fa-chevron-right");
+                            icon.classList.add("fa-bars");
+                        }
+                    }
+                };
+
+                // Restore initial state
+                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                applyState(isCollapsed);
+
+                // Attach click listener
+                sidebarToggle.addEventListener("click", () => {
+                    const willCollapse = !sidebar.classList.contains("collapsed");
+                    localStorage.setItem("sidebarCollapsed", willCollapse ? "true" : "false");
+                    applyState(willCollapse);
+                });
+            }
+        }
+
+        // Run initialization
+        initSidebar();
 
         loadLoggedInUser();
 

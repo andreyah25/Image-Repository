@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Repository</title>
+    <title>Repository - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,12 +15,22 @@
     <link rel="stylesheet" href="/design/admin_repository.css">
 </head>
 
+<script>
+    // Run immediately to load persisted state
+    (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+            document.documentElement.classList.add("sidebar-is-collapsed");
+        }
+    })();
+</script>
+
 <body>
 
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
         </div>
 
         <div class="navbar-right">
@@ -36,32 +46,19 @@
 
 
                 <div class="notification-dropdown" id="notificationDropdown">
-
                     <div class="notification-header">
-
                         <div>
                             <h3>Notifications</h3>
-                            <span id="notificationCountText">
-                                No new notifications
-                            </span>
+                            <span id="notificationCountText" style="display: none;">No new notifications</span>
                         </div>
-
-                        <button type="button" id="markNotificationsRead">
-                            Mark all as read
-                        </button>
-
+                        <button type="button" id="markNotificationsRead">Mark all as read</button>
                     </div>
                     <div class="notification-list" id="notificationList">
-
-                        <div class="notification-empty">
+                        <div class="notification-list-empty">
                             <i class="fa-regular fa-bell-slash"></i>
-
                             <p>No notifications</p>
-
                         </div>
-
                     </div>
-
                 </div>
 
             </div>
@@ -74,10 +71,14 @@
 
     <div class="dashboard-wrapper">
 
+        <button id="sidebarToggle" class="sidebar-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
         <aside class="sidebar">
             <nav>
 
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
@@ -87,7 +88,7 @@
                     Clients
                 </a>
 
-                <a href="/admin/repository">
+                <a href="/admin/repository" class="active">
                     <i class="fa-solid fa-book"></i>
                     Repository
                 </a>
@@ -130,7 +131,7 @@
             <div class="repo-top-header-block">
                 <div class="page-header">
                     <h1>Repository</h1>
-                    <p>Manage and organize folders and images stored in your workspace.</p>
+                    <p>Organize and organize folders and images stored in your workspace.</p>
                 </div>
 
                 <div class="filter-dropdown-wrapper">
@@ -175,7 +176,7 @@
 
                 <div class="client-actions-row">
                     <div class="table-search-box">
-                        <input type="text" id="repoFolderSearchInput" placeholder="Search repository...">
+                        <input type="text" id="repoFolderSearchInput" placeholder="Search a folder">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
                 </div>
@@ -432,69 +433,26 @@
             ===================================================== */
 
             notifications.forEach(notification => {
-
-                const item =
-                    document.createElement("div");
-
-
-                item.className =
-                    "notification-item";
-
-
-                /*
-                 * Add unread class.
-                 * You can style this in CSS if needed.
-                 */
+                const item = document.createElement("div");
+                item.className = "notification-item";
 
                 if (!notification.is_read) {
-
                     item.classList.add("unread");
-
                 }
 
-
                 item.innerHTML = `
-
-            <div class="notification-item-icon">
-
-                <i class="fa-regular fa-folder"></i>
-
-            </div>
-
-
-            <div class="notification-item-content">
-
-                <p class="notification-item-title">
-
-                    ${escapeHTML(
-                    notification.title ||
-                    "Notification"
-                )}
-
-                </p>
-
-
-                <p class="notification-item-message">
-
-                    ${escapeHTML(
-                    notification.message ||
-                    ""
-                )}
-
-                </p>
-
-
-                <span class="notification-item-time">
-
-                    ${formatNotificationDate(
-                    notification.created_at
-                )}
-
-                </span>
-
-            </div>
-
-        `;
+        <div class="notification-icon">
+            <i class="fa-regular fa-folder"></i>
+        </div>
+        <div class="notification-content">
+            <h4>${escapeHTML(notification.title || "Notification")}</h4>
+            <p class="notification-message">${escapeHTML(notification.message || "")}</p>
+            <small>
+                <i class="fa-regular fa-clock"></i>
+                ${formatNotificationDate(notification.created_at)}
+            </small>
+        </div>
+    `;
 
 
                 /* =================================================
@@ -780,7 +738,7 @@
             } = await supabaseClient.auth.getSession();
 
             if (!session) {
-                window.location.href = "/admin/login.html";
+                window.location.href = "/admin/login";
                 return;
             }
 
@@ -1393,9 +1351,46 @@
 
                 await supabaseClient.auth.signOut();
 
-                location.href = "admin_login.html";
+                location.href = "/admin/login";
 
             });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
+
+            if (sidebarToggle && sidebar) {
+                const icon = sidebarToggle.querySelector("i");
+
+                // 1. Restore saved collapsed state from localStorage on page load
+                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                if (isCollapsed) {
+                    sidebar.classList.add("collapsed");
+                    if (icon) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-chevron-right");
+                    }
+                }
+
+                // 2. Toggle state and save preference to localStorage on click
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("collapsed");
+                    const collapsed = sidebar.classList.contains("collapsed");
+
+                    localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
+
+                    if (icon) {
+                        if (collapsed) {
+                            icon.classList.remove("fa-bars");
+                            icon.classList.add("fa-chevron-right");
+                        } else {
+                            icon.classList.remove("fa-chevron-right");
+                            icon.classList.add("fa-bars");
+                        }
+                    }
+                });
+            }
+        });
     </script>
 </body>
 

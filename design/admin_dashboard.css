@@ -58,7 +58,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50% !important; /* Circle Icon Frame */
+    border-radius: 50% !important;
+    /* Circle Icon Frame */
 }
 
 .notification-btn:hover {
@@ -91,7 +92,8 @@ body {
 .avatar {
     width: 42px;
     height: 42px;
-    border-radius: 50% !important; /* Circle Avatar */
+    border-radius: 50% !important;
+    /* Circle Avatar */
     object-fit: cover;
     border: 2px solid white;
 }
@@ -104,7 +106,7 @@ body {
 
 #userName {
     color: #353535;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     max-width: 150px;
     white-space: nowrap;
@@ -217,29 +219,24 @@ body {
     position: absolute;
     left: 235px;
     top: 100px;
-
     width: 32px;
     height: 32px;
-
     border: 1px solid #e5e5e5;
     border-radius: 50%;
-
     background: #ffffff;
     color: #444;
     display: flex;
     align-items: center;
     justify-content: center;
-
     cursor: pointer;
     z-index: 1000;
-
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-
     transition:
         left 0.3s ease,
         transform 0.3s ease,
         background 0.2s ease;
 }
+
 .sidebar-toggle:hover {
     background: #f5f5f5;
 }
@@ -250,9 +247,10 @@ body {
 }
 
 
-.sidebar.collapsed ~ .content {
+.sidebar.collapsed~.content {
     margin-left: 10px;
 }
+
 .booking-modal {
     display: none;
     position: fixed;
@@ -269,16 +267,16 @@ body {
 }
 
 .booking-card {
-    width: 580px; /* Reduced width to match target style */
+    width: 580px;
     max-width: 92vw;
-    max-height: 85vh; /* Prevents vertical overflow */
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     background: white;
-    border-radius: 16px;
+    border-radius: 8px;
+    /* EDIT THIS VALUE FOR MODAL CORNER RADIUS */
     overflow: hidden;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-    animation: popup 0.25s ease;
 }
 
 /* Ensure body scrolls internally if content is long */
@@ -290,18 +288,21 @@ body {
 
 /* Adjust header spacing to match compact design */
 .booking-header {
-    background: #ffffff !important; /* Clean white header */
+    background: #ffffff !important;
     color: #111827 !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
+    padding: 13px 24px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .close-booking-modal {
-    color: #6b7280;
-    font-size: 22px;
+    border: none;
+    background: none;
+    color: #6b7280 !important;
+    font-size: 24px;                  /* Size used in Calendar modal */
+    cursor: pointer;
 }
 
 
@@ -318,20 +319,22 @@ body {
 }
 
 .booking-header {
-    background: #ffffff !important; /* Removes the green color and sets background to clean white */
-    color: #111827 !important;     /* Changes header text color to dark gray/black */
+    background: #ffffff !important;
+    color: #111827 !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e5e7eb; /* Adds a clean divider line under the header */
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    /* Adds a clean divider line under the header */
 }
 
 /* Update the close 'X' button color so it's visible on white */
 .close-booking-modal {
     border: none;
     background: none;
-    color: #6b7280 !important; /* Soft dark gray X icon */
+    color: #6b7280 !important;
+    /* Soft dark gray X icon */
     font-size: 24px;
     cursor: pointer;
 }
@@ -350,8 +353,11 @@ body {
 .booking-icon {
     width: 60px;
     height: 60px;
-    border-radius: 50% !important; /* Circle Icon */
-    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50% !important;
+    background: rgba(99, 154, 136, 0.15);
+    /* Light teal background */
+    color: #639A88 !important;
+    /* UPDATED ICON COLOR */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -377,35 +383,52 @@ body {
     cursor: pointer;
 }
 
-.booking-body {
-    padding: 30px;
+.booking-body,
+.notification-booking-body {
+    padding-top: 10px !important; /* Reduced from 24px/30px */
 }
 
 .booking-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 15px !important;
+    align-items: stretch !important;
+    width: 100% !important;
 }
 
+/* 2. Equal-height cards side by side */
 .info-card {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    padding: 16px;
-    background: #f8f9fc;
-    border-radius: 12px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    /* INCREASED SPACE HERE (from 12px/16px to 20px) */
+    padding: 14px 16px !important;
+    background: #f8f9fc !important;
+    border-radius: 5px !important;
+    box-sizing: border-box !important;
+    height: 100% !important;
 }
 
+/* Icon styling (remains circular and fixed size) */
 .info-card i {
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    border-radius: 50% !important; /* Circle Icon */
-    background: rgba(99, 154, 136, 0.15);
-    color: #639A88;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    background: rgba(53, 53, 53, 0.1) !important;
+    color: #353535 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Text details wrapper */
+.info-details {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    flex: 1 !important;
+    min-width: 0 !important;
 }
 
 .info-card label {
@@ -418,40 +441,67 @@ body {
 .info-card span {
     font-weight: 600;
     color: #222;
+    font-size: 14px;
 }
 
-i.fa-solid, 
-i.fa-regular, 
-i.fa-brands, 
-.fa-solid, 
-.fa-regular, 
+i,
+i.fa-solid,
+i.fa-regular,
+i.fa-brands,
+.fa-solid,
+.fa-regular,
 .fa-brands {
     font-family: "Font Awesome 6 Free" !important;
+    font-style: normal !important;
 }
-
 /* ==========================================================================
    NOTIFICATIONS & PANELS
    ========================================================================== */
 .notification-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.notification-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    min-width: 17px;
-    height: 17px;
-    padding: 0 4px;
-    background: #dc2626;
-    color: white;
-    border-radius: 50% !important; /* Circle Badge */
-    font-family: "DM Sans", sans-serif !important;
-    font-size: 10px;
-    font-weight: 700;
+.notification-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: #353535;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50% !important;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.notification-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #111111;
+}
+
+.notification-badge {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    min-width: 17px !important;
+    height: 17px !important;
+    padding: 0 4px !important;
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    font-family: "DM Sans", sans-serif, inherit !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid #ffffff !important;
 }
 
 .notification-panel {
@@ -489,14 +539,23 @@ i.fa-brands,
 .notification-header button {
     background: none;
     border: none;
-    color: #777;
+    padding: 0;
+    font-weight: 600;
     font-family: "DM Sans", sans-serif !important;
-    font-size: 11px;
+    font-size: 13px;
+    /* Edit this value to adjust the size */
+    color: #639A88 !important;
+    /* Base color */
     cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 .notification-header button:hover {
-    color: #000;
+    color: #528373 !important;
+    /* Hover color */
+    text-decoration: underline !important;
+    /* Underline on hover */
 }
 
 .notification-list {
@@ -511,11 +570,13 @@ i.fa-brands,
     border-bottom: 1px solid #eeeeee;
     cursor: pointer;
 }
+
 .notification-item-icon,
 .notification-item .notification-icon {
     flex-shrink: 0 !important;
     align-self: flex-start !important;
 }
+
 .notification-item:hover {
     background: #f7f7f7;
 }
@@ -530,7 +591,8 @@ i.fa-brands,
     flex-shrink: 0;
     background: rgba(99, 154, 136, 0.15);
     color: #353535;
-    border-radius: 30% !important; /* Circle Icon */
+    border-radius: 30% !important;
+    /* Circle Icon */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -569,12 +631,12 @@ i.fa-brands,
 }
 
 .notification-item .notification-icon i {
-    color: #ffffff !important; 
-    font-size: 18px !important; 
+    color: #ffffff !important;
+    font-size: 18px !important;
 }
 
 .notification-item .notification-icon {
-    background-color: #639A88 !important; 
+    background-color: #639A88 !important;
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -584,22 +646,22 @@ i.fa-brands,
 }
 
 .notification-title {
-    font-size: 15px !important;    
-    font-weight: 700 !important;   
-    color: #353535 !important;     
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #353535 !important;
     margin-bottom: 4px;
 }
 
 .notification-message {
     font-size: 13.5px !important;
-    color: #556070 !important;   
+    color: #556070 !important;
     line-height: 1.4 !important;
     margin-bottom: 6px;
 }
 
 .notification-time {
     font-size: 11.5px !important;
-    color: #9aa5b5 !important;     
+    color: #9aa5b5 !important;
     font-weight: 500 !important;
 }
 
@@ -610,22 +672,14 @@ i.fa-brands,
 .notification-booking-modal {
     position: fixed;
     inset: 0;
-    z-index: 9999;
-
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    padding: 24px;
-
     background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(4px);
-
+    backdrop-filter: blur(8px);
     opacity: 0;
     visibility: hidden;
-    transition:
-        opacity 0.25s ease,
-        visibility 0.25s ease;
 }
 
 .notification-booking-modal.show {
@@ -634,210 +688,183 @@ i.fa-brands,
 }
 
 .notification-booking-card {
-    width: min(580px, 92vw); /* Updated from 850px to match target size */
+    width: 580px;
+    max-width: 92vw;
     max-height: 85vh;
-
     display: flex;
     flex-direction: column;
-
     background: #ffffff;
-    border-radius: 16px;
-
+    border-radius: 8px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-
     overflow: hidden;
-
-    transform: translateY(20px) scale(0.98);
-    transition: transform 0.25s ease;
 }
-
-.notification-booking-modal.show
-.notification-booking-card {
-    transform: translateY(0) scale(1);
-}
-
 
 /* =========================================
-   HEADER
+   NOTIFICATION HEADER
 ========================================= */
 
 .notification-booking-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 20px 24px;
-
-    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff !important;
+    padding: 20px 24px 16px 24px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
 }
 
 .notification-booking-title {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
 }
 
+/* Light circular icon background */
 .notification-booking-icon {
-    width: 46px;
-    height: 46px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 12px;
-
-    background: #f3f4f6;
-    color: #111827;
-
-    font-size: 19px;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 50% !important;
+    background-color: #e6f2ed !important; /* Soft mint/light green circle */
+    color: #4a8072 !important; /* Muted teal/green calendar icon */
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    font-size: 22px !important;
+    flex-shrink: 0 !important;
 }
 
+/* Client Name */
 .notification-booking-title h2 {
-    margin: 0 0 5px;
-
-    font-size: 20px;
-    font-weight: 700;
-
-    color: #111827;
+    margin: 0 !important;
+    font-size: 23px !important;
+    font-weight: 700 !important;
+    color: #353535 !important;
+    line-height: 1.2 !important;
 }
 
+/* Status Pill Badge */
 .notification-booking-status {
-    display: inline-flex;
-    align-items: center;
-
-    padding: 4px 10px;
-
-    border-radius: 20px;
-
-    background: #fff7ed;
-    color: #c2410c;
-
-    font-size: 12px;
-    font-weight: 600;
+    display: inline-block !important;
+    margin-top: 6px !important;
+    padding: 4px 10px !important;
+    background-color: #4a8072 !important; /* Solid teal/green pill */
+    color: #ffffff !important;
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
 }
 
+/* Close Button (X) */
 .notification-booking-close {
-    width: 38px;
-    height: 38px;
-
-    border: none;
-    border-radius: 9px;
-
-    background: transparent;
-    color: #6b7280;
-
-    font-size: 24px;
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease;
+    width: 32px !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    background: transparent !important;
+    color: #6b7280 !important;
+    font-size: 30px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    align-self: center !important;
 }
 
 .notification-booking-close:hover {
-    background: #f3f4f6;
-    color: #111827;
+    color: #0f172a !important;
 }
 
-
 /* =========================================
-   BODY
+   NOTIFICATION BODY
 ========================================= */
 
 .notification-booking-body {
-    padding: 24px;
-
+    padding: 20px 24px;
+    padding-top: 10px !important;
     overflow-y: auto;
+    max-height: calc(85vh - 80px);
 }
 
-
-/* Section headings */
 .notification-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+    margin: 18px 0 10px 0;
     display: flex;
     align-items: center;
     gap: 8px;
-
-    margin: 0 0 14px;
-
-    font-size: 14px;
-    font-weight: 700;
-
-    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+.notification-section-title i {
+    color: #639a88;
+}
 
 /* =========================================
-   INFORMATION GRID
+   NOTIFICATION INFORMATION GRID
 ========================================= */
 
 .notification-booking-grid {
-    display: grid;
-
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    gap: 12px;
-
-    margin-bottom: 22px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 15px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    margin-bottom: 15px;
 }
 
 .notification-info-card {
-    min-width: 0;
-
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-
-    padding: 14px;
-
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-
-    background: #fafafa;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+    background: #f8f9fc !important;
+    border-radius: 5px !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    height: 100% !important;
 }
 
 .notification-info-card > i {
-    flex-shrink: 0;
-
-    width: 34px;
-    height: 34px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 8px;
-
-    background: #f3f4f6;
-    color: #4b5563;
-
-    font-size: 14px;
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    background: rgba(53, 53, 53, 0.1) !important;
+    color: #353535 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
 }
 
 .notification-info-card label {
     display: block;
-
-    margin-bottom: 4px;
-
-    font-size: 11px;
-    font-weight: 600;
-
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-
-    color: #9ca3af;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 3px;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .notification-info-card span {
-    display: block;
-
-    color: #111827;
-
-    font-size: 14px;
     font-weight: 600;
+    color: #222;
+    font-size: 14px;
+}
 
-    overflow-wrap: anywhere;
+/* =========================================
+   NOTIFICATION FOOTER
+========================================= */
+
+.notification-booking-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 18px 30px;
+    border-top: 1px solid #eeeeee;
 }
 
 
@@ -847,34 +874,24 @@ i.fa-brands,
 
 .notification-payment-card {
     display: grid;
-
     grid-template-columns: repeat(3, 1fr);
-
     gap: 12px;
-
     margin-bottom: 22px;
 }
 
 .notification-payment-item {
     padding: 16px;
-
     border-radius: 10px;
-
     background: #f9fafb;
-
     text-align: center;
 }
 
 .notification-payment-item label {
     display: block;
-
     margin-bottom: 6px;
-
     font-size: 11px;
     font-weight: 600;
-
     text-transform: uppercase;
-
     color: #9ca3af;
 }
 
@@ -940,6 +957,7 @@ i.fa-brands,
     display: flex;
     justify-content: flex-end;
 }
+
 .process-booking-btn {
     display: flex;
     align-items: center;
@@ -953,7 +971,6 @@ i.fa-brands,
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .process-booking-btn:hover {
@@ -980,7 +997,6 @@ i.fa-brands,
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: background 0.2s;
 }
 
 .logout-btn,
@@ -1022,26 +1038,41 @@ i.fa-brands,
 .stats-grid {
     margin-top: 25px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr) !important; /* 5 columns for 5 cards */
-    gap: 16px !important;                              /* Consistent gap */
+    grid-template-columns: repeat(5, 1fr) !important;
+    /* 5 columns for 5 cards */
+    gap: 16px !important;
+    /* Consistent gap */
     width: 100% !important;
 }
-.calendar-section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 25px 0 12px;
-    color: #333;
-    font-size: 15px;
-    font-weight: 600;
+
+.calendar-section-title,
+.notification-section-title,
+.notification-booking-notes h3,
+.booking-section h3 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important; /* Forces left alignment */
+    flex-direction: row !important;         /* Forces horizontal row */
+    gap: 8px !important;                     /* Space between icon and text */
+    width: 100% !important;
+    margin: 25px 0 12px !important;
+    color: #333 !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
 }
 
-.calendar-section-title:first-child {
-    margin-top: 0;
-}
-
-.calendar-section-title i {
-    color: #639A88;
+/* Force icons inside section titles to appear first on the left */
+.calendar-section-title i,
+.notification-section-title i,
+.notification-booking-notes h3 i,
+.booking-section h3 i {
+    order: -1 !important;                   /* Ensures the icon sits before the text */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #639A88 !important;              /* Theme teal color */
+    margin: 0 !important;
+    font-size: 16px !important;
 }
 
 .booking-footer {
@@ -1064,7 +1095,6 @@ i.fa-brands,
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .process-booking-btn:hover {
@@ -1094,18 +1124,13 @@ i.fa-brands,
 .card {
     background: #ffffff !important;
     border: 1px solid #e5e7eb !important;
-    border-radius: 12px !important;
+    border-radius: 8px !important;
     padding: 20px 22px !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     min-height: 125px !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-}
-.card:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Icon placement & sizing */
@@ -1136,13 +1161,16 @@ i.fa-brands,
 /* Custom icon accents for Active and Expired */
 .green,
 .card:nth-child(4) i {
-    color: #10b981 !important; /* Green badge icon for Active */
+    color: #10b981 !important;
+    /* Green badge icon for Active */
 }
 
 .red,
 .card:nth-child(5) i {
-    color: #f43f5e !important; /* Red badge icon for Expired */
+    color: #f43f5e !important;
+    /* Red badge icon for Expired */
 }
+
 .section-title {
     margin-top: 35px;
     margin-bottom: 18px;
@@ -1208,7 +1236,7 @@ i.fa-brands,
     align-items: center;
     justify-content: center;
     background: #639A88 !important;
-    color: #ffffff !important;                       
+    color: #ffffff !important;
     font-size: 15px;
 }
 
@@ -1290,19 +1318,16 @@ i.fa-brands,
     min-width: 125px;
     padding: 9px 34px 9px 13px;
     border: 1px solid #dddddd;
-    border-radius: 8px;
+    border-radius: 5px;
     background: #ffffff;
     font-family: "DM Sans", sans-serif !important;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: #333;
     cursor: pointer;
     outline: none;
 }
 
-.year-dropdown:hover {
-    border-color: #639A88;
-}
 
 .dropdown-arrow {
     position: absolute;
@@ -1489,7 +1514,7 @@ i.fa-brands,
     color: #222;
 }
 
-.package-card > p {
+.package-card>p {
     margin: 0 0 18px;
     font-size: 11px;
     color: #999;
@@ -1539,7 +1564,8 @@ i.fa-brands,
     width: 36px;
     height: 36px;
     flex-shrink: 0;
-    border-radius: 50% !important; /* Circle Icon */
+    border-radius: 50% !important;
+    /* Circle Icon */
     background: rgba(99, 154, 136, 0.15);
     display: flex;
     align-items: center;
@@ -1711,26 +1737,26 @@ i.fa-brands,
 }
 
 .fc .fc-button-group {
-    background-color: #639A88 !important; 
-    border-radius: 5px !important;         
-    overflow: hidden !important;           
+    background-color: #639A88 !important;
+    border-radius: 5px !important;
+    overflow: hidden !important;
     display: inline-flex !important;
 }
 
-.fc .fc-button-group > .fc-button {
+.fc .fc-button-group>.fc-button {
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    border-radius: 0 !important;              
+    border-radius: 0 !important;
     color: #ffffff !important;
     padding: 6px 12px !important;
 }
 
-.fc .fc-button-group > .fc-button:not(:last-child) {
+.fc .fc-button-group>.fc-button:not(:last-child) {
     border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
-.fc .fc-button-group > .fc-button:hover {
+.fc .fc-button-group>.fc-button:hover {
     background-color: #528373 !important;
 }
 
@@ -1739,10 +1765,10 @@ i.fa-brands,
 ========================================================= */
 
 .fc .fc-today-button {
-    background-color: #639A88 !important; 
-    border-color: #639A88 !important;     
-    color: #ffffff !important;            
-    opacity: 1 !important;                
+    background-color: #639A88 !important;
+    border-color: #639A88 !important;
+    color: #ffffff !important;
+    opacity: 1 !important;
     border-radius: 5px !important;
 }
 
@@ -1755,24 +1781,27 @@ i.fa-brands,
 .fc .fc-today-button:disabled {
     background-color: #639A88 !important;
     border-color: #639A88 !important;
-    opacity: 0.65 !important;            
+    opacity: 0.65 !important;
     cursor: not-allowed !important;
 }
+
 /* Target the paragraph or text block directly under Client Notes */
 .booking-section p,
 .booking-note,
 .notes-container {
-    background-color: #f9fafb !important;   
-    border: 1px solid #e5e7eb !important;  
-    border-radius: 12px !important;         
-    padding: 14px 18px !important;         
-    margin-top: 8px !important;             
-    color: #6b7280 !important;            
+    background-color: #f8f9fc !important;
+    border: none !important;
+    border-radius: 5px !important;
+    padding: 14px 16px !important;
+    margin-top: 8px !important;
+    color: #222 !important;
     font-size: 14px !important;
-    display: block !important;              
+    font-weight: 600 !important;
+    display: block !important;
     width: 100% !important;
     box-sizing: border-box !important;
 }
+
 /* =========================================================
    FULLCALENDAR FULL-WIDTH FIX (Removes Space Beside Saturday)
 ========================================================= */
@@ -1792,19 +1821,137 @@ i.fa-brands,
     width: 100% !important;
     table-layout: fixed !important;
 }
+
 /* =========================================================
    CLIENT NOTES BOX STYLING (NOTIFICATION CARD UI)
 ========================================================= */
 
 .notes-box,
 #modalNotes {
-    background-color: #f8f9fa; 
-    border: 1px solid #e9ecef; 
-    border-radius: 12px;      
-    padding: 14px 18px;       
-    color: #495057;            
+    background-color: #f8f9fc !important;
+    /* Matches .info-card background */
+    border: none !important;
+    /* Removes plain border */
+    border-radius: 5px !important;
+    /* Matches .info-card radius */
+    padding: 14px 16px !important;
+    /* Matches .info-card padding */
+    color: #222 !important;
+    /* Text color */
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    /* Bold text matching span values */
+    margin-top: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+}
+
+.booking-body > .calendar-section-title:first-child,
+.booking-body > .notification-section-title:first-child,
+.booking-body > .booking-section:first-child h3,
+.notification-booking-body > .notification-section-title:first-child {
+    margin-top: 15px !important; /* Removes top margin pushing it down */
+}
+
+.close-btn,
+.booking-header .close,
+.modal-close {
+    font-size: 16px;     /* Reduce this (e.g., 14px or 16px) to make the X smaller */
+    width: 24px;         /* Restrain container size */
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #555555;      /* Change icon color */
+}
+
+/* If the "X" is an SVG or Font Awesome icon inside the button */
+.close-btn svg,
+.close-btn i {
+    width: 5px;         /* Controls icon size directly if it's an SVG */
+    height: 14px;
     font-size: 14px;
-    margin-top: 8px;
+}
+
+.booking-status,
+.status-badge,
+.booking-header .status {
+    background-color: #528373; /* Adjust this hex color to change the green background */
+    color: #ffffff;           /* Text color inside the badge */
+    font-size: 13px;          /* Adjust text size if needed */
+    padding: 3px 10px;        /* Adjust badge padding */
+    border-radius: 12px;
+}
+
+.notification-booking-notes .notification-section-title,
+.notification-payment-proof .notification-section-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #2c3e50 !important;
+    margin: 20px 0 12px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    text-transform: none !important; /* Normal title casing */
+    letter-spacing: normal !important;
+}
+
+/* Green icon box matching your screenshot */
+.notification-booking-notes .notification-section-title i{
+    width: 26px !important;
+    height: 26px !important;
+    background-color: #639a88 !important;
+    color: #ffffff !important;
+    border-radius: 5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    flex-shrink: 0 !important;
+}
+.notification-payment-proof .notification-section-title i {
+    background-color: transparent !important;
+    color: #639a88 !important; /* Theme color for the icon */
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 16px !important;
+}
+
+/* Light Grey Content Box */
+.notification-booking-notes .notes-box,
+.notification-payment-proof .notes-box,
+#notificationBookingNotes,
+#notificationBookingProof,
+#notificationBookingRejection {
+    background-color: #f8f9fb !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #2b2b2b !important;
+    line-height: 1.5 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    word-break: break-word !important;
+}
+
+/* If Payment Proof contains images, style cleanly inside the box */
+#notificationBookingProof img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-top: 6px;
+    display: block;
+}
+
+/* Section Container Spacing */
+.notification-payment-proof,
+.notification-booking-notes {
+    margin-top: 10px;
     width: 100%;
-    box-sizing: border-box;
 }

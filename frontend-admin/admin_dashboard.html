@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Dashboard</title>
+    <title>Dashboard - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +26,7 @@
 
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
         </div>
 
         <div class="navbar-right">
@@ -52,7 +52,7 @@
                         <div class="notification-empty">
                             No notifications
                         </div>
-                        
+
                     </div>
 
                 </div>
@@ -571,9 +571,9 @@
                         <!-- CLIENT NOTES -->
                         <div class="notes-section">
 
-                            <h3>
-                                <i class="fa-solid fa-note-sticky"></i>
+                            <h3 class="calendar-section-title">
                                 Client Notes
+                                <i class="fas fa-sticky-note"></i>
                             </h3>
 
                             <div id="modalNotes" class="notes-box">
@@ -1928,8 +1928,7 @@
 
                 if (params.get("error")) {
                     alert(params.get("error_description") || "Login failed");
-                    window.location.href = "admin_login.html";
-                    return;
+                    window.location.href = "/admin/login"; return;
                 }
 
 
@@ -1938,8 +1937,7 @@
                 } = await supabaseClient.auth.getSession();
 
                 if (!session) {
-                    window.location.href = "admin_login.html";
-                    return;
+                    window.location.href = "/admin/login"; return;
                 }
 
                 const user = session.user;
@@ -2604,36 +2602,36 @@
 
 
             calendarInstance =
-    new FullCalendar.Calendar(
-        document.getElementById("calendar"),
-        {
-            initialView:
-                "dayGridMonth",
+                new FullCalendar.Calendar(
+                    document.getElementById("calendar"),
+                    {
+                        initialView:
+                            "dayGridMonth",
 
-            height:
-                700,
+                        height:
+                            700,
 
-            events:
-                events,
+                        events:
+                            events,
 
-            headerToolbar: {
-                left:
-                    "prev,next today",
+                        headerToolbar: {
+                            left:
+                                "prev,next today",
 
-                center:
-                    "title",
+                            center:
+                                "title",
 
-                right:
-                    "dayGridMonth,timeGridWeek,timeGridDay"
-            },
+                            right:
+                                "dayGridMonth,timeGridWeek,timeGridDay"
+                        },
 
-            eventColor:
-                "#5C3BFE",
+                        eventColor:
+                            "#5C3BFE",
 
-            // 👇 ADDED HERE TO FIX OVERLAPPING & EVENT DURATION 👇
-            slotEventOverlap: false,
+                        // 👇 ADDED HERE TO FIX OVERLAPPING & EVENT DURATION 👇
+                        slotEventOverlap: false,
 
-            defaultTimedEventDuration: "00:45:00",
+                        defaultTimedEventDuration: "00:45:00",
 
 
                         eventClick(info) {
@@ -3022,24 +3020,57 @@
         const sidebar = document.querySelector(".sidebar");
         const sidebarToggle = document.getElementById("sidebarToggle");
 
-        sidebarToggle.addEventListener("click", () => {
+        if (sidebar && sidebarToggle) {
 
-            sidebar.classList.toggle("collapsed");
+            /* Restore the sidebar's previous state */
+            const savedSidebarState =
+                localStorage.getItem("adminSidebarCollapsed");
 
-            const icon = sidebarToggle.querySelector("i");
-
-            if (sidebar.classList.contains("collapsed")) {
-
-                icon.classList.remove("fa-bars");
-                icon.classList.add("fa-chevron-right");
-
-            } else {
-
-                icon.classList.remove("fa-chevron-right");
-                icon.classList.add("fa-bars");
-
+            if (savedSidebarState === "true") {
+                sidebar.classList.add("collapsed");
             }
-        });
+
+            /* Update the toggle icon */
+            function updateSidebarToggleIcon() {
+
+                const icon = sidebarToggle.querySelector("i");
+
+                if (!icon) return;
+
+                if (sidebar.classList.contains("collapsed")) {
+
+                    icon.classList.remove("fa-bars");
+                    icon.classList.add("fa-chevron-right");
+
+                } else {
+
+                    icon.classList.remove("fa-chevron-right");
+                    icon.classList.add("fa-bars");
+
+                }
+            }
+
+            /* Apply the correct icon when the page loads */
+            updateSidebarToggleIcon();
+
+            /* Toggle ONLY when the actual toggle button is clicked */
+            sidebarToggle.addEventListener("click", () => {
+
+                sidebar.classList.toggle("collapsed");
+
+                const isCollapsed =
+                    sidebar.classList.contains("collapsed");
+
+                /* Remember the sidebar state */
+                localStorage.setItem(
+                    "adminSidebarCollapsed",
+                    isCollapsed
+                );
+
+                /* Update the toggle icon */
+                updateSidebarToggleIcon();
+            });
+        }
 
 
 
@@ -4133,15 +4164,11 @@
 
 
                 window.location.href =
-                    "admin_client.html?booking_id=" +
-                    encodeURIComponent(
-                        String(bookingId)
-                    );
-
+                    "/admin/clients?booking_id=" +
+                    encodeURIComponent(String(bookingId));
+                let analyticsInitialized = false;
             }
         );
-        let analyticsInitialized = false;
-
 
         async function initializeAnalytics() {
 
@@ -4397,6 +4424,7 @@
 
         }
 
+        // Logout button
         document.getElementById("logoutBtn")
             .addEventListener("click", async (e) => {
 
@@ -4404,7 +4432,7 @@
 
                 await supabaseClient.auth.signOut();
 
-                window.location.href = "/frontend-admin/admin_login.html";
+                window.location.href = "/admin/login";
             });
     </script>
 </body>

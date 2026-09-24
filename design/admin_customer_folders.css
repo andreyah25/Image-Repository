@@ -69,7 +69,6 @@
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
     outline: none;
-    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
 #foldersView .table-search-box input::placeholder {
@@ -128,7 +127,6 @@
     border: 1px solid #e3e3e3;
     border-radius: 8px;
     cursor: pointer;
-    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 
 #customerFoldersContainer .repository-client-card:hover {
@@ -277,7 +275,6 @@
     font-size: 12px;
     font-weight: 600;
     line-height: 1;
-    transition: background .15s ease, border-color .15s ease;
 }
 
 #customerFoldersContainer .repository-client-card .quick-actions button:hover {
@@ -305,46 +302,78 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
+/* Base style for all repository action buttons */
 .repository-actions button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 38px;
-    padding: 9px 13px;
-    border-radius: 4px; /* Adjust radius value here */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 38px !important;            /* Fixed height forces vertical center */
+    min-height: 38px !important;
+    padding: 0 16px !important;          /* Zero top/bottom padding prevents offset */
+    border-radius: 5px !important;
     cursor: pointer;
+    white-space: nowrap;
     font-family: 'DM Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
+    line-height: 1 !important;           /* Resets standard line height issues */
+    box-sizing: border-box !important;
     transition: background .15s ease, border-color .15s ease;
 }
 
+/* Force elements inside button to center vertically */
+.repository-actions button i,
+.repository-actions button svg,
+.repository-actions button span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+}
+
+/* Fix for font icon alignment height offset */
+.repository-actions button i {
+    transform: translateY(1px); /* Pulls icon down slightly to align with font x-height */
+}
+
+/* Colors */
 .add-new-client-btn {
-    border: 1px solid #639A88;
-    background: #639A88;
-    color: #fff;
+    border: 1px solid #639A88 !important;
+    background: #639A88 !important;
+    color: #fff !important;
 }
 
 .add-new-client-btn:hover {
-    background: #528373;
+    background: #528373 !important;
 }
 
 .copy-client-link-btn,
 .back-to-folders-btn {
-    border: 1px solid #ddd;
-    background: #fff;
-    color: #353535;
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+    color: #353535 !important;
 }
 
 .copy-client-link-btn:hover,
 .back-to-folders-btn:hover {
-    background: #f6f6f6;
+    background: #f6f6f6 !important;
 }
 
+/* =========================================================
+   ADJUST WIDTH & PADDING FOR BACK TO FOLDERS BUTTON HERE
+   ========================================================= */
+
+.back-to-folders-btn {
+    width: 140px !important;     /* Change this pixel value to make the button wider/narrower */
+    min-width: 130px !important;
+}
 
 /* =========================================================
    CLIENT GALLERY LINK
@@ -501,7 +530,6 @@
     border: 1px solid #e8e8e8;
     border-radius: 8px;
     background: #fff;
-    transition: transform .15s ease, box-shadow .15s ease;
 }
 
 .customer-photo-card:hover {

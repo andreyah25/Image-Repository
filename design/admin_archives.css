@@ -1,8 +1,14 @@
+.content {
+    display: flex;
+    flex-direction: column;
+}
+
 .archive-tab-navigation {
     display: flex;
+    align-items: flex-end;
     gap: 24px;
     border-bottom: 1px solid #e5e5e5;
-    margin-bottom: 20px;
+    margin-bottom: 0;
     width: 100%;
 }
 
@@ -43,14 +49,21 @@
     justify-content: flex-end;
     align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-top: 15px; /* Pulls controls up into the tab row */
+    margin-bottom: 8px;
+    padding-bottom: 10px; /* Room above the divider line */
     width: 100%;
+    pointer-events: none;
+}
+
+.archive-controls-row > * {
+    pointer-events: auto;
 }
 
 /* Restructured Search Component */
 .archive-search-wrapper {
     position: relative; 
-    width: 260px;
+    width: 280px;
 }
 
 .archive-search-wrapper input {
@@ -127,6 +140,46 @@
     text-align: left;
 }
 
+/* Styled Packages Dropdown */
+.archive-package-filter select {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    height: 36px;
+    padding: 0 36px 0 12px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #777777; /* Subtle text color matching the filter button */
+    outline: none !important; /* Removes the focus outline */
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Custom SVG Dropdown Arrow Icon */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23777777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.archive-package-filter select:hover {
+    background-color: #f9f9f9;
+}
+
+/* Keeps border normal and removes highlight color when clicked/focused */
+.archive-package-filter select:focus,
+.archive-package-filter select:active {
+    border-color: #cccccc !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Ensures dropdown options remain readable dark text when opened */
+.archive-package-filter select option {
+    color: #333333;
+}
+
 /* Rows Meta & Cells Layout */
 .item-meta-cell h4 {
     margin: 0 0 2px 0;
@@ -182,7 +235,7 @@
 .archive-table th:last-child,
 .archive-table td:last-child {
     width: 180px;
-    text-align: left !important;;
+    text-align: center !important;;
 }
 
 .floating-actions {
@@ -201,7 +254,7 @@
     width: 170px;
     height: 36px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 5px;
     padding: 0 36px 0 12px;
     background: #fff;
     font-size: 13px;

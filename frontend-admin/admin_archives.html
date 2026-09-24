@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archives</title>
+    <title>Archives - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,12 +16,22 @@
     <link rel="stylesheet" href="/design/admin_archives.css?v=1.2">
 </head>
 
+<script>
+    // Run immediately to load persisted state
+    (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+            document.documentElement.classList.add("sidebar-is-collapsed");
+        }
+    })();
+</script>
+
 <body>
 
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
         </div>
 
         <div class="navbar-right">
@@ -43,7 +53,7 @@
         <aside class="sidebar">
             <nav>
 
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
@@ -63,7 +73,7 @@
                     Payments
                 </a>
 
-                <a href="/admin/archives">
+                <a href="/admin/archives" class="active">
                     <i class="fa-solid fa-box-archive"></i>
                     Archives
                 </a>
@@ -109,20 +119,19 @@
             <div class="archive-controls-row">
 
                 <div class="archive-search-wrapper">
-                    <input type="text" id="archiveSearchInput"
-                        placeholder="Search archived customers, folders, or photos..." autocomplete="off">
+                    <input type="text" id="archiveSearchInput" placeholder="Search an archived client or folder"
+                        autocomplete="off">
 
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                 </div>
 
                 <div class="archive-package-filter">
                     <select id="packageFilter">
-                        <option value="all">All Packages</option>
+                        <option value="all">All packages</option>
                     </select>
                 </div>
 
             </div>
-            <Fieldset></Fieldset>
 
             <div class="archive-table-card">
                 <table class="archive-table">
@@ -554,7 +563,7 @@
                 if (!session) {
 
                     window.location.href =
-                        "admin_login.html";
+                        "/admin/login";
 
                     return;
                 }
@@ -1803,6 +1812,44 @@
 
                 }
             );
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
+
+            if (sidebarToggle && sidebar) {
+                const icon = sidebarToggle.querySelector("i");
+
+                // 1. Restore saved collapsed state from localStorage on page load
+                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                if (isCollapsed) {
+                    sidebar.classList.add("collapsed");
+                    if (icon) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-chevron-right");
+                    }
+                }
+
+                // 2. Toggle state and save preference to localStorage on click
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("collapsed");
+                    const collapsed = sidebar.classList.contains("collapsed");
+
+                    localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
+
+                    if (icon) {
+                        if (collapsed) {
+                            icon.classList.remove("fa-bars");
+                            icon.classList.add("fa-chevron-right");
+                        } else {
+                            icon.classList.remove("fa-chevron-right");
+                            icon.classList.add("fa-bars");
+                        }
+                    }
+                });
+            }
+        });
+
     </script>
 </body>
 
