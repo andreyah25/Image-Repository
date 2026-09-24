@@ -1305,6 +1305,14 @@
             );
 
         }
+        if (downloadAllBtn) {
+
+            downloadAllBtn.addEventListener(
+                "click",
+                downloadAllPhotos
+            );
+
+        }
 
 
         async function startPayMongoGalleryPayment() {
@@ -1771,7 +1779,14 @@
             );
 
         }
+        window.addEventListener(
+            "DOMContentLoaded",
+            async () => {
 
+                await initializeGallery();
+
+            }
+        );
     </script>
 </body>
 
