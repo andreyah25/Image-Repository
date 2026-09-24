@@ -2189,9 +2189,8 @@
         updateBackdropUI();
 
         async function loadAvailablePackages() {
-
-            const photoPackageSelect =
-                document.getElementById("photoPackage");
+            const photoPackageSelect = document.getElementById("photoPackage");
+            const sessionTypeSelect = document.getElementById("sessionType");
 
             if (!photoPackageSelect) {
                 console.error("Photo package select not found.");
@@ -2199,7 +2198,6 @@
             }
 
             try {
-
                 const {
                     data: packages,
                     error
@@ -2210,128 +2208,308 @@
                     .order("name", { ascending: true });
 
                 if (error) {
-                    console.error(
-                        "Error loading available packages:",
-                        error
-                    );
-
+                    console.error("Error loading available packages:", error);
                     return;
                 }
 
+                const packageKeyMap = {
+                    "Basic 1": "basic_1",
+                    "Basic 2": "basic_2",
+                    "Basic 3": "basic_3",
+                    "Group": "group_package",
+                    "Group Package": "group_package",
+                    "Classic 1": "classic_1",
+                    "Classic 2": "classic_2",
+                    "Classic 3": "classic_3",
+                    "Kids": "kids",
+                    "Pre-birthday": "pre_birthday",
+                    "Pre Birthday": "pre_birthday",
+                    "Theme/Holiday": "theme_holiday",
+                    "Theme Holiday": "theme_holiday",
+                    "Maternity": "maternity"
+                };
+
+                const regularPackageKeys = [
+                    "basic_1",
+                    "basic_2",
+                    "basic_3",
+                    "group_package",
+                    "classic_1",
+                    "classic_2",
+                    "classic_3"
+                ];
+
+                const specialSessionKeys = [
+                    "kids",
+                    "pre_birthday",
+                    "theme_holiday",
+                    "maternity"
+                ];
 
                 photoPackageSelect.innerHTML = `
             <option value="">Select a photo package</option>
         `;
 
-                /*
-                 * Convert database package names into the
-                 * existing package keys used by your booking logic.
-                 */
-                const packageKeyMap = {
-
-                    "Basic 1": "basic_1",
-                    "Basic 2": "basic_2",
-                    "Basic 3": "basic_3",
-
-                    "Group": "group_package",
-                    "Group Package": "group_package",
-
-                    "Classic 1": "classic_1",
-                    "Classic 2": "classic_2",
-                    "Classic 3": "classic_3",
-
-                    "Kids": "kids",
-                    "Pre-birthday": "pre_birthday",
-                    "Pre Birthday": "pre_birthday",
-
-                    "Theme/Holiday": "theme_holiday",
-                    "Theme Holiday": "theme_holiday",
-
-                    "Maternity": "maternity"
-                };
+                if (sessionTypeSelect) {
+                    sessionTypeSelect.innerHTML = `
+                <option value="">Select a session type</option>
+            `;
+                }
 
                 (packages || []).forEach(packageItem => {
+                    const packageKey = packageKeyMap[packageItem.name];
 
-                    const packageKey =
-                        packageKeyMap[packageItem.name];
-
-                    /*
-                     * Skip packages that do not have a matching
-                     * existing package key.
-                     */
                     if (!packageKey) {
-                        console.warn(
-                            "No package key mapping found for:",
-                            packageItem.name
-                        );
                         return;
                     }
 
-                    const option =
-                        document.createElement("option");
+                    if (regularPackageKeys.includes(packageKey)) {
+                        const option = document.createElement("option");
 
-                    option.value = packageKey;
+                        option.value = packageKey;
+                        option.textContent =
+                            `${packageItem.name} - ₱${Number(packageItem.price).toLocaleString()}`;
 
-                    option.textContent =
-                        `${packageItem.name} - ₱${Number(packageItem.price).toLocaleString()}`;
+                        option.dataset.packageId = packageItem.id;
+                        option.dataset.price = packageItem.price;
+                        option.dataset.duration = packageItem.duration;
+                        option.dataset.status = packageItem.status;
 
-                    /*
-                     * Store database information on the option
-                     * so it can be accessed later if needed.
-                     */
-                    option.dataset.packageId =
-                        packageItem.id;
+                        photoPackageSelect.appendChild(option);
+                    }
 
-                    option.dataset.price =
-                        packageItem.price;
+                    if (
+                        sessionTypeSelect &&
+                        specialSessionKeys.includes(packageKey)
+                    ) {
+                        const option = document.createElement("option");
 
-                    option.dataset.duration =
-                        packageItem.duration;
+                        option.value = packageKey;
+                        option.textContent =
+                            `${packageItem.name} - ₱${Number(packageItem.price).toLocaleString()}`;
 
-                    option.dataset.status =
-                        packageItem.status;
+                        option.dataset.packageId = packageItem.id;
+                        option.dataset.price = packageItem.price;
+                        option.dataset.duration = packageItem.duration;
+                        option.dataset.status = packageItem.status;
 
-                    photoPackageSelect.appendChild(option);
+                        sessionTypeSelect.appendChild(option);
+                    }
+
+                    if (packageKey in packagePrices) {
+                        packagePrices[packageKey] =
+                            Number(packageItem.price) || packagePrices[packageKey];
+                    }
+
+                    if (packageKey in BOOKING_DURATIONS) {
+                        BOOKING_DURATIONS[packageKey] =
+                            Number(packageItem.duration) || BOOKING_DURATIONS[packageKey];
+                    }
                 });
 
-                /*
-                 * If there are no available packages.
-                 */
-                if (!packages || packages.length === 0) {
-
-                    const unavailableOption =
-                        document.createElement("option");
+                if (photoPackageSelect.options.length === 1) {
+                    const unavailableOption = document.createElement("option");
 
                     unavailableOption.value = "";
                     unavailableOption.textContent =
                         "No photography packages currently available";
                     unavailableOption.disabled = true;
 
-                    photoPackageSelect.appendChild(
-                        unavailableOption
-                    );
+                    photoPackageSelect.appendChild(unavailableOption);
                 }
 
-                console.log(
-                    "Available photography packages:",
-                    packages
-                );
+                if (
+                    sessionTypeSelect &&
+                    sessionTypeSelect.options.length === 1
+                ) {
+                    const unavailableOption = document.createElement("option");
+
+                    unavailableOption.value = "";
+                    unavailableOption.textContent =
+                        "No special sessions currently available";
+                    unavailableOption.disabled = true;
+
+                    sessionTypeSelect.appendChild(unavailableOption);
+                }
+
+                updateDownpaymentUI();
+                updateBackdropUI();
+
+                console.log("Available packages:", packages);
 
             } catch (error) {
-
-                console.error(
-                    "Failed to load packages:",
-                    error
-                );
-
+                console.error("Failed to load packages:", error);
             }
         }
 
+        async function loadAvailableBackdrops() {
+            const backdropGrid =
+                document.getElementById("backdropGrid");
 
+            if (!backdropGrid) {
+                return;
+            }
+
+            try {
+                const {
+                    data: backdrops,
+                    error
+                } = await supabaseClient
+                    .from("backdrops")
+                    .select("id, name, hex, status")
+                    .eq("status", "Available")
+                    .order("name", { ascending: true });
+
+                if (error) {
+                    console.error(
+                        "Error loading available backdrops:",
+                        error
+                    );
+                    return;
+                }
+
+                backdropGrid.innerHTML = "";
+
+                if (!backdrops || backdrops.length === 0) {
+                    backdropGrid.innerHTML = `
+                <div style="
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    color: #777;
+                    padding: 20px;
+                ">
+                    No backdrops currently available.
+                </div>
+            `;
+
+                    updateBackdropUI();
+                    return;
+                }
+
+                backdrops.forEach(backdrop => {
+                    const label =
+                        document.createElement("label");
+
+                    label.className = "backdrop-option";
+
+                    const input =
+                        document.createElement("input");
+
+                    input.type = "checkbox";
+                    input.name = "backdrop";
+                    input.value = backdrop.name;
+                    input.dataset.backdropId = backdrop.id;
+                    input.dataset.status = backdrop.status;
+
+                    const card =
+                        document.createElement("div");
+
+                    card.className = "backdrop-card";
+
+                    const color =
+                        document.createElement("div");
+
+                    color.className = "backdrop-color";
+
+                    color.style.backgroundColor =
+                        backdrop.hex || "#cccccc";
+
+                    const name =
+                        document.createElement("span");
+
+                    name.textContent = backdrop.name;
+
+                    card.appendChild(color);
+                    card.appendChild(name);
+
+                    label.appendChild(input);
+                    label.appendChild(card);
+
+                    backdropGrid.appendChild(label);
+
+                    input.addEventListener("change", function () {
+                        updateBackdropUI();
+                    });
+                });
+
+                updateBackdropUI();
+
+                console.log(
+                    "Available backdrops:",
+                    backdrops
+                );
+
+            } catch (error) {
+                console.error(
+                    "Failed to load backdrops:",
+                    error
+                );
+            }
+        }
+        const addonKeyMap = {
+            "Additional Person": "additional_person",
+            "Additional Pet": "additional_pet",
+            "Additional 4R Print": "additional_4r_print",
+            "8R Frame": "frame_8r",
+            "3 pcs Refrigerator Magnet": "refrigerator_magnet",
+            "Backdrop Request": "backdrop_request",
+            "With Photographer - 15 minutes": "photographer_15",
+            "With Photographer - 30 minutes": "photographer_30"
+        };
+        async function loadAvailableAddons() {
+            const { data, error } = await supabaseClient
+                .from("addons")
+                .select("id, name, price, unit, status")
+                .eq("status", "Available")
+                .order("name", { ascending: true });
+
+            if (error) {
+                console.error("Load available add-ons error:", error);
+                return;
+            }
+
+            document.querySelectorAll(".addon-select").forEach(select => {
+                select.innerHTML = '<option value="">Select an add-on</option>';
+            });
+
+            const addonKeyMap = {
+                "Additional Person": "additional_person",
+                "Additional Pet": "additional_pet",
+                "Additional 4R Print (any layout)": "additional_4r_print",
+                "8R Frame": "frame_8r",
+                '3 pcs. Refrigerator Magnet (2"x2")': "refrigerator_magnet",
+                "Backdrop Request": "backdrop_request",
+                "With Photographer for 15 minutes": "photographer_15",
+                "With Photographer for 30 minutes": "photographer_30"
+            };
+
+            (data || []).forEach(addon => {
+                const key = addonKeyMap[addon.name];
+
+                if (!key) {
+                    return;
+                }
+
+                if (ADDON_OPTIONS[key]) {
+                    ADDON_OPTIONS[key].price = Number(addon.price) || 0;
+                }
+
+                document.querySelectorAll(".addon-select").forEach(select => {
+                    const option = document.createElement("option");
+
+                    option.value = key;
+                    option.textContent =
+                        `${addon.name} - ₱${Number(addon.price).toLocaleString()}`;
+
+                    select.appendChild(option);
+                });
+            });
+        }
         document.addEventListener("DOMContentLoaded", async function () {
 
-            // LOAD ONLY PACKAGES MARKED AVAILABLE BY ADMIN
             await loadAvailablePackages();
+            await loadAvailableBackdrops();
+            await loadAvailableAddons();
 
             // Policy Modal Agreement Handling
             const modalCheck = document.getElementById('modalPolicyCheck');
@@ -2414,7 +2592,6 @@
                     }
                 );
             }
-            // LISTENERS TO AUTOMATICALLY UPDATE DOWN PAYMENT ON SELECTION
             const photoPackageSelect = document.getElementById("photoPackage");
             const sessionTypeSelect = document.getElementById("sessionType");
             if (photoPackageSelect) {
@@ -2459,6 +2636,7 @@
                     }
                 );
             }
+
             function bindModal(openBtnId, modalId, closeBtnId) {
 
                 const modal = document.getElementById(modalId);

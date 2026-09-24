@@ -78,7 +78,7 @@
 
             </nav>
 
-            <a href="/admin/login" class="logout-btn" id="logoutBtn">
+            <a href="#" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
             </a>
@@ -210,13 +210,15 @@
     </div>
 
     <div class="modal-overlay" id="staffModal">
-        <div class="staff-modal-container">
+        <div class="staff-modal-container" style="max-width:1100px;">
             <div class="staff-modal-header">
                 <i class="fa-solid fa-users-gear"></i>
-                <h2>Staff List</h2>
+                <h2>Staff Management</h2>
             </div>
+
             <div class="staff-modal-body">
-                <p class="modal-subtitle">View your studio staff and their status.</p>
+                <p class="modal-subtitle">View staff accounts, login status, and activity records.</p>
+
                 <div class="staff-table-wrapper">
                     <table class="staff-table">
                         <thead>
@@ -231,6 +233,37 @@
                         </thead>
                         <tbody id="staffTableBody"></tbody>
                     </table>
+                </div>
+
+                <div style="margin-top:35px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                        <div>
+                            <h3 style="margin:0;font-size:18px;">Staff Login Activity</h3>
+                            <p style="margin:5px 0 0;color:#888;font-size:13px;">
+                                Records of staff and administrator login and logout activity.
+                            </p>
+                        </div>
+
+                        <button type="button" id="refreshActivityLogsBtn" class="btn-dark btn-with-icon">
+                            <i class="fa-solid fa-rotate"></i>
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div class="staff-table-wrapper">
+                        <table class="staff-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Action</th>
+                                    <th>Date & Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityLogTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -264,7 +297,7 @@
                 }
 
                 const strongPassword =
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
                 if (!strongPassword.test(password)) {
 
@@ -373,7 +406,15 @@
 
             await fetchStaffList();
 
+            await fetchStaffActivityLogs();
         });
+        document
+            .getElementById("refreshActivityLogsBtn")
+            .addEventListener("click", async () => {
+
+                await fetchStaffActivityLogs();
+
+            });
         staffModal.addEventListener("click", (e) => {
 
             if (e.target === staffModal) {
@@ -383,7 +424,262 @@
             }
 
         });
+        async function fetchStaffActivityLogs() {
+            const activityLogTableBody = document.getElementById("activityLogTableBody");
 
+            if (!activityLogTableBody) {
+                return;
+            }
+
+            activityLogTableBody.innerHTML = `
+        <tr>
+            <td colspan="5" style="text-align:center;padding:30px;">
+                Loading activity records...
+            </td>
+        </tr>
+    `;
+
+            try {
+                const {
+                    data: { session },
+                    error: sessionError
+                } = await supabaseClient.auth.getSession();
+
+                if (sessionError || !session) {
+                    activityLogTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:30px;">
+                        Session expired.
+                    </td>
+                </tr>
+            `;
+                    return;
+                }
+
+                const { data: logs, error } = await supabaseClient
+                    .from("staff_activity_logs")
+                    .select("*")
+                    .order("logged_at", { ascending: false })
+                    .limit(100);
+
+                if (error) {
+                    console.error("ACTIVITY LOG FETCH ERROR:", error);
+
+                    activityLogTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:30px;">
+                        Unable to load activity records.
+                    </td>
+                </tr>
+            `;
+                    return;
+                }
+
+                if (!logs || logs.length === 0) {
+                    activityLogTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:30px;">
+                        No activity records yet.
+                    </td>
+                </tr>
+            `;
+                    return;
+                }
+
+                activityLogTableBody.innerHTML = "";
+
+                logs.forEach(log => {
+                    const tr = document.createElement("tr");
+
+                    const isLogin = log.action === "LOGIN";
+
+                    const actionClass = isLogin
+                        ? "activity-login"
+                        : "activity-logout";
+
+                    const actionIcon = isLogin
+                        ? "fa-right-to-bracket"
+                        : "fa-right-from-bracket";
+
+                    const date = new Date(log.logged_at);
+
+                    const formattedDate = date.toLocaleString("en-PH", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        second: "2-digit"
+                    });
+
+                    tr.innerHTML = `
+                <td>${log.staff_name || "Unknown"}</td>
+                <td>${log.staff_email || "N/A"}</td>
+                <td>
+                    <span class="role-badge">
+                        ${log.role || "staff"}
+                    </span>
+                </td>
+                <td>
+                    <span class="${actionClass}">
+                        <i class="fa-solid ${actionIcon}"></i>
+                        ${log.action}
+                    </span>
+                </td>
+                <td>${formattedDate}</td>
+            `;
+
+                    activityLogTableBody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("FETCH ACTIVITY LOGS ERROR:", error);
+
+                activityLogTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center;padding:30px;">
+                    Error loading activity records.
+                </td>
+            </tr>
+        `;
+            }
+        }
+        function formatStaffLastActive(lastActiveAt) {
+            if (!lastActiveAt) {
+                return "Never active";
+            }
+
+            const date = new Date(lastActiveAt);
+
+            if (isNaN(date.getTime())) {
+                return "Last active: Unknown";
+            }
+
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSeconds = Math.floor(diffMs / 1000);
+
+            if (diffSeconds < 10) {
+                return "Active just now";
+            }
+
+            if (diffSeconds < 60) {
+                return `Active ${diffSeconds} second${diffSeconds === 1 ? "" : "s"} ago`;
+            }
+
+            const diffMinutes = Math.floor(diffSeconds / 60);
+
+            if (diffMinutes < 60) {
+                return `Last active ${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
+            }
+
+            const diffHours = Math.floor(diffMinutes / 60);
+
+            if (diffHours < 24) {
+                return `Last active ${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+            }
+
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffDays < 7) {
+                return `Last active ${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+            }
+
+            return `Last active ${date.toLocaleDateString("en-PH", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            })}`;
+        }
+        // =========================================================
+        // STAFF PRESENCE HEARTBEAT
+        // =========================================================
+
+        let staffPresenceInterval = null;
+
+        async function sendStaffHeartbeat() {
+
+            try {
+
+                const {
+                    data: {
+                        session
+                    } = {}
+                } = await supabaseClient
+                    .auth
+                    .getSession();
+
+                console.log(
+                    "HEARTBEAT SESSION:",
+                    !!session?.access_token
+                );
+
+                if (!session?.access_token) {
+
+                    console.warn(
+                        "HEARTBEAT: NO SESSION"
+                    );
+
+                    return;
+                }
+
+                const response = await fetch(
+                    "http://localhost:3000/api/admin/staff/presence",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "Authorization":
+                                `Bearer ${session.access_token}`
+                        },
+
+                        body: JSON.stringify({
+                            page:
+                                window.location.pathname
+                        })
+                    }
+                );
+
+                const result =
+                    await response.json();
+
+                console.log(
+                    "HEARTBEAT RESPONSE:",
+                    response.status,
+                    result
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "HEARTBEAT FAILED:",
+                    error
+                );
+
+            }
+        }
+
+
+        async function startStaffPresence() {
+
+            // Send immediately
+            await sendStaffHeartbeat();
+
+            // Prevent duplicate intervals
+            if (staffPresenceInterval) {
+                return;
+            }
+
+            // Send every 30 seconds
+            staffPresenceInterval =
+                setInterval(
+                    sendStaffHeartbeat,
+                    30000
+                );
+        }
         async function fetchStaffList() {
 
             try {
@@ -490,83 +786,75 @@
 
                     const loginStatusHtml = isOnline
                         ? `
-                            <div style="
-                                display:flex;
-                                align-items:center;
-                                gap:7px;
-                                font-weight:600;
-                                color:#2e9b62;
-                                font-size:13px;
-                            ">
-                                <span style="
-                                    width:9px;
-                                    height:9px;
-                                    border-radius:50%;
-                                    background:#2e9b62;
-                                    display:inline-block;
-                                "></span>
-                                Online
-                            </div>
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:7px;
+                            font-weight:600;
+                            color:#2e9b62;
+                            font-size:13px;
+                        ">
+                            <span style="
+                                width:9px;
+                                height:9px;
+                                border-radius:50%;
+                                background:#2e9b62;
+                                display:inline-block;
+                            "></span>
+                            Online
+                        </div>
 
+                        <div style="
+                            font-size:11px;
+                            color:#888;
+                            margin-top:4px;
+                        ">
+                            ${formatStaffLastActive(staff.last_active_at)}
+                        </div>
+
+                        ${staff.current_page
+                            ? `
                             <div style="
                                 font-size:11px;
-                                color:#888;
-                                margin-top:4px;
+                                color:#639A88;
+                                margin-top:2px;
+                                max-width:180px;
+                                overflow:hidden;
+                                text-overflow:ellipsis;
+                                white-space:nowrap;
                             ">
-                                ${formatStaffLastActive(staff.last_active_at)}
+                                ${staff.current_page}
                             </div>
-
-                            ${
-                                staff.current_page
-                                    ? `
-                                        <div style="
-                                            font-size:11px;
-                                            color:#639A88;
-                                            margin-top:2px;
-                                            max-width:180px;
-                                            overflow:hidden;
-                                            text-overflow:ellipsis;
-                                            white-space:nowrap;
-                                        ">
-                                            ${staff.current_page}
-                                        </div>
-                                    `
-                                    : ""
-                            }
                         `
+                            : ""}
+                    `
                         : `
-                            <div style="
-                                display:flex;
-                                align-items:center;
-                                gap:7px;
-                                font-weight:600;
-                                color:#888;
-                                font-size:13px;
-                            ">
-                                <span style="
-                                    width:9px;
-                                    height:9px;
-                                    border-radius:50%;
-                                    background:#a7adb4;
-                                    display:inline-block;
-                                "></span>
-                                Offline
-                            </div>
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:7px;
+                            font-weight:600;
+                            color:#888;
+                            font-size:13px;
+                        ">
+                            <span style="
+                                width:9px;
+                                height:9px;
+                                border-radius:50%;
+                                background:#a7adb4;
+                                display:inline-block;
+                            "></span>
+                            Offline
+                        </div>
 
-                            <div style="
-                                font-size:11px;
-                                color:#888;
-                                margin-top:4px;
-                            ">
-                                Last active:
-                                ${formatStaffLastActive(staff.last_active_at)}
-                            </div>
-                        `;
-
-                    // =================================================
-                    // CURRENT ADMIN
-                    // =================================================
-
+                        <div style="
+                            font-size:11px;
+                            color:#888;
+                            margin-top:4px;
+                        ">
+                            ${formatStaffLastActive(staff.last_active_at)}
+                        </div>
+                    `;
                     if (staff.id === session.user.id) {
 
                         tr.innerHTML = `
@@ -686,273 +974,6 @@
             }
         }
 
-        // =========================================================
-        // STAFF PRESENCE
-        // =========================================================
-
-        let staffPresenceInterval = null;
-        let staffActivityStarted = false;
-
-
-        // ---------------------------------------------------------
-        // FORMAT LAST ACTIVE
-        // ---------------------------------------------------------
-
-        function formatStaffLastActive(value) {
-
-            if (!value) {
-                return "No activity recorded";
-            }
-
-            const date =
-                new Date(value);
-
-            if (Number.isNaN(date.getTime())) {
-                return "Unknown";
-            }
-
-            const diff =
-                Date.now() -
-                date.getTime();
-
-            const seconds =
-                Math.floor(
-                    diff / 1000
-                );
-
-            if (seconds < 10) {
-                return "Just now";
-            }
-
-            if (seconds < 60) {
-                return `${seconds} sec ago`;
-            }
-
-            const minutes =
-                Math.floor(
-                    seconds / 60
-                );
-
-            if (minutes < 60) {
-                return `${minutes} min ago`;
-            }
-
-            const hours =
-                Math.floor(
-                    minutes / 60
-                );
-
-            if (hours < 24) {
-                return `${hours} hr ago`;
-            }
-
-            return date.toLocaleString();
-        }
-
-
-        // ---------------------------------------------------------
-        // SEND HEARTBEAT
-        // ---------------------------------------------------------
-
-        async function sendStaffHeartbeat() {
-
-            try {
-
-                const {
-                    data: {
-                        session
-                    } = {}
-                } =
-                    await supabaseClient
-                        .auth
-                        .getSession();
-
-                if (!session?.access_token) {
-                    return;
-                }
-
-                await fetch(
-                    "/api/admin/staff/presence",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            "Authorization":
-                                `Bearer ${session.access_token}`
-                        },
-
-                        body:
-                            JSON.stringify({
-                                page:
-                                    window.location.pathname
-                            })
-                    }
-                );
-
-            } catch (error) {
-
-                console.warn(
-                    "Staff heartbeat failed:",
-                    error
-                );
-            }
-        }
-
-
-        // ---------------------------------------------------------
-        // MARK STAFF OFFLINE
-        // ---------------------------------------------------------
-
-        async function markStaffOffline() {
-
-            try {
-
-                const {
-                    data: {
-                        session
-                    } = {}
-                } =
-                    await supabaseClient
-                        .auth
-                        .getSession();
-
-                if (!session?.access_token) {
-                    return;
-                }
-
-                await fetch(
-                    "/api/admin/staff/presence/offline",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            "Authorization":
-                                `Bearer ${session.access_token}`
-                        },
-
-                        body: "{}",
-
-                        keepalive: true
-                    }
-                );
-
-            } catch (error) {
-
-                console.warn(
-                    "Unable to mark staff offline:",
-                    error
-                );
-            }
-        }
-
-
-        // ---------------------------------------------------------
-        // RECORD ACTIVITY
-        // ---------------------------------------------------------
-
-        async function recordStaffPageActivity(
-            moduleName,
-            pageName
-        ) {
-
-            try {
-
-                const {
-                    data: {
-                        session
-                    } = {}
-                } =
-                    await supabaseClient
-                        .auth
-                        .getSession();
-
-                if (!session?.access_token) {
-                    return;
-                }
-
-                await fetch(
-                    "/api/admin/staff/activity",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            "Authorization":
-                                `Bearer ${session.access_token}`
-                        },
-
-                        body:
-                            JSON.stringify({
-                                action:
-                                    "Accessed",
-
-                                module:
-                                    moduleName,
-
-                                page:
-                                    pageName
-                            })
-                    }
-                );
-
-            } catch (error) {
-
-                console.warn(
-                    "Unable to record staff activity:",
-                    error
-                );
-            }
-        }
-
-
-        // ---------------------------------------------------------
-        // START PRESENCE
-        // ---------------------------------------------------------
-
-        async function startStaffPresence() {
-
-            if (staffActivityStarted) {
-                return;
-            }
-
-            staffActivityStarted = true;
-
-            await sendStaffHeartbeat();
-
-            if (!staffPresenceInterval) {
-
-                staffPresenceInterval =
-                    setInterval(
-                        sendStaffHeartbeat,
-                        30000
-                    );
-            }
-
-            await recordStaffPageActivity(
-                "Settings",
-                "Staff Management"
-            );
-        }
-
-
-        // ---------------------------------------------------------
-        // START STAFF PRESENCE
-        // ---------------------------------------------------------
-        //
-        // Do not call markStaffOffline() on normal page navigation.
-        // A page change should not make the staff member appear
-        // offline. The backend heartbeat timeout determines whether
-        // the account is still online.
-        //
-        startStaffPresence();
 
         setInterval(async () => {
             if (staffModal.classList.contains("active")) {
@@ -1293,7 +1314,70 @@
             alert("Password updated successfully!");
             document.getElementById("changePasswordForm").reset();
         });
+        /* =========================================================
+           LOGOUT ACTIVITY RECORD
+        ========================================================= */
 
+        document.getElementById("logoutBtn").addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            try {
+                const {
+                    data: { session }
+                } = await supabaseClient.auth.getSession();
+
+                if (!session) {
+                    window.location.href = "/admin/login";
+                    return;
+                }
+
+                const {
+                    data: profile
+                } = await supabaseClient
+                    .from("staff_profiles")
+                    .select("full_name, role")
+                    .eq("id", session.user.id)
+                    .maybeSingle();
+
+                /* Record logout */
+                const { error: activityError } = await supabaseClient
+                    .from("staff_activity_logs")
+                    .insert({
+                        staff_id: session.user.id,
+                        staff_name: profile?.full_name || session.user.email,
+                        staff_email: session.user.email,
+                        role: profile?.role || "staff",
+                        action: "LOGOUT"
+                    });
+
+                if (activityError) {
+                    console.error("LOGOUT ACTIVITY LOG ERROR:", activityError);
+                } else {
+                    console.log("LOGOUT ACTIVITY RECORDED");
+                }
+
+                /* Sign out from Supabase */
+                await supabaseClient.auth.signOut();
+
+                localStorage.removeItem("loggedInUserId");
+                localStorage.removeItem("loggedInUserEmail");
+                localStorage.removeItem("staffProfile");
+
+                window.location.href = "/admin/login";
+
+            } catch (error) {
+                console.error("LOGOUT ERROR:", error);
+
+                /* Still sign out even if activity logging fails */
+                await supabaseClient.auth.signOut();
+
+                localStorage.removeItem("loggedInUserId");
+                localStorage.removeItem("loggedInUserEmail");
+                localStorage.removeItem("staffProfile");
+
+                window.location.href = "/admin/login";
+            }
+        });
         window.addEventListener("load", async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
@@ -1366,6 +1450,8 @@
             ) {
                 staffManagementCard.style.display = "none";
             }
+            // Start staff online presence
+            await startStaffPresence();
 
         });
 

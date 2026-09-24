@@ -232,6 +232,62 @@
           window.location.href = "/admin/verification";
           return;
         }
+
+        /* =========================================================
+           RECORD STAFF / ADMIN LOGIN
+        ========================================================= */
+
+        try {
+          const { error: activityError } = await supabaseClient
+            .from("staff_activity_logs")
+            .insert({
+              staff_id: user.id,
+              staff_name: finalProfile.full_name,
+              staff_email: user.email,
+              role: finalProfile.role,
+              action: "LOGIN"
+            });
+
+          if (activityError) {
+            console.error("LOGIN ACTIVITY LOG ERROR:", activityError);
+          } else {
+            console.log("LOGIN ACTIVITY RECORDED");
+          }
+        } catch (activityError) {
+          console.error("LOGIN ACTIVITY LOG FAILED:", activityError);
+        }
+        try {
+          const {
+            data: { session }
+          } = await supabaseClient.auth.getSession();
+
+          if (session?.access_token) {
+            const presenceResponse = await fetch(
+              "http://localhost:3000/api/admin/staff/presence",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                  page: "/admin/login"
+                })
+              }
+            );
+
+            const presenceResult = await presenceResponse.json();
+
+            if (!presenceResponse.ok) {
+              console.error("PRESENCE UPDATE ERROR:", presenceResult);
+            } else {
+              console.log("STAFF PRESENCE UPDATED:", presenceResult);
+            }
+          }
+        } catch (presenceError) {
+          console.error("STAFF PRESENCE REQUEST FAILED:", presenceError);
+        }
+
         localStorage.setItem("loggedInUserId", user.id);
         localStorage.setItem("loggedInUserEmail", user.email);
         localStorage.setItem("staffProfile", JSON.stringify(finalProfile));

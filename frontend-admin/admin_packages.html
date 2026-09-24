@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Packages - Captured Admin Studio</title>
+    <title>Setup - Captured</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,11 +23,17 @@
     <link rel="stylesheet" href="/design/admin_packages.css">
     <link rel="stylesheet" href="/design/admin_dashboard.css">
 
-
-
-
 </head>
 
+<script>
+    // Run immediately to load persisted state
+    (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+            document.documentElement.classList.add("sidebar-is-collapsed");
+        }
+    })();
+</script>
 
 <body>
 
@@ -35,10 +41,8 @@
 
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
         </div>
-
-
 
         <div class="admin-profile">
 
@@ -65,7 +69,7 @@
         <aside class="sidebar">
             <nav>
 
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
@@ -90,9 +94,9 @@
                     Archives
                 </a>
 
-                <a href="/admin/packages">
-                    <i class="fa-solid fa-box"></i>
-                    Packages
+                <a href="/admin/packages" class="active">
+                    <i class="fa-solid fa-sliders"></i>
+                    Setup
                 </a>
 
                 <a href="/admin/profile">
@@ -114,47 +118,68 @@
         </aside>
 
 
-        <main class="main-content">
+        <main class="content">
 
 
-            <h1 class="page-title">
-                Packages
-            </h1>
+            <div class="page-header">
 
+                <h1>
+                    Studio Setup
+                </h1>
 
-            <p class="page-description">
-                Manage photography packages, prices, durations, and availability.
-            </p>
-
-
-            <div class="content-header">
-
-
-                <h2 class="section-title">
-                    Photography Packages
-                </h2>
-
-
-                <button class="add-package-btn" onclick="openAddModal()">
-
-                    <i class="fa-solid fa-plus"></i>
-
-                    Add Package
-
-                </button>
-
+                <p>
+                    Maintain and organize the studio’s packages, sessions, backdrops, and add-ons.
+                </p>
 
             </div>
 
 
-            <div id="packageGrid" class="package-grid">
+            <div class="management-tab-navigation">
+                <button type="button" class="management-tab-btn active" id="packagesTabBtn"
+                    onclick="switchTab('packages')">
+                    Packages and Sessions
+                </button>
 
-                <div class="loading-state">
+                <button type="button" class="management-tab-btn" id="backdropsTabBtn" onclick="switchTab('backdrops')">
+                    Backdrops
+                </button>
 
-                    <i class="fa-solid fa-spinner fa-spin"></i>
+                <button type="button" class="management-tab-btn" id="addonsTabBtn" onclick="switchTab('addons')">
+                    Add-ons
+                </button>
+            </div>
 
-                    Loading packages...
 
+            <div class="management-tab-content">
+
+                <div class="content-header">
+                    <div class="filter-dropdown-wrapper">
+                        <button type="button" class="add-new-client-btn" id="addServiceBtn" onclick="openAddModal()">
+                            <i class="fa-solid fa-plus"></i>
+                            <span id="addBtnText">Add Service</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Packages Grid View -->
+                <div id="packageGrid" class="package-grid">
+                    <div class="loading-state">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Loading packages...
+                    </div>
+                </div>
+
+                <!-- Backdrop Grid View -->
+                <div id="backdropGrid" class="package-grid" style="display: none;">
+                    <div class="loading-state">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Loading backdrops...
+                    </div>
+                </div>
+
+                <!-- Add-ons Grid View -->
+                <div id="addonGrid" class="package-grid" style="display: none;">
+                    <div class="loading-state">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Loading add-ons...
+                    </div>
                 </div>
 
             </div>
@@ -171,174 +196,234 @@
      ADD / EDIT MODAL
 ========================= -->
 
-    <div id="packageModal" class="modal-overlay">
+    <div id="packageModal" class="booking-modal">
 
-        <div class="modal">
+        <div class="booking-card">
 
-
-            <div class="modal-header">
-
-
+            <div class="booking-header">
                 <h2 id="modalTitle" class="modal-title">
-                    Add Package
+                    Add a Package or Session
                 </h2>
 
-
-                <button class="close-modal" onclick="closeModal()">
+                <button class="close-booking-modal" onclick="closeModal()">
                     &times;
                 </button>
-
-
             </div>
 
-
-
-            <form id="packageForm">
-
-
-                <input type="hidden" id="packageId">
-
-
-                <div class="form-group">
-
-                    <label for="packageName">
-                        Package Name
-                    </label>
-
-
-                    <input type="text" id="packageName" placeholder="Example: Basic 1" required>
-
-                </div>
-
-
-
-                <div class="form-row">
-
+            <div class="booking-body">
+                <form id="packageForm">
+                    <input type="hidden" id="packageId">
 
                     <div class="form-group">
-
-                        <label for="packagePrice">
-                            Price (₱)
+                        <label for="packageName">
+                            Package / Session Name
                         </label>
-
-
-                        <input type="number" id="packagePrice" min="0" step="1" placeholder="399" required>
-
+                        <input type="text" id="packageName" placeholder="Example: Basic 1" required>
                     </div>
 
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="packagePrice">
+                                Price (₱)
+                            </label>
+                            <input type="number" id="packagePrice" min="0" step="1" placeholder="399" required>
+                        </div>
 
+                        <div class="form-group">
+                            <label for="packageDuration">
+                                Duration
+                            </label>
+                            <select id="packageDuration" required>
+                                <option value="">
+                                    Select duration
+                                </option>
+                                <option value="15">
+                                    15 minutes
+                                </option>
+                                <option value="20">
+                                    20 minutes
+                                </option>
+                                <option value="30">
+                                    30 minutes
+                                </option>
+                                <option value="60">
+                                    1 hour
+                                </option>
+                                <option value="90">
+                                    1 hour 30 minutes
+                                </option>
+                                <option value="120">
+                                    2 hours
+                                </option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="form-group">
-
-                        <label for="packageDuration">
-                            Duration
+                        <label for="packageDescription">
+                            Package Description
                         </label>
+                        <textarea id="packageDescription"
+                            placeholder="Describe what is included in this package..."></textarea>
+                    </div>
 
-                        <select id="packageDuration" required>
-
-                            <option value="">
-                                Select duration
+                    <div class="form-group">
+                        <label for="packageStatus">
+                            Status
+                        </label>
+                        <select id="packageStatus">
+                            <option value="Available">
+                                Available
                             </option>
-
-                            <option value="15">
-                                15 minutes
+                            <option value="Not Available">
+                                Not Available
                             </option>
-
-                            <option value="20">
-                                20 minutes
-                            </option>
-
-                            <option value="30">
-                                30 minutes
-                            </option>
-
-                            <option value="60">
-                                1 hour
-                            </option>
-
-                            <option value="90">
-                                1 hour 30 minutes
-                            </option>
-
-                            <option value="120">
-                                2 hours
-                            </option>
-
                         </select>
-
                     </div>
 
+                    <div class="modal-actions">
+                        <button type="button" class="cancel-btn" onclick="closeModal()">
+                            Cancel
+                        </button>
 
-                </div>
-
-
-
-                <div class="form-group">
-
-                    <label for="packageDescription">
-                        Package Description
-                    </label>
-
-
-                    <textarea id="packageDescription"
-                        placeholder="Describe what is included in this package..."></textarea>
-
-                </div>
-
-
-
-                <div class="form-group">
-
-                    <label for="packageStatus">
-                        Status
-                    </label>
-
-
-                    <select id="packageStatus">
-
-                        <option value="Available">
-                            Available
-                        </option>
-
-
-                        <option value="Not Available">
-                            Not Available
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-
-                <div class="modal-actions">
-
-
-                    <button type="button" class="cancel-btn" onclick="closeModal()">
-                        Cancel
-                    </button>
-
-
-                    <button type="submit" class="save-btn" id="savePackageBtn">
-                        Save Package
-                    </button>
-
-
-                </div>
-
-
-            </form>
-
+                        <button type="submit" class="save-btn" id="savePackageBtn">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
 
         </div>
 
     </div>
 
+    <div id="backdropModal" class="backdrop-modal">
+        <div class="backdrop-card-modal">
+            <div class="backdrop-modal-header">
+                <h2 id="backdropModalTitle" class="backdrop-modal-title">Add a Backdrop</h2>
+                <button class="close-booking-modal" onclick="closeBackdropModal()">&times;</button>
+            </div>
 
+            <div class="backdrop-modal-body">
+                <form id="backdropForm">
+                    <input type="hidden" id="backdropId">
+
+                    <div class="form-group">
+                        <label for="backdropName">Backdrop Name / Color</label>
+                        <input type="text" id="backdropName" placeholder="Example: Sage Green" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="backdropHex">Color Preview (Optional Hex/CSS Color)</label>
+                        <input type="text" id="backdropHex" placeholder="Example: #8a9a86 or sage green">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="backdropStatus">Status</label>
+                        <select id="backdropStatus">
+                            <option value="Available">Available</option>
+                            <option value="Not Available">Not Available</option>
+                        </select>
+                    </div>
+
+                    <div class="backdrop-modal-actions">
+                        <button type="button" class="cancel-btn" onclick="closeBackdropModal()">Cancel</button>
+                        <button type="submit" class="save-btn" id="saveBackdropBtn">
+                            <i class="fa-solid fa-floppy-disk"></i> Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="addonModal" class="booking-modal">
+
+        <div class="booking-card">
+
+            <div class="booking-header">
+                <h2 id="addonModalTitle" class="modal-title">
+                    Add an Add-on
+                </h2>
+
+                <button class="close-booking-modal" onclick="closeAddonModal()">
+                    &times;
+                </button>
+            </div>
+
+            <div class="booking-body">
+
+                <form id="addonForm">
+
+                    <input type="hidden" id="addonId">
+
+                    <div class="form-group">
+                        <label for="addonName">
+                            Add-on Name
+                        </label>
+
+                        <input type="text" id="addonName" placeholder="Example: Additional Person" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addonPrice">
+                            Price (₱)
+                        </label>
+
+                        <input type="number" id="addonPrice" min="0" step="1" placeholder="200" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addonUnit">
+                            Pricing Unit
+                        </label>
+
+                        <input type="text" id="addonUnit" placeholder="Example: per head">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addonStatus">
+                            Status
+                        </label>
+
+                        <select id="addonStatus">
+                            <option value="Available">
+                                Available
+                            </option>
+
+                            <option value="Not Available">
+                                Not Available
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="modal-actions">
+
+                        <button type="button" class="cancel-btn" onclick="closeAddonModal()">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="save-btn" id="saveAddonBtn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
 
     <!-- =========================
      TOAST
-========================= -->
+    ========================= -->
 
     <div id="toast" class="toast"></div>
 
@@ -889,202 +974,996 @@
         }
 
         function renderPackages() {
-
-            const grid =
-                document.getElementById("packageGrid");
-
+            const grid = document.getElementById("packageGrid");
 
             grid.innerHTML = "";
 
-
             if (!packages.length) {
-
                 grid.innerHTML = `
-
             <div class="empty-state">
-
                 <i class="fa-solid fa-camera"></i>
-
-                <p>
-                    No packages available.
-                </p>
-
+                <p>No packages available.</p>
             </div>
-
         `;
-
                 return;
-
             }
 
-
             packages.forEach(packageItem => {
+                const card = document.createElement("div");
 
-
-                const card =
-                    document.createElement("div");
-
-
-                card.className =
-                    "package-card";
-
+                card.className = "package-card";
 
                 const statusClass =
                     packageItem.status === "Available"
                         ? "available"
                         : "not-available";
 
-
                 const toggleText =
                     packageItem.status === "Available"
-                        ? "Set not Available"
+                        ? "Set Not Available"
                         : "Set Available";
 
-
                 card.innerHTML = `
-
             <div class="package-header">
 
                 <div class="package-name">
-
-                    ${escapeHTML(
-                    packageItem.name
-                )}
-
+                    ${escapeHTML(packageItem.name)}
                 </div>
 
-
-                <span
-                    class="status ${statusClass}"
-                >
-
-                    ${escapeHTML(
-                    packageItem.status
-                )}
-
+                <span class="status ${statusClass}">
+                    ${escapeHTML(packageItem.status)}
                 </span>
 
             </div>
 
-
             <div class="package-price">
-
-                ₱${Number(
-                    packageItem.price || 0
-                ).toLocaleString()}
-
+                ₱${Number(packageItem.price || 0).toLocaleString()}
             </div>
-
 
             <div class="package-duration">
-
                 <i class="fa-regular fa-clock"></i>
-
-                ${escapeHTML(
-                    formatDuration(packageItem.duration)
-                )}
-
+                ${escapeHTML(formatDuration(packageItem.duration))}
             </div>
 
-
             <div class="package-description">
-
                 ${escapeHTML(
                     packageItem.description ||
                     "No description provided."
                 )}
-
             </div>
-
 
             <div class="package-actions">
 
-
-                <button
-                    class="edit-btn"
-                    onclick="editPackage('${packageItem.id}')"
-                >
-
+                <button type="button"
+                    class="edit-btn package-edit-btn"
+                    data-id="${packageItem.id}">
                     <i class="fa-solid fa-pen"></i>
-
                     Edit
-
                 </button>
 
-
-                <button
-                    class="toggle-btn"
-                    onclick="togglePackage('${packageItem.id}')"
-                >
-
+                <button type="button"
+                    class="toggle-btn package-toggle-btn"
+                    data-id="${packageItem.id}">
                     ${toggleText}
-
                 </button>
 
-
-                <button
-                    class="delete-btn"
-                    onclick="deletePackage('${packageItem.id}')"
-                >
-
+                <button type="button"
+                    class="delete-btn package-delete-btn"
+                    data-id="${packageItem.id}">
                     <i class="fa-solid fa-trash"></i>
-
                     Delete
-
                 </button>
 
+            </div>
+        `;
+
+                grid.appendChild(card);
+            });
+
+            grid.querySelectorAll(".package-edit-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    editPackage(button.dataset.id);
+                });
+            });
+
+            grid.querySelectorAll(".package-toggle-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    togglePackage(button.dataset.id);
+                });
+            });
+
+            grid.querySelectorAll(".package-delete-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    deletePackage(button.dataset.id);
+                });
+            });
+        }
+        // State variables
+        let backdrops = [];
+        let activeTab = "packages"; // "packages" | "backdrops" | "addons"
+
+        // Default Studio Backdrops
+        const defaultBackdrops = [
+            { name: "White", hex: "#FFFFFF", status: "Available" },
+            { name: "Lavender Purple", hex: "#E6E6FA", status: "Available" },
+            { name: "Sky Blue", hex: "#87CEEB", status: "Available" },
+            { name: "Sage Green", hex: "#8A9A86", status: "Available" },
+            { name: "Red", hex: "#D32F2F", status: "Available" },
+            { name: "Camel Brown", hex: "#C19A6B", status: "Available" },
+            { name: "Beige / Nude", hex: "#F5F5DC", status: "Available" },
+            { name: "Gray", hex: "#808080", status: "Available" }
+        ];
+
+        let addons = [];
+
+        const defaultAddons = [
+            {
+                name: "Additional Person",
+                price: 200,
+                unit: "per head",
+                status: "Available"
+            },
+            {
+                name: "Additional Pet",
+                price: 100,
+                unit: "per head",
+                status: "Available"
+            },
+            {
+                name: "Additional 4R Print",
+                price: 50,
+                unit: "per print",
+                status: "Available"
+            },
+            {
+                name: "8R Frame",
+                price: 600,
+                unit: "per frame",
+                status: "Available"
+            },
+            {
+                name: "3 pcs Refrigerator Magnet",
+                price: 150,
+                unit: "3 pcs",
+                status: "Available"
+            },
+            {
+                name: "Backdrop Request",
+                price: 300,
+                unit: "per request",
+                status: "Available"
+            },
+            {
+                name: "With Photographer - 15 minutes",
+                price: 500,
+                unit: "15 minutes",
+                status: "Available"
+            },
+            {
+                name: "With Photographer - 30 minutes",
+                price: 800,
+                unit: "30 minutes",
+                status: "Available"
+            }
+        ];
+
+        function switchTab(tab) {
+            activeTab = tab;
+
+            const tabButtons = document.querySelectorAll(".management-tab-btn");
+
+            tabButtons.forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            const pkgGrid = document.getElementById("packageGrid");
+            const bdpGrid = document.getElementById("backdropGrid");
+            const addonGrid = document.getElementById("addonGrid");
+            const addBtnText = document.getElementById("addBtnText");
+
+            if (tab === "packages") {
+                document.getElementById("packagesTabBtn").classList.add("active");
+
+                pkgGrid.style.display = "grid";
+                bdpGrid.style.display = "none";
+                addonGrid.style.display = "none";
+
+                addBtnText.textContent = "Add Service";
+
+                if (packages.length === 0) {
+                    loadPackages();
+                } else {
+                    renderPackages();
+                }
+
+            } else if (tab === "backdrops") {
+                document.getElementById("backdropsTabBtn").classList.add("active");
+
+                pkgGrid.style.display = "none";
+                bdpGrid.style.display = "grid";
+                addonGrid.style.display = "none";
+
+                addBtnText.textContent = "Add Backdrop";
+
+                if (backdrops.length === 0) {
+                    loadBackdrops();
+                } else {
+                    renderBackdrops();
+                }
+            } else if (tab === "addons") {
+                document.getElementById("addonsTabBtn").classList.add("active");
+
+                pkgGrid.style.display = "none";
+                bdpGrid.style.display = "none";
+                addonGrid.style.display = "grid";
+
+                addBtnText.textContent = "Add Add-on";
+
+                if (addons.length === 0) {
+                    loadAddons();
+                } else {
+                    renderAddons();
+                }
+            }
+        }
+
+        window.switchTab = switchTab;
+        function openAddModal() {
+            if (activeTab === "backdrops") {
+                openAddBackdropModal();
+                return;
+            }
+
+            if (activeTab === "addons") {
+                openAddAddonModal();
+                return;
+            }
+
+            document.getElementById("modalTitle").textContent =
+                "Add a Package or Session";
+
+            document.getElementById("packageForm").reset();
+
+            document.getElementById("packageId").value = "";
+
+            document.getElementById("packageStatus").value =
+                "Available";
+
+            document.getElementById("packageModal").classList.add("show");
+        }
+
+        window.openAddModal = openAddModal;
+
+        async function loadBackdrops() {
+            const grid = document.getElementById("backdropGrid");
+
+            grid.innerHTML = `
+        <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Loading backdrops...
+        </div>
+    `;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from("backdrops")
+                    .select("id, name, hex, status")
+                    .order("name", { ascending: true });
+
+                if (error) {
+                    console.error("LOAD BACKDROPS ERROR:", error);
+                    showToast("Unable to load backdrops: " + error.message, "error");
+                    backdrops = [];
+                    renderBackdrops();
+                    return;
+                }
+
+                console.log("BACKDROPS FROM DATABASE:", data);
+
+                backdrops = data || [];
+
+                renderBackdrops();
+
+            } catch (error) {
+                console.error("LOAD BACKDROPS ERROR:", error);
+                showToast("Unable to load backdrops.", "error");
+                backdrops = [];
+                renderBackdrops();
+            }
+        }
+        async function createDefaultBackdrops() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from("backdrops")
+                    .insert(defaultBackdrops)
+                    .select();
+
+                if (error) throw error;
+                backdrops = data || [];
+                renderBackdrops();
+                showToast("Default studio backdrops added.");
+            } catch (error) {
+                console.error("Default backdrops error:", error);
+                showToast("Unable to create default backdrops.", "error");
+            }
+        }
+
+        function renderBackdrops() {
+            const grid = document.getElementById("backdropGrid");
+
+            grid.innerHTML = "";
+
+            if (!backdrops.length) {
+                grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-palette"></i>
+                <p>No backdrops available.</p>
+            </div>
+        `;
+                return;
+            }
+
+            backdrops.forEach(backdrop => {
+                const card = document.createElement("div");
+
+                card.className = "package-card backdrop-card";
+
+                const statusClass =
+                    backdrop.status === "Available"
+                        ? "available"
+                        : "not-available";
+
+                const toggleText =
+                    backdrop.status === "Available"
+                        ? "Set Not Available"
+                        : "Set Available";
+
+                const colorCircle = backdrop.hex
+                    ? `<span class="backdrop-color-preview" style="background-color:${escapeHTML(backdrop.hex)};"></span>`
+                    : `<span class="backdrop-color-preview fallback"><i class="fa-solid fa-image"></i></span>`;
+
+                card.innerHTML = `
+            <div class="package-header">
+
+                <div class="package-name" style="display:flex; align-items:center; gap:10px;">
+                    ${colorCircle}
+                    ${escapeHTML(backdrop.name)}
+                </div>
+
+                <span class="status ${statusClass}">
+                    ${escapeHTML(backdrop.status)}
+                </span>
 
             </div>
 
-        `;
+            <div class="package-actions">
 
+                <button type="button" class="edit-btn backdrop-edit-btn">
+                    <i class="fa-solid fa-pen"></i>
+                    Edit
+                </button>
+
+                <button type="button" class="toggle-btn backdrop-toggle-btn">
+                    ${toggleText}
+                </button>
+
+                <button type="button" class="delete-btn backdrop-delete-btn">
+                    <i class="fa-solid fa-trash"></i>
+                    Delete
+                </button>
+
+            </div>
+        `;
 
                 grid.appendChild(card);
 
+                card.querySelector(".backdrop-edit-btn").addEventListener("click", () => {
+                    editBackdrop(backdrop.id);
+                });
+
+                card.querySelector(".backdrop-toggle-btn").addEventListener("click", () => {
+                    toggleBackdrop(backdrop.id);
+                });
+
+                card.querySelector(".backdrop-delete-btn").addEventListener("click", () => {
+                    deleteBackdrop(backdrop.id);
+                });
+            });
+        }
+        function openAddBackdropModal() {
+            document.getElementById("backdropModalTitle").textContent = "Add a Backdrop";
+            document.getElementById("backdropForm").reset();
+            document.getElementById("backdropId").value = "";
+            document.getElementById("backdropStatus").value = "Available";
+            document.getElementById("backdropModal").classList.add("show");
+        }
+
+        document.getElementById("backdropModal").addEventListener("click", function (event) {
+            if (event.target === this) {
+                closeBackdropModal();
+            }
+        });
+
+        function closeBackdropModal() {
+            document.getElementById("backdropModal").classList.remove("show");
+        }
+
+        function editBackdrop(id) {
+            const item = backdrops.find(b => b.id === id);
+            if (!item) return;
+
+            document.getElementById("backdropModalTitle").textContent = "Edit Backdrop";
+            document.getElementById("backdropId").value = item.id;
+            document.getElementById("backdropName").value = item.name || "";
+            document.getElementById("backdropHex").value = item.hex || "";
+            document.getElementById("backdropStatus").value = item.status || "Available";
+            document.getElementById("backdropModal").classList.add("show");
+        }
+
+        document.getElementById("backdropForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const id = document.getElementById("backdropId").value;
+            const name = document.getElementById("backdropName").value.trim();
+            const hex = document.getElementById("backdropHex").value.trim();
+            const status = document.getElementById("backdropStatus").value;
+            const saveBtn = document.getElementById("saveBackdropBtn");
+
+            saveBtn.disabled = true;
+
+            try {
+                if (id) {
+                    const { data, error } = await supabaseClient
+                        .from("backdrops")
+                        .update({ name, hex, status })
+                        .eq("id", id)
+                        .select().single();
+                    if (error) throw error;
+                    const idx = backdrops.findIndex(b => b.id === id);
+                    if (idx !== -1) backdrops[idx] = data;
+                    showToast("Backdrop updated.");
+                } else {
+                    const { data, error } = await supabaseClient
+                        .from("backdrops")
+                        .insert({ name, hex, status })
+                        .select().single();
+                    if (error) throw error;
+                    backdrops.push(data);
+                    showToast("Backdrop added.");
+                }
+                renderBackdrops();
+                closeBackdropModal();
+            } catch (err) {
+                showToast(err.message, "error");
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+
+        async function toggleBackdrop(id) {
+            console.log("TOGGLE BACKDROP CLICKED:", id);
+
+            const item = backdrops.find(b => String(b.id) === String(id));
+
+            if (!item) {
+                console.error("Backdrop not found:", id);
+                showToast("Backdrop not found.", "error");
+                return;
+            }
+
+            const newStatus =
+                item.status === "Available"
+                    ? "Not Available"
+                    : "Available";
+
+            console.log("Changing backdrop status:", {
+                name: item.name,
+                oldStatus: item.status,
+                newStatus: newStatus
             });
 
+            try {
+                const { data, error } = await supabaseClient
+                    .from("backdrops")
+                    .update({
+                        status: newStatus
+                    })
+                    .eq("id", id)
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error("SUPABASE BACKDROP UPDATE ERROR:", error);
+                    showToast(error.message, "error");
+                    return;
+                }
+
+                console.log("BACKDROP UPDATED:", data);
+
+                const index = backdrops.findIndex(
+                    b => String(b.id) === String(id)
+                );
+
+                if (index !== -1) {
+                    backdrops[index] = data;
+                }
+
+                renderBackdrops();
+
+                showToast(
+                    `${data.name} is now ${data.status}.`
+                );
+
+            } catch (error) {
+                console.error("Backdrop toggle error:", error);
+                showToast(
+                    "Unable to update backdrop status: " + error.message,
+                    "error"
+                );
+            }
+        }
+        async function deleteBackdrop(id) {
+            const item = backdrops.find(b => b.id === id);
+            if (!item) return;
+
+            if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
+
+            try {
+                const { error } = await supabaseClient.from("backdrops").delete().eq("id", id);
+                if (error) throw error;
+                backdrops = backdrops.filter(b => b.id !== id);
+                renderBackdrops();
+                showToast("Backdrop deleted.");
+            } catch (err) {
+                showToast(err.message, "error");
+            }
+        }
+        async function loadAddons() {
+            const grid = document.getElementById("addonGrid");
+
+            grid.innerHTML = `
+        <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Loading add-ons...
+        </div>
+    `;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from("addons")
+                    .select("id, name, price, unit, status")
+                    .order("name", { ascending: true });
+
+                if (error) {
+                    console.error("LOAD ADDONS ERROR:", error);
+
+                    showToast(
+                        "Unable to load add-ons: " + error.message,
+                        "error"
+                    );
+
+                    addons = [];
+                    renderAddons();
+                    return;
+                }
+
+                console.log("ADDONS FROM DATABASE:", data);
+
+                addons = data || [];
+
+                if (addons.length === 0) {
+                    await createDefaultAddons();
+                    return;
+                }
+
+                renderAddons();
+
+            } catch (error) {
+                console.error("LOAD ADDONS ERROR:", error);
+
+                showToast(
+                    "Unable to load add-ons: " + error.message,
+                    "error"
+                );
+
+                addons = [];
+                renderAddons();
+            }
+        }
+        async function createDefaultAddons() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from("addons")
+                    .insert(defaultAddons)
+                    .select("id, name, price, unit, status");
+
+                if (error) {
+                    console.error("DEFAULT ADDONS ERROR:", error);
+
+                    showToast(
+                        "Unable to create default add-ons: " + error.message,
+                        "error"
+                    );
+
+                    return;
+                }
+
+                addons = data || [];
+
+                renderAddons();
+
+                showToast("Default add-ons added.");
+
+            } catch (error) {
+                console.error("CREATE DEFAULT ADDONS ERROR:", error);
+
+                showToast(
+                    "Unable to create default add-ons.",
+                    "error"
+                );
+            }
+        }
+        function renderAddons() {
+            const grid = document.getElementById("addonGrid");
+
+            grid.innerHTML = "";
+
+            if (!addons.length) {
+                grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-puzzle-piece"></i>
+                <p>No add-ons available.</p>
+            </div>
+        `;
+                return;
+            }
+
+            addons.forEach(addon => {
+                const card = document.createElement("div");
+
+                card.className = "package-card";
+
+                const statusClass =
+                    addon.status === "Available"
+                        ? "available"
+                        : "not-available";
+
+                const toggleText =
+                    addon.status === "Available"
+                        ? "Set Not Available"
+                        : "Set Available";
+
+                card.innerHTML = `
+            <div class="package-header">
+                <div class="package-name">
+                    ${escapeHTML(addon.name)}
+                </div>
+
+                <span class="status ${statusClass}">
+                    ${escapeHTML(addon.status)}
+                </span>
+            </div>
+
+            <div class="package-price">
+                ₱${Number(addon.price || 0).toLocaleString()}
+            </div>
+
+            <div class="package-duration">
+                ${escapeHTML(addon.unit || "")}
+            </div>
+
+            <div class="package-actions">
+
+                <button type="button"
+                    class="edit-btn addon-edit-btn"
+                    data-id="${addon.id}">
+                    <i class="fa-solid fa-pen"></i>
+                    Edit
+                </button>
+
+                <button type="button"
+                    class="toggle-btn addon-toggle-btn"
+                    data-id="${addon.id}">
+                    ${toggleText}
+                </button>
+
+                <button type="button"
+                    class="delete-btn addon-delete-btn"
+                    data-id="${addon.id}">
+                    <i class="fa-solid fa-trash"></i>
+                    Delete
+                </button>
+
+            </div>
+        `;
+
+                grid.appendChild(card);
+            });
+
+            grid.querySelectorAll(".addon-edit-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    editAddon(button.dataset.id);
+                });
+            });
+
+            grid.querySelectorAll(".addon-toggle-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    toggleAddon(button.dataset.id);
+                });
+            });
+
+            grid.querySelectorAll(".addon-delete-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    deleteAddon(button.dataset.id);
+                });
+            });
+        }
+        function editAddon(id) {
+            const item = addons.find(
+                a => String(a.id) === String(id)
+            );
+
+            if (!item) {
+                showToast("Add-on not found.", "error");
+                return;
+            }
+
+            document.getElementById("addonModalTitle").textContent =
+                "Edit Add-on";
+
+            document.getElementById("addonId").value =
+                item.id;
+
+            document.getElementById("addonName").value =
+                item.name || "";
+
+            document.getElementById("addonPrice").value =
+                item.price || 0;
+
+            document.getElementById("addonUnit").value =
+                item.unit || "";
+
+            document.getElementById("addonStatus").value =
+                item.status || "Available";
+
+            document.getElementById("addonModal").classList.add("show");
+        }
+        function openAddAddonModal() {
+
+            document.getElementById("addonModalTitle").textContent =
+                "Add an Add-on";
+
+            document.getElementById("addonForm").reset();
+
+            document.getElementById("addonId").value = "";
+
+            document.getElementById("addonStatus").value =
+                "Available";
+
+            document.getElementById("addonModal").classList.add("show");
         }
 
+        function closeAddonModal() {
 
-
-        /* =========================================================
-           OPEN ADD MODAL
-        ========================================================= */
-
-        function openAddModal() {
-
-            document.getElementById(
-                "modalTitle"
-            ).textContent =
-                "Add Package";
-
-
-            document.getElementById(
-                "packageForm"
-            ).reset();
-
-
-            document.getElementById(
-                "packageId"
-            ).value = "";
-
-
-            document.getElementById(
-                "packageStatus"
-            ).value = "Available";
-
-
-            document.getElementById(
-                "packageModal"
-            ).classList.add("show");
-
+            document.getElementById("addonModal")
+                .classList.remove("show");
         }
 
+        document.getElementById("addonForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("addonId").value;
+
+            const name =
+                document.getElementById("addonName").value.trim();
+
+            const price =
+                Number(document.getElementById("addonPrice").value);
+
+            const unit =
+                document.getElementById("addonUnit").value.trim();
+
+            const status =
+                document.getElementById("addonStatus").value;
+
+            const saveBtn =
+                document.getElementById("saveAddonBtn");
+
+            if (!name) {
+                showToast("Add-on name is required.", "error");
+                return;
+            }
+
+            if (price < 0 || Number.isNaN(price)) {
+                showToast("Please enter a valid price.", "error");
+                return;
+            }
+
+            saveBtn.disabled = true;
+
+            saveBtn.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                if (id) {
+                    const { data, error } = await supabaseClient
+                        .from("addons")
+                        .update({
+                            name: name,
+                            price: price,
+                            unit: unit,
+                            status: status
+                        })
+                        .eq("id", id)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    const index =
+                        addons.findIndex(a => a.id === id);
+
+                    if (index !== -1) {
+                        addons[index] = data;
+                    }
+
+                    showToast("Add-on updated successfully.");
+
+                } else {
+                    const { data, error } = await supabaseClient
+                        .from("addons")
+                        .insert({
+                            name: name,
+                            price: price,
+                            unit: unit,
+                            status: status
+                        })
+                        .select()
+                        .single();
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    addons.push(data);
+
+                    showToast("Add-on added successfully.");
+                }
+
+                renderAddons();
+                closeAddonModal();
+
+            } catch (error) {
+                console.error("Save add-on error:", error);
+
+                showToast(
+                    "Unable to save add-on: " + error.message,
+                    "error"
+                );
+
+            } finally {
+                saveBtn.disabled = false;
+
+                saveBtn.innerHTML =
+                    '<i class="fa-solid fa-floppy-disk"></i> Save';
+            }
+        });
+        async function toggleAddon(id) {
+            console.log("TOGGLE ADDON CLICKED:", id);
+
+            const item = addons.find(
+                a => String(a.id) === String(id)
+            );
+
+            if (!item) {
+                console.error("Add-on not found:", id);
+                showToast("Add-on not found.", "error");
+                return;
+            }
+
+            const newStatus =
+                item.status === "Available"
+                    ? "Not Available"
+                    : "Available";
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from("addons")
+                    .update({
+                        status: newStatus
+                    })
+                    .eq("id", id)
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error(
+                        "SUPABASE ADDON UPDATE ERROR:",
+                        error
+                    );
+
+                    showToast(
+                        error.message,
+                        "error"
+                    );
+
+                    return;
+                }
+
+                console.log("ADDON UPDATED:", data);
+
+                const index = addons.findIndex(
+                    a => String(a.id) === String(id)
+                );
+
+                if (index !== -1) {
+                    addons[index] = data;
+                }
+
+                renderAddons();
+
+                showToast(
+                    `${data.name} is now ${data.status}.`
+                );
+
+            } catch (error) {
+                console.error(
+                    "Add-on toggle error:",
+                    error
+                );
+
+                showToast(
+                    "Unable to update add-on status: " +
+                    error.message,
+                    "error"
+                );
+            }
+        }
+        async function deleteAddon(id) {
+            const item = addons.find(
+                a => String(a.id) === String(id)
+            );
+
+            if (!item) {
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from("addons")
+                    .delete()
+                    .eq("id", id);
+
+                if (error) {
+                    throw error;
+                }
+
+                addons = addons.filter(
+                    a => String(a.id) !== String(id)
+                );
+
+                renderAddons();
+
+                showToast("Add-on deleted successfully.");
+
+            } catch (error) {
+                console.error("Delete add-on error:", error);
+
+                showToast(
+                    "Unable to delete add-on: " + error.message,
+                    "error"
+                );
+            }
+        }
+
+        window.deleteAddon = deleteAddon;
 
 
-        /* =========================================================
-           CLOSE MODAL
-        ========================================================= */
 
         function closeModal() {
 
@@ -1123,7 +2002,7 @@
             document.getElementById(
                 "modalTitle"
             ).textContent =
-                "Edit Package";
+                "Edit a Package or Session";
 
 
             document.getElementById(
@@ -1253,10 +2132,9 @@
 
                     saveButton.disabled = true;
 
-                    saveButton.textContent =
-                        id
-                            ? "Updating..."
-                            : "Saving...";
+                    saveButton.innerHTML = id
+                        ? '<i class="fa-solid fa-spinner fa-spin"></i> Updating...'
+                        : '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
 
                     try {
@@ -1422,8 +2300,8 @@
 
                         saveButton.disabled = false;
 
-                        saveButton.textContent =
-                            "Save Package";
+                        saveButton.innerHTML =
+                            '<i class="fa-solid fa-floppy-disk"></i> Save';
 
                     }
 
@@ -1527,111 +2405,70 @@
         }
 
 
-
-        /* =========================================================
-           ACTIVATE / DEACTIVATE
-        ========================================================= */
-
         async function togglePackage(id) {
+            console.log("TOGGLE PACKAGE CLICKED:", id);
 
-            const packageItem =
-                packages.find(
-                    item => item.id === id
-                );
-
+            const packageItem = packages.find(
+                item => String(item.id) === String(id)
+            );
 
             if (!packageItem) {
-
+                console.error("Package not found:", id);
+                showToast("Package not found.", "error");
                 return;
-
             }
-
 
             const newStatus =
                 packageItem.status === "Available"
                     ? "Not Available"
                     : "Available";
 
+            console.log("Changing package status:", {
+                name: packageItem.name,
+                oldStatus: packageItem.status,
+                newStatus: newStatus
+            });
 
             try {
-
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient
-                        .from("packages")
-                        .update({
-
-                            status: newStatus
-
-                        })
-                        .eq("id", id)
-                        .select()
-                        .single();
-
+                const { data, error } = await supabaseClient
+                    .from("packages")
+                    .update({
+                        status: newStatus
+                    })
+                    .eq("id", id)
+                    .select()
+                    .single();
 
                 if (error) {
-
-                    console.error(
-                        "Toggle error:",
-                        error
-                    );
-
-                    showToast(
-                        "Unable to update status: "
-                        + error.message,
-                        "error"
-                    );
-
+                    console.error("SUPABASE PACKAGE UPDATE ERROR:", error);
+                    showToast(error.message, "error");
                     return;
-
                 }
 
+                console.log("PACKAGE UPDATED:", data);
 
-                const index =
-                    packages.findIndex(
-                        item =>
-                            item.id === id
-                    );
-
+                const index = packages.findIndex(
+                    item => String(item.id) === String(id)
+                );
 
                 if (index !== -1) {
-
-                    packages[index] =
-                        data;
-
+                    packages[index] = data;
                 }
 
-
                 renderPackages();
-
 
                 showToast(
                     `${data.name} is now ${data.status}.`
                 );
 
-            }
-            catch (error) {
-
-                console.error(error);
-
+            } catch (error) {
+                console.error("Package toggle error:", error);
                 showToast(
-                    "Unable to update package status.",
+                    "Unable to update package status: " + error.message,
                     "error"
                 );
-
             }
-
         }
-
-
-
-        /* =========================================================
-           ESCAPE HTML
-        ========================================================= */
-
         function escapeHTML(value) {
 
             return String(value)
@@ -1749,7 +2586,42 @@
                 }
             );
 
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
 
+            if (sidebarToggle && sidebar) {
+                const icon = sidebarToggle.querySelector("i");
+
+                // 1. Restore saved collapsed state from localStorage on page load
+                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                if (isCollapsed) {
+                    sidebar.classList.add("collapsed");
+                    if (icon) {
+                        icon.classList.remove("fa-bars");
+                        icon.classList.add("fa-chevron-right");
+                    }
+                }
+
+                // 2. Toggle state and save preference to localStorage on click
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("collapsed");
+                    const collapsed = sidebar.classList.contains("collapsed");
+
+                    localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
+
+                    if (icon) {
+                        if (collapsed) {
+                            icon.classList.remove("fa-bars");
+                            icon.classList.add("fa-chevron-right");
+                        } else {
+                            icon.classList.remove("fa-chevron-right");
+                            icon.classList.add("fa-bars");
+                        }
+                    }
+                });
+            }
+        });
 
         /* =========================================================
            INITIALIZATION
@@ -1782,7 +2654,21 @@
 
 
         initializePage();
-
+        window.switchTab = switchTab;
+        window.openAddModal = openAddModal;
+        window.openAddBackdropModal = openAddBackdropModal;
+        window.closeBackdropModal = closeBackdropModal;
+        window.editBackdrop = editBackdrop;
+        window.toggleBackdrop = toggleBackdrop;
+        window.deleteBackdrop = deleteBackdrop;
+        window.openAddAddonModal = openAddAddonModal;
+        window.closeAddonModal = closeAddonModal;
+        window.editAddon = editAddon;
+        window.toggleAddon = toggleAddon;
+        window.deleteAddon = deleteAddon;
+        window.editPackage = editPackage;
+        window.togglePackage = togglePackage;
+        window.deletePackage = deletePackage;
 
     </script>
 

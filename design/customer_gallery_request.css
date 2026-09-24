@@ -1,167 +1,53 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
-/* --- Reset Rules --- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    width: 100%;
+    min-height: 100%;
+}
+
 body {
     font-family: "DM Sans", sans-serif !important;
     background: #f6f6f6;
+    color: #353535;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    color: #161515;
+    overflow-x: hidden;
 }
 
-/* --- Clean Notification Button --- */
-.notification-container {
-    position: relative;
-    margin-right: 15px;
+button,
+input,
+textarea,
+select {
+    font-family: inherit;
 }
 
-.notification-btn {
-    width: 38px;
-    height: 38px;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
-    color: #353535;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease;
-    position: relative;
-    box-shadow: none;
-}
-
-.notification-btn:hover {
-    background: rgba(53, 53, 53, 0.08);
-}
-
-.notification-btn i {
-    font-size: 20px;
-}
-
-#notificationCount {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    min-width: 17px;
-    height: 17px;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: #ef4444;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 600;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid #ffffff;
-}
-
-.notification-dropdown {
-    position: absolute;
-    top: 50px;
-    right: 0;
-    width: 320px;
-    background: #ffffff;
-    border-radius: 10px;
-    display: none;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    max-height: 350px;
-    overflow-y: auto;
-    z-index: 1000;
-}
-
-.notification-dropdown h4 {
-    padding: 15px;
-    margin: 0;
-    border-bottom: 1px solid #ddd;
-    color: #353535;
-}
-
-.notification-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 15px;
-    border-bottom: 1px solid #f2f2f2;
-    transition: .2s;
-}
-
-.notification-item:last-child {
-    border-bottom: none;
-}
-
-.notification-item.unread {
-    background: #f5f9ff;
-}
-
-.notification-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #dff6e8;
-    color: #1d7a4a;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-    font-size: 18px;
-}
-
-.notification-content h4 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #353535;
-    margin-bottom: 8px;
-}
-
-.notification-content p {
-    white-space: pre-line;
-    line-height: 1.5;
-    margin: 8px 0;
-    color: #353535;
-}
-
-.notification-content small {
-    color: #999999;
-    font-size: 12px;
-}
-
-.notification-content {
-    flex: 1;
-}
-
-/* --- Top Navbar Header (EXACT GRADIENT MATCH TO CUSTOMER_BOOKING) --- */
 .top-navbar {
-    height: 70px;
-    background: linear-gradient(
-        135deg, 
-        #dbeffe 0%,    /* Light Sky Blue */
-        #fed7aa 25%,   /* Soft Peach */
-        #fef08a 50%,   /* Pastel Yellow / Cream */
-        #dcfce7 75%,   /* Pale Mint Green */
-        #f3e8ff 100%   /* Light Lavender */
-    );
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 25px;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     width: 100%;
-    box-sizing: border-box;
-    z-index: 100;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    height: 70px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    background: linear-gradient(
+        135deg,
+        #dbeffe 0%,
+        #fed7aa 25%,
+        #fef08a 50%,
+        #dcfce7 75%,
+        #f3e8ff 100%
+    );
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .logo-section {
@@ -171,11 +57,12 @@ body {
     color: #353535;
     font-size: 14px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .logo-img {
-    height: 38px;
     width: auto;
+    height: 38px;
     object-fit: contain;
     display: block;
     border-radius: 4px;
@@ -184,7 +71,7 @@ body {
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 14px;
 }
 
 .user-profile {
@@ -196,9 +83,10 @@ body {
 .profile-img {
     width: 38px;
     height: 38px;
-    border-radius: 50%;
     object-fit: cover;
+    border-radius: 50%;
     border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #ffffff;
 }
 
 #customer-name {
@@ -209,223 +97,176 @@ body {
 }
 
 .dashboard-wrapper {
-    display: flex;
-    flex: 1;
-    margin-top: 70px;
-    min-height: calc(100vh - 70px);
+    width: 100%;
+    min-height: 100vh;
+    padding-top: 70px;
 }
 
-/* --- Sidebar --- */
 .sidebar {
-    width: 230px;
-    background: #ffffff;
-    border-right: 1px solid #e5e5e5;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 25px 18px;
     position: fixed;
     top: 70px;
-    bottom: 0;
     left: 0;
-    z-index: 90;
+    bottom: 0;
+    width: 230px;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    padding: 26px 17px 20px;
+    background: #ffffff;
+    border-right: 1px solid #e5e5e5;
+    overflow-y: auto;
 }
-
-/* =========================================================
-   SIDEBAR NAVIGATION
-   ========================================================= */
 
 .sidebar nav {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .sidebar a {
-    text-decoration: none;
-    color: #353535;
-    font-size: 14px;
-    padding: 12px 16px;
-    border-radius: 5px;
     display: flex;
     align-items: center;
     gap: 12px;
+    width: 100%;
+    min-height: 45px;
+    padding: 11px 15px;
+    border-radius: 7px;
+    color: #353535;
+    text-decoration: none;
+    font-size: 14px;
     font-weight: 500;
-
-    /* Proper hover transition */
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Normal sidebar item hover */
+.sidebar a i {
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 15px;
+}
+
 .sidebar a:hover {
-    background-color: #f4f4f4;
+    background-color: #f3f5f4;
     color: #353535;
 }
 
-/* Active sidebar item */
 .sidebar a.active {
-    background-color: #639A88;
-    color: #ffffff;
+    background-color: #639A88 !important;
+    color: #ffffff !important;
 }
 
-/* Active item keeps its green appearance when hovered */
-.sidebar a.active:hover {
-    background-color: #528373;
-    color: #ffffff;
+.sidebar a.active i {
+    color: #ffffff !important;
 }
-/* Logout Button */
-.sidebar .logout-btn {
+
+.sidebar a.active:hover {
+    background-color: #528373 !important;
+    color: #ffffff !important;
+}
+
+.sidebar .logout-btn,
+.sidebar .back-home-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     width: 100%;
+    min-height: 42px;
+    margin-top: auto;
     padding: 10px;
-    background-color: #ffffff;
     border: 1.5px solid #dc2626 !important;
-    border-radius: 6px;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #dc2626 !important;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: background 0.2s;
+    transition: background-color 0.2s ease;
 }
 
 .sidebar .logout-btn,
 .sidebar .logout-btn span,
-.sidebar .logout-btn i.logout-icon {
-    color: #dc2626 !important; 
+.sidebar .logout-btn i,
+.sidebar .back-home-btn,
+.sidebar .back-home-btn span,
+.sidebar .back-home-btn i {
+    color: #dc2626 !important;
 }
 
-.sidebar .logout-btn i.logout-icon {
-    font-size: 16px;
-    display: inline-block;
-    line-height: 1;
+.sidebar .logout-btn:hover,
+.sidebar .back-home-btn:hover {
+    background-color: #fff3f3 !important;
 }
 
-.sidebar .logout-btn:hover {
-    background: #fff3f3 !important;
-}
-
-/* --- Center Content Area --- */
 .content {
-    flex: 1;
-    padding: 40px;
+    width: calc(100% - 230px);
+    min-height: calc(100vh - 70px);
     margin-left: 230px;
-    min-height: 100%;
+    padding: 40px 45px 55px;
 }
-
-/* ==========================================================================
-   MY GALLERY SPECIAL STATE (REQUEST ACCESS)
-   ========================================================================= */
-
-.central-message-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: calc(100vh - 150px);
-}
-
-.request-access-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 32px;
-    padding: 20px;
-    max-width: 500px;
-    width: 100%;
-}
-
-.message-text {
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 1.45;
-    color: #a0a0a0;
-}
-
-/* Styled "Request Access" CTA Button */
-.btn-request {
-    padding: 14px 48px;
-    background-color: #639A88 !important;
-    color: #ffffff !important;
-    border: none;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    width: auto;
-}
-
-.btn-request:hover {
-    background-color: #528373 !important;
-}
-
 
 .gallery-request-card {
     width: 100%;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-
-    gap: 20px;
-
-    padding: 20px 0;
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(390px, 0.92fr);
+    gap: 30px;
+    align-items: start;
 }
 
-
-/* =========================================================
-   REGULATIONS
-   ========================================================= */
+.regulations-box,
+.request-form-box {
+    width: 100%;
+    min-width: 0;
+    padding: 29px 30px;
+    background: #ffffff;
+    border: 1px solid #e3e7e5;
+    border-radius: 12px;
+    box-shadow: 0 3px 16px rgba(0, 0, 0, 0.035);
+}
 
 .regulations-box {
-    width: 100%;
-    max-width: 500px;
+    background: #fbfbfb;
+}
 
-    padding: 18px 20px;
-
-    background: #fafafa;
-
-    border: 1px solid #e5e5e5;
-
-    border-radius: 6px;
-
-    text-align: left;
+.regulations-header,
+.form-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .regulations-header {
-    display: flex;
-
-    align-items: flex-start;
-
-    gap: 10px;
-
-    margin-bottom: 2px;
+    margin-bottom: 20px;
 }
 
-.regulations-header i {
-    font-size: 16px;
-
-    color: #161515;
-
-    margin-top: 3px;
-
+.regulations-header i,
+.form-header > i {
     flex-shrink: 0;
+    margin-top: 4px;
+    color: #639A88;
+    font-size: 18px;
 }
 
-.regulations-header h2 {
+.regulations-header h2,
+.form-header h2 {
     margin: 0;
-
-    font-size: 24px;
-
-    font-weight: 600;
-
-    line-height: 1.2;
-
     color: #161515;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.regulations-header h2::after,
+.form-header h2::after {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 3px;
+    margin-top: 9px;
+    border-radius: 5px;
+    background: #639A88;
 }
 
 .regulations-content {
@@ -433,706 +274,333 @@ body {
 }
 
 .regulations-content > p {
-    margin: 0 0 4px 0;
-
-    font-size: 16px;
-
-    line-height: 1.45;
-
-    color: #161515;
+    margin: 0 0 17px;
+    color: #4a4a4a;
+    font-size: 13.5px;
+    line-height: 1.65;
+    text-align: left;
 }
 
 .regulations-content ol {
     margin: 0;
-
-    padding-left: 20px;
+    padding-left: 22px;
 }
 
 .regulations-content li {
-    margin-bottom: 7px;
-
-    padding-left: 0;
-
+    margin-bottom: 11px;
+    padding-left: 5px;
+    color: #5b5b5b;
     font-size: 13px;
-
-    line-height: 1.5;
-
-    color: #777777;
+    line-height: 1.6;
+    text-align: left;
 }
 
 .regulations-content li:last-child {
     margin-bottom: 0;
 }
 
-.regulations-content strong {
-    color: #353535;
-
+.regulations-content li::marker {
+    color: #639A88;
     font-weight: 700;
 }
 
-
-/* =========================================================
-   ACCESS STATUS
-   ========================================================= */
-
-.access-status-box {
-    width: 100%;
-    max-width: 500px;
-
-    display: flex;
-
-    align-items: flex-start;
-
-    gap: 12px;
-
-    padding: 15px 18px;
-
-    background: #ffffff;
-
-    border: 1px solid #e5e5e5;
-
-    border-radius: 6px;
-
-    text-align: left;
-}
-
-.access-status-box .status-icon {
-    width: 32px;
-    height: 32px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    flex-shrink: 0;
-
-    color: #639A88;
-}
-
-.access-status-box h3 {
-    margin: 0 0 4px 0;
-
-    font-size: 15px;
-
-    font-weight: 600;
-
+.regulations-content strong {
     color: #353535;
+    font-weight: 700;
 }
-
-.access-status-box p {
-    margin: 0;
-
-    font-size: 13px;
-
-    line-height: 1.5;
-
-    color: #777777;
-}
-
-.access-status-box .access-countdown {
-    margin-top: 5px;
-
-    color: #639A88;
-
-    font-weight: 600;
-}
-
-
-/* =========================================================
-   REQUEST FORM BOX
-   ========================================================= */
-
-/* =========================================================
-   GALLERY REQUEST FORM INPUTS
-========================================================= */
-
-.request-form-box .form-group input[type="email"],
-.request-form-box .form-group input[type="text"],
-.request-form-box .form-group input[type="date"] {
-    width: 100%;
-    box-sizing: border-box;
-
-    padding: 13px 15px;
-
-    border: 1px solid #d9d9d9;
-    border-radius: 8px;
-
-    background: #ffffff;
-    color: #333333;
-
-    font-family: inherit;
-    font-size: 14px;
-
-    outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-
-/* PLACEHOLDER */
-
-.request-form-box .form-group input::placeholder {
-    color: #999999;
-    opacity: 1;
-}
-
-
-/* FOCUS */
-
-.request-form-box .form-group input[type="email"]:focus,
-.request-form-box .form-group input[type="text"]:focus,
-.request-form-box .form-group input[type="date"]:focus {
-    border-color: #222222;
-
-    box-shadow:
-        0 0 0 3px rgba(0, 0, 0, 0.06);
-}
-
-
-/* LABEL */
-
-.request-form-box .form-group label {
-    display: block;
-
-    margin-bottom: 8px;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    color: #333333;
-}
-
-
-/* REQUIRED ASTERISK */
-
-.request-form-box .form-group label span {
-    color: #d9534f;
-}
-
-
-/* HELPER TEXT */
-
-.request-form-box .form-group small {
-    display: block;
-
-    margin-top: 6px;
-
-    font-size: 12px;
-    line-height: 1.4;
-
-    color: #888888;
-}
-#bookingEmail {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 13px 15px;
-    border: 1px solid #d9d9d9;
-    border-radius: 8px;
-    background: #fff;
-    color: #333;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    transition: 0.2s ease;
-}
-
-#bookingEmail:focus {
-    border-color: #222;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
-}
-
-#bookingEmail::placeholder {
-    color: #999;
-}
-
-/* =========================================================
-   FORM HEADER
-   ========================================================= */
 
 .form-header {
-    display: flex;
-
-    align-items: flex-start;
-
-    gap: 10px;
-
-    margin-bottom: 14px;
-}
-
-.form-header > i {
-    font-size: 18px;
-
-    color: #161515;
-
-    margin-top: 5px;
-
-    flex-shrink: 0;
+    margin-bottom: 24px;
 }
 
 .form-header > div {
     flex: 1;
-}
-
-.form-header h2 {
-    margin: 0;
-
-    font-size: 24px;
-
-    font-weight: 600;
-
-    line-height: 1.2;
-
-    color: #161515;
+    min-width: 0;
 }
 
 .form-header p {
-    margin: 2px 0 0 0;
-
-    font-size: 16px;
-
-    line-height: 1.45;
-
-    color: #161515;
+    margin: 7px 0 0;
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.6;
 }
-
-
-/* =========================================================
-   FORM
-   ========================================================= */
 
 #galleryRequestForm {
     width: 100%;
-
     display: flex;
-
     flex-direction: column;
-
-    gap: 8px;
+    gap: 17px;
 }
-
-
-/* =========================================================
-   FORM GROUP
-   ========================================================= */
 
 #galleryRequestForm .form-group {
     width: 100%;
-
     display: flex;
-
-    flex-direction: row;
-
-    align-items: center;
-
-    flex-wrap: wrap;
-
-    gap: 5px;
-
+    flex-direction: column;
+    gap: 7px;
     margin: 0;
 }
 
-
-/* =========================================================
-   FORM LABEL
-   ========================================================= */
-
 #galleryRequestForm .form-group > label {
-    display: inline-block;
-
-    margin: 0;
-
-    font-size: 14px;
-
-    font-weight: 500;
-
+    width: 100%;
+    color: #333333;
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1.4;
-
-    color: #161515;
-
-    white-space: nowrap;
 }
 
 #galleryRequestForm .form-group > label span {
-    color: #161515;
+    color: #d9534f;
 }
-
-
-/* =========================================================
-   INPUTS
-========================================================= */
 
 #galleryRequestForm .form-group input[type="email"],
 #galleryRequestForm .form-group input[type="text"],
 #galleryRequestForm .form-group input[type="date"] {
-    width: 100%;
-    height: 38px;
-    min-width: 0;
-
-    padding: 7px 10px;
-
-    background: #ffffff;
-    border: 1px solid #aaaaaa;
-    border-radius: 5px;
-
-    font-family: "DM Sans", sans-serif;
-    font-size: 13px;
-    color: #353535;
-
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    height: 45px;
+    padding: 10px 13px;
+    border: 1px solid #d5d9d7;
+    border-radius: 7px;
     outline: none;
-    box-shadow: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    background: #ffffff;
+    color: #333333;
+    font-size: 13.5px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-
-/* =========================================================
-   DESKTOP INPUT WIDTHS
-========================================================= */
-
-#galleryRequestForm .form-group input[type="email"] {
-    width: 250px;
-}
-
-#galleryRequestForm .form-group input[type="text"] {
-    width: 170px;
-}
-
-#galleryRequestForm .form-group input[type="date"] {
-    width: 145px;
-}
-
-
-/* =========================================================
-   INPUT FOCUS
-========================================================= */
 
 #galleryRequestForm .form-group input[type="email"]:focus,
 #galleryRequestForm .form-group input[type="text"]:focus,
 #galleryRequestForm .form-group input[type="date"]:focus {
     border-color: #639A88;
-
-    box-shadow:
-        0 0 0 2px rgba(99, 154, 136, 0.12);
+    box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.11);
 }
 
-
-/* =========================================================
-   PLACEHOLDER
-========================================================= */
-
 #galleryRequestForm .form-group input::placeholder {
-    color: #999999;
+    color: #a0a0a0;
     opacity: 1;
 }
 
-
-/* =========================================================
-   EMAIL NOTE
-========================================================= */
-
 #galleryRequestForm .form-group small {
+    display: block;
     width: 100%;
-
-    margin-left: 0;
-    margin-top: -2px;
-
-    font-size: 12px;
-    line-height: 1.4;
-
-    color: #999999;
+    margin: 0;
+    color: #888888;
+    font-size: 11.5px;
+    line-height: 1.5;
 }
-
-/* =========================================================
-   AGREEMENT
-   ========================================================= */
 
 .agreement-box {
     width: 100%;
-
-    margin-top: 3px;
+    padding: 1px 0;
 }
 
 .agreement-box label {
     display: flex;
-
     align-items: flex-start;
-
-    gap: 6px;
-
-    width: fit-content;
-
+    gap: 9px;
+    width: 100%;
     cursor: pointer;
-
-    font-size: 13px;
-
+    color: #4b4b4b;
+    font-size: 12.5px;
     font-weight: 400;
-
-    line-height: 1.4;
-
-    color: #353535;
+    line-height: 1.55;
 }
 
 .agreement-box input[type="checkbox"] {
     width: 15px !important;
     height: 15px !important;
-
-    margin: 1px 0 0 0 !important;
-
+    margin: 2px 0 0 !important;
     padding: 0 !important;
-
     flex-shrink: 0;
-
     accent-color: #639A88;
-
     cursor: pointer;
 }
 
 .agreement-box span {
-    display: inline;
-
-    font-size: 13px;
-
-    color: #353535;
+    color: #4b4b4b;
+    font-size: 12.5px;
 }
 
-
-/* =========================================================
-   REQUEST BUTTON
-   KEEP ORIGINAL BUTTON STYLE
-   ========================================================= */
-
 #galleryRequestForm .btn-request {
-    align-self: flex-start;
-
-    width: auto;
-
-    padding: 14px 48px;
-
-    background-color: #639A88 !important;
-
-    color: #ffffff !important;
-
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 20px;
     border: none;
-
-    border-radius: 6px;
-
-    font-family: inherit;
-
-    font-size: 16px;
-
-    font-weight: 500;
-
+    border-radius: 7px;
+    background-color: #639A88 !important;
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-
-    transition:
-        background-color 0.2s ease,
-        transform 0.1s ease;
+    transition: background-color 0.2s ease;
 }
 
 #galleryRequestForm .btn-request:hover {
     background-color: #528373 !important;
 }
 
+#galleryRequestForm .btn-request:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
 
-/* =========================================================
-   MESSAGE
-   ========================================================= */
+.access-status-box {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 17px 20px;
+    border: 1px solid #dfe7e3;
+    border-left: 4px solid #639A88;
+    border-radius: 9px;
+    background: #ffffff;
+    text-align: left;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.025);
+}
+
+.access-status-box .status-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #639A88;
+}
+
+.access-status-box h3 {
+    margin: 0 0 4px;
+    color: #353535;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.access-status-box p {
+    margin: 0;
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.access-status-box .access-countdown {
+    margin-top: 5px;
+    color: #639A88;
+    font-weight: 600;
+}
 
 #galleryMessage {
+    grid-column: 1 / -1;
     width: 100%;
-    max-width: 500px;
-
-    text-align: left;
-
-    font-size: 18px;
-
-    font-weight: 400;
-
-    line-height: 1.45;
-
-    color: #a0a0a0;
+    max-width: 900px;
+    margin: -3px auto 0;
+    color: #888888;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
 }
 
+.message-text.info {
+    color: #666666 !important;
+}
 
+.message-text.success {
+    color: #4f806f !important;
+}
 
+.message-text.error {
+    color: #d9534f !important;
+}
 
-/* =========================================================
-   RESPONSIVE / MOBILE
-   SIDEBAR MOVES TO TOP
-   ========================================================= */
-/* =========================================================
-   DESKTOP ALIGNMENT
-   REGULATIONS + EMAIL FORM
-   ========================================================= */
+.helper-subtext {
+    width: 100%;
+    margin-top: 14px;
+    color: #6c757d;
+    font-size: 0.82rem;
+    text-align: center;
+}
 
-@media (min-width: 851px) {
+@media (min-width: 1250px) {
+    .content {
+        padding-left: 55px;
+        padding-right: 55px;
+    }
 
-    /* Keep the whole request content aligned */
     .gallery-request-card {
-        width: 100%;
-        max-width: 500px;
-        align-items: flex-start;
+        max-width: 1280px;
+        grid-template-columns: minmax(0, 1.1fr) minmax(400px, 0.9fr);
+        gap: 34px;
     }
 
-    /* Regulations */
-    .regulations-box {
-        width: 100%;
-        max-width: 500px;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    /* Form header */
-    .form-header {
-        width: 100%;
-        max-width: 500px;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    /* Form itself */
-    #galleryRequestForm {
-        width: 100%;
-        max-width: 500px;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    /* Email row */
-    #galleryRequestForm .form-group {
-        grid-template-columns: 115px 1fr;
-        width: 100%;
-    }
-
-    /* Email field */
-    #galleryRequestForm .form-group input[type="email"] {
-        width: 250px;
-    }
-
-    /* Email helper text directly under the email field */
-    #galleryRequestForm .form-group small {
-        grid-column: 2;
-        width: 250px;
-        margin-left: 0;
+    .regulations-box,
+    .request-form-box {
+        padding: 31px 33px;
     }
 }
+
+@media (max-width: 1050px) and (min-width: 851px) {
+    .content {
+        padding: 32px 25px 45px;
+    }
+
+    .gallery-request-card {
+        grid-template-columns: minmax(0, 1fr) minmax(350px, 0.9fr);
+        gap: 20px;
+    }
+
+    .regulations-box,
+    .request-form-box {
+        padding: 23px 22px;
+    }
+
+    .regulations-header h2,
+    .form-header h2 {
+        font-size: 19px;
+    }
+
+    .regulations-content > p {
+        font-size: 13px;
+    }
+
+    .regulations-content li {
+        font-size: 12px;
+    }
+}
+
 @media (max-width: 850px) {
-
-    /* -----------------------------------------------------
-       PAGE
-    ----------------------------------------------------- */
-
-    body {
-        width: 100%;
-        min-width: 0;
-        overflow-x: hidden;
-    }
-
-
-    /* -----------------------------------------------------
-       TOP NAVBAR
-    ----------------------------------------------------- */
-
     .top-navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-
-        width: 100%;
-        height: 70px;
-
+        height: 68px;
         padding: 0 18px;
-
-        z-index: 100;
     }
-
-    .logo-section {
-        gap: 10px;
-        font-size: 14px;
-    }
-
-    .logo-img {
-        height: 36px;
-    }
-
-    .navbar-right {
-        gap: 8px;
-    }
-
-    #customer-name {
-        display: none;
-    }
-
-
-    /* -----------------------------------------------------
-       DASHBOARD WRAPPER
-    ----------------------------------------------------- */
 
     .dashboard-wrapper {
-        display: flex;
-        flex-direction: column;
-
-        width: 100%;
-        min-height: calc(100vh - 70px);
-
-        margin-top: 70px;
+        padding-top: 68px;
     }
-
-
-    /* =====================================================
-       SIDEBAR
-       MOVE SIDEBAR TO TOP
-       ===================================================== */
 
     .sidebar {
         position: relative;
-
         top: auto;
-        bottom: auto;
         left: auto;
-
+        bottom: auto;
         width: 100%;
         height: auto;
-        min-height: auto;
-
-        padding: 12px 15px;
-
+        padding: 10px 14px;
         border-right: none;
         border-bottom: 1px solid #e5e5e5;
-
-        display: block;
-
-        z-index: 90;
-
-        background: #ffffff;
+        overflow: visible;
     }
-
-
-    /* -----------------------------------------------------
-       SIDEBAR NAV
-    ----------------------------------------------------- */
 
     .sidebar nav {
         width: 100%;
-
         display: flex;
         flex-direction: row;
-
-        align-items: center;
-
-        gap: 8px;
-
+        gap: 7px;
         overflow-x: auto;
         overflow-y: hidden;
-
-        padding: 0;
-
+        padding-bottom: 1px;
         scrollbar-width: none;
     }
 
@@ -1140,137 +608,134 @@ body {
         display: none;
     }
 
-
-    /* -----------------------------------------------------
-       SIDEBAR LINKS
-    ----------------------------------------------------- */
-
     .sidebar nav a {
-        flex: 1 1 0;
-
-        min-width: 130px;
-
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 125px;
         justify-content: center;
-
-        padding: 11px 14px;
-
-        font-size: 14px;
-
+        padding: 10px 13px;
+        font-size: 13px;
         white-space: nowrap;
-
-        border-radius: 6px;
-
-        transition:
-            background-color 0.2s ease,
-            color 0.2s ease;
     }
 
-    /* Normal hover */
-    .sidebar nav a:hover {
-        background-color: #f4f4f4;
-        color: #353535;
-    }
-
-    /* Active */
-    .sidebar nav a.active {
-        background-color: #639A88;
-        color: #ffffff;
-    }
-
-    /* Active hover */
-    .sidebar nav a.active:hover {
-        background-color: #528373;
-        color: #ffffff;
-    }
-
-
-    /* -----------------------------------------------------
-       LOGOUT
-       Keep it below the navigation
-    ----------------------------------------------------- */
-
-    .sidebar > div:last-child {
+    .sidebar > .logout-btn,
+    .sidebar > .back-home-btn {
         width: 100%;
-        margin-top: 10px;
+        margin-top: 9px;
     }
-
-    .sidebar .logout-btn {
-        width: 100%;
-
-        padding: 10px;
-
-        justify-content: center;
-
-        transition: background-color 0.2s ease;
-    }
-
-
-    /* -----------------------------------------------------
-       CONTENT
-    ----------------------------------------------------- */
 
     .content {
         width: 100%;
-
         margin-left: 0;
-
-        padding: 25px 18px;
-
-        min-height: calc(100vh - 150px);
-
-        box-sizing: border-box;
-
-        overflow-x: hidden;
+        padding: 27px 19px 40px;
     }
-
-
-    /* -----------------------------------------------------
-       GALLERY REQUEST CARD
-    ----------------------------------------------------- */
 
     .gallery-request-card {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+    }
+
+    .regulations-box,
+    .request-form-box {
+        width: 100%;
+        padding: 23px 21px;
+    }
+
+    .access-status-box {
         width: 100%;
         max-width: 100%;
-
-        padding: 10px 0;
-
-        gap: 16px;
-
-        box-sizing: border-box;
     }
 
-
-    /* -----------------------------------------------------
-       REGULATIONS
-    ----------------------------------------------------- */
-
-    .regulations-box {
+    #galleryMessage {
         width: 100%;
         max-width: 100%;
-
-        padding: 16px;
-
-        box-sizing: border-box;
     }
 
-    .regulations-header {
-        width: 100%;
-        gap: 8px;
-    }
-
-    .regulations-header h2 {
-        font-size: 20px;
-        line-height: 1.25;
-        overflow-wrap: break-word;
-    }
-
-    .regulations-content {
-        width: 100%;
+    .regulations-header h2,
+    .form-header h2 {
+        font-size: 19px;
     }
 
     .regulations-content > p {
-        font-size: 14px;
-        line-height: 1.45;
+        font-size: 13px;
+    }
+
+    .regulations-content li {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .top-navbar {
+        padding: 0 14px;
+    }
+
+    .logo-section {
+        gap: 9px;
+        font-size: 13px;
+    }
+
+    .logo-img {
+        height: 35px;
+    }
+
+    #customer-name {
+        display: none;
+    }
+
+    .sidebar {
+        padding: 10px 12px;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .sidebar nav {
+        width: 100%;
+        flex: 1;
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .sidebar nav a {
+        min-width: 115px;
+        padding: 9px 10px;
+        font-size: 13px;
+        gap: 6px;
+    }
+
+    .sidebar .logout-btn,
+    .sidebar .back-home-btn {
+        width: auto;
+        min-width: 90px;
+        margin: 0;
+        padding: 9px 12px;
+        font-size: 13px;
+    }
+
+    .content {
+        padding: 22px 14px 32px;
+    }
+
+    .regulations-box,
+    .request-form-box {
+        padding: 20px 18px;
+        border-radius: 10px;
+    }
+
+    .regulations-header,
+    .form-header {
+        gap: 10px;
+    }
+
+    .regulations-header h2,
+    .form-header h2 {
+        font-size: 18px;
+    }
+
+    .regulations-content > p {
+        font-size: 12.5px;
+        line-height: 1.55;
     }
 
     .regulations-content ol {
@@ -1278,256 +743,154 @@ body {
     }
 
     .regulations-content li {
-        font-size: 12px;
+        margin-bottom: 9px;
+        font-size: 11.5px;
         line-height: 1.5;
-        overflow-wrap: break-word;
-    }
-
-
-    /* -----------------------------------------------------
-       ACCESS STATUS
-    ----------------------------------------------------- */
-
-    .access-status-box {
-        width: 100%;
-        max-width: 100%;
-
-        padding: 14px;
-
-        box-sizing: border-box;
-    }
-
-
-    /* -----------------------------------------------------
-       FORM HEADER
-    ----------------------------------------------------- */
-
-    .form-header {
-        width: 100%;
-
-        gap: 8px;
-
-        margin-bottom: 12px;
-    }
-
-    .form-header > i {
-        font-size: 16px;
-        margin-top: 4px;
-    }
-
-    .form-header h2 {
-        font-size: 20px;
-        line-height: 1.25;
     }
 
     .form-header p {
-        font-size: 14px;
-        line-height: 1.45;
+        font-size: 12px;
     }
-
-
-    /* =====================================================
-       FORM
-       ===================================================== */
 
     #galleryRequestForm {
-        width: 100%;
-
-        display: flex;
-        flex-direction: column;
-
-        gap: 14px;
-
-        box-sizing: border-box;
+        gap: 15px;
     }
-
-
-    /* -----------------------------------------------------
-       FORM GROUP
-    ----------------------------------------------------- */
-
-    #galleryRequestForm .form-group {
-        width: 100%;
-
-        display: flex;
-        flex-direction: column;
-
-        align-items: stretch;
-
-        gap: 5px;
-
-        margin: 0;
-
-        box-sizing: border-box;
-    }
-
-
-    /* -----------------------------------------------------
-       LABEL
-    ----------------------------------------------------- */
 
     #galleryRequestForm .form-group > label {
-        display: block;
-
-        width: 100%;
-
-        margin: 0;
-
-        font-size: 13px;
-        line-height: 1.4;
-
-        white-space: normal;
+        font-size: 12.5px;
     }
-
-
-    /* =====================================================
-       INPUTS
-       FORCE ALL INPUTS TO FIT SCREEN
-       ===================================================== */
 
     #galleryRequestForm .form-group input[type="email"],
     #galleryRequestForm .form-group input[type="text"],
     #galleryRequestForm .form-group input[type="date"] {
-
-        display: block;
-
-        width: 100% !important;
-        max-width: 100%;
-
-        min-width: 0;
-
-        height: 42px;
-
-        padding: 9px 12px;
-
-        box-sizing: border-box;
-
-        font-family: "DM Sans", sans-serif;
-        font-size: 14px;
-
-        background: #ffffff;
-
-        border: 1px solid #aaaaaa;
-        border-radius: 6px;
-
-        color: #353535;
-
-        outline: none;
-
-        transition:
-            border-color 0.2s ease,
-            box-shadow 0.2s ease;
+        height: 43px;
+        font-size: 13px;
     }
-
-
-    /* -----------------------------------------------------
-       INPUT FOCUS
-    ----------------------------------------------------- */
-
-    #galleryRequestForm .form-group input[type="email"]:focus,
-    #galleryRequestForm .form-group input[type="text"]:focus,
-    #galleryRequestForm .form-group input[type="date"]:focus {
-
-        border-color: #639A88;
-
-        box-shadow:
-            0 0 0 2px rgba(99, 154, 136, 0.12);
-    }
-
-
-    /* -----------------------------------------------------
-       PLACEHOLDER
-    ----------------------------------------------------- */
-
-    #galleryRequestForm .form-group input::placeholder {
-        color: #999999;
-        opacity: 1;
-    }
-
-
-    /* -----------------------------------------------------
-       EMAIL HELPER TEXT
-    ----------------------------------------------------- */
 
     #galleryRequestForm .form-group small {
-        width: 100%;
-
-        margin: 2px 0 0 0;
-
-        font-size: 11px;
-        line-height: 1.4;
-
-        color: #999999;
-
-        overflow-wrap: break-word;
-    }
-
-
-    /* -----------------------------------------------------
-       AGREEMENT
-    ----------------------------------------------------- */
-
-    .agreement-box {
-        width: 100%;
-        margin-top: 2px;
-    }
-
-    .agreement-box label {
-        width: 100%;
-
-        display: flex;
-        align-items: flex-start;
-
-        gap: 7px;
-
-        font-size: 12px;
-        line-height: 1.45;
-    }
-
-    .agreement-box input[type="checkbox"] {
-        width: 15px !important;
-        height: 15px !important;
-
-        margin: 1px 0 0 0 !important;
-
-        flex-shrink: 0;
+        font-size: 10.8px;
     }
 
     .agreement-box span {
-        font-size: 12px;
-        line-height: 1.45;
+        font-size: 11.5px;
     }
-
-
-    /* -----------------------------------------------------
-       REQUEST BUTTON
-    ----------------------------------------------------- */
 
     #galleryRequestForm .btn-request {
-        width: 100%;
-
-        align-self: stretch;
-
-        padding: 12px 20px;
-
-        font-size: 14px;
-
-        border-radius: 6px;
+        min-height: 44px;
+        font-size: 13px;
     }
 
+    .access-status-box {
+        padding: 14px 15px;
+    }
 
-    /* -----------------------------------------------------
-       MESSAGE
-    ----------------------------------------------------- */
+    .access-status-box h3 {
+        font-size: 14px;
+    }
+
+    .access-status-box p {
+        font-size: 12px;
+    }
 
     #galleryMessage {
-        width: 100%;
-        max-width: 100%;
+        font-size: 12px;
+    }
+}
 
-        font-size: 14px;
+@media (max-width: 420px) {
+    .top-navbar {
+        height: 64px;
+        padding: 0 11px;
+    }
 
-        line-height: 1.45;
+    .dashboard-wrapper {
+        padding-top: 64px;
+    }
 
-        overflow-wrap: break-word;
+    .logo-section {
+        gap: 7px;
+        font-size: 11.5px;
+    }
+
+    .logo-img {
+        height: 32px;
+    }
+
+    .sidebar {
+        padding: 8px 10px;
+    }
+
+    .sidebar nav {
+        gap: 5px;
+    }
+
+    .sidebar nav a {
+        min-width: 110px;
+        padding: 9px 9px;
+        font-size: 11.5px;
+    }
+
+    .sidebar nav a i {
+        width: 17px;
+        font-size: 13px;
+    }
+
+    .sidebar .logout-btn,
+    .sidebar .back-home-btn {
+        min-width: 82px;
+        padding: 9px 10px;
+        font-size: 11.5px;
+    }
+
+    .content {
+        padding: 19px 11px 28px;
+    }
+
+    .regulations-box,
+    .request-form-box {
+        padding: 17px 15px;
+    }
+
+    .regulations-header h2,
+    .form-header h2 {
+        font-size: 17px;
+    }
+
+    .regulations-content > p {
+        font-size: 11.8px;
+    }
+
+    .regulations-content li {
+        font-size: 11px;
+    }
+
+    .form-header p {
+        font-size: 11.5px;
+    }
+
+    #galleryRequestForm .form-group > label {
+        font-size: 12px;
+    }
+
+    #galleryRequestForm .form-group input[type="email"],
+    #galleryRequestForm .form-group input[type="text"],
+    #galleryRequestForm .form-group input[type="date"] {
+        height: 41px;
+        padding: 9px 11px;
+        font-size: 12.5px;
+    }
+
+    #galleryRequestForm .form-group small {
+        font-size: 10px;
+    }
+
+    .agreement-box label,
+    .agreement-box span {
+        font-size: 11px;
+    }
+
+    #galleryRequestForm .btn-request {
+        min-height: 43px;
+        font-size: 12.5px;
     }
 }

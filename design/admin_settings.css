@@ -905,3 +905,100 @@
     background: #f7f9f8;
     font-weight: 700;
 }
+/* =========================================================
+   STAFF ACTIVITY LOG
+========================================================= */
+
+.activity-log-section {
+    margin-top: 30px;
+    border-top: 1px solid #e5e5e5;
+    padding-top: 25px;
+}
+
+.activity-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.activity-log-header h3 {
+    margin: 0 0 5px;
+    font-size: 17px;
+    color: #333;
+}
+
+.activity-log-header h3 i {
+    color: #639A88;
+    margin-right: 7px;
+}
+
+.activity-log-header p {
+    margin: 0;
+    color: #888;
+    font-size: 13px;
+}
+
+.activity-log-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+}
+
+.activity-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+.activity-log-table th {
+    background: #639A88;
+    color: white;
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.activity-log-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eeeeee;
+    font-size: 13px;
+    color: #444;
+}
+
+.activity-log-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.activity-login {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #2e9b62;
+    font-weight: 600;
+}
+
+.activity-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #888;
+    font-weight: 600;
+}
+.staff-modal-container {
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-modal-body {
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+}
+
+.staff-table-wrapper {
+    overflow-x: auto;
+}

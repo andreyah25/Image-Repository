@@ -79,9 +79,10 @@
                 </a>
 
                 <a href="/admin/packages">
-                    <i class="fa-solid fa-box"></i>
-                    Packages
+                    <i class="fa-solid fa-sliders"></i>
+                    Setup
                 </a>
+
 
                 <a href="/admin/profile">
                     <i class="fa-solid fa-user"></i>
@@ -162,8 +163,6 @@
             SUPABASE_ANON_KEY
         );
 
-        // Dynamic local database storage array matching your requirements.
-        // You can easily replace this array with database tables later!
         let archiveItems = [];
 
         let currentFilter = "all";
@@ -179,8 +178,6 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-
-        // Function to render the table data dynamically based on active filter button
         function renderArchiveTable() {
 
             const tbody =
@@ -208,11 +205,6 @@
             const filteredItems =
                 archiveItems.filter(item => {
 
-                    /*
-                     ============================================
-                     1. CATEGORY FILTER
-                     ============================================
-                     */
 
                     if (
                         currentFilter !== "all" &&
@@ -220,13 +212,6 @@
                     ) {
                         return false;
                     }
-
-
-                    /*
-                     ============================================
-                     2. PACKAGE FILTER
-                     ============================================
-                     */
 
                     if (
                         selectedPackage !== "all" &&
@@ -236,13 +221,6 @@
                     ) {
                         return false;
                     }
-
-
-                    /*
-                     ============================================
-                     3. SEARCH FILTER
-                     ============================================
-                     */
 
                     if (searchTerm) {
 
@@ -278,13 +256,6 @@
 
                 });
 
-
-            /*
-             ============================================
-             NO RESULTS
-             ============================================
-             */
-
             if (filteredItems.length === 0) {
 
                 tbody.innerHTML = `
@@ -313,13 +284,6 @@
 
                 return;
             }
-
-
-            /*
-             ============================================
-             DISPLAY ITEMS
-             ============================================
-             */
 
             filteredItems.forEach(item => {
 
@@ -411,8 +375,6 @@
             </td>
 
         `;
-
-
                 tbody.appendChild(tr);
 
 
@@ -431,13 +393,6 @@
 
 
                         try {
-
-                            /*
-                             ====================================
-                             RESTORE
-                             ====================================
-                             */
-
                             if (
                                 action === "restore"
                             ) {
@@ -482,14 +437,6 @@
                                 return;
 
                             }
-
-
-                            /*
-                             ====================================
-                             PERMANENT DELETE
-                             ====================================
-                             */
-
                             if (
                                 action === "delete"
                             ) {
@@ -618,13 +565,6 @@
 
         });
         async function restoreArchiveItem(item) {
-
-            /*
-             ============================================================
-             RESTORE CUSTOMER / BOOKING
-             ============================================================
-            */
-
             if (item.category === "customer") {
 
                 const {
@@ -643,14 +583,6 @@
 
                 return;
             }
-
-
-            /*
-             ============================================================
-             RESTORE FOLDER
-             ============================================================
-            */
-
             if (item.category === "folder") {
 
                 const {
@@ -669,13 +601,6 @@
 
                 return;
             }
-
-
-            /*
-             ============================================================
-             RESTORE PHOTO
-             ============================================================
-            */
 
             if (item.category === "photo") {
 
@@ -701,17 +626,7 @@
 
             console.log("PERMANENT DELETE STARTED:", item);
 
-            /*
-             ============================================================
-             PHOTO
-             ============================================================
-            */
-
             if (item.category === "photo") {
-
-                // --------------------------------------------
-                // 1. Delete physical image from Storage
-                // --------------------------------------------
 
                 if (item.storagePath) {
 

@@ -374,73 +374,6 @@ async function recordStaffActivity({
     }
 }
 app.post(
-    "/api/admin/staff/presence",
-    requireAdmin,
-    async (req, res) => {
-
-        try {
-
-            const staffId = req.authUser.id;
-
-            const currentPage =
-                String(
-                    req.body?.page ||
-                    ""
-                ).trim();
-
-            const now =
-                new Date().toISOString();
-
-            const {
-                error
-            } = await supabaseAdmin
-                .from("staff_presence")
-                .upsert(
-                    {
-                        staff_id: staffId,
-                        is_online: true,
-                        last_active_at: now,
-                        current_page:
-                            currentPage || null,
-                        updated_at: now
-                    },
-                    {
-                        onConflict: "staff_id"
-                    }
-                );
-
-            if (error) {
-
-                console.error(
-                    "STAFF PRESENCE UPDATE ERROR:",
-                    error
-                );
-
-                return res.status(500).json({
-                    success: false,
-                    error: "Unable to update staff presence."
-                });
-            }
-
-            return res.json({
-                success: true
-            });
-
-        } catch (error) {
-
-            console.error(
-                "STAFF PRESENCE ERROR:",
-                error
-            );
-
-            return res.status(500).json({
-                success: false,
-                error: "Unable to update staff presence."
-            });
-        }
-    }
-);
-app.post(
     "/api/admin/staff/presence/offline",
     requireAdmin,
     async (req, res) => {
@@ -615,15 +548,65 @@ async function recordStaffActivity({
     }
 
 }
+async function requireStaffPresence(req, res, next) {
+    try {
+        const authHeader = req.headers.authorization || "";
+        const token = authHeader.startsWith("Bearer ")
+            ? authHeader.substring(7)
+            : null;
 
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                error: "Authentication required."
+            });
+        }
 
-// ------------------------------------------------------------
-// STAFF HEARTBEAT
-// ------------------------------------------------------------
+        const {
+            data: { user },
+            error: userError
+        } = await supabaseAdmin.auth.getUser(token);
 
+        if (userError || !user) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid or expired session."
+            });
+        }
+
+        const {
+            data: profile,
+            error: profileError
+        } = await supabaseAdmin
+            .from("staff_profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+
+        if (profileError || !profile) {
+            return res.status(403).json({
+                success: false,
+                error: "Staff profile not found."
+            });
+        }
+
+        req.authUser = user;
+        req.profile = profile;
+
+        next();
+
+    } catch (error) {
+        console.error("STAFF PRESENCE AUTH ERROR:", error);
+
+        return res.status(401).json({
+            success: false,
+            error: "Authentication failed."
+        });
+    }
+}
 app.post(
     "/api/admin/staff/presence",
-    requireAdmin,
+    requireStaffPresence,
     async (req, res) => {
 
         try {
@@ -876,10 +859,6 @@ app.post(
 );
 
 
-// ------------------------------------------------------------
-// MARK STAFF OFFLINE
-// ------------------------------------------------------------
-
 app.post(
     "/api/admin/staff/presence/offline",
     requireAdmin,
@@ -1040,11 +1019,6 @@ app.post(
 
     }
 );
-
-
-// ------------------------------------------------------------
-// STAFF ACTIVITY LOG
-// ------------------------------------------------------------
 
 app.post(
     "/api/admin/staff/activity",
@@ -1329,14 +1303,14 @@ app.get(
 
         try {
 
-            // ==================================================
-            // GET STAFF LIST
-            // ==================================================
+            // ------------------------------------------------
+            // GET STAFF PROFILES
+            // ------------------------------------------------
 
             const {
                 data: staffList,
-                error
-            } = await supabase
+                error: staffError
+            } = await supabaseAdmin
                 .from("staff_profiles")
                 .select(`
                     id,
@@ -1351,11 +1325,11 @@ app.get(
                 });
 
 
-            if (error) {
+            if (staffError) {
 
                 console.error(
                     "Staff list error:",
-                    error
+                    staffError
                 );
 
                 return res.status(500).json({
@@ -1363,107 +1337,86 @@ app.get(
                     error:
                         "Unable to load staff list."
                 });
-
             }
 
 
-            // ==================================================
-            // GET STAFF IDS
-            // ==================================================
-
-            const staffIds =
-                (staffList || [])
-                    .map(staff => staff.id)
-                    .filter(Boolean);
-
-
-            // ==================================================
+            // ------------------------------------------------
             // GET STAFF PRESENCE
-            // ==================================================
+            // ------------------------------------------------
 
-            let presenceList = [];
-
-
-            if (staffIds.length > 0) {
-
-                const {
-                    data,
-                    error: presenceError
-                } = await supabaseAdmin
-                    .from("staff_presence")
-                    .select(`
-                        staff_id,
-                        is_online,
-                        last_active_at,
-                        current_page,
-                        session_started_at,
-                        updated_at
-                    `)
-                    .in(
-                        "staff_id",
-                        staffIds
-                    );
+            const {
+                data: presenceList,
+                error: presenceError
+            } = await supabaseAdmin
+                .from("staff_presence")
+                .select(`
+                    staff_id,
+                    is_online,
+                    last_active_at,
+                    current_page,
+                    session_started_at,
+                    updated_at
+                `);
 
 
-                if (presenceError) {
+            if (presenceError) {
 
-                    console.error(
-                        "Staff presence error:",
-                        presenceError
-                    );
+                console.error(
+                    "Staff presence list error:",
+                    presenceError
+                );
 
-                    return res.status(500).json({
-                        success: false,
-                        error:
-                            "Unable to load staff presence."
-                    });
-
-                }
-
-
-                presenceList =
-                    data || [];
-
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to load staff presence."
+                });
             }
 
 
-            // ==================================================
-            // CREATE PRESENCE MAP
-            // ==================================================
+            // ------------------------------------------------
+            // MAP PRESENCE BY STAFF ID
+            // ------------------------------------------------
 
-            const presenceMap = {};
+            const presenceMap =
+                new Map(
+                    (presenceList || []).map(
+                        presence => [
+                            presence.staff_id,
+                            presence
+                        ]
+                    )
+                );
 
 
-            presenceList.forEach(
-                presence => {
+            // ------------------------------------------------
+            // COMBINE STAFF + PRESENCE
+            // ------------------------------------------------
 
-                    presenceMap[
-                        presence.staff_id
-                    ] = presence;
+            const now =
+                Date.now();
 
-                }
-            );
+            const ONLINE_TIMEOUT =
+                90 * 1000; // 90 seconds
+
+
             const staffWithPresence =
                 (staffList || []).map(
                     staff => {
 
                         const presence =
-                            presenceMap[
+                            presenceMap.get(
                                 staff.id
-                            ] || null;
+                            );
 
 
-                        let isOnline =
-                            presence?.is_online === true;
+                        let isOnline = false;
 
-
-                        // --------------------------------------
-                        // AUTOMATIC OFFLINE CHECK
-                        // --------------------------------------
 
                         if (
-                            isOnline &&
-                            presence?.last_active_at
+                            presence &&
+                            presence.is_online === true &&
+                            presence.last_active_at
                         ) {
 
                             const lastActive =
@@ -1472,26 +1425,13 @@ app.get(
                                 ).getTime();
 
 
-                            const now =
-                                Date.now();
-
-
-                            const secondsSinceActive =
-                                (
-                                    now -
-                                    lastActive
-                                ) / 1000;
-
-
-                            // 90 seconds without heartbeat
-                            // = offline
-
                             if (
-                                secondsSinceActive > 90
+                                !Number.isNaN(lastActive) &&
+                                (now - lastActive) <=
+                                    ONLINE_TIMEOUT
                             ) {
 
-                                isOnline =
-                                    false;
+                                isOnline = true;
 
                             }
 
@@ -1510,15 +1450,15 @@ app.get(
                                 null,
 
                             current_page:
-                                isOnline
-                                    ? (
-                                        presence?.current_page ||
-                                        null
-                                    )
-                                    : null,
+                                presence?.current_page ||
+                                null,
 
                             session_started_at:
                                 presence?.session_started_at ||
+                                null,
+
+                            updated_at:
+                                presence?.updated_at ||
                                 null
 
                         };
@@ -1527,9 +1467,15 @@ app.get(
                 );
 
 
-            // ==================================================
-            // RETURN STAFF LIST
-            // ==================================================
+            // ------------------------------------------------
+            // RESPONSE
+            // ------------------------------------------------
+
+            console.log(
+                "STAFF LIST WITH PRESENCE:",
+                staffWithPresence
+            );
+
 
             return res.json({
 
@@ -1551,11 +1497,9 @@ app.get(
 
             return res.status(500).json({
 
-                success:
-                    false,
+                success: false,
 
                 error:
-                    error.message ||
                     "Server error while loading staff."
 
             });
@@ -7008,24 +6952,12 @@ app.get(
                     image_url:
                         signedUrlData.signedUrl,
 
-                    /*
-                     * The frontend handles the visual blur
-                     * for second/subsequent access.
-                     *
-                     * We use the same secure signed URL here.
-                     * It is NOT a public URL.
-                     */
                     preview_url:
                         signedUrlData.signedUrl
 
                 });
 
             }
-
-
-            /* =====================================================
-               9. NORMALIZE REQUEST NUMBER
-            ===================================================== */
 
             const requestNumber =
                 Number(
@@ -7045,14 +6977,6 @@ app.get(
                 String(
                     accessRequest.payment_status || ""
                 ).toLowerCase() === "paid";
-
-
-            /*
-             * First access = full quality.
-             *
-             * Second/subsequent access:
-             * payment must be confirmed before full quality.
-             */
             const fullQuality =
                 requestNumber === 1 ||
                 (
@@ -7099,11 +7023,6 @@ app.get(
                 signedPhotos.length
             );
             console.log("====================================");
-
-
-            /* =====================================================
-               10. RETURN EVERYTHING THE CUSTOMER PAGE NEEDS
-            ===================================================== */
 
             return res.status(200).json({
 
