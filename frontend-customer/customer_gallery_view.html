@@ -143,9 +143,7 @@
                 SUPABASE_ANON_KEY
             );
 
-        const SERVER_URL =
-            "https://captured-server.onrender.com";
-
+        const SERVER_URL = "https://image-repository-1.onrender.com";
         const galleryTitle =
             document.getElementById("galleryTitle");
 
@@ -1567,6 +1565,7 @@
 
 
             const requestId =
+                params.get("request") ||
                 params.get("requestId") ||
                 sessionStorage.getItem(
                     "galleryPaymentRequestId"
