@@ -950,28 +950,38 @@
                     .map(
                         payment => {
 
-                            // =================================
-                            // ORDER ID
-                            // =================================
+                            let orderId;
 
-                            const orderId =
-                                payment.booking_id ||
-                                payment.gallery_access_request_id ||
-                                payment.id;
+                            if (
+                                payment.gallery_access_request_id
+                            ) {
 
+                                orderId =
+                                    `GAL-${String(
+                                        payment.gallery_access_request_id
+                                    ).slice(-8)}`;
 
-                            // =================================
-                            // CLIENT
-                            // =================================
+                            }
+                            else if (
+                                payment.booking_id
+                            ) {
+
+                                orderId =
+                                    `BOOK-${String(
+                                        payment.booking_id
+                                    ).slice(-8)}`;
+
+                            }
+                            else {
+
+                                orderId =
+                                    payment.id;
+
+                            }
 
                             const clientName =
                                 payment.client_name ||
                                 "Unknown";
-
-
-                            // =================================
-                            // AMOUNT
-                            // =================================
 
                             const amount =
                                 Number(

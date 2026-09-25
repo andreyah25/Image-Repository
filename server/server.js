@@ -59,19 +59,17 @@ app.use(express.json({
         }
     }
 }));
-
 const PORT = process.env.PORT || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
 const PAYMONGO_WEBHOOK_SECRET = process.env.PAYMONGO_WEBHOOK_SECRET;
-
 
 const resend = RESEND_API_KEY
     ? new Resend(RESEND_API_KEY)
     : null;
-
 const supabase = createClient(
     SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY
@@ -2080,313 +2078,301 @@ function money(value) {
 
     return Number(number.toFixed(2));
 }
-
-app.post("/send-payment-confirmation", async (req, res) => {
-
+app.post("/send-booking-confirmation", async (req, res) => {
     try {
-
         const {
-            customer_id,
-            full_name,
             email,
-            contact_number,
-            booking_date,
-            booking_time,
-            session_type,
-            notes,
-            payment_method,
-            total_price,
-            downpayment_amount,
-            backdrops,
-            addons,
-            booking_duration
+            name,
+            bookingId,
+            bookingDate,
+            bookingTime,
+            sessionType,
+            totalPrice,
+            downpaymentAmount,
+            remainingBalance,
+            galleryLink
         } = req.body;
 
-        const totalPrice =
-            Number(total_price) || 0;
-
-        const downpaymentAmount =
-            Number(downpayment_amount) || 0;
-
-        const remainingBalance =
-            Math.max(
-                0,
-                totalPrice - downpaymentAmount
-            );
-
-        console.log("====================================");
-        console.log("BOOKING CONFIRMATION EMAIL");
-        console.log("====================================");
-
-        console.log("Email:", email);
-        console.log("Name:", full_name);
-        console.log("Booking Date:", booking_date);
-        console.log("Booking Time:", booking_time);
-        console.log("Session Type:", session_type);
-        console.log("Total Price:", totalPrice);
-        console.log("Down Payment:", downpaymentAmount);
-        console.log("Remaining Balance:", remainingBalance);
-
-        if (!email || !String(email).trim()) {
+        if (!email) {
             return res.status(400).json({
                 success: false,
-                error: "Customer email is required."
+                message: "Customer email is required."
             });
         }
 
-        if (!resend) {
-            return res.status(500).json({
-                success: false,
-                error: "RESEND_API_KEY is not configured."
-            });
-        }
+        const formattedDate = bookingDate
+            ? new Date(`${bookingDate}T00:00:00`).toLocaleDateString(
+                "en-US",
+                {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                }
+            )
+            : "-";
 
-        const fromEmail =
-            process.env.RESEND_FROM_EMAIL ||
-            "onboarding@resend.dev";
+        const formattedTime = bookingTime
+            ? new Date(`1970-01-01T${bookingTime}`).toLocaleTimeString(
+                "en-US",
+                {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                }
+            )
+            : "-";
 
-        const total = Number(totalPrice) || 0;
-        const downpayment = Number(downpaymentAmount) || 0;
-        const balance = Number(remainingBalance) || 0;
+        const { data, error } = await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [email],
+            subject: "Booking Confirmation - Captured Photography Studio",
+            html: `
+                <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:650px;margin:auto;">
+                    <h2 style="color:#639A88;">
+                        Booking Confirmed
+                    </h2>
 
-        const formatPeso = (amount) =>
-            `₱${amount.toLocaleString("en-PH", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            })}`;
+                    <p>
+                        Hello ${name || "Customer"},
+                    </p>
 
-        const { data, error } =
-            await resend.emails.send({
+                    <p>
+                        Your booking request has been confirmed by Captured Photography Studio.
+                    </p>
 
-                from: fromEmail,
-
-                to: [String(email).trim()],
-
-                subject:
-                    "Booking Confirmed - Captured Photography Studio",
-
-                html: `
-                    <div style="
-                        font-family: Arial, sans-serif;
-                        max-width: 600px;
-                        margin: auto;
-                        padding: 30px;
-                        color: #333;
-                        line-height: 1.6;
-                    ">
-
-                        <h2 style="
-                            margin-bottom: 20px;
-                            color: #222;
-                        ">
-                            Captured Photography Studio
-                        </h2>
-
-                        <h3 style="
-                            color: #222;
-                        ">
-                            Your Booking Has Been Confirmed!
-                        </h3>
-
-                        <p>
-                            Hi ${full_name || "Customer"},
-                        </p>
-
-                        <p>
-                            Your photography session booking has
-                            been successfully confirmed by our admin.
-                        </p>
-
-                        <!-- BOOKING DETAILS -->
-
-                        <div style="
-                            background: #f5f5f5;
-                            padding: 20px;
-                            margin: 20px 0;
-                            border-radius: 8px;
-                        ">
-
-                            <h3 style="
-                                margin-top: 0;
-                            ">
-                                Booking Details
-                            </h3>
-
-                            <p>
-                                <strong>Session:</strong>
-                                ${session_type || "Photography Session"}
-                            </p>
-
-                            <p>
-                                <strong>Date:</strong>
-                                ${booking_date || "N/A"}
-                            </p>
-
-                            <p>
-                                <strong>Time:</strong>
-                                ${booking_time || "N/A"}
-                            </p>
-
-                        </div>
-
-                        <!-- PAYMENT DETAILS -->
-
-                        <div style="
-                            border: 1px solid #ddd;
-                            padding: 20px;
-                            margin: 20px 0;
-                            border-radius: 8px;
-                        ">
-
-                            <h3 style="
-                                margin-top: 0;
-                            ">
-                                Payment Details
-                            </h3>
-
-                            <p>
-                                <strong>Total Booking Amount:</strong>
-                                ${formatPeso(total)}
-                            </p>
-
-                            <p>
-                                <strong>Down Payment Paid:</strong>
-                                ${formatPeso(downpayment)}
-                            </p>
-
-                            <hr style="
-                                border: none;
-                                border-top: 1px solid #ddd;
-                                margin: 15px 0;
-                            ">
-
-                            <p style="
-                                font-size: 20px;
-                                margin-bottom: 0;
-                            ">
-                                <strong>Remaining Balance:</strong>
-                                ${formatPeso(balance)}
-                            </p>
-
-                        </div>
-
-                        ${
-                            balance > 0
-                                ? `
-                                    <div style="
-                                        background: #fff8e1;
-                                        border-left: 4px solid #f0ad00;
-                                        padding: 15px;
-                                        margin: 20px 0;
-                                    ">
-                                        <strong>
-                                            Remaining Balance
-                                        </strong>
-
-                                        <p style="margin-bottom: 0;">
-                                            Please settle your remaining
-                                            balance of
-                                            <strong>
-                                                ${formatPeso(balance)}
-                                            </strong>
-                                            according to the payment
-                                            instructions provided by
-                                            Captured Photography Studio.
-                                        </p>
-                                    </div>
-                                `
-                                : `
-                                    <div style="
-                                        background: #e8f5e9;
-                                        border-left: 4px solid #43a047;
-                                        padding: 15px;
-                                        margin: 20px 0;
-                                    ">
-                                        <strong>
-                                            Fully Paid
-                                        </strong>
-
-                                        <p style="margin-bottom: 0;">
-                                            Your booking has been fully paid.
-                                            No remaining balance is due.
-                                        </p>
-                                    </div>
-                                `
-                        }
-
-                        <p>
-                            Please make sure to arrive on time for
-                            your scheduled photography session.
-                        </p>
-
-                        <p>
-                            Thank you for choosing
-                            <strong>
-                                Captured Photography Studio
-                            </strong>.
-                        </p>
-
-                        <p>
-                            We look forward to seeing you!
-                        </p>
-
-                        <hr style="
-                            border: none;
-                            border-top: 1px solid #ddd;
-                            margin-top: 30px;
-                        ">
-
-                        <p style="
-                            font-size: 12px;
-                            color: #777;
-                        ">
-                            This is an automated booking confirmation
-                            email from Captured Photography Studio.
-                        </p>
-
+                    <div style="background:#f6f8f7;padding:20px;border-radius:10px;margin:20px 0;">
+                        <p><strong>Booking ID:</strong> ${bookingId || "-"}</p>
+                        <p><strong>Session:</strong> ${sessionType || "-"}</p>
+                        <p><strong>Date:</strong> ${formattedDate}</p>
+                        <p><strong>Time:</strong> ${formattedTime}</p>
+                        <p><strong>Total Price:</strong> ₱${Number(totalPrice || 0).toLocaleString("en-PH", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })}</p>
+                        <p><strong>Downpayment:</strong> ₱${Number(downpaymentAmount || 0).toLocaleString("en-PH", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })}</p>
+                        <p><strong>Remaining Balance:</strong> ₱${Number(remainingBalance || 0).toLocaleString("en-PH", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })}</p>
                     </div>
-                `
-            });
+
+                    ${
+                        galleryLink
+                            ? `
+                                <p>
+                                    Your customer gallery access link is available below:
+                                </p>
+
+                                <p>
+                                    <a
+                                        href="${galleryLink}"
+                                        style="display:inline-block;padding:12px 20px;background:#639A88;color:white;text-decoration:none;border-radius:6px;"
+                                    >
+                                        Open Customer Gallery
+                                    </a>
+                                </p>
+                            `
+                            : ""
+                    }
+
+                    <p>
+                        Please keep this email for your booking records.
+                    </p>
+
+                    <p>
+                        Thank you for choosing Captured Photography Studio.
+                    </p>
+                </div>
+            `
+        });
 
         if (error) {
-
-            console.error(
-                "Resend booking confirmation error:",
-                error
-            );
+            console.error("RESEND CONFIRMATION ERROR:", error);
 
             return res.status(500).json({
                 success: false,
-                error: "Failed to send confirmation email.",
-                message:
-                    error.message || "Resend failed."
+                message: error.message || "Failed to send booking confirmation email."
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: "Booking confirmation email sent successfully.",
+            data
+        });
+
+    } catch (error) {
+        console.error("SEND BOOKING CONFIRMATION ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            message:
+                error.message ||
+                "Failed to send booking confirmation email."
+        });
+    }
+});
+
+app.post("/send-booking-rejection", async (req, res) => {
+    try {
+        const {
+            email,
+            name,
+            bookingId,
+            bookingDate,
+            bookingTime,
+            sessionType,
+            rejectionReason
+        } = req.body;
+
+        // Validate customer email
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Customer email is required."
+            });
+        }
+
+        // Validate Resend configuration
+        if (!resend) {
+            console.error("RESEND ERROR: Resend is not initialized.");
+            return res.status(500).json({
+                success: false,
+                message: "Email service is not configured."
+            });
+        }
+
+        if (!RESEND_FROM_EMAIL) {
+            console.error("RESEND ERROR: RESEND_FROM_EMAIL is missing.");
+            return res.status(500).json({
+                success: false,
+                message: "Email sender is not configured."
+            });
+        }
+
+        const formattedDate = bookingDate
+            ? new Date(`${bookingDate}T00:00:00`).toLocaleDateString(
+                "en-US",
+                {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                }
+            )
+            : "-";
+
+        const formattedTime = bookingTime
+            ? new Date(`1970-01-01T${bookingTime}`).toLocaleTimeString(
+                "en-US",
+                {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                }
+            )
+            : "-";
+
+        console.log("Sending rejection email...");
+        console.log("To:", email);
+        console.log("From:", RESEND_FROM_EMAIL);
+        console.log("Booking ID:", bookingId);
+
+        const { data, error } = await resend.emails.send({
+            from: RESEND_FROM_EMAIL,
+            to: [email],
+            subject: "Booking Request Update - Captured Photography Studio",
+            html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 650px; margin: auto;">
+
+                    <h2 style="color:#639A88;">
+                        Booking Request Update
+                    </h2>
+
+                    <p>
+                        Hello ${name || "Customer"},
+                    </p>
+
+                    <p>
+                        We are sorry to inform you that your booking request could not be accepted at this time.
+                    </p>
+
+                    <div style="background:#f6f8f7;padding:20px;border-radius:10px;margin:20px 0;">
+                        <p>
+                            <strong>Booking ID:</strong>
+                            ${bookingId || "-"}
+                        </p>
+
+                        <p>
+                            <strong>Session:</strong>
+                            ${sessionType || "-"}
+                        </p>
+
+                        <p>
+                            <strong>Date:</strong>
+                            ${formattedDate}
+                        </p>
+
+                        <p>
+                            <strong>Time:</strong>
+                            ${formattedTime}
+                        </p>
+                    </div>
+
+                    <div style="background:#fff4f4;border-left:4px solid #c94c4c;padding:15px;margin:20px 0;">
+                        <strong>Reason for rejection:</strong>
+
+                        <p style="margin-bottom:0;">
+                            ${rejectionReason || "No reason was provided."}
+                        </p>
+                    </div>
+
+                    <p>
+                        If you have any questions regarding this booking,
+                        please contact Captured Photography Studio.
+                    </p>
+
+                    <p>
+                        Thank you for understanding.
+                    </p>
+
+                </div>
+            `
+        });
+
+        if (error) {
+            console.error("RESEND REJECTION ERROR:", error);
+
+            return res.status(500).json({
+                success: false,
+                message: error.message || "Failed to send rejection email."
             });
         }
 
         console.log(
-            "Confirmation email successfully sent:",
+            "Booking rejection email sent successfully:",
             data?.id
         );
 
         return res.json({
             success: true,
-            message:
-                "Booking confirmation email sent successfully.",
-            email_id:
-                data?.id || null
+            message: "Booking rejection email sent successfully.",
+            data
         });
 
     } catch (error) {
-
         console.error(
-            "Booking confirmation email error:",
+            "SEND BOOKING REJECTION ERROR:",
             error
         );
 
         return res.status(500).json({
             success: false,
-            error: "Internal server error.",
-            message: error.message
+            message:
+                error.message ||
+                "Failed to send rejection email."
         });
     }
 });
@@ -4506,15 +4492,6 @@ app.get("/api/bookings/availability", async (req, res) => {
     }
 
 });
-/* =========================================================
-   GET ALL BOOKINGS FOR ADMIN
-========================================================= */
-
-/* =========================================================
-   GET ALL BOOKINGS FOR ADMIN
-   BOOKED SESSIONS TABLE
-========================================================= */
-
 app.get(
     "/api/admin/bookings",
     requireAdmin,
@@ -4770,11 +4747,6 @@ app.post(
                 fullName,
                 bookingDate
             } = req.body;
-
-
-            /* =====================================================
-               1. VALIDATE INPUT
-            ===================================================== */
 
             if (
                 !email ||

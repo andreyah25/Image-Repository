@@ -67,7 +67,7 @@
                     Dashboard
                 </a>
 
-                <a href="/admin/client" class="active">
+                <a href="/admin/clients" class="active">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
@@ -116,7 +116,7 @@
                     <p>Monitor customer booked sessions and studio access requests.</p>
                     <div class="tab-navigation">
 
-                        <a href="/admin/client" class="tab-btn active">
+                        <a href="/admin/clients" class="tab-btn active">
                             All Booked Sessions
                         </a>
 
@@ -385,6 +385,18 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
+        }
+        function isBookingPending(status) {
+            const normalizedStatus =
+                String(status || "")
+                    .trim()
+                    .toLowerCase();
+
+            return (
+                normalizedStatus === "pending" ||
+                normalizedStatus === "pending payment" ||
+                normalizedStatus === "payment pending"
+            );
         }
 
         function formatBookingTime(timeString) {
@@ -677,11 +689,6 @@
 
             if (!tbody) return;
 
-
-            /* =========================================================
-               CURRENT FILTER
-            ========================================================= */
-
             const activeTab =
                 document.querySelector(
                     ".booking-status-tab.active"
@@ -689,11 +696,6 @@
 
             const selectedStatus =
                 activeTab?.dataset.status || "all";
-
-
-            /* =========================================================
-               SEARCH
-            ========================================================= */
 
             const searchInput =
                 document.getElementById(
@@ -705,20 +707,8 @@
                     ? searchInput.value.trim().toLowerCase()
                     : "";
 
-
-            /* =========================================================
-               FILTER BOOKINGS
-            ========================================================= */
-
             let filteredBookings =
                 [...allBookedSessions];
-
-
-            /*
-            ---------------------------------------------------------
-            STATUS FILTER
-            ---------------------------------------------------------
-            */
 
             if (selectedStatus !== "all") {
 
@@ -732,18 +722,13 @@
                                 .trim()
                                 .toLowerCase();
 
+                        if (selectedStatus === "pending") {
 
-                        /*
-                        UPCOMING
-        
-                        Upcoming means:
-                        - booking is confirmed
-                        - booking date is today or later
-                        */
+                            return isBookingPending(status);
 
-                        if (
-                            selectedStatus === "upcoming"
-                        ) {
+                        }
+
+                        if (selectedStatus === "upcoming") {
 
                             if (status !== "confirmed") {
                                 return false;
@@ -757,7 +742,10 @@
                                 new Date();
 
                             today.setHours(
-                                0, 0, 0, 0
+                                0,
+                                0,
+                                0,
+                                0
                             );
 
                             const bookingDate =
@@ -768,40 +756,20 @@
                             return bookingDate >= today;
                         }
 
-
-                        /*
-                        REJECTED
-        
-                        Treat Cancelled as rejected
-                        in the filter.
-                        */
-
-                        if (
-                            selectedStatus === "rejected"
-                        ) {
+                        if (selectedStatus === "rejected") {
 
                             return (
                                 status === "rejected" ||
                                 status === "cancelled"
                             );
+
                         }
-
-
-                        /*
-                        NORMAL STATUS
-                        */
 
                         return status === selectedStatus;
 
                     });
             }
 
-
-            /*
-            ---------------------------------------------------------
-            SEARCH FILTER
-            ---------------------------------------------------------
-            */
 
             if (searchTerm) {
 
@@ -841,13 +809,6 @@
 
                     });
             }
-
-
-            /*
-            ---------------------------------------------------------
-            MONTH FILTER
-            ---------------------------------------------------------
-            */
 
             if (
                 selectedMonth !== "all"
@@ -958,10 +919,12 @@
                         Math.max(totalPrice - downpaymentAmount, 0);
 
                     const paymentStatus =
-                        String(
-                            booking.payment_status ||
-                            "Pending Verification"
-                        );
+                        status === "completed"
+                            ? "Paid"
+                            : String(
+                                booking.payment_status ||
+                                "Pending Verification"
+                            );
 
 
                     const paymentLower =
@@ -988,33 +951,49 @@
 
 
                     let actionHTML = `
-                        <button
-                            type="button"
-                            class="booking-view-btn"
-                            data-id="${escapeHtml(booking.id)}"
-                        >
-                            <i class="fa-solid fa-eye"></i>
-                            View
-                        </button>
-                    `;
+    <button
+        type="button"
+        class="booking-view-btn"
+        data-id="${escapeHtml(booking.id)}"
+    >
+        <i class="fa-solid fa-eye"></i>
+        View
+    </button>
+`;
 
+                    if (isBookingPending(status)) {
+
+                        actionHTML += `
+        <button
+            type="button"
+            class="confirm-btn"
+            data-id="${escapeHtml(booking.id)}"
+        >
+            <i class="fa-solid fa-check"></i>
+            Confirm
+        </button>
+
+        <button
+            type="button"
+            class="reject-btn"
+            data-id="${escapeHtml(booking.id)}"
+        >
+            <i class="fa-solid fa-xmark"></i>
+            Reject
+        </button>
+    `;
+                    }
                     const statusLabel =
-                        booking.status ||
-                        "Pending";
-
+                        booking.status
+                            ? String(booking.status).charAt(0).toUpperCase() +
+                            String(booking.status).slice(1).toLowerCase()
+                            : "Pending";
 
                     const statusClass =
                         status.replace(
                             /\s+/g,
                             "-"
                         ).toLowerCase();
-
-
-                    /*
-                    -------------------------------------------------
-                    TABLE ROW
-                    -------------------------------------------------
-                    */
 
                     tbody.innerHTML += `
 
@@ -1143,8 +1122,8 @@
 
                                 <span class="payment-method">
                                     ${escapeHtml(
-                                                booking.payment_method || "Not specified"
-                                            )}
+                        booking.payment_method || "Not specified"
+                    )}
                                 </span>
 
                                 <span
@@ -1690,8 +1669,6 @@
                 }
 
             }
-
-
             /* =====================================================
                ACTION BUTTONS
             ===================================================== */
@@ -1701,73 +1678,63 @@
                     "bookingDetailsActions"
                 );
 
-
             if (actions) {
 
-                if (status === "pending") {
+                if (isBookingPending(status)) {
 
                     actions.innerHTML = `
 
-                <button
-                    type="button"
-                    class="reject-btn"
-                    data-id="${escapeHtml(
-                        booking.id
-                    )}"
-                >
-                    Reject
-                </button>
+            <button
+                type="button"
+                class="reject-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                <i class="fa-solid fa-xmark"></i>
+                Reject
+            </button>
 
-                <button
-                    type="button"
-                    class="confirm-btn"
-                    data-id="${escapeHtml(
-                        booking.id
-                    )}"
-                >
-                    Confirm
-                </button>
+            <button
+                type="button"
+                class="confirm-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                <i class="fa-solid fa-check"></i>
+                Confirm
+            </button>
 
-            `;
+        `;
 
                 } else if (status === "confirmed") {
 
                     actions.innerHTML = `
 
-                <button
-                    type="button"
-                    class="complete-btn"
-                    data-id="${escapeHtml(
-                        booking.id
-                    )}"
-                >
-                    Complete
-                </button>
+            <button
+                type="button"
+                class="complete-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                <i class="fa-solid fa-check-double"></i>
+                Complete
+            </button>
 
-            `;
+        `;
 
                 } else {
 
                     actions.innerHTML = `
 
-                <button
-                    type="button"
-                    class="booking-modal-close-btn"
-                    id="closeBookingDetailsAction"
-                >
-                    Close
-                </button>
+            <button
+                type="button"
+                class="booking-modal-close-btn"
+                id="closeBookingDetailsAction"
+            >
+                Close
+            </button>
 
-            `;
+        `;
 
                 }
-
             }
-
-
-            /* =====================================================
-               SHOW MODAL
-            ===================================================== */
 
             modal.classList.add("show");
 
@@ -2058,354 +2025,192 @@
             );
         }
 
-        document.addEventListener(
-            "click",
-            async function (e) {
 
-                const btn = e.target.closest(".confirm-btn");
+        document.addEventListener("click", async function (e) {
+            const btn = e.target.closest(".confirm-btn");
 
-                if (!btn) {
-                    return;
+            if (!btn) return;
+
+            const bookingId = btn.dataset.id;
+
+            if (!bookingId) {
+                alert("Booking ID is missing.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Confirming...";
+
+            try {
+                const {
+                    data: booking,
+                    error: bookingError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .eq("id", bookingId)
+                    .single();
+
+                if (bookingError) {
+                    throw bookingError;
                 }
 
-                const bookingId = btn.dataset.id;
-
-                if (!bookingId) {
-                    alert("Booking ID is missing.");
-                    return;
+                if (!booking) {
+                    throw new Error("Booking was not found.");
                 }
 
-                btn.disabled = true;
-                btn.textContent = "Confirming...";
+                if (!booking.email) {
+                    throw new Error("The customer does not have an email address.");
+                }
 
-                try {
+                const {
+                    data: updatedBooking,
+                    error: updateError
+                } = await supabaseClient
+                    .from("bookings")
+                    .update({
+                        status: "Confirmed"
+                    })
+                    .eq("id", bookingId)
+                    .select()
+                    .single();
 
-                    /* ---------------------------------------------
-                       GET BOOKING FIRST
-                    --------------------------------------------- */
+                if (updateError) {
+                    throw updateError;
+                }
 
+                const repository = await createClientRepository(updatedBooking);
+
+                const clientLink = getClientRepositoryLink(repository);
+
+                const totalPrice =
+                    Number(updatedBooking.total_price || 0);
+
+                const downpaymentAmount =
+                    Number(updatedBooking.downpayment_amount || 0);
+
+                const remainingBalance =
+                    Math.max(
+                        totalPrice - downpaymentAmount,
+                        0
+                    );
+
+                const emailResponse = await fetch(
+                    `${SERVER_URL}/send-booking-confirmation`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            email: updatedBooking.email,
+                            name: updatedBooking.full_name,
+                            bookingId: updatedBooking.id,
+                            bookingDate: updatedBooking.booking_date,
+                            bookingTime: updatedBooking.booking_time,
+                            sessionType: updatedBooking.session_type,
+                            totalPrice: totalPrice,
+                            downpaymentAmount: downpaymentAmount,
+                            remainingBalance: remainingBalance,
+                            galleryLink: clientLink
+                        })
+                    }
+                );
+
+                const emailResult = await emailResponse.json();
+
+                if (!emailResponse.ok) {
+                    console.error(
+                        "Booking confirmation email failed:",
+                        emailResult
+                    );
+
+                    throw new Error(
+                        emailResult.message ||
+                        "The booking was confirmed, but the confirmation email could not be sent."
+                    );
+                }
+
+                if (updatedBooking.customer_id) {
                     const {
-                        data: booking,
-                        error: bookingError
+                        error: notificationError
                     } = await supabaseClient
-                        .from("bookings")
-                        .select("*")
-                        .eq("id", bookingId)
-                        .single();
-                    if (bookingError) {
-                        console.error("BOOKING FETCH ERROR:", {
-                            message: bookingError.message,
-                            details: bookingError.details,
-                            hint: bookingError.hint,
-                            code: bookingError.code
+                        .from("notifications")
+                        .insert({
+                            customer_id: updatedBooking.customer_id,
+                            booking_id: updatedBooking.id,
+                            recipient: "customer",
+                            title: "Booking Confirmation",
+                            message:
+                                `Your booking request for ${updatedBooking.session_type || "your selected session"} ` +
+                                `on ${formatBookingDate(updatedBooking.booking_date)} at ` +
+                                `${formatBookingTime(updatedBooking.booking_time)} has been confirmed. ` +
+                                `Your photo repository link is now available.`,
+                            is_read: false,
+                            link: clientLink
                         });
 
-                        alert(
-                            "BOOKING FETCH ERROR\n\n" +
-                            "Code: " + (bookingError.code || "-") + "\n" +
-                            "Message: " + (bookingError.message || "-") + "\n\n" +
-                            "Details: " + (bookingError.details || "-") + "\n" +
-                            "Hint: " + (bookingError.hint || "-")
-                        );
-
-                        throw bookingError;
-                    }
-
-                    if (!booking) {
-                        throw new Error("Booking was not found.");
-                    }
-
-
-                    /* ---------------------------------------------
-                       VERIFY PAYMENT BEFORE CONFIRMING
-                    --------------------------------------------- */
-
-                    const paymentStatus =
-                        String(booking.payment_status || "")
-                            .trim()
-                            .toLowerCase();
-
-                    if (paymentStatus !== "paid") {
-
-                        console.warn(
-                            "BLOCKED CONFIRMATION: Booking has not been fully paid.",
-                            {
-                                bookingId: booking.id,
-                                paymentStatus: booking.payment_status,
-                                downpaymentAmount: booking.downpayment_amount
-                            }
-                        );
-
-                        alert(
-                            "This booking cannot be confirmed yet.\n\n" +
-                            "The customer's full downpayment has not been successfully paid."
-                        );
-
-                        await loadBookedSessions();
-
-                        return;
-                    }
-
-
-                    /* ---------------------------------------------
-                       UPDATE BOOKING STATUS
-                    --------------------------------------------- */
-
-                    const {
-                        data: updatedBooking,
-                        error: updateError
-                    } = await supabaseClient
-                        .from("bookings")
-                        .update({
-                            status: "Confirmed"
-                        })
-                        .eq("id", bookingId)
-                        .select()
-                        .single();
-
-                    if (updateError) {
-                        throw updateError;
-                    }
-
-                    console.log(
-                        "Booking confirmed:",
-                        updatedBooking
-                    );
-
-
-                    const repository =
-                        await createClientRepository(
-                            updatedBooking
-                        );
-
-                    console.log(
-                        "Customer repository:",
-                        repository
-                    );
-
-
-                    /* ---------------------------------------------
-                       GENERATE CUSTOMER GALLERY LINK
-                    --------------------------------------------- */
-
-                    const clientLink =
-                        getClientRepositoryLink(repository);
-
-                    console.log(
-                        "Client repository link:",
-                        clientLink
-                    );
-                    if (updatedBooking.email) {
-                        await sendPaymentConfirmationEmail(
-                            updatedBooking
-                        );
-                    } else {
-                        console.warn(
-                            "Booking confirmed, but no customer email was found."
+                    if (notificationError) {
+                        console.error(
+                            "Customer notification error:",
+                            notificationError
                         );
                     }
-
-
-                    /* ---------------------------------------------
-                       CUSTOMER NOTIFICATION
-                    --------------------------------------------- */
-
-                    if (updatedBooking.customer_id) {
-
-                        const {
-                            error: notificationError
-                        } = await supabaseClient
-                            .from("notifications")
-                            .insert({
-
-                                customer_id:
-                                    updatedBooking.customer_id,
-
-                                booking_id:
-                                    updatedBooking.id,
-
-                                recipient:
-                                    "customer",
-
-                                title:
-                                    "Booking Confirmation",
-
-                                message:
-                                    `Your booking request for ${updatedBooking.session_type} on ` +
-                                    `${new Date(
-                                        updatedBooking.booking_date
-                                    ).toLocaleDateString(
-                                        "en-US",
-                                        {
-                                            year: "numeric",
-                                            month: "long",
-                                            day: "numeric"
-                                        }
-                                    )} at ${updatedBooking.booking_time} has been confirmed. ` +
-                                    `Your photo repository will be created once the session was done.` +
-                                    `Thank you for choosing Captured Photography Studio!.`,
-
-                                is_read:
-                                    false,
-
-                                link:
-                                    clientLink
-
-                            });
-
-                        if (notificationError) {
-
-                            console.error(
-                                "Notification error:",
-                                notificationError
-                            );
-                        }
-                    }
-
-                    showToast(
-                        "Booking Confirmed",
-                        `${updatedBooking.full_name}'s booking has been confirmed.`
-                    );
-
-                    closeBookingDetailsModal();
-
-                    await loadBookedSessions();
-
-                } catch (error) {
-
-                    console.error(
-                        "CONFIRM PROCESS ERROR:",
-                        error
-                    );
-
-                    alert(
-                        "The booking could not be fully confirmed.\n\n" +
-                        error.message
-                    );
-
-                    await loadBookedSessions();
-
-
-                } finally {
-
-                    btn.disabled = false;
-                    btn.textContent = "Confirm";
-
-                }
-            }
-        );
-
-
-        document.addEventListener(
-            "click",
-            async function (e) {
-
-                const btn =
-                    e.target.closest(".complete-btn");
-
-                if (!btn) {
-                    return;
                 }
 
-                const bookingId =
-                    btn.dataset.id;
+                showToast(
+                    "Booking Confirmed",
+                    `${updatedBooking.full_name}'s booking has been confirmed and the confirmation email has been sent.`
+                );
 
-                const confirmed =
-                    confirm(
-                        "Mark this booking as completed?"
-                    );
+                closeBookingDetailsModal();
 
-                if (!confirmed) {
-                    return;
-                }
+                await loadBookedSessions();
 
-                btn.disabled = true;
-                btn.textContent = "Completing...";
+            } catch (error) {
 
-                try {
+                console.error(
+                    "CONFIRM PROCESS ERROR:",
+                    error
+                );
 
+                alert(
+                    error.message ||
+                    "The booking could not be confirmed."
+                );
 
-                    const {
-                        data: booking,
-                        error: bookingError
-                    } =
-                        await supabaseClient
-                            .from("bookings")
-                            .select("*")
-                            .eq("id", bookingId)
-                            .single();
+                await loadBookedSessions();
 
-                    if (bookingError) {
-                        throw bookingError;
-                    }
+            } finally {
 
-                    const {
-                        data: updateBooking,
-                        error: statusError
-                    } =
-                        await supabaseClient
-                            .from("bookings")
-                            .update({
-                                status: "Completed",
-
-                            })
-                            .eq("id", bookingId)
-                            .select()
-                            .single()
-
-                    if (statusError) {
-                        throw statusError;
-                    }
-
-
-                    const repository =
-                        await createClientRepository(
-                            booking
-                        );
-
-
-                    console.log(
-                        "Customer repository ready:",
-                        repository
-                    );
-
-
-                    showToast(
-                        "Booking Completed",
-                        `${booking.full_name}'s customer folder is now available.`
-                    );
-
-
-                    closeBookingDetailsModal();
-
-                    await loadBookedSessions();
-
-
-                } catch (error) {
-
-                    console.error(
-                        "COMPLETE BOOKING ERROR:",
-                        error
-                    );
-
-                    alert(
-                        "The booking could not be completed.\n\n" +
-                        error.message
-                    );
-
-                    await loadBookedSessions();
-
-
-                } finally {
-
-                    btn.disabled = false;
-                    btn.textContent = "Complete";
-
-                }
+                btn.disabled = false;
+                btn.textContent = "Confirm";
 
             }
-        );
+        });
+        // ===============================
+        // REJECT BOOKING BUTTON
+        // ===============================
+        document.addEventListener("click", function (e) {
+            const rejectBtn = e.target.closest(".reject-btn");
+
+            if (!rejectBtn) return;
+
+            const bookingId = rejectBtn.dataset.id;
+
+            if (!bookingId) {
+                alert("Booking ID is missing.");
+                return;
+            }
+
+            openRejectionModal(bookingId);
+        });
+
         let rejectionTargetId = null;
+        document.getElementById("cancelRejectionBtn")
+            ?.addEventListener("click", function () {
+                closeRejectionModal();
+            });
 
         function openRejectionModal(bookingId) {
             rejectionTargetId = bookingId;
@@ -2441,43 +2246,6 @@
             document.body.style.overflow = "";
             rejectionTargetId = null;
         }
-
-        document.addEventListener("click", (e) => {
-            const btn = e.target.closest(".reject-btn");
-            if (!btn) return;
-
-            const id = btn.dataset.id;
-            if (id) openRejectionModal(id);
-        });
-
-        document.getElementById("rejectionReason")
-            ?.addEventListener("change", (e) => {
-                const wrapper =
-                    document.getElementById("customRejectionReasonWrapper");
-                const textarea =
-                    document.getElementById("customRejectionReason");
-
-                if (e.target.value === "Other") {
-                    if (wrapper) wrapper.style.display = "block";
-                    if (textarea) textarea.required = true;
-                } else {
-                    if (wrapper) wrapper.style.display = "none";
-                    if (textarea) {
-                        textarea.required = false;
-                        textarea.value = "";
-                    }
-                }
-            });
-
-        document.getElementById("cancelRejectionBtn")
-            ?.addEventListener("click", closeRejectionModal);
-
-        document.getElementById("rejectionModal")
-            ?.addEventListener("click", (e) => {
-                if (e.target.id === "rejectionModal") {
-                    closeRejectionModal();
-                }
-            });
 
         document.getElementById("rejectionForm")
             ?.addEventListener("submit", async (e) => {
@@ -2520,46 +2288,108 @@
                 }
 
                 try {
-                    const { data: booking, error: bookingError } =
-                        await supabaseClient
-                            .from("bookings")
-                            .select("*")
-                            .eq("id", rejectionTargetId)
-                            .single();
+                    const {
+                        data: booking,
+                        error: bookingError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .eq("id", rejectionTargetId)
+                        .single();
 
-                    if (bookingError) throw bookingError;
+                    if (bookingError) {
+                        throw bookingError;
+                    }
+
                     if (!booking) {
                         throw new Error("Booking was not found.");
                     }
 
-                    const { error: updateError } =
-                        await supabaseClient
-                            .from("bookings")
-                            .update({
-                                status: "Rejected",
-                                rejection_reason: finalReason
+                    if (!booking.email) {
+                        throw new Error(
+                            "The customer email address is missing."
+                        );
+                    }
+
+                    const emailResponse = await fetch(
+                        `${SERVER_URL}/send-booking-rejection`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                email: booking.email,
+                                name: booking.full_name,
+                                bookingId: booking.id,
+                                bookingDate: booking.booking_date,
+                                bookingTime: booking.booking_time,
+                                sessionType: booking.session_type,
+                                rejectionReason: finalReason
                             })
-                            .eq("id", rejectionTargetId);
+                        }
+                    );
 
-                    if (updateError) throw updateError;
+                    const emailResult =
+                        await emailResponse.json();
 
-                    if (booking.customer_id) {
-                        const { error: notificationError } =
-                            await supabaseClient
-                                .from("notifications")
-                                .insert({
-                                    customer_id: booking.customer_id,
-                                    booking_id: booking.id,
-                                    recipient: "customer",
-                                    title: "Booking Request Rejected",
-                                    message:
-                                        `Your booking request for ${booking.session_type || "your selected session"} ` +
-                                        `on ${formatBookingDate(booking.booking_date)} has been rejected.\n\n` +
-                                        `Reason: ${finalReason}\n\n` +
-                                        `If you have any questions, please contact Captured Photography Studio.`,
-                                    is_read: false,
-                                    link: null
-                                });
+                    if (
+                        !emailResponse.ok ||
+                        !emailResult.success
+                    ) {
+                        throw new Error(
+                            emailResult.message ||
+                            "The rejection email could not be sent."
+                        );
+                    }
+
+                    const {
+                        data: updatedBooking,
+                        error: updateError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .update({
+                            status: "Rejected",
+                            rejection_reason: finalReason
+                        })
+                        .eq("id", rejectionTargetId)
+                        .select()
+                        .single();
+
+                    if (updateError) {
+                        throw updateError;
+                    }
+
+                    if (updatedBooking.customer_id) {
+                        const {
+                            error: notificationError
+                        } = await supabaseClient
+                            .from("notifications")
+                            .insert({
+                                customer_id:
+                                    updatedBooking.customer_id,
+
+                                booking_id:
+                                    updatedBooking.id,
+
+                                recipient:
+                                    "customer",
+
+                                title:
+                                    "Booking Request Rejected",
+
+                                message:
+                                    `Your booking request for ${updatedBooking.session_type || "your selected session"} ` +
+                                    `on ${formatBookingDate(updatedBooking.booking_date)} has been rejected.\n\n` +
+                                    `Reason: ${finalReason}\n\n` +
+                                    `If you have any questions, please contact Captured Photography Studio.`,
+
+                                is_read:
+                                    false,
+
+                                link:
+                                    null
+                            });
 
                         if (notificationError) {
                             console.error(
@@ -2571,11 +2401,12 @@
 
                     showToast(
                         "Booking Rejected",
-                        `${booking.full_name}'s booking has been rejected and the customer has been notified.`
+                        `${updatedBooking.full_name}'s booking has been rejected and the rejection email has been sent.`
                     );
 
                     closeRejectionModal();
                     closeBookingDetailsModal();
+
                     await loadBookedSessions();
 
                 } catch (error) {
@@ -2585,7 +2416,7 @@
                     );
 
                     alert(
-                        "The booking could not be rejected.\n\n" +
+                        "The booking was not rejected.\n\n" +
                         error.message
                     );
 
@@ -2597,7 +2428,6 @@
                     }
                 }
             });
-
         async function loadAdminProfile() {
             const { data: { session }, error } =
                 await supabaseClient.auth.getSession();

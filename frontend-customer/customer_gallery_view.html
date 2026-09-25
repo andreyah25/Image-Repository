@@ -144,8 +144,7 @@
             );
 
         const SERVER_URL =
-            "https://image-repository-1.onrender.com";
-
+            "https://captured-server.onrender.com";
 
         const galleryTitle =
             document.getElementById("galleryTitle");
@@ -1333,7 +1332,6 @@
 
         }
 
-
         async function startPayMongoGalleryPayment() {
 
             if (!currentAccessRequest) {
@@ -1346,9 +1344,7 @@
             }
 
 
-            if (
-                canAccessHighQuality()
-            ) {
+            if (canAccessHighQuality()) {
 
                 closePaymentModal();
 
@@ -1366,11 +1362,15 @@
                 );
 
                 return;
+
             }
 
 
             if (
-                currentAccessRequest.payment_confirmed === true
+                currentAccessRequest.payment_confirmed === true &&
+                String(
+                    currentAccessRequest.payment_status || ""
+                ).toLowerCase() === "paid"
             ) {
 
                 alert(
@@ -1378,6 +1378,38 @@
                 );
 
                 return;
+
+            }
+
+
+            const {
+                token
+            } = getGalleryParameters();
+
+
+            const requestId =
+                currentAccessRequest.id;
+
+
+            if (!token) {
+
+                alert(
+                    "Gallery token is missing."
+                );
+
+                return;
+
+            }
+
+
+            if (!requestId) {
+
+                alert(
+                    "Gallery access request ID is missing."
+                );
+
+                return;
+
             }
 
 
@@ -1385,22 +1417,23 @@
 
                 if (btnPayMongo) {
 
-                    btnPayMongo.disabled =
-                        true;
+                    btnPayMongo.disabled = true;
 
-                    btnPayMongo.innerHTML =
-                        `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Creating Payment...
+                    btnPayMongo.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Creating Payment...
             `;
 
                 }
 
 
-                const {
-                    token
-                } =
-                    getGalleryParameters();
+                console.log(
+                    "GALLERY PAYMENT: Creating payment",
+                    {
+                        requestId,
+                        tokenExists: !!token
+                    }
+                );
 
 
                 const response =
@@ -1417,18 +1450,25 @@
                             body: JSON.stringify({
 
                                 requestId:
-                                    currentAccessRequest.id,
+                                    requestId,
 
                                 token:
                                     token
 
                             })
+
                         }
                     );
 
 
                 const result =
                     await response.json();
+
+
+                console.log(
+                    "GALLERY PAYMENT: Create payment response:",
+                    result
+                );
 
 
                 if (
@@ -1438,6 +1478,7 @@
 
                     throw new Error(
                         result.message ||
+                        result.error ||
                         "Unable to create payment."
                     );
 
@@ -1453,12 +1494,29 @@
                 }
 
 
+                /*
+                 * Save the request ID locally so the
+                 * gallery can check the payment after
+                 * returning from PayMongo.
+                 */
                 sessionStorage.setItem(
                     "galleryPaymentRequestId",
-                    currentAccessRequest.id
+                    requestId
                 );
 
 
+                /*
+                 * Save the token as well.
+                 */
+                sessionStorage.setItem(
+                    "galleryPaymentToken",
+                    token
+                );
+
+
+                /*
+                 * Redirect customer to PayMongo.
+                 */
                 window.location.href =
                     result.checkoutUrl;
 
@@ -1479,13 +1537,11 @@
 
                 if (btnPayMongo) {
 
-                    btnPayMongo.disabled =
-                        false;
+                    btnPayMongo.disabled = false;
 
-                    btnPayMongo.innerHTML =
-                        `
-            <i class="fa-solid fa-credit-card"></i>
-            Pay with PayMongo
+                    btnPayMongo.innerHTML = `
+                <i class="fa-solid fa-credit-card"></i>
+                Pay with PayMongo
             `;
 
                 }
@@ -1518,17 +1574,53 @@
 
 
             const token =
-                params.get("token");
+                params.get("token") ||
+                sessionStorage.getItem(
+                    "galleryPaymentToken"
+                );
 
 
             if (!requestId) {
+
+                console.warn(
+                    "GALLERY PAYMENT: Request ID missing."
+                );
+
                 return;
+
             }
 
 
+            if (!token) {
+
+                console.warn(
+                    "GALLERY PAYMENT: Token missing."
+                );
+
+                return;
+
+            }
+
+
+            console.log(
+                "GALLERY PAYMENT: Checking payment status",
+                {
+                    requestId,
+                    tokenExists: !!token
+                }
+            );
+
+
+            /*
+             * PayMongo webhook may need a few seconds
+             * to update the database.
+             *
+             * Check multiple times.
+             */
+
             for (
                 let i = 0;
-                i < 10;
+                i < 15;
                 i++
             ) {
 
@@ -1536,8 +1628,8 @@
 
                     const response =
                         await fetch(
-                            `${SERVER_URL}/api/gallery-access/payment-status/${requestId}` +
-                            `?token=${encodeURIComponent(token || "")}`
+                            `${SERVER_URL}/api/gallery-access/payment-status/${encodeURIComponent(requestId)}` +
+                            `?token=${encodeURIComponent(token)}`
                         );
 
 
@@ -1545,27 +1637,41 @@
                         await response.json();
 
 
+                    console.log(
+                        `GALLERY PAYMENT: Check ${i + 1}`,
+                        result
+                    );
+
+
                     if (
                         result.paymentConfirmed === true
                     ) {
 
-                        currentAccessRequest.payment_confirmed =
-                            true;
+                        /*
+                         * Update local access request.
+                         */
 
+                        currentAccessRequest =
+                        {
+                            ...(currentAccessRequest || {}),
 
-                        currentAccessRequest.payment_status =
-                            "paid";
+                            payment_confirmed:
+                                true,
 
+                            payment_status:
+                                "paid",
 
-                        currentAccessRequest.payment_required =
-                            true;
+                            payment_required:
+                                true
+                        };
 
 
                         if (
                             result.accessExpiresAt
                         ) {
 
-                            currentAccessRequest.access_expires_at =
+                            currentAccessRequest
+                                .access_expires_at =
                                 result.accessExpiresAt;
 
                         }
@@ -1575,13 +1681,41 @@
                             false;
 
 
+                        /*
+                         * Re-render gallery
+                         * without blur.
+                         */
+
                         renderGalleryPhotos(
                             currentPhotos
                         );
 
 
+                        /*
+                         * Remove temporary payment
+                         * session information.
+                         */
+
                         sessionStorage.removeItem(
                             "galleryPaymentRequestId"
+                        );
+
+                        sessionStorage.removeItem(
+                            "galleryPaymentToken"
+                        );
+
+
+                        /*
+                         * Remove payment parameters
+                         * from the browser URL.
+                         */
+
+                        window.history.replaceState(
+                            {},
+                            document.title,
+                            window.location.pathname +
+                            `?token=${encodeURIComponent(token)}` +
+                            `&request=${encodeURIComponent(requestId)}`
                         );
 
 
@@ -1593,6 +1727,7 @@
                         return;
 
                     }
+
 
                 } catch (error) {
 
@@ -1608,7 +1743,7 @@
                     resolve =>
                         setTimeout(
                             resolve,
-                            1500
+                            2000
                         )
                 );
 
@@ -1620,7 +1755,6 @@
             );
 
         }
-
         function showGalleryError(
             title,
             message
