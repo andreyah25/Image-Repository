@@ -36,8 +36,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-app.options("*", cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 app.use((req, res, next) => {
     console.log(
@@ -4940,11 +4939,6 @@ app.post(
                 repository.id
             );
 
-
-            /* =====================================================
-               5. FIND PREVIOUS REQUESTS
-            ===================================================== */
-
             const {
                 data: previousRequests,
                 error: previousRequestsError
@@ -6311,7 +6305,182 @@ const {
         });
     }
 });
+// =====================================================
+// CHECK GALLERY PAYMENT STATUS
+// =====================================================
+app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
+    try {
 
+        const { requestId } = req.params;
+        const token = req.query.token;
+
+        console.log("====================================");
+        console.log("CHECK GALLERY PAYMENT STATUS");
+        console.log("REQUEST ID:", requestId);
+        console.log("TOKEN EXISTS:", !!token);
+        console.log("====================================");
+
+        if (!requestId) {
+            return res.status(400).json({
+                success: false,
+                message: "Gallery request ID is required."
+            });
+        }
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: "Gallery token is required."
+            });
+        }
+
+        // ---------------------------------------------
+        // Load gallery access request
+        // ---------------------------------------------
+        const { data: accessRequest, error: requestError } =
+            await supabase
+                .from("gallery_access_requests")
+                .select(`
+                    id,
+                    booking_id,
+                    repository_id,
+                    status,
+                    request_number,
+                    payment_required,
+                    payment_confirmed,
+                    payment_status,
+                    paid_at,
+                    access_started_at,
+                    access_expires_at,
+                    expires_at,
+                    is_expired
+                `)
+                .eq("id", requestId)
+                .maybeSingle();
+
+        if (requestError) {
+
+            console.error(
+                "PAYMENT STATUS: Request query error:",
+                requestError
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: "Unable to check gallery payment."
+            });
+
+        }
+
+        if (!accessRequest) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Gallery access request not found."
+            });
+
+        }
+
+        // ---------------------------------------------
+        // Verify repository token
+        // ---------------------------------------------
+        const { data: repositoryLink, error: linkError } =
+            await supabase
+                .from("repository_client_links")
+                .select(`
+                    id,
+                    booking_id,
+                    repository_id,
+                    access_token
+                `)
+                .eq("repository_id", accessRequest.repository_id)
+                .eq("access_token", token)
+                .maybeSingle();
+
+        if (linkError) {
+
+            console.error(
+                "PAYMENT STATUS: Repository link error:",
+                linkError
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: "Unable to verify gallery token."
+            });
+
+        }
+
+        if (!repositoryLink) {
+
+            return res.status(403).json({
+                success: false,
+                message: "Invalid gallery token."
+            });
+
+        }
+
+        // ---------------------------------------------
+        // Return payment status
+        // ---------------------------------------------
+        const paymentConfirmed =
+            accessRequest.payment_confirmed === true &&
+            String(
+                accessRequest.payment_status || ""
+            ).toLowerCase() === "paid";
+
+        console.log(
+            "PAYMENT CONFIRMED:",
+            paymentConfirmed
+        );
+
+        console.log(
+            "PAYMENT STATUS:",
+            accessRequest.payment_status
+        );
+
+        console.log(
+            "PAID AT:",
+            accessRequest.paid_at
+        );
+
+        return res.json({
+
+            success: true,
+
+            paymentConfirmed:
+
+                paymentConfirmed,
+
+            paymentStatus:
+                accessRequest.payment_status || "unpaid",
+
+            paidAt:
+                accessRequest.paid_at || null,
+
+            accessExpiresAt:
+                accessRequest.access_expires_at ||
+                accessRequest.expires_at ||
+                null,
+
+            request: accessRequest
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "PAYMENT STATUS: Unexpected error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to check payment status."
+        });
+
+    }
+});
 app.post(
     "/api/gallery-access/send-approved-email/:requestId",
     async (req, res) => {
@@ -6326,10 +6495,6 @@ app.post(
                     error: "Missing request ID."
                 });
             }
-
-            // -----------------------------------------
-            // 1. GET ACCESS REQUEST
-            // -----------------------------------------
 
             const {
                 data: request,
@@ -6365,10 +6530,6 @@ app.post(
                     error: "This gallery access request is not approved."
                 });
             }
-
-            // -----------------------------------------
-            // 2. GET REPOSITORY
-            // -----------------------------------------
 
             let repository = null;
 
