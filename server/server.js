@@ -6069,245 +6069,301 @@ if (repositoryError) {
     }
 });
 
+// =====================================================
+// PAYMONGO GALLERY ACCESS WEBHOOK
+// =====================================================
 app.post("/api/paymongo/gallery-webhook", async (req, res) => {
 
     try {
 
-        const event =
-            req.body?.data;
+        console.log("====================================");
+        console.log("PAYMONGO GALLERY WEBHOOK RECEIVED");
+        console.log("====================================");
+
 
         if (!event) {
+
+            console.error("Gallery webhook: No event data.");
+
+            return res.status(200).json({
+                received: true
+            });
+        }
+        const event = req.body?.data;
+
+        const eventType =
+            event?.attributes?.type;
+
+        const session =
+            event?.attributes?.data;
+
+        const attributes =
+            session?.attributes || {};
+
+        console.log(
+            "GALLERY PAYMONGO EVENT:",
+            eventType
+        );
+
+        console.log(
+            "GALLERY CHECKOUT SESSION:",
+            session?.id
+        );
+
+        // Only process successful gallery payments
+        if (
+            eventType !==
+            "checkout_session.payment.paid"
+        ) {
+
+            console.log(
+                "Ignoring gallery event:",
+                eventType
+            );
+
+            return res.status(200).json({
+                received: true
+            });
+        }
+        const referenceNumber =
+            attributes?.reference_number;
+
+        console.log(
+            "GALLERY REFERENCE:",
+            referenceNumber
+        );
+
+        if (!referenceNumber) {
+
+            console.error(
+                "Gallery payment has no reference number."
+            );
 
             return res.status(200).json({
                 received: true
             });
         }
 
-        const eventType =
-            event.type ||
-            event.attributes?.type;
-
-        console.log(
-            "PAYMONGO GALLERY EVENT:",
-            eventType
-        );
         if (
-            eventType ===
-            "checkout_session.payment.paid"
+            !referenceNumber.startsWith("GALLERY-")
         ) {
 
-            const session =
-                event.data;
-
-            const attributes =
-                session?.attributes || {};
-
-            const referenceNumber =
-                attributes.reference_number;
-
-            if (!referenceNumber) {
-
-                console.error(
-                    "Gallery payment has no reference number."
-                );
-
-                return res.status(200).json({
-                    received: true
-                });
-            }
-
-            if (
-                !referenceNumber.startsWith(
-                    "GALLERY-"
-                )
-            ) {
-
-                console.log(
-                    "Ignoring non-gallery PayMongo payment:",
-                    referenceNumber
-                );
-
-                return res.status(200).json({
-                    received: true
-                });
-            }
-
-            const requestId =
-                referenceNumber.replace(
-                    "GALLERY-",
-                    ""
-                );
-            const {
-                data: accessRequest,
-                error: requestError
-            } = await supabase
-                .from("gallery_access_requests")
-                .select(`
-                    id,
-                    status,
-                    request_number,
-                    payment_required,
-                    payment_confirmed,
-                    payment_status
-                `)
-                .eq("id", requestId)
-                .maybeSingle();
-
-            if (requestError) {
-
-                console.error(
-                    "Webhook request lookup error:",
-                    requestError
-                );
-
-                return res.status(200).json({
-                    received: true
-                });
-            }
-
-            if (!accessRequest) {
-
-                console.error(
-                    "Gallery access request not found:",
-                    requestId
-                );
-
-                return res.status(200).json({
-                    received: true
-                });
-            }
-            if (
-                Number(
-                    accessRequest.request_number || 1
-                ) < 2
-            ) {
-
-                console.log(
-                    "Ignoring payment for first request:",
-                    requestId
-                );
-
-                return res.status(200).json({
-                    received: true
-                });
-            }
-
-            if (
-                accessRequest.payment_required !== true
-            ) {
-
-                console.log(
-                    "Payment not required:",
-                    requestId
-                );
-
-                return res.status(200).json({
-                    received: true
-                });
-            }
-           const paidAt = new Date();
-
-const expiresAt =
-    new Date(
-        paidAt.getTime() +
-        3 * 24 * 60 * 60 * 1000
-    );
-const archiveAt = new Date(
-    expiresAt.getTime() + (24 * 60 * 60 * 1000)
-);
-const {
-    error: updateError
-} = await supabase
-    .from("gallery_access_requests")
-    .update({
-
-        payment_confirmed:
-            true,
-
-        payment_status:
-            "paid",
-
-        paid_at:
-            paidAt.toISOString(),
-
-        access_started_at:
-            paidAt.toISOString(),
-
-        access_granted_at:
-            paidAt.toISOString(),
-
-        access_expires_at:
-            expiresAt.toISOString(),
-         expires_at:
-            expiresAt.toISOString(),
-
-        archive_at:
-            archiveAt.toISOString(),
-
-        is_expired:
-            false
-
-    })
-    .eq(
-        "id",
-        requestId
-    );
-
-            if (updateError) {
-
-                console.error(
-                    "Gallery payment database update error:",
-                    updateError
-                );
-
-                return res.status(200).json({
-                    received: true
-                });
-            }
-
             console.log(
-                "===================================="
+                "Ignoring non-gallery payment:",
+                referenceNumber
             );
 
-            console.log(
-                "GALLERY PAYMENT CONFIRMED"
+            return res.status(200).json({
+                received: true
+            });
+        }
+        const requestId =
+            referenceNumber.replace(
+                "GALLERY-",
+                ""
             );
 
-            console.log(
-                "REQUEST:",
+        console.log(
+            "GALLERY REQUEST ID:",
+            requestId
+        );
+        const {
+            data: accessRequest,
+            error: requestError
+        } = await supabase
+            .from("gallery_access_requests")
+            .select(`
+                id,
+                booking_id,
+                repository_id,
+                customer_email,
+                status,
+                request_number,
+                payment_required,
+                payment_confirmed,
+                payment_status,
+                paid_at
+            `)
+            .eq("id", requestId)
+            .maybeSingle();
+
+        if (requestError) {
+
+            console.error(
+                "Gallery request lookup error:",
+                requestError
+            );
+
+            return res.status(500).json({
+                received: false,
+                error: "Gallery request lookup failed."
+            });
+        }
+
+        if (!accessRequest) {
+
+            console.error(
+                "Gallery access request not found:",
                 requestId
             );
 
-            console.log(
-                "PAYMONGO SESSION:",
-                session.id
-            );
+            return res.status(200).json({
+                received: true
+            });
+        }
+
+        console.log(
+            "GALLERY REQUEST FOUND:",
+            accessRequest
+        );
+
+        if (
+            Number(
+                accessRequest.request_number || 1
+            ) < 2
+        ) {
 
             console.log(
-                "===================================="
+                "Ignoring payment for first gallery request:",
+                requestId
             );
+
+            return res.status(200).json({
+                received: true
+            });
         }
+
+        if (
+            accessRequest.payment_required !== true
+        ) {
+
+            console.log(
+                "Payment is not required:",
+                requestId
+            );
+
+            return res.status(200).json({
+                received: true
+            });
+        }
+        if (
+            accessRequest.payment_confirmed === true &&
+            String(
+                accessRequest.payment_status || ""
+            ).toLowerCase() === "paid"
+        ) {
+
+            console.log(
+                "Gallery payment already confirmed:",
+                requestId
+            );
+
+            return res.status(200).json({
+                received: true
+            });
+        }
+
+        // ---------------------------------------------
+        // Set access dates
+        // ---------------------------------------------
+
+        const paidAt = new Date();
+
+        const expiresAt =
+            new Date(
+                paidAt.getTime() +
+                3 * 24 * 60 * 60 * 1000
+            );
+
+        const archiveAt =
+            new Date(
+                expiresAt.getTime() +
+                24 * 60 * 60 * 1000
+            );
+
+        const {
+            error: updateError
+        } = await supabase
+            .from("gallery_access_requests")
+            .update({
+
+                payment_confirmed: true,
+
+                payment_status: "paid",
+
+                paid_at:
+                    paidAt.toISOString(),
+
+                access_started_at:
+                    paidAt.toISOString(),
+
+                access_granted_at:
+                    paidAt.toISOString(),
+
+                access_expires_at:
+                    expiresAt.toISOString(),
+
+                expires_at:
+                    expiresAt.toISOString(),
+
+                archive_at:
+                    archiveAt.toISOString(),
+
+                is_expired: false
+
+            })
+            .eq(
+                "id",
+                requestId
+            );
+
+        if (updateError) {
+
+            console.error(
+                "Gallery payment database update error:",
+                updateError
+            );
+
+            return res.status(500).json({
+                received: false,
+                error: "Unable to update gallery payment."
+            });
+        }
+
+        console.log("====================================");
+        console.log("GALLERY PAYMENT CONFIRMED");
+        console.log("REQUEST:", requestId);
+        console.log(
+            "PAYMONGO SESSION:",
+            session?.id
+        );
+        console.log(
+            "REFERENCE:",
+            referenceNumber
+        );
+        console.log(
+            "PAID AT:",
+            paidAt.toISOString()
+        );
+        console.log("====================================");
 
         return res.status(200).json({
             received: true
         });
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Gallery PayMongo webhook error:",
             error
         );
-        return res.status(200).json({
-            received: true
+
+        return res.status(500).json({
+            received: false,
+            error: "Gallery webhook processing failed."
         });
     }
 });
-// =====================================================
-// CHECK GALLERY PAYMENT STATUS
-// =====================================================
 app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
     try {
 
