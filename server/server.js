@@ -6068,28 +6068,23 @@ if (repositoryError) {
         });
     }
 });
-
-// =====================================================
-// PAYMONGO GALLERY ACCESS WEBHOOK
-// =====================================================
 app.post("/api/paymongo/gallery-webhook", async (req, res) => {
-
     try {
-
         console.log("====================================");
         console.log("PAYMONGO GALLERY WEBHOOK RECEIVED");
         console.log("====================================");
 
+        const event = req.body?.data;
 
         if (!event) {
-
-            console.error("Gallery webhook: No event data.");
+            console.error(
+                "Gallery webhook: No event data."
+            );
 
             return res.status(200).json({
                 received: true
             });
         }
-        const event = req.body?.data;
 
         const eventType =
             event?.attributes?.type;
@@ -6110,12 +6105,10 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
             session?.id
         );
 
-        // Only process successful gallery payments
         if (
             eventType !==
             "checkout_session.payment.paid"
         ) {
-
             console.log(
                 "Ignoring gallery event:",
                 eventType
@@ -6125,6 +6118,7 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
                 received: true
             });
         }
+
         const referenceNumber =
             attributes?.reference_number;
 
@@ -6134,7 +6128,6 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         );
 
         if (!referenceNumber) {
-
             console.error(
                 "Gallery payment has no reference number."
             );
@@ -6147,7 +6140,6 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         if (
             !referenceNumber.startsWith("GALLERY-")
         ) {
-
             console.log(
                 "Ignoring non-gallery payment:",
                 referenceNumber
@@ -6157,6 +6149,7 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
                 received: true
             });
         }
+
         const requestId =
             referenceNumber.replace(
                 "GALLERY-",
@@ -6167,6 +6160,7 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
             "GALLERY REQUEST ID:",
             requestId
         );
+
         const {
             data: accessRequest,
             error: requestError
@@ -6188,7 +6182,6 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
             .maybeSingle();
 
         if (requestError) {
-
             console.error(
                 "Gallery request lookup error:",
                 requestError
@@ -6201,7 +6194,6 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         }
 
         if (!accessRequest) {
-
             console.error(
                 "Gallery access request not found:",
                 requestId
@@ -6212,22 +6204,11 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
             });
         }
 
-        console.log(
-            "GALLERY REQUEST FOUND:",
-            accessRequest
-        );
-
         if (
             Number(
                 accessRequest.request_number || 1
             ) < 2
         ) {
-
-            console.log(
-                "Ignoring payment for first gallery request:",
-                requestId
-            );
-
             return res.status(200).json({
                 received: true
             });
@@ -6236,36 +6217,21 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         if (
             accessRequest.payment_required !== true
         ) {
-
-            console.log(
-                "Payment is not required:",
-                requestId
-            );
-
             return res.status(200).json({
                 received: true
             });
         }
+
         if (
             accessRequest.payment_confirmed === true &&
             String(
                 accessRequest.payment_status || ""
             ).toLowerCase() === "paid"
         ) {
-
-            console.log(
-                "Gallery payment already confirmed:",
-                requestId
-            );
-
             return res.status(200).json({
                 received: true
             });
         }
-
-        // ---------------------------------------------
-        // Set access dates
-        // ---------------------------------------------
 
         const paidAt = new Date();
 
@@ -6286,39 +6252,19 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         } = await supabase
             .from("gallery_access_requests")
             .update({
-
                 payment_confirmed: true,
-
                 payment_status: "paid",
-
-                paid_at:
-                    paidAt.toISOString(),
-
-                access_started_at:
-                    paidAt.toISOString(),
-
-                access_granted_at:
-                    paidAt.toISOString(),
-
-                access_expires_at:
-                    expiresAt.toISOString(),
-
-                expires_at:
-                    expiresAt.toISOString(),
-
-                archive_at:
-                    archiveAt.toISOString(),
-
+                paid_at: paidAt.toISOString(),
+                access_started_at: paidAt.toISOString(),
+                access_granted_at: paidAt.toISOString(),
+                access_expires_at: expiresAt.toISOString(),
+                expires_at: expiresAt.toISOString(),
+                archive_at: archiveAt.toISOString(),
                 is_expired: false
-
             })
-            .eq(
-                "id",
-                requestId
-            );
+            .eq("id", requestId);
 
         if (updateError) {
-
             console.error(
                 "Gallery payment database update error:",
                 updateError
@@ -6352,7 +6298,6 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         });
 
     } catch (error) {
-
         console.error(
             "Gallery PayMongo webhook error:",
             error
@@ -6366,9 +6311,8 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
 });
 app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
     try {
-
         const { requestId } = req.params;
-        const token = req.query.token;
+        const token = String(req.query.token || "").trim();
 
         console.log("====================================");
         console.log("CHECK GALLERY PAYMENT STATUS");
@@ -6390,34 +6334,33 @@ app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
             });
         }
 
-        // ---------------------------------------------
-        // Load gallery access request
-        // ---------------------------------------------
-        const { data: accessRequest, error: requestError } =
-            await supabase
-                .from("gallery_access_requests")
-                .select(`
-                    id,
-                    booking_id,
-                    repository_id,
-                    status,
-                    request_number,
-                    payment_required,
-                    payment_confirmed,
-                    payment_status,
-                    paid_at,
-                    access_started_at,
-                    access_expires_at,
-                    expires_at,
-                    is_expired
-                `)
-                .eq("id", requestId)
-                .maybeSingle();
+        const {
+            data: accessRequest,
+            error: requestError
+        } = await supabase
+            .from("gallery_access_requests")
+            .select(`
+                id,
+                booking_id,
+                repository_id,
+                status,
+                request_number,
+                payment_required,
+                payment_confirmed,
+                payment_status,
+                paid_at,
+                access_started_at,
+                access_granted_at,
+                access_expires_at,
+                expires_at,
+                is_expired
+            `)
+            .eq("id", requestId)
+            .maybeSingle();
 
         if (requestError) {
-
             console.error(
-                "PAYMENT STATUS: Request query error:",
+                "PAYMENT STATUS REQUEST ERROR:",
                 requestError
             );
 
@@ -6425,60 +6368,57 @@ app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
                 success: false,
                 message: "Unable to check gallery payment."
             });
-
         }
 
         if (!accessRequest) {
-
             return res.status(404).json({
                 success: false,
                 message: "Gallery access request not found."
             });
-
         }
 
-        // ---------------------------------------------
-        // Verify repository token
-        // ---------------------------------------------
-        const { data: repositoryLink, error: linkError } =
-            await supabase
-                .from("repository_client_links")
-                .select(`
-                    id,
-                    booking_id,
-                    repository_id,
-                    access_token
-                `)
-                .eq("repository_id", accessRequest.repository_id)
-                .eq("access_token", token)
-                .maybeSingle();
+        const {
+            data: repository,
+            error: repositoryError
+        } = await supabase
+            .from("repository_client_links")
+            .select(`
+                id,
+                booking_id,
+                access_token
+            `)
+            .eq("id", accessRequest.repository_id)
+            .eq("booking_id", accessRequest.booking_id)
+            .maybeSingle();
 
-        if (linkError) {
-
+        if (repositoryError) {
             console.error(
-                "PAYMENT STATUS: Repository link error:",
-                linkError
+                "PAYMENT STATUS REPOSITORY ERROR:",
+                repositoryError
             );
 
             return res.status(500).json({
                 success: false,
                 message: "Unable to verify gallery token."
             });
-
         }
 
-        if (!repositoryLink) {
+        if (!repository) {
+            return res.status(403).json({
+                success: false,
+                message: "Gallery repository not found."
+            });
+        }
 
+        if (
+            String(repository.access_token || "") !== token
+        ) {
             return res.status(403).json({
                 success: false,
                 message: "Invalid gallery token."
             });
-
         }
 
-        // ---------------------------------------------
-        // Return payment status
-        // ---------------------------------------------
         const paymentConfirmed =
             accessRequest.payment_confirmed === true &&
             String(
@@ -6501,40 +6441,31 @@ app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
         );
 
         return res.json({
-
             success: true,
-
-            paymentConfirmed:
-
-                paymentConfirmed,
-
+            paymentConfirmed,
             paymentStatus:
-                accessRequest.payment_status || "unpaid",
-
+                accessRequest.payment_status ||
+                "unpaid",
             paidAt:
-                accessRequest.paid_at || null,
-
+                accessRequest.paid_at ||
+                null,
             accessExpiresAt:
                 accessRequest.access_expires_at ||
                 accessRequest.expires_at ||
                 null,
-
             request: accessRequest
-
         });
 
     } catch (error) {
-
         console.error(
-            "PAYMENT STATUS: Unexpected error:",
+            "PAYMENT STATUS UNEXPECTED ERROR:",
             error
         );
 
         return res.status(500).json({
             success: false,
-            message: "Unable to check payment status."
+            message: "Unable to check gallery payment."
         });
-
     }
 });
 app.post(
@@ -6819,54 +6750,27 @@ app.post(
     }
 );
 app.get("/api/gallery-access/photos", async (req, res) => {
-
     try {
+        const token = String(req.query.token || "").trim();
 
-        const token =
-            String(req.query.token || "").trim();
+        const requestId = String(
+            req.query.request ||
+            req.query.requestId ||
+            ""
+        ).trim();
 
-        const requestId =
-            String(
-                req.query.request ||
-                req.query.requestId ||
-                ""
-            ).trim();
-
-        console.log(
-            "===================================="
-        );
-
-        console.log(
-            "GALLERY PHOTOS REQUEST"
-        );
-
-        console.log(
-            "TOKEN:",
-            token ? "EXISTS" : "MISSING"
-        );
-
-        console.log(
-            "REQUEST ID:",
-            requestId
-        );
-
-        console.log(
-            "===================================="
-        );
+        console.log("====================================");
+        console.log("GALLERY PHOTOS REQUEST");
+        console.log("TOKEN:", token ? "EXISTS" : "MISSING");
+        console.log("REQUEST ID:", requestId);
+        console.log("====================================");
 
         if (!token || !requestId) {
-
             return res.status(400).json({
                 success: false,
-                error:
-                    "Gallery token and request ID are required."
+                error: "Gallery token and request ID are required."
             });
-
         }
-
-        // ============================================
-        // 1. FIND THE GALLERY ACCESS REQUEST
-        // ============================================
 
         const {
             data: accessRequest,
@@ -6895,7 +6799,6 @@ app.get("/api/gallery-access/photos", async (req, res) => {
             .maybeSingle();
 
         if (requestError) {
-
             console.error(
                 "GALLERY REQUEST LOOKUP ERROR:",
                 requestError
@@ -6903,42 +6806,26 @@ app.get("/api/gallery-access/photos", async (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                error:
-                    "Unable to verify gallery access."
+                error: "Unable to verify gallery access."
             });
-
         }
 
         if (!accessRequest) {
-
             return res.status(404).json({
                 success: false,
-                error:
-                    "Gallery access request not found."
+                error: "Gallery access request not found."
             });
-
         }
-
-        // ============================================
-        // 2. REQUEST MUST BE APPROVED
-        // ============================================
 
         if (
-            String(accessRequest.status || "")
-                .toLowerCase() !== "approved"
+            String(accessRequest.status || "").toLowerCase() !==
+            "approved"
         ) {
-
             return res.status(403).json({
                 success: false,
-                error:
-                    "Gallery access has not been approved."
+                error: "Gallery access has not been approved."
             });
-
         }
-
-        // ============================================
-        // 3. GET REPOSITORY
-        // ============================================
 
         const {
             data: repository,
@@ -6950,18 +6837,11 @@ app.get("/api/gallery-access/photos", async (req, res) => {
                 booking_id,
                 access_token
             `)
-            .eq(
-                "id",
-                accessRequest.repository_id
-            )
-            .eq(
-                "booking_id",
-                accessRequest.booking_id
-            )
+            .eq("id", accessRequest.repository_id)
+            .eq("booking_id", accessRequest.booking_id)
             .maybeSingle();
 
         if (repositoryError) {
-
             console.error(
                 "GALLERY REPOSITORY LOOKUP ERROR:",
                 repositoryError
@@ -6969,123 +6849,73 @@ app.get("/api/gallery-access/photos", async (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                error:
-                    "Unable to verify gallery repository."
+                error: "Unable to verify gallery repository."
             });
-
         }
 
         if (!repository) {
-
             return res.status(404).json({
                 success: false,
-                error:
-                    "Gallery repository not found."
+                error: "Gallery repository not found."
             });
-
         }
-
-        // ============================================
-        // 4. VERIFY TOKEN
-        // ============================================
 
         if (
-            String(repository.access_token || "") !==
-            token
+            String(repository.access_token || "") !== token
         ) {
-
             return res.status(403).json({
                 success: false,
-                error:
-                    "Invalid gallery access token."
+                error: "Invalid gallery access token."
             });
-
         }
 
-        // ============================================
-        // 5. CHECK EXPIRATION
-        // ============================================
-
         if (accessRequest.access_expires_at) {
+            const expiresAt = new Date(
+                accessRequest.access_expires_at
+            );
 
-            const expiresAt =
-                new Date(
-                    accessRequest.access_expires_at
-                );
-
-            if (
-                Number.isNaN(
-                    expiresAt.getTime()
-                )
-            ) {
-
+            if (Number.isNaN(expiresAt.getTime())) {
                 return res.status(403).json({
                     success: false,
-                    error:
-                        "Gallery expiration date is invalid."
+                    error: "Gallery expiration date is invalid."
                 });
-
             }
 
             if (new Date() >= expiresAt) {
-
                 return res.status(403).json({
                     success: false,
-                    error:
-                        "Your gallery access has expired."
+                    error: "Your gallery access has expired."
                 });
-
             }
-
         }
 
-        // ============================================
-        // 6. CHECK PAYMENT FOR REQUEST #2+
-        // ============================================
+        const requestNumber = Number(
+            accessRequest.request_number || 1
+        );
 
-        const requestNumber =
-            Number(
-                accessRequest.request_number || 1
+        const paymentRequired =
+            accessRequest.payment_required === true;
+
+        const paymentConfirmed =
+            accessRequest.payment_confirmed === true;
+
+        const paymentPaid =
+            String(
+                accessRequest.payment_status || ""
+            ).toLowerCase() === "paid";
+
+        const fullQuality =
+            requestNumber === 1 ||
+            (
+                requestNumber >= 2 &&
+                (
+                    !paymentRequired ||
+                    (
+                        paymentConfirmed &&
+                        paymentPaid
+                    )
+                )
             );
-
-        if (requestNumber >= 2) {
-
-            const paymentConfirmed =
-                accessRequest.payment_confirmed === true;
-
-            const paymentPaid =
-                String(
-                    accessRequest.payment_status || ""
-                ).toLowerCase() === "paid";
-
-            if (
-                !paymentConfirmed ||
-                !paymentPaid
-            ) {
-
-                console.log(
-                    "Gallery payment required:",
-                    requestId
-                );
-
-                return res.status(403).json({
-                    success: false,
-                    error:
-                        "Payment is required before accessing this gallery.",
-                    paymentRequired: true,
-                    paymentConfirmed:
-                        paymentConfirmed,
-                    paymentStatus:
-                        accessRequest.payment_status
-                });
-
-            }
-
-        }
-
-        // ============================================
-        // 7. GET BOOKING
-        // ============================================
 
         const {
             data: booking,
@@ -7102,24 +6932,15 @@ app.get("/api/gallery-access/photos", async (req, res) => {
                 package_name,
                 total_price
             `)
-            .eq(
-                "id",
-                accessRequest.booking_id
-            )
+            .eq("id", accessRequest.booking_id)
             .maybeSingle();
 
         if (bookingError) {
-
             console.error(
                 "GALLERY BOOKING LOOKUP ERROR:",
                 bookingError
             );
-
         }
-
-        // ============================================
-        // 8. GET PHOTOS
-        // ============================================
 
         const {
             data: photos,
@@ -7135,19 +6956,12 @@ app.get("/api/gallery-access/photos", async (req, res) => {
                 detected_objects,
                 created_at
             `)
-            .eq(
-                "repository_id",
-                repository.id
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: true
-                }
-            );
+            .eq("repository_id", repository.id)
+            .order("created_at", {
+                ascending: true
+            });
 
         if (photosError) {
-
             console.error(
                 "GALLERY PHOTOS LOOKUP ERROR:",
                 photosError
@@ -7155,101 +6969,153 @@ app.get("/api/gallery-access/photos", async (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                error:
-                    "Unable to load gallery photos."
+                error: "Unable to load gallery photos."
             });
-
         }
 
-        // ============================================
-        // 9. RETURN GALLERY DATA
-        // ============================================
+        const processedPhotos = [];
+
+        for (const photo of photos || []) {
+            let previewUrl = null;
+            let imageUrl = null;
+
+            if (photo.storage_path) {
+                if (fullQuality) {
+                    const {
+                        data: signedImage,
+                        error: signedImageError
+                    } = await supabase.storage
+                        .from("client-photos")
+                        .createSignedUrl(
+                            photo.storage_path,
+                            3600
+                        );
+
+                    if (signedImageError) {
+                        console.error(
+                            "FULL IMAGE SIGNED URL ERROR:",
+                            signedImageError
+                        );
+                    } else {
+                        imageUrl =
+                            signedImage?.signedUrl || null;
+
+                        previewUrl =
+                            imageUrl;
+                    }
+                } else {
+                    const {
+                        data: signedPreview,
+                        error: signedPreviewError
+                    } = await supabase.storage
+                        .from("client-photos")
+                        .createSignedUrl(
+                            photo.storage_path,
+                            3600,
+                            {
+                                transform: {
+                                    width: 800,
+                                    height: 800,
+                                    resize: "contain",
+                                    quality: 40
+                                }
+                            }
+                        );
+
+                    if (signedPreviewError) {
+                        console.error(
+                            "PREVIEW SIGNED URL ERROR:",
+                            signedPreviewError
+                        );
+                    } else {
+                        previewUrl =
+                            signedPreview?.signedUrl || null;
+                    }
+                }
+            }
+
+            processedPhotos.push({
+                id: photo.id,
+                repository_id: photo.repository_id,
+                storage_path: photo.storage_path,
+                original_name: photo.original_name,
+                mime_type: photo.mime_type,
+                detected_objects: photo.detected_objects,
+                created_at: photo.created_at,
+                preview_url: previewUrl,
+                image_url: imageUrl
+            });
+        }
 
         console.log(
             "GALLERY PHOTOS FOUND:",
-            photos?.length || 0
+            processedPhotos.length
+        );
+
+        console.log(
+            "GALLERY FULL QUALITY:",
+            fullQuality
+        );
+
+        console.log(
+            "GALLERY PAYMENT CONFIRMED:",
+            paymentConfirmed
+        );
+
+        console.log(
+            "GALLERY PAYMENT STATUS:",
+            accessRequest.payment_status
         );
 
         return res.json({
-
             success: true,
 
             request: {
-
-                id:
-                    accessRequest.id,
-
-                booking_id:
-                    accessRequest.booking_id,
-
-                repository_id:
-                    accessRequest.repository_id,
-
-                customer_email:
-                    accessRequest.customer_email,
-
-                request_number:
-                    accessRequest.request_number,
-
+                id: accessRequest.id,
+                booking_id: accessRequest.booking_id,
+                repository_id: accessRequest.repository_id,
+                customer_email: accessRequest.customer_email,
+                request_number: accessRequest.request_number,
                 payment_required:
                     accessRequest.payment_required,
-
                 payment_confirmed:
                     accessRequest.payment_confirmed,
-
                 payment_status:
                     accessRequest.payment_status,
-
                 access_started_at:
                     accessRequest.access_started_at ||
                     accessRequest.access_granted_at,
-
                 access_expires_at:
                     accessRequest.access_expires_at,
-
                 paid_at:
                     accessRequest.paid_at
-
             },
 
-            booking:
-                booking || null,
+            booking: booking || null,
 
             repository: {
-
-                id:
-                    repository.id,
-
-                booking_id:
-                    repository.booking_id
-
+                id: repository.id,
+                booking_id: repository.booking_id
             },
 
-            photos:
-                photos || []
+            fullQuality,
 
+            previewMode: !fullQuality,
+
+            photos: processedPhotos
         });
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "GALLERY PHOTOS SERVER ERROR:",
             error
         );
 
         return res.status(500).json({
-
             success: false,
-
-            error:
-                "Unable to load gallery photos."
-
+            error: "Unable to load gallery photos."
         });
-
     }
-
 });
 app.listen(
     PORT,
