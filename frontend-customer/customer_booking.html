@@ -1015,18 +1015,15 @@
         };
         const BOOKING_DURATIONS = {
 
-            // Basic packages
             basic_1: 15,
             basic_2: 20,
             basic_3: 20,
             group_package: 60,
 
-            // Graduation packages
             classic_1: 60,
             classic_2: 60,
             classic_3: 70,
 
-            // Special sessions
             kids: 50,
             pre_birthday: 50,
             theme_holiday: 35,
@@ -1051,18 +1048,15 @@
 
         const BACKDROP_REQUIREMENTS = {
 
-            // Basic Packages
             basic_1: 1,
             basic_2: 1,
             basic_3: 1,
             group_package: 3,
 
-            // Graduation Packages
             classic_1: 1,
             classic_2: 1,
             classic_3: 1,
 
-            // Special Sessions
             kids: 1,
             pre_birthday: 1,
             theme_holiday: 1,
@@ -2212,6 +2206,7 @@
                     return;
                 }
 
+                const availablePackages = (packages || []).filter(packageItem => packageItem.status === "Available")
                 const packageKeyMap = {
                     "Basic 1": "basic_1",
                     "Basic 2": "basic_2",
@@ -2222,11 +2217,16 @@
                     "Classic 2": "classic_2",
                     "Classic 3": "classic_3",
                     "Kids": "kids",
-                    "Pre-birthday": "pre_birthday",
-                    "Pre Birthday": "pre_birthday",
+                    "Kids Pre-birthday Shoot": "kids",
+                    "Pre-Birthday": "pre_birthday",
+                    "Pre-Birthday Shoot": "pre_birthday",
                     "Theme/Holiday": "theme_holiday",
                     "Theme Holiday": "theme_holiday",
-                    "Maternity": "maternity"
+                    "Theme / Holiday": "theme_holiday",
+      
+                    "Maternity": "maternity",
+                    "Maternity Shoot": "maternity"
+
                 };
 
                 const regularPackageKeys = [
@@ -2256,7 +2256,7 @@
             `;
                 }
 
-                (packages || []).forEach(packageItem => {
+                (availablePackages || []).forEach(packageItem => {
                     const packageKey = packageKeyMap[packageItem.name];
 
                     if (!packageKey) {

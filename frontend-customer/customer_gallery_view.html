@@ -1075,36 +1075,32 @@
 
                 link.href =
                     blobUrl;
-
-
-                link.download =
-                    photo.original_name ||
-                    "gallery-photo.jpg";
-
-
+                let fileName = photo.original_name || "gallery-photo";
+                const mimeType = blob.type.toLowerCase();
+                const extensionMap = {
+                    "image/jpeg": ".jpeg",
+                    "image/jpg": ".jpg",
+                    "image/png": ".png",
+                    "image/webp": ".webp",
+                    "image/gif": ".gif",
+                    "image/bmp": ".bmp",
+                    "image/tiff": ".tiff",
+                    "image/heic": ".heic",
+                    "image/heif": ".heif"
+                }
+                const correctionExtension = extensionMap[mimeType] || "jpg";
+                fileName = fileName.replace(/\.(jpg|jpeg|png|webp|gif|bmp|tiff|heic|heif)%/i,"");
+                fileName += correctionExtension;
+                link.download = fileName;
+                
                 document.body.appendChild(
                     link
                 );
-
-
                 link.click();
-
-
-                document.body.removeChild(
-                    link
-                );
-
-
-                setTimeout(
-                    () => {
-                        URL.revokeObjectURL(
-                            blobUrl
-                        );
-                    },
-                    1000
-                );
-
-
+                document.body.removeChild(link);
+                setTimeout( () => {
+                        URL.revokeObjectURL(blobUrl);
+                    },1000);
             } catch (error) {
 
                 console.error(

@@ -539,15 +539,16 @@
                 }
 
 
-                const request =
+                const newRequest =
                     result.request;
 
 
                 console.log(
                     "GALLERY REQUEST CREATED SUCCESSFULLY:",
-                    request
+                    newRequest
                 );
 
+                const requestNumber = Number(newRequest.request_number);
                 if (
                     Number(request.request_number) === 1
                 ) {

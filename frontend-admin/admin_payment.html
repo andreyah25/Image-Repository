@@ -471,12 +471,12 @@
                 document.getElementById("paymentTableBody");
 
             tableBody.innerHTML = `
-        <tr>
-            <td colspan="7" style="text-align:center;">
-                Loading payments...
-            </td>
-        </tr>
-    `;
+                    <tr>
+                        <td colspan="7" style="text-align:center;">
+                            Loading payments...
+                        </td>
+                    </tr>
+                `;
 
             try {
 
@@ -550,6 +550,22 @@
                     );
 
                 }
+                const {
+                    data: galleryAccessRecords,
+                    error: galleryAccessError
+                } = await supabaseClient
+                    .from("gallery_access_requests")
+                    .select("*")
+                    .order("created_at", {
+                        ascending: false
+                    });
+
+                if (galleryAccessError) {
+                    console.error(
+                        "Gallery access payment lookup error:",
+                        galleryAccessError
+                    );
+                }
 
 
                 const combinedPayments = [];
@@ -612,11 +628,6 @@
                             return;
 
                         }
-
-
-                        /* =================================================
-                           DETERMINE PAYMENT STATUS
-                        ================================================= */
 
                         const databasePaymentStatus =
                             String(
@@ -746,6 +757,125 @@
 
                             created_at:
                                 booking.created_at ||
+                                null
+
+                        });
+
+                    }
+                );
+                (galleryAccessRecords || []).forEach(
+                    gallery => {
+
+                        const paymentStatus =
+                            String(
+                                gallery.payment_status ||
+                                gallery.status ||
+                                ""
+                            )
+                                .trim()
+                                .toLowerCase();
+
+                        const isPaid =
+                            gallery.payment_confirmed === true ||
+                            paymentStatus === "paid" ||
+                            paymentStatus === "confirmed";
+
+                        if (!isPaid) {
+                            return;
+                        }
+
+                        const galleryRequestId =
+                            gallery.id;
+
+                        if (!galleryRequestId) {
+                            return;
+                        }
+
+                        const existingGalleryPayment =
+                            combinedPayments.some(
+                                payment =>
+                                    String(
+                                        payment.gallery_access_request_id || ""
+                                    ) === String(galleryRequestId)
+                            );
+
+                        if (existingGalleryPayment) {
+                            return;
+                        }
+
+                        const galleryAmount =
+                            Number(
+                                gallery.payment_amount ||
+                                gallery.amount ||
+                                100
+                            ) || 100;
+
+                        const paymentDate =
+                            gallery.paid_at ||
+                            gallery.payment_confirmed_at ||
+                            gallery.payment_date ||
+                            gallery.updated_at ||
+                            gallery.created_at ||
+                            new Date().toISOString();
+
+                        combinedPayments.push({
+
+                            id:
+                                `gallery-${galleryRequestId}`,
+
+                            customer_id:
+                                gallery.customer_id ||
+                                null,
+
+                            booking_id:
+                                gallery.booking_id ||
+                                null,
+
+                            gallery_access_request_id:
+                                galleryRequestId,
+
+                            client_name:
+                                gallery.full_name ||
+                                gallery.customer_name ||
+                                gallery.name ||
+                                "Unknown",
+
+                            email:
+                                gallery.customer_email ||
+                                null,
+
+                            amount:
+                                galleryAmount,
+
+                            payment_method:
+                                gallery.payment_method ||
+                                "PayMongo",
+
+                            status:
+                                "Paid",
+
+                            payment_type:
+                                "Gallery Access",
+
+                            payment_date:
+                                paymentDate,
+
+                            paymongo_payment_id:
+                                gallery.paymongo_payment_id ||
+                                null,
+
+                            paymongo_checkout_id:
+                                gallery.paymongo_checkout_id ||
+                                null,
+
+                            payment_reference:
+                                gallery.paymongo_reference_number ||
+                                gallery.paymongo_reference ||
+                                gallery.payment_reference ||
+                                null,
+
+                            created_at:
+                                gallery.created_at ||
                                 null
 
                         });
@@ -2154,8 +2284,6 @@
                 });
             }
         }
-
-        // Run initialization
         initSidebar();
 
         loadLoggedInUser();

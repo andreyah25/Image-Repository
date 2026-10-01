@@ -282,11 +282,173 @@
         </main>
 
     </div>
+    <div id="photoLightbox" class="photo-lightbox">
 
+        <button type="button" id="photoLightboxClose" class="photo-lightbox-close" aria-label="Close">
+            &times;
+        </button>
+
+        <button type="button" id="photoLightboxPrev" class="photo-lightbox-prev" aria-label="Previous image">
+            &#10094;
+        </button>
+
+        <img id="photoLightboxImage" class="photo-lightbox-image" src="" alt="">
+
+        <button type="button" id="photoLightboxNext" class="photo-lightbox-next" aria-label="Next image">
+            &#10095;
+        </button>
+
+        <div id="photoLightboxCounter" class="photo-lightbox-counter">
+            1 / 1
+        </div>
+
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+        /* =========================================================
+   PHOTO LIGHTBOX
+   ========================================================= */
+
+        (function () {
+
+            const lightbox = document.getElementById('photoLightbox');
+            const lightboxImage = document.getElementById('photoLightboxImage');
+            const closeButton = document.getElementById('photoLightboxClose');
+            const prevButton = document.getElementById('photoLightboxPrev');
+            const nextButton = document.getElementById('photoLightboxNext');
+            const counter = document.getElementById('photoLightboxCounter');
+
+            if (!lightbox || !lightboxImage) return;
+
+            let currentIndex = 0;
+            let galleryImages = [];
+
+            function collectImages() {
+                galleryImages = Array.from(
+                    document.querySelectorAll('#photoGrid .customer-photo-card img')
+                );
+            }
+
+            function showImage(index) {
+
+                collectImages();
+
+                if (!galleryImages.length) return;
+
+                if (index < 0) {
+                    index = galleryImages.length - 1;
+                }
+
+                if (index >= galleryImages.length) {
+                    index = 0;
+                }
+
+                currentIndex = index;
+
+                const selectedImage = galleryImages[currentIndex];
+
+                lightboxImage.src = selectedImage.src;
+                lightboxImage.alt = selectedImage.alt || 'Photo';
+
+                counter.textContent =
+                    `${currentIndex + 1} / ${galleryImages.length}`;
+
+                lightbox.classList.add('show');
+
+                document.body.style.overflow = 'hidden';
+
+                updateNavigation();
+            }
+
+            function updateNavigation() {
+
+                if (galleryImages.length <= 1) {
+                    prevButton.style.display = 'none';
+                    nextButton.style.display = 'none';
+                    counter.style.display = 'none';
+                } else {
+                    prevButton.style.display = 'flex';
+                    nextButton.style.display = 'flex';
+                    counter.style.display = 'block';
+                }
+            }
+
+            function closeLightbox() {
+
+                lightbox.classList.remove('show');
+
+                lightboxImage.src = '';
+
+                document.body.style.overflow = '';
+            }
+
+            function showPrevious() {
+                showImage(currentIndex - 1);
+            }
+
+            function showNext() {
+                showImage(currentIndex + 1);
+            }
+
+            document.addEventListener('click', function (event) {
+
+                const image = event.target.closest(
+                    '#photoGrid .customer-photo-card img'
+                );
+
+                if (!image) return;
+
+                collectImages();
+
+                const index = galleryImages.indexOf(image);
+
+                if (index !== -1) {
+                    showImage(index);
+                }
+            });
+
+            closeButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                closeLightbox();
+            });
+
+            prevButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                showPrevious();
+            });
+
+            nextButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                showNext();
+            });
+
+            lightbox.addEventListener('click', function (event) {
+
+                if (event.target === lightbox) {
+                    closeLightbox();
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+
+                if (!lightbox.classList.contains('show')) return;
+
+                if (event.key === 'Escape') {
+                    closeLightbox();
+                }
+
+                if (event.key === 'ArrowLeft') {
+                    showPrevious();
+                }
+
+                if (event.key === 'ArrowRight') {
+                    showNext();
+                }
+            });
+
+        })();
         const urlParams =
             new URLSearchParams(window.location.search);
 
@@ -1756,17 +1918,17 @@
 
             photoGrid.innerHTML = `
 
-        <div class="customer-folder-empty">
+                <div class="customer-folder-empty">
 
-            <i class="fa-solid fa-spinner fa-spin"></i>
+                    <i class="fa-solid fa-spinner fa-spin"></i>
 
-            <div>
-                Searching photos...
-            </div>
+                    <div>
+                        Searching photos...
+                    </div>
 
-        </div>
+                </div>
 
-    `;
+            `;
 
             try {
 
@@ -1780,16 +1942,9 @@
                         await supabaseClient
                             .from("repository_photos")
                             .select("*")
-                            .eq(
-                                "repository_id",
-                                repositoryId
-                            )
-                            .eq(
-                                "is_archived",
-                                false
-                            )
-                            .order(
-                                "created_at",
+                            .eq("repository_id", repositoryId)
+                            .eq("is_archived", false)
+                            .order("created_at",
                                 {
                                     ascending: false
                                 }
@@ -1848,13 +2003,54 @@
                 }
 
 
-                const photoResults =
-                    photos || [];
+                const photoResults = await Promise.all(
+                    (photos || []).map(async photo => {
+                        try {
+                            const {
+                                data: signedUrlData,
+                                error: signedUrlError
+                            } = await supabaseClient
+                                .storage
+                                .from("client-photos")
+                                .createSignedUrl(
+                                    photo.storage_path,
+                                    3600
+                                );
 
+                            if (signedUrlError) {
+                                console.error(
+                                    "Could not create image URL:",
+                                    photo.original_name,
+                                    signedUrlError
+                                );
 
-                renderPhotos(
-                    photoResults
+                                return {
+                                    ...photo,
+                                    image_url: ""
+                                };
+                            }
+
+                            return {
+                                ...photo,
+                                image_url: signedUrlData?.signedUrl || ""
+                            };
+
+                        } catch (error) {
+                            console.error(
+                                "Image URL error:",
+                                photo.original_name,
+                                error
+                            );
+
+                            return {
+                                ...photo,
+                                image_url: ""
+                            };
+                        }
+                    })
                 );
+
+                renderPhotos(photoResults);
                 if (query) {
 
                     photoSearchInfo.textContent =
@@ -1960,7 +2156,7 @@
 
 
             photos.forEach(
-                photo => {
+                (photo,index) => {
 
                     const card =
                         document.createElement("div");
@@ -1968,7 +2164,7 @@
 
                     card.className =
                         "customer-photo-card";
-
+                    card.dataset.photoIndex = index;
 
                     card.innerHTML = `
 
@@ -2207,7 +2403,6 @@
                             mime_type: file.type,
                             file_size: file.size,
                             processing_status: "pending",
-                            uploaded_by: currentUser.id
                         })
                         .select()
                         .single();
