@@ -319,17 +319,14 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
-
-/* =========================
-   SECTION HEADER
-========================= */
-
 .content-header {
     display: flex;
     align-items: center;
     justify-content: flex-end; /* <--- Aligns button to the right */
     margin-top: 20px;          /* <--- Adjust vertical position above the button */
-    margin-bottom: 20px;       /* <--- Vertical spacing below the button */
+    margin-bottom: 20px; 
+    position: relative;
+    z-index: 1000;     
 }
 
 .content-header h2 {
@@ -339,12 +336,16 @@ body {
     color: #333;
 }
 
-.filter-dropdown-wrapper {
+.f.filter-dropdown-wrapper {
     position: relative;
     display: inline-block;
+    z-index: 1001;
 }
 
 .filter-dropdown-wrapper .add-new-client-btn {
+    position: relative;
+    z-index: 1002;
+    pointer-events: auto;
     background-color: #639A88;
     color: #ffffff;
     border: none;
@@ -360,16 +361,18 @@ body {
     cursor: pointer;
     white-space: nowrap;
 }
-
 .filter-dropdown-wrapper .add-new-client-btn:hover {
     background-color: #528373;
 }
+.management-tab-content {
+    width: 100%;
+    position: relative;
+}
 
-
-/* =========================
-   BUTTONS
-========================= */
-
+.package-grid {
+    position: relative;
+    z-index: 1;
+}
 button {
     font-family: "DM Sans", sans-serif;
 }
@@ -1275,7 +1278,59 @@ body {
     color: #777;
     font-size: 15px;
 }
+/* =========================
+   BACKDROP MODAL
+========================= */
 
+.backdrop-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+
+    justify-content: center;
+    align-items: center;
+}
+
+.backdrop-modal.show {
+    display: flex !important;
+}
+
+.backdrop-card-modal {
+    width: min(500px, 90%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.backdrop-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+}
+
+.backdrop-modal-title {
+    margin: 0;
+}
+
+.backdrop-modal-body {
+    padding: 24px;
+}
+
+.backdrop-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
 .backdrop-card .package-header {
     margin-bottom: 24px;
 }

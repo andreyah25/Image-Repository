@@ -2022,16 +2022,6 @@
 
             console.log("Current time:", now);
 
-            // ============================================================
-            // FETCH ALL ACCESS REQUESTS THAT HAVE EXPIRED
-            //
-            // We check BOTH:
-            //   access_expires_at
-            //   expires_at
-            //
-            // because your table contains both columns.
-            // ============================================================
-
             const {
                 data: allAccess,
                 error: fetchError
@@ -2080,11 +2070,6 @@
 
                 return;
             }
-
-            // ============================================================
-            // FIND EXPIRED RECORDS
-            // ============================================================
-
             const expiredAccess = allAccess.filter(access => {
 
                 const accessExpiresAt = access.access_expires_at
@@ -2110,11 +2095,6 @@
                 "Expired gallery access found:",
                 expiredAccess.length
             );
-
-            // ============================================================
-            // NO EXPIRED ACCESS
-            // ============================================================
-
             if (expiredAccess.length === 0) {
 
                 console.log(
@@ -2123,11 +2103,6 @@
 
                 return;
             }
-
-            // ============================================================
-            // DISPLAY ALL EXPIRED RECORDS
-            // ============================================================
-
             console.table(
                 expiredAccess.map(access => ({
                     id: access.id,
@@ -2139,11 +2114,6 @@
                     expires_at: access.expires_at
                 }))
             );
-
-            // ============================================================
-            // MARK EXPIRED ACCESS AS EXPIRED
-            // ============================================================
-
             for (const access of expiredAccess) {
 
                 // Already correctly marked expired
@@ -2302,21 +2272,9 @@
                 return;
             }
 
-            /*
-            ============================================================
-            COUNT UNIQUE FOLDER ACCOUNTS
-            ============================================================
-            */
-
             const uniqueFolders = new Set();
 
             (accessRecords || []).forEach(record => {
-
-                /*
-                 * repository_id represents the customer's folder.
-                 * Use this so multiple access records for the same
-                 * folder do not inflate the count.
-                 */
 
                 if (record.repository_id) {
                     uniqueFolders.add(
@@ -2639,17 +2597,9 @@
                             const props =
                                 info.event.extendedProps;
 
-
-                            /*
-                             * Save selected booking
-                             */
                             selectedCalendarBooking =
                                 props.bookingId;
 
-
-                            /*
-                             * CUSTOMER
-                             */
 
                             document.getElementById(
                                 "modalClient"
@@ -2670,10 +2620,6 @@
                                 props.contact ||
                                 "Not provided";
 
-
-                            /*
-                             * BOOKING
-                             */
 
                             document.getElementById(
                                 "modalPackage"
@@ -2731,11 +2677,6 @@
                                 formatArrayValue(
                                     props.addons
                                 );
-
-
-                            /*
-                             * PAYMENT
-                             */
 
                             document.getElementById(
                                 "modalPaymentMethod"

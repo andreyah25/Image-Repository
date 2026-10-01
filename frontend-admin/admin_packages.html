@@ -152,15 +152,15 @@
 
             <div class="management-tab-content">
 
-                <div class="content-header">
-                    <div class="filter-dropdown-wrapper">
-                        <button type="button" class="add-new-client-btn" id="addServiceBtn" onclick="openAddModal()">
+                <div class="content-header" style="position: relative; z-index: 9999;">
+                    <div class="filter-dropdown-wrapper" style="position: relative; z-index: 10000;">
+                        <button type="button" class="add-new-client-btn" id="addServiceBtn" onclick="openAddModal()"
+                            style="position: relative; z-index: 10001; pointer-events: auto;">
                             <i class="fa-solid fa-plus"></i>
                             <span id="addBtnText">Add Service</span>
                         </button>
                     </div>
                 </div>
-
                 <!-- Packages Grid View -->
                 <div id="packageGrid" class="package-grid">
                     <div class="loading-state">
@@ -169,7 +169,7 @@
                 </div>
 
                 <!-- Backdrop Grid View -->
-                <div id="backdropGrid" class="package-grid" style="display: none;">
+                <div id="backdropGrid" class="package-grid" style="display: none; position:relative; z-index:1;">
                     <div class="loading-state">
                         <i class="fa-solid fa-spinner fa-spin"></i> Loading backdrops...
                     </div>
@@ -1261,6 +1261,10 @@
                 console.log("BACKDROPS FROM DATABASE:", data);
 
                 backdrops = data || [];
+                if (backdrops.length === 0) {
+                    await createDefaultBackdrops();
+                    return;
+                }
 
                 renderBackdrops();
 
@@ -1402,43 +1406,98 @@
 
         document.getElementById("backdropForm").addEventListener("submit", async function (e) {
             e.preventDefault();
-            const id = document.getElementById("backdropId").value;
+
+            const id = document.getElementById("backdropId").value.trim();
             const name = document.getElementById("backdropName").value.trim();
             const hex = document.getElementById("backdropHex").value.trim();
             const status = document.getElementById("backdropStatus").value;
             const saveBtn = document.getElementById("saveBackdropBtn");
 
+            if (!name) {
+                showToast("Backdrop name is required.", "error");
+                return;
+            }
+
             saveBtn.disabled = true;
+            saveBtn.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
             try {
+                const backdropData = {
+                    name: name,
+                    hex: hex || null,
+                    status: status
+                };
+
+                console.log("BACKDROP SAVE DATA:", backdropData);
+                console.log("BACKDROP ID:", id);
+
                 if (id) {
+
+                    // UPDATE EXISTING BACKDROP
                     const { data, error } = await supabaseClient
                         .from("backdrops")
-                        .update({ name, hex, status })
+                        .update(backdropData)
                         .eq("id", id)
-                        .select().single();
-                    if (error) throw error;
-                    const idx = backdrops.findIndex(b => b.id === id);
-                    if (idx !== -1) backdrops[idx] = data;
-                    showToast("Backdrop updated.");
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error("BACKDROP UPDATE ERROR:", error);
+                        throw error;
+                    }
+
+                    const index = backdrops.findIndex(
+                        b => String(b.id) === String(id)
+                    );
+
+                    if (index !== -1) {
+                        backdrops[index] = data;
+                    }
+
+                    showToast("Backdrop updated successfully.");
+
                 } else {
+
+                    // ADD NEW BACKDROP
                     const { data, error } = await supabaseClient
                         .from("backdrops")
-                        .insert({ name, hex, status })
-                        .select().single();
-                    if (error) throw error;
+                        .insert([backdropData])
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error("BACKDROP INSERT ERROR:", error);
+                        throw error;
+                    }
+
+                    console.log("NEW BACKDROP:", data);
+
                     backdrops.push(data);
-                    showToast("Backdrop added.");
+
+                    showToast("Backdrop added successfully.");
                 }
+
                 renderBackdrops();
                 closeBackdropModal();
-            } catch (err) {
-                showToast(err.message, "error");
+
+            } catch (error) {
+
+                console.error("SAVE BACKDROP ERROR:", error);
+
+                showToast(
+                    "Unable to save backdrop: " + error.message,
+                    "error"
+                );
+
             } finally {
+
                 saveBtn.disabled = false;
+
+                saveBtn.innerHTML =
+                    '<i class="fa-solid fa-floppy-disk"></i> Save';
             }
         });
-
         async function toggleBackdrop(id) {
             console.log("TOGGLE BACKDROP CLICKED:", id);
 
