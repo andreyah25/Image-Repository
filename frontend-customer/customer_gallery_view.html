@@ -1076,7 +1076,7 @@
                 link.href =
                     blobUrl;
                 let fileName = photo.original_name || "gallery-photo";
-                const mimeType = blob.type.toLowerCase();
+                const mimeType = blob.type.toLowerCase().split(";")[0];
                 const extensionMap = {
                     "image/jpeg": ".jpeg",
                     "image/jpg": ".jpg",
@@ -1089,15 +1089,16 @@
                     "image/heif": ".heif"
                 }
                 const correctionExtension = extensionMap[mimeType] || "jpg";
-                fileName = fileName.replace(/\.(jpg|jpeg|png|webp|gif|bmp|tiff|heic|heif)%/i,"");
-                fileName += correctionExtension;
-                link.download = fileName;
-                
+                fileName = fileName.replace(/\.(jpe?g|png|webp|gif|bmp|tiff|heic|heif)%/i,"");
+                const extension = extensionMap[mimeType] || ".jpg";
+                link.download = fileName + extension;
+
                 document.body.appendChild(
                     link
                 );
+                document.body.appendChild(link);
                 link.click();
-                document.body.removeChild(link);
+                link.remove();
                 setTimeout( () => {
                         URL.revokeObjectURL(blobUrl);
                     },1000);
