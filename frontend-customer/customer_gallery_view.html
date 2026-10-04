@@ -1034,12 +1034,14 @@
                 }
 
 
-                const response =
-                    await fetch(
-                        `${SERVER_URL}/api/gallery-access/open/${encodeURIComponent(requestId)}` +
-                        `?token=${encodeURIComponent(token)}`
-                    );
 
+                const response = await fetch(
+                    `${SERVER_URL}/api/gallery-access/photo/${encodeURIComponent(photo.id)}` +
+                    `?token=${encodeURIComponent(token)}`
+                );
+                console.log("Download HTTP status:", response.status);
+                console.log("Download Content-Type:", response.headers.get("content-type"));
+                console.log("Download Content-Disposition:", response.headers.get("content-disposition"));
 
                 if (!response.ok) {
 
