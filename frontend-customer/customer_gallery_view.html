@@ -1059,26 +1059,37 @@
                 }
 
 
-                const blob =
-                    await response.blob();
+                const blob = await response.blob();
 
+                console.log("Download content type:", blob.type);
+                console.log("Download file size:", blob.size);
 
-                const blobUrl =
-                    URL.createObjectURL(
-                        blob
+                if (!blob.type.toLowerCase().startsWith("image/")) {
+                    const responseText = await blob.text();
+                    console.error("Server did not return an image:", responseText.slice(0, 300));
+
+                    throw new Error(
+                        "The server returned a non-image file. Check the backend download endpoint."
                     );
+                }
 
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement("a");
 
-                const link =
-                    document.createElement("a");
+                link.href = blobUrl;
 
-
-                link.href =
-                    blobUrl;
+                // Remove all repeated image extensions from the filename.
                 let fileName = photo.original_name || "gallery-photo";
+
+                fileName = fileName.replace(
+                    /(\.(jpg|jpeg|png|webp|gif|bmp|tiff|heic|heif))+$/i,
+                    ""
+                );
+
                 const mimeType = blob.type.toLowerCase().split(";")[0];
+
                 const extensionMap = {
-                    "image/jpeg": ".jpeg",
+                    "image/jpeg": ".jpg",
                     "image/jpg": ".jpg",
                     "image/png": ".png",
                     "image/webp": ".webp",
@@ -1087,21 +1098,15 @@
                     "image/tiff": ".tiff",
                     "image/heic": ".heic",
                     "image/heif": ".heif"
-                }
-                const correctionExtension = extensionMap[mimeType] || "jpg";
-                fileName = fileName.replace(/\.(jpe?g|png|webp|gif|bmp|tiff|heic|heif)%/i,"");
-                const extension = extensionMap[mimeType] || ".jpg";
-                link.download = fileName + extension;
+                };
 
-                document.body.appendChild(
-                    link
-                );
+                link.download = fileName + (extensionMap[mimeType] || ".jpg");
+
                 document.body.appendChild(link);
                 link.click();
                 link.remove();
-                setTimeout( () => {
-                        URL.revokeObjectURL(blobUrl);
-                    },1000);
+
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
             } catch (error) {
 
                 console.error(
