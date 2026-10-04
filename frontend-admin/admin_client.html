@@ -218,7 +218,6 @@
             </div>
         </div>
     </div>
-
     <div class="simple-rejection-modal" id="rejectionModal">
         <div class="simple-rejection-card">
             <h2 id="rejectionModalTitle">Reject Booking</h2>
@@ -256,9 +255,7 @@
             </form>
         </div>
     </div>
-    <!-- =========================================================
-     BOOKING DETAILS MODAL
-========================================================= -->
+
     <div class="booking-details-modal" id="bookingDetailsModal">
 
         <div class="booking-details-card">
@@ -422,6 +419,72 @@
             });
         }
 
+        function getBookingPriority(bookingDate, status) {
+            const normalizedStatus = String(status || "").trim().toLowerCase();
+
+            if (!bookingDate || !isBookingPending(status)) {
+                return {
+                    level: "",
+                    label: ""
+                };
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const bookingDay = new Date(`${bookingDate}T00:00:00`);
+
+            if (Number.isNaN(bookingDay.getTime())) {
+                return {
+                    level: "",
+                    label: ""
+                };
+            }
+
+            const diffDays = Math.ceil(
+                (bookingDay - today) / (1000 * 60 * 60 * 24)
+            );
+
+            if (diffDays < 0) {
+                return {
+                    level: "",
+                    label: ""
+                };
+            }
+
+            if (diffDays === 0) {
+                return {
+                    level: "urgent",
+                    label: "Today"
+                };
+            }
+
+            if (diffDays === 1) {
+                return {
+                    level: "tomorrow",
+                    label: "Tomorrow"
+                };
+            }
+
+            if (diffDays <= 3) {
+                return {
+                    level: "soon",
+                    label: `${diffDays} Days`
+                };
+            }
+
+            if (diffDays <= 7) {
+                return {
+                    level: "week",
+                    label: "This Week"
+                };
+            }
+
+            return {
+                level: "",
+                label: ""
+            };
+        }
         function formatBookingDate(dateString) {
             if (!dateString) return "-";
 
@@ -508,7 +571,7 @@
                         </p>
 
                         ${notification.link
-                                        ? `
+                        ? `
                     <a
                         href="${notification.link}"
                         class="notification-link"
@@ -558,7 +621,7 @@
             }
         }
 
-           async function loadBookedSessions() {
+        async function loadBookedSessions() {
 
             try {
 
@@ -859,7 +922,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td
-                            colspan="10"
+                            colspan="11"
                             class="empty-table-message"
                         >
                             No booked sessions found.
@@ -890,10 +953,26 @@
                     const remainingBalance =
                         Math.max(totalPrice - downpaymentAmount, 0);
 
-                  
 
+                    const priority = getBookingPriority(
+                        booking.booking_date,
+                        booking.status
+                    );
 
-                         let actionHTML = `
+                    const priorityHTML = priority.label
+                        ? `<span class="booking-priority ${priority.level}">
+                        ${priority.level === "urgent"
+                            ? "🔴"
+                            : priority.level === "tomorrow"
+                                ? "🟠"
+                                : priority.level === "soon"
+                                    ? "🟡"
+                                    : "🟢"}
+                            ${escapeHtml(priority.label)}
+                        </span>`
+                        : `<span class="booking-priority-none">—</span>`;
+
+                    let actionHTML = `
                         <button
                             type="button"
                             class="booking-view-btn"
@@ -941,8 +1020,6 @@
                     tbody.innerHTML += `
 
                 <tr>
-
-                    <!-- NUMBER -->
 
                     <td>
                         ${index + 1}
@@ -1039,26 +1116,30 @@
                     )}
                         </strong>
                     </td>
-                  <td>
-                        ${escapeHtml(booking.payment_method || "Not specified"
+                 <td>
+                            ${escapeHtml(
+                        booking.payment_method || "Not specified"
                     )}
-                    </td>
-                    <td>
-
-                        <span
-                            class="
-                                booking-status
-                                ${escapeHtml(
-                        statusClass
-                    )}
-                            "> ${escapeHtml(statusLabel)}
-                        </span>
                         </td>
-                    <td>
-                        ${actionHTML}
-                    </td>
+
+                        <td>
+                            ${priorityHTML}
+                        </td>
+
+                        <td>
+                            <span
+                                class="
+                                    booking-status
+                                    ${escapeHtml(statusClass)}
+                                ">
+                                ${escapeHtml(statusLabel)}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${actionHTML}
                 </tr>`;
-             }
+                }
             );
         }
         document.addEventListener(
@@ -1154,13 +1235,13 @@
                 "Pending";
 
 
-            const totalPrice = Number( booking.total_price || 0 );
-            const downpaymentAmount =Number(booking.downpayment_amount || 0 );
-            const remainingBalance =Math.max( totalPrice -downpaymentAmount, 0);
-            const paymentStatus = booking.payment_status ||"Pending Verification";
-            const title =document.getElementById( "bookingDetailsTitle" );
-            const subtitle =document.getElementById("bookingDetailsSubtitle" );
-            const statusElement = document.getElementById("bookingDetailsStatus" );
+            const totalPrice = Number(booking.total_price || 0);
+            const downpaymentAmount = Number(booking.downpayment_amount || 0);
+            const remainingBalance = Math.max(totalPrice - downpaymentAmount, 0);
+            const paymentStatus = booking.payment_status || "Pending Verification";
+            const title = document.getElementById("bookingDetailsTitle");
+            const subtitle = document.getElementById("bookingDetailsSubtitle");
+            const statusElement = document.getElementById("bookingDetailsStatus");
 
 
             if (title) {
@@ -1186,7 +1267,7 @@
 
                 const statusClass =
                     status
-                        .replace( /\s+/g, "-" );
+                        .replace(/\s+/g, "-");
 
                 statusElement.className =
                     `booking-status ${statusClass}`;
@@ -1550,6 +1631,7 @@
         }
 
 
+
         function closeBookingDetailsModal() {
 
             const modal =
@@ -1756,25 +1838,17 @@
             const uniqueToken =
                 crypto.randomUUID();
 
-            const {
-                data: repository,
-                error
-            } =
+           
+                const {
+                    data: repository,
+                    error
+                } =
                 await supabaseClient
-                    .from(
-                        "repository_client_links"
-                    )
+                    .from("repository_client_links")
                     .insert({
-
-                        booking_id:
-                            booking.id,
-
-                        access_token:
-                            uniqueToken,
-
-                        created_by:
-                            user?.id || null
-
+                        booking_id: booking.id,
+                        access_token: uniqueToken,
+                        created_by: user?.id || null
                     })
                     .select()
                     .single();
@@ -1977,7 +2051,84 @@
 
             }
         });
+        document.addEventListener("click", async function (e) {
 
+            const completeBtn = e.target.closest(".complete-btn");
+
+            if (!completeBtn) return;
+
+            const bookingId = completeBtn.dataset.id;
+
+            if (!bookingId) {
+                alert("Booking ID is missing.");
+                return;
+            }
+
+            completeBtn.disabled = true;
+            completeBtn.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Completing...
+            `;
+
+            try {
+
+                const {
+                    data: updatedBooking,
+                    error: updateError
+                } = await supabaseClient
+                    .from("bookings")
+                    .update({
+                        status: "Completed",
+                        payment_status: "Paid"
+                    })
+                    .eq("id", bookingId)
+                    .select()
+                    .single();
+
+                if (updateError) {
+                    throw updateError;
+                }
+
+                if (!updatedBooking) {
+                    throw new Error("Booking could not be updated.");
+                }
+
+                showToast(
+                    "Booking Completed",
+                    `${updatedBooking.full_name}'s booking has been marked as completed and the payment status has been set to Paid.`
+                );
+
+                closeBookingDetailsModal();
+                setTimeout(() => {
+                    window.location.href ="/admin/repository";
+                }, 1000);
+
+                await loadBookedSessions();
+
+            } catch (error) {
+
+                console.error(
+                    "BOOKING COMPLETION ERROR:",
+                    error
+                );
+
+                alert(
+                    "The booking could not be completed.\n\n" +
+                    error.message
+                );
+
+            } finally {
+
+                completeBtn.disabled = false;
+
+                completeBtn.innerHTML = `
+            <i class="fa-solid fa-check-double"></i>
+            Complete
+        `;
+
+            }
+
+        });
         document.addEventListener("click", function (e) {
             const rejectBtn = e.target.closest(".reject-btn");
 
@@ -2351,6 +2502,7 @@
                     <th>Downpayment</th>
                     <th>Balance</th>
                     <th>Payment</th>
+                    <th>Priority</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>

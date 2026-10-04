@@ -150,9 +150,8 @@
                     <h2 id="totalPhotos">0</h2>
                 </div>
 
-                <div class="card">
-                    <i class="fa-solid fa-peso-sign"></i>
-                    <span>Total Income</span>
+                <div class="card" id="totalIncomeCard" role="button" tabindex="0" aria-label="View income report">
+                    <h3>Total Income</h3>
                     <h2 id="totalIncome">₱0.00</h2>
                 </div>
                 <div class="card">
@@ -200,9 +199,6 @@
                     </div>
 
                 </div>
-
-
-                <!-- ANALYTICS SUMMARY -->
 
                 <div class="analytics-summary">
 
@@ -252,14 +248,10 @@
                 <div class="chart-container">
 
                     <div class="y-axis" id="bookingYAxis">
-                        <!-- Generated dynamically -->
                     </div>
-
-
                     <div class="chart-area" id="chartArea">
 
                         <div class="grid-lines" id="bookingGridLines">
-                            <!-- Generated dynamically -->
                         </div>
 
 
@@ -271,13 +263,68 @@
                 </div>
 
             </div>
+
+            <div id="incomeReportModal" class="income-report-modal">
+                <div class="income-report-card">
+                    <div class="income-report-header">
+                        <div>
+                            <h2>Income Report</h2>
+                            <p>Track income by month or year</p>
+                        </div>
+                        <button type="button" id="closeIncomeReport" class="income-report-close"
+                            aria-label="Close income report">
+                            &times;
+                        </button>
+                    </div>
+
+                    <label for="incomeReportType">Report type</label>
+                    <select id="incomeReportType">
+                        <option value="monthly" selected>Monthly income</option>
+                        <option value="yearly">Yearly income</option>
+                    </select>
+
+                    <div id="incomeMonthGroup">
+                        <label for="incomeReportMonth">Month</label>
+                        <select id="incomeReportMonth">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10" selected>October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+
+                    <label for="incomeReportYear">Year</label>
+                    <select id="incomeReportYear">
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                    </select>
+
+                    <button type="button" id="generateIncomeReport">
+                        Generate Report
+                    </button>
+
+                    <div class="income-report-result">
+                        <p id="incomeReportPeriod">October 2026</p>
+                        <h2 id="incomeReportAmount">₱0.00</h2>
+                        <p id="incomeReportCount">0 recorded payments</p>
+                        <p id="incomeReportMessage" role="status"></p>
+                    </div>
+                </div>
+            </div>
             <div id="bookingModal" class="booking-modal">
 
                 <div class="booking-card">
-
-                    <!-- =========================
-             BOOKING HEADER
-        ========================== -->
                     <div class="booking-header">
 
                         <div class="booking-header-left">
@@ -304,10 +351,6 @@
 
                     </div>
 
-
-                    <!-- =========================
-             BOOKING BODY
-        ========================== -->
                     <div class="booking-body">
 
                         <!-- CUSTOMER INFORMATION -->
@@ -532,9 +575,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- REMAINING BALANCE -->
                             <div class="info-card">
 
                                 <i class="fa-solid fa-wallet"></i>
@@ -548,9 +588,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- PAYMENT STATUS -->
                             <div class="info-card">
 
                                 <i class="fa-solid fa-circle-check"></i>
@@ -566,9 +603,6 @@
                             </div>
 
                         </div>
-
-
-                        <!-- CLIENT NOTES -->
                         <div class="notes-section">
 
                             <h3 class="calendar-section-title">
@@ -585,9 +619,7 @@
                     </div>
 
 
-                    <!-- =========================
-             FOOTER
-        ========================== -->
+
                     <div class="booking-footer">
 
                         <button type="button" id="bookingProcess" class="process-booking-btn">
@@ -603,7 +635,6 @@
                 </div>
 
             </div>
-            <!-- NOTIFICATION BOOKING MODAL -->
             <div id="notificationBookingModal" class="notification-booking-modal">
 
                 <div class="notification-booking-card">
@@ -718,9 +749,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- TIME -->
                             <div class="notification-info-card">
 
                                 <i class="fa-solid fa-clock"></i>
@@ -733,9 +761,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- DURATION -->
                             <div class="notification-info-card">
 
                                 <i class="fa-solid fa-hourglass-half"></i>
@@ -748,9 +773,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- BACKDROP -->
                             <div class="notification-info-card">
 
                                 <i class="fa-solid fa-image"></i>
@@ -763,9 +785,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- ADD-ONS -->
                             <div class="notification-info-card">
 
                                 <i class="fa-solid fa-plus"></i>
@@ -780,9 +799,6 @@
                             </div>
 
                         </div>
-
-
-                        <!-- PAYMENT INFORMATION -->
                         <h3 class="notification-section-title">
                             <i class="fa-solid fa-peso-sign"></i>
                             Payment Information
@@ -803,9 +819,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- TOTAL PRICE -->
                             <div class="notification-info-card">
 
                                 <i class="fa-solid fa-money-bill"></i>
@@ -818,9 +831,6 @@
                                 </div>
 
                             </div>
-
-
-                            <!-- DOWN PAYMENT -->
                             <div class="notification-info-card">
 
                                 <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -914,7 +924,7 @@
                     </div>
 
 
-                    <!-- FOOTER -->
+
                     <div class="notification-booking-footer">
 
                         <button type="button" id="notificationBookingProcess" class="process-booking-btn">
@@ -950,309 +960,167 @@
         const supabaseClient = supabase.createClient(
             SUPABASE_URL,
             SUPABASE_ANON_KEY
-        )
+        );
+        const incomeReportModal = document.getElementById("incomeReportModal");
+        const incomeReportType = document.getElementById("incomeReportType");
+        const incomeReportMonth = document.getElementById("incomeReportMonth");
+        const incomeReportYear = document.getElementById("incomeReportYear");
 
-        const monthNames = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        ];
+        const formatPHP = amount =>
+            new Intl.NumberFormat("en-PH", {
+                style: "currency",
+                currency: "PHP"
+            }).format(Number(amount) || 0);
 
-        async function loadBookingAnalytics(selectedYear) {
-
-            console.log(
-                "Loading booking analytics for:",
-                selectedYear
-            );
-
-            const startDate =
-                `${selectedYear}-01-01`;
-
-            const endDate =
-                `${Number(selectedYear) + 1}-01-01`;
-
-
-            const {
-                data: bookings,
-                error
-            } = await supabaseClient
-                .from("bookings")
-                .select(`
-            id,
-            booking_date,
-            status
-        `)
-                .in("status", [
-                    "Confirmed",
-                    "Completed"
-                ])
-                .gte("booking_date", startDate)
-                .lt("booking_date", endDate);
-
-
-            if (error) {
-
-                console.error(
-                    "Booking analytics error:",
-                    error
-                );
-
-                return;
-            }
-
-
-            // 12 months: January -> December
-            const monthlyBookings =
-                Array(12).fill(0);
-
-
-            bookings.forEach(booking => {
-
-                if (!booking.booking_date) {
-                    return;
-                }
-
-
-                /*
-                 * Extract month directly from
-                 * YYYY-MM-DD.
-                 *
-                 * This avoids timezone problems.
-                 */
-                const month =
-                    Number(
-                        booking.booking_date.substring(5, 7)
-                    ) - 1;
-
-
-                if (
-                    month >= 0 &&
-                    month <= 11
-                ) {
-
-                    monthlyBookings[month]++;
-
-                }
-
-            });
-
-
-            console.log(
-                `Bookings for ${selectedYear}:`,
-                monthlyBookings
-            );
-
-
-            console.log(
-                "Total bookings:",
-                bookings.length
-            );
-
-
-            console.log(
-                "Confirmed bookings:",
-                bookings.filter(
-                    booking =>
-                        booking.status === "Confirmed"
-                ).length
-            );
-
-
-            console.log(
-                "Completed bookings:",
-                bookings.filter(
-                    booking =>
-                        booking.status === "Completed"
-                ).length
-            );
-
-
-            renderBookingAnalytics(
-                monthlyBookings,
-                selectedYear
-            );
+        function updateIncomeReportControls() {
+            document.getElementById("incomeMonthGroup").style.display =
+                incomeReportType.value === "monthly" ? "block" : "none";
         }
 
-        /* function renderBookingAnalytics(
-             monthlyBookings,
-             selectedYear
-         ) {
- 
-             const barsWrapper =
-                 document.getElementById("barsWrapper");
- 
-             const yAxis =
-                 document.getElementById("bookingYAxis");
- 
-             const gridLines =
-                 document.getElementById("bookingGridLines");
- 
-             if (!barsWrapper || !yAxis || !gridLines) {
-                 console.error("Analytics chart elements not found.");
-                 return;
-             }
- 
-             // Clear previous chart
-             barsWrapper.innerHTML = "";
-             yAxis.innerHTML = "";
-             gridLines.innerHTML = "";
- 
-             const maxBooking =
-                 Math.max(...monthlyBookings, 0);
- 
-             let chartMax;
- 
-             if (maxBooking === 0) {
-                 chartMax = 5;
-             }
-             else if (maxBooking <= 5) {
-                 chartMax = 5;
-             }
-             else if (maxBooking <= 10) {
-                 chartMax = 10;
-             }
-             else if (maxBooking <= 20) {
-                 chartMax = 20;
-             }
-             else if (maxBooking <= 50) {
-                 chartMax = Math.ceil(maxBooking / 10) * 10;
-             }
-             else {
-                 chartMax = Math.ceil(maxBooking / 20) * 20;
-             }
- 
-             const steps = 5;
-             const stepValue = chartMax / steps;
- 
-             for (let i = steps; i >= 0; i--) {
- 
-                 const value = Math.round(
-                     stepValue * i
-                 );
- 
-                 const label =
-                     document.createElement("span");
- 
-                 label.textContent =
-                     value.toLocaleString();
- 
-                 yAxis.appendChild(label);
- 
- 
-                 const line =
-                     document.createElement("div");
- 
-                 line.className = "grid-line";
- 
-                 gridLines.appendChild(line);
-             }
- 
-             monthlyBookings.forEach(
-                 (value, index) => {
- 
-                     const percentage =
-                         chartMax > 0
-                             ? (value / chartMax) * 100
-                             : 0;
- 
-                     const column =
-                         document.createElement("div");
- 
-                     column.className =
-                         "bar-column";
- 
-                     column.innerHTML = `
-                 <div class="bar-track">
- 
-                     <div
-                         class="bar-fill"
-                         style="height: ${percentage}%"
-                     >
-                         <span class="bar-value">
-                             ${value}
-                         </span>
-                     </div>
- 
-                 </div>
- 
-                 <div class="bar-label">
-                     ${monthNames[index]}
-                 </div>
-             `;
- 
-                     barsWrapper.appendChild(column);
-                 }
-             );
- 
-             const yearlyTotal =
-                 monthlyBookings.reduce(
-                     (total, value) => total + value,
-                     0
-                 );
- 
-             const yearlyTotalElement =
-                 document.getElementById(
-                     "yearlyBookingTotal"
-                 );
- 
-             if (yearlyTotalElement) {
- 
-                 yearlyTotalElement.textContent =
-                     yearlyTotal.toLocaleString();
-             }
- 
- 
- 
-             const average =
-                 yearlyTotal / 12;
- 
-             const averageElement =
-                 document.getElementById(
-                     "averageMonthlyBookings"
-                 );
- 
-             if (averageElement) {
- 
-                 averageElement.textContent =
-                     average.toFixed(1);
-             }
- 
- 
-             const busiestElement =
-                 document.getElementById(
-                     "busiestBookingMonth"
-                 );
- 
-             if (busiestElement) {
- 
-                 if (yearlyTotal === 0) {
- 
-                     busiestElement.textContent = "—";
- 
-                 }
-                 else {
- 
-                     const highest =
-                         Math.max(...monthlyBookings);
- 
-                     const busiestIndex =
-                         monthlyBookings.indexOf(highest);
- 
-                     busiestElement.textContent =
-                         monthNames[busiestIndex];
-                 }
-             }
- 
- 
-             console.log(
-                 `Analytics rendered for ${selectedYear}`,
-                 {
-                     monthlyBookings,
-                     yearlyTotal,
-                     average,
-                     chartMax
-                 }
-             );
-         }*/
+        async function generateIncomeReport() {
+            const amountElement = document.getElementById("incomeReportAmount");
+            const countElement = document.getElementById("incomeReportCount");
+            const periodElement = document.getElementById("incomeReportPeriod");
+            const messageElement = document.getElementById("incomeReportMessage");
+
+            const type = incomeReportType.value;
+            const year = Number(incomeReportYear.value);
+            const month = Number(incomeReportMonth.value);
+
+            const monthName = new Date(year, month - 1, 1)
+                .toLocaleString("en-US", { month: "long" });
+
+            periodElement.textContent =
+                type === "monthly" ? `${monthName} ${year}` : `Year ${year} `;
+
+            amountElement.textContent = formatPHP(0);
+            countElement.textContent = "Loading...";
+            messageElement.textContent = "";
+
+            const startDate = type === "monthly"
+                ? `${year}-${String(month).padStart(2, "0")}-01`
+                : `${year}-01-01`;
+
+            const nextDate = type === "monthly"
+                ? new Date(year, month, 1)
+                : new Date(year + 1, 0, 1);
+
+            const endDate =
+                `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
+            try {
+
+                const { data, error } = await supabaseClient
+                    .from("bookings")
+                    .select(`
+        id,
+        booking_date,
+        status,
+        payment_status,
+        total_price,
+        downpayment_amount,
+        remaining_balance,
+        full_payment_amount,
+        final_payment_amount,
+        paymongo_paid_at,
+        paymongo_payment_id
+    `)
+                    .gte("booking_date", startDate)
+                    .lt("booking_date", endDate);
+
+                if (error) throw error;
+
+                let totalIncome = 0;
+                let qualifyingBookings = 0;
+
+                for (const booking of data || []) {
+                    const status = String(booking.status || "").trim().toLowerCase();
+                    const paymentStatus = String(booking.payment_status || "").trim().toLowerCase();
+
+                    if (["cancelled", "canceled", "rejected", "declined"].includes(status)) {
+                        continue;
+                    }
+
+                    let amount = 0;
+
+                    if (["paid", "fully paid", "fully_paid", "completed", "success", "successful"].includes(paymentStatus)) {
+                        amount = Number(booking.total_price) || 0;
+
+                        if (amount <= 0) {
+                            amount =
+                                (Number(booking.downpayment_amount) || 0) +
+                                (Number(booking.final_payment_amount) || 0);
+                        }
+                    } else if (["partial", "partially paid", "partially_paid", "half", "half paid", "downpayment", "downpayment paid"].includes(paymentStatus)) {
+                        amount = Number(booking.downpayment_amount) || 0;
+                    }
+
+                    if (amount > 0) {
+                        totalIncome += amount;
+                        qualifyingBookings++;
+                    }
+                }
+
+                amountElement.textContent = formatPHP(totalIncome);
+                countElement.textContent = `${qualifyingBookings} qualifying booking(s)`;
+
+                messageElement.textContent = data?.length
+                    ? "Report generated based on booking dates."
+                    : "No bookings found for this booking date range.";
+
+                console.log("Income report:", {
+                    period: periodElement.textContent,
+                    startDate,
+                    endDate,
+                    matchingBookings: data?.length || 0,
+                    qualifyingBookings,
+                    totalIncome
+                });
+
+            } catch (error) {
+                console.error("Income report error:", error);
+                countElement.textContent = "Unable to load report";
+                messageElement.textContent = error.message;
+            }
+        }
+
+        function openIncomeReport() {
+            incomeReportModal.classList.add("show");
+            updateIncomeReportControls();
+            generateIncomeReport();
+        }
+
+
+        document.getElementById("totalIncomeCard")
+            ?.addEventListener("keydown", event => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openIncomeReport();
+                }
+            });
+
+        document.getElementById("closeIncomeReport")
+            ?.addEventListener("click", () => {
+                incomeReportModal.classList.remove("show");
+            });
+
+        incomeReportModal?.addEventListener("click", event => {
+            if (event.target === incomeReportModal) {
+                incomeReportModal.classList.remove("show");
+            }
+        });
+
+        incomeReportType.addEventListener("change", () => {
+            updateIncomeReportControls();
+            generateIncomeReport();
+        });
+
+        incomeReportMonth.addEventListener("change", generateIncomeReport);
+        incomeReportYear.addEventListener("change", generateIncomeReport);
+
+        document.getElementById("generateIncomeReport")
+            ?.addEventListener("click", generateIncomeReport);
+
+
         async function loadTotalPhotos() {
 
             console.log("Loading ALL repository photos...");
@@ -1296,7 +1164,6 @@
         }
 
         async function loadTotalIncome() {
-            console.log("========== LOADING TOTAL INCOME ==========");
 
             const totalIncomeElement = document.getElementById("totalIncome");
 
@@ -1348,9 +1215,6 @@
 
                 let amountReceived = 0;
 
-                // -----------------------------------------
-                // IGNORE CANCELLED / REJECTED BOOKINGS
-                // -----------------------------------------
                 if (
                     status === "cancelled" ||
                     status === "canceled" ||
@@ -1359,10 +1223,6 @@
                 ) {
                     return;
                 }
-
-                // -----------------------------------------
-                // FULLY PAID
-                // -----------------------------------------
                 if (
                     paymentStatus === "paid" ||
                     paymentStatus === "fully paid" ||
@@ -1372,20 +1232,14 @@
                     paymentStatus === "successful"
                 ) {
 
-                    // If the booking has a total price,
-                    // use it because the entire booking has been paid.
+
                     if (totalPrice > 0) {
                         amountReceived = totalPrice;
                     } else {
-                        // Fallback if total_price is empty
                         amountReceived = downpayment + finalPayment;
                     }
 
                 }
-
-                // -----------------------------------------
-                // PARTIAL / DOWNPAYMENT ONLY
-                // -----------------------------------------
                 else if (
                     paymentStatus === "partial" ||
                     paymentStatus === "partially paid" ||
@@ -1397,19 +1251,8 @@
 
                     amountReceived = downpayment;
                 }
-
-                // -----------------------------------------
-                // PAYMONGO PAYMENT EXISTS
-                // -----------------------------------------
                 else if (booking.paymongo_paid_at || booking.paymongo_payment_id) {
 
-                    /*
-                     * A successful PayMongo payment means money
-                     * was actually received.
-                     *
-                     * If there is still a remaining balance,
-                     * treat this as a downpayment.
-                     */
                     if (remainingBalance > 0) {
                         amountReceived = downpayment;
                     } else if (totalPrice > 0) {
@@ -1420,21 +1263,10 @@
 
                 }
 
-                // -----------------------------------------
-                // COMPLETED BOOKING
-                // -----------------------------------------
                 else if (
                     status === "completed" &&
                     totalPrice > 0
                 ) {
-
-                    /*
-                     * Your workflow can treat Completed as
-                     * fully paid.
-                     *
-                     * Remove this section if a Completed booking
-                     * can still have an unpaid balance.
-                     */
                     amountReceived = totalPrice;
                 }
                 if (amountReceived < 0) {
@@ -1470,8 +1302,85 @@
         }
 
 
-        let photoRealtimeChannel = null;
+        const incomeModal = document.getElementById("incomeReportModal");
 
+        document.getElementById("totalIncomeCard")
+            ?.addEventListener("click", async () => {
+                incomeModal.classList.add("show");
+                updateIncomeReportControls();
+                await generateIncomeReport();
+            });
+
+        document.getElementById("closeIncomeReport")
+            ?.addEventListener("click", () => {
+                incomeModal.classList.remove("show");
+            });
+
+        incomeModal?.addEventListener("click", event => {
+            if (event.target === incomeModal) {
+                incomeModal.classList.remove("show");
+            }
+        });
+
+        document.getElementById("incomeReportType")
+            ?.addEventListener("change", () => {
+                updateIncomeReportControls();
+                generateIncomeReport();
+            });
+
+        document.getElementById("incomeReportMonth")
+            ?.addEventListener("change", generateIncomeReport);
+
+        document.getElementById("incomeReportYear")
+            ?.addEventListener("change", generateIncomeReport);
+
+        document.getElementById("generateIncomeReport")
+            ?.addEventListener("click", generateIncomeReport);
+
+
+        const monthNames = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+
+        async function loadBookingAnalytics(selectedYear) {
+            const year = Number(selectedYear);
+
+            if (!Number.isInteger(year)) {
+                console.error("Invalid analytics year:", selectedYear);
+                return;
+            }
+
+            const startDate = `${year}-01-01`;
+            const endDate = `${year + 1}-01-01`;
+
+            const { data: bookings, error } = await supabaseClient
+                .from("bookings")
+                .select("id, booking_date, status")
+                .in("status", ["Confirmed", "Completed"])
+                .gte("booking_date", startDate)
+                .lt("booking_date", endDate);
+
+            if (error) {
+                console.error("Booking analytics error:", error);
+                return;
+            }
+
+            const monthlyBookings = Array(12).fill(0);
+
+            (bookings || []).forEach(booking => {
+                if (!booking.booking_date) return;
+
+                const month = Number(booking.booking_date.substring(5, 7)) - 1;
+
+                if (month >= 0 && month < 12) {
+                    monthlyBookings[month]++;
+                }
+            });
+
+            renderBookingAnalytics(monthlyBookings, year);
+        }
+        let photoRealtimeChannel = null;
         function setupPhotoRealtime() {
 
             console.log("Starting photo realtime listener...");
@@ -1889,11 +1798,6 @@
                 }
             );
 
-
-            /*
-             * Keep selected year if it still exists.
-             */
-
             if (
                 sortedYears.includes(
                     previousYear
@@ -1910,8 +1814,6 @@
                     currentYear;
 
             }
-
-
             await loadBookingAnalytics(
                 yearFilter.value
             );
@@ -2014,64 +1916,25 @@
         });
         async function updateExpiredGalleryAccess() {
 
-            console.log("==========================================");
-            console.log("CHECKING ALL EXPIRED GALLERY ACCESS");
-            console.log("==========================================");
+            const now = new Date();
 
-            const now = new Date().toISOString();
-
-            console.log("Current time:", now);
-
-            const {
-                data: allAccess,
-                error: fetchError
-            } = await supabaseClient
-                .from("gallery_access_requests")
-                .select(`
-            id,
-            customer_id,
-            customer_email,
-            booking_id,
-            repository_id,
-            status,
-            requested_at,
-            approved_at,
-            access_started_at,
-            access_expires_at,
-            expires_at,
-            is_expired,
-            payment_required,
-            payment_confirmed,
-            access_granted_at,
-            payment_status,
-            paid_at
-        `);
+            const { data: allAccess, error: fetchError } =
+                await supabaseClient
+                    .from("gallery_access_requests")
+                    .select(`
+                        id,
+                        status,
+                        access_expires_at,
+                        expires_at,
+                        is_expired
+                    `);
 
             if (fetchError) {
-
-                console.error(
-                    "ERROR FETCHING GALLERY ACCESS:",
-                    fetchError
-                );
-
+                console.error("ERROR FETCHING GALLERY ACCESS:", fetchError);
                 return;
             }
 
-            console.log(
-                "Total gallery access records fetched:",
-                allAccess?.length || 0
-            );
-
-            if (!allAccess || allAccess.length === 0) {
-
-                console.log(
-                    "No gallery access records found."
-                );
-
-                return;
-            }
-            const expiredAccess = allAccess.filter(access => {
-
+            const expiredAccess = (allAccess || []).filter(access => {
                 const accessExpiresAt = access.access_expires_at
                     ? new Date(access.access_expires_at)
                     : null;
@@ -2082,56 +1945,28 @@
 
                 const accessExpired =
                     accessExpiresAt &&
-                    accessExpiresAt <= new Date(now);
+                    !isNaN(accessExpiresAt.getTime()) &&
+                    accessExpiresAt <= now;
 
                 const expiresExpired =
                     expiresAt &&
-                    expiresAt <= new Date(now);
+                    !isNaN(expiresAt.getTime()) &&
+                    expiresAt <= now;
 
                 return accessExpired || expiresExpired;
             });
 
-            console.log(
-                "Expired gallery access found:",
-                expiredAccess.length
-            );
-            if (expiredAccess.length === 0) {
+            console.log("Expired gallery access found:", expiredAccess.length);
 
-                console.log(
-                    "No gallery access has expired."
-                );
-
-                return;
-            }
-            console.table(
-                expiredAccess.map(access => ({
-                    id: access.id,
-                    customer_email: access.customer_email,
-                    booking_id: access.booking_id,
-                    status: access.status,
-                    is_expired: access.is_expired,
-                    access_expires_at: access.access_expires_at,
-                    expires_at: access.expires_at
-                }))
-            );
             for (const access of expiredAccess) {
-
-                // Already correctly marked expired
                 if (
                     access.status === "expired" &&
                     access.is_expired === true
                 ) {
-
-                    console.log(
-                        `Access ${access.id} is already expired.`
-                    );
-
                     continue;
                 }
 
-                const {
-                    error: updateError
-                } = await supabaseClient
+                const { error: updateError } = await supabaseClient
                     .from("gallery_access_requests")
                     .update({
                         status: "expired",
@@ -2140,38 +1975,27 @@
                     .eq("id", access.id);
 
                 if (updateError) {
-
                     console.error(
                         `ERROR updating access ${access.id}:`,
                         updateError
                     );
-
-                    continue;
                 }
-
-                console.log(
-                    `Access ${access.id} successfully marked as expired.`
-                );
             }
 
-            console.log("==========================================");
             console.log("FINISHED EXPIRED GALLERY ACCESS CHECK");
-            console.log("==========================================");
         }
-        async function loadDashboardStats() {
 
+
+        async function loadDashboardStats() {
             console.log("Loading dashboard stats...");
 
-
-            const {
-                count: customerCount,
-                error: customerError
-            } = await supabaseClient
-                .from("bookings")
-                .select("*", {
-                    count: "exact",
-                    head: true
-                });
+            const { count: customerCount, error: customerError } =
+                await supabaseClient
+                    .from("bookings")
+                    .select("*", {
+                        count: "exact",
+                        head: true
+                    });
 
             if (customerError) {
                 console.error("Customers error:", customerError);
@@ -2182,185 +2006,136 @@
 
             if (totalCustomersElement) {
                 totalCustomersElement.textContent =
-                    customerCount || 0;
+                    Number(customerCount || 0).toLocaleString();
             }
 
             await loadTotalPhotos();
-
             await loadTotalIncome();
-            await updateExpiredGalleryAccess()
+            await updateExpiredGalleryAccess();
             await loadActiveSessions();
             await loadExpiredFolderAccess();
 
-
-            const today =
-                new Date().toISOString().split("T")[0];
-
-            const {
-                count: expiredCount,
-                error: expiredError
-            } = await supabaseClient
-                .from("expired")
-                .select("*", {
-                    count: "exact",
-                    head: true
-                })
-                .lt("booking_date", today);
-
-            if (expiredError) {
-                console.error("Expired error:", expiredError);
-            }
-
-            const expiredElement =
-                document.getElementById("expiredSessions");
-
-            if (expiredElement) {
-                expiredElement.textContent =
-                    expiredCount || 0;
-            }
-
-
             console.log("Dashboard stats loaded:", {
                 customers: customerCount || 0,
-                income: "loaded",
-                expired: expiredCount || 0
+                income: "loaded"
             });
         }
-        let calendarInstance = null;
-        async function loadActiveSessions() {
 
+
+        let calendarInstance = null;
+
+
+        async function loadActiveSessions() {
             console.log("Checking customers with active folder access...");
 
             const activeElement =
                 document.getElementById("activeSessions");
 
-            if (!activeElement) {
-                return;
-            }
+            if (!activeElement) return;
 
             const now = new Date().toISOString();
 
-            const {
-                data: accessRecords,
-                error
-            } = await supabaseClient
-                .from("gallery_access_requests")
-                .select(`
-            id,
-            customer_id,
-            customer_email,
-            booking_id,
-            repository_id,
-            status,
-            access_expires_at,
-            is_expired
-        `)
-                .eq("status", "approved")
-                .eq("is_expired", false)
-                .not("repository_id", "is", null)
-                .gt("access_expires_at", now);
+            const { data: accessRecords, error } =
+                await supabaseClient
+                    .from("gallery_access_requests")
+                    .select(`
+                id,
+                repository_id,
+                status,
+                access_expires_at,
+                is_expired
+            `)
+                    .eq("status", "approved")
+                    .eq("is_expired", false)
+                    .not("repository_id", "is", null)
+                    .gt("access_expires_at", now);
 
             if (error) {
-
-                console.error(
-                    "Active folder access error:",
-                    error
-                );
-
+                console.error("Active folder access error:", error);
                 activeElement.textContent = "0";
-
                 return;
             }
 
             const uniqueFolders = new Set();
 
             (accessRecords || []).forEach(record => {
-
                 if (record.repository_id) {
-                    uniqueFolders.add(
-                        String(record.repository_id)
-                    );
+                    uniqueFolders.add(String(record.repository_id));
                 }
-
             });
 
             activeElement.textContent =
                 uniqueFolders.size.toLocaleString();
 
-            console.log(
-                "ACTIVE FOLDER ACCESS:",
-                uniqueFolders.size
-            );
+            console.log("ACTIVE FOLDER ACCESS:", uniqueFolders.size);
         }
-        async function loadExpiredFolderAccess() {
 
-            console.log("Checking expired folder access...");
+
+        async function loadExpiredFolderAccess() {
+            console.log("Loading all expired gallery access records...");
 
             const expiredElement =
                 document.getElementById("expiredSessions");
 
-            if (!expiredElement) {
-                return;
-            }
+            if (!expiredElement) return;
 
-            const now = new Date().toISOString();
+            const now = new Date();
 
-
-
-            const {
-                data: expiredRecords,
-                error
-            } = await supabaseClient
-                .from("gallery_access_requests")
-                .select(`
-            id,
-            customer_id,
-            customer_email,
-            booking_id,
-            repository_id,
-            status,
-            access_expires_at,
-            is_expired
-        `)
-                .not("repository_id", "is", null)
-                .lte("access_expires_at", now);
+            const { data: accessRecords, error } =
+                await supabaseClient
+                    .from("gallery_access_requests")
+                    .select(`
+                id,
+                status,
+                is_expired,
+                access_expires_at,
+                expires_at
+            `);
 
             if (error) {
-
-                console.error(
-                    "Expired folder access error:",
-                    error
-                );
-
-                expiredElement.textContent = "0";
-
+                console.error("Expired gallery access error:", error);
+                expiredElement.textContent = "Error";
                 return;
             }
 
+            const expiredRecords = (accessRecords || []).filter(access => {
+                const accessExpiresAt = access.access_expires_at
+                    ? new Date(access.access_expires_at)
+                    : null;
 
+                const expiresAt = access.expires_at
+                    ? new Date(access.expires_at)
+                    : null;
 
-            const uniqueExpiredFolders = new Set();
+                const timestampExpired =
+                    (accessExpiresAt &&
+                        !isNaN(accessExpiresAt.getTime()) &&
+                        accessExpiresAt <= now) ||
+                    (expiresAt &&
+                        !isNaN(expiresAt.getTime()) &&
+                        expiresAt <= now);
 
-            (expiredRecords || []).forEach(record => {
-
-                if (record.repository_id) {
-
-                    uniqueExpiredFolders.add(
-                        String(record.repository_id)
-                    );
-
-                }
-
+                return (
+                    access.is_expired === true ||
+                    String(access.status || "").toLowerCase() === "expired" ||
+                    timestampExpired
+                );
             });
 
             expiredElement.textContent =
-                uniqueExpiredFolders.size.toLocaleString();
+                expiredRecords.length.toLocaleString();
 
+            console.log("==========================================");
             console.log(
-                " EXPIRED FOLDER ACCESS:",
-                uniqueExpiredFolders.size
+                "TOTAL EXPIRED GALLERY ACCESS RECORDS:",
+                expiredRecords.length
             );
+            console.table(expiredRecords);
+            console.log("==========================================");
         }
+
+
+
         async function loadBookingCalendar() {
 
 
@@ -2781,6 +2556,18 @@
             calendarInstance.render();
 
         }
+        document
+            .getElementById("bookingProcess")
+            .addEventListener("click", function () {
+
+                if (!selectedCalendarBooking) {
+                    alert("Please select a booking first.");
+                    return;
+                }
+
+                window.location.href =
+                    `/admin/clients?id=${encodeURIComponent(selectedCalendarBooking)}`;
+            });
 
         async function refreshBookingCalendar() {
 

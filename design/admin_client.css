@@ -1479,10 +1479,6 @@ body.payment-proof-modal-open {
     background: #528373 !important;
 }
 
-/* =========================================================
-   BOOKING STATUS TABS
-   ========================================================= */
-
 .booking-status-buttons {
     display: flex;
     align-items: center;

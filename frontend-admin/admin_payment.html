@@ -479,13 +479,6 @@
                 `;
 
             try {
-
-                console.log("====================================");
-                console.log("LOADING PAYMENT RECORDS");
-                console.log("====================================");
-
-
-
                 const {
                     data: paymentRecords,
                     error: paymentsError
@@ -573,29 +566,38 @@
                 const recordedBookingIds = new Set();
 
 
-                (paymentRecords || []).forEach(
-                    payment => {
+                (paymentRecords || []).forEach(payment => {
 
-                        combinedPayments.push(
-                            payment
+                    const normalizedStatus = String(
+                        payment.status || ""
+                    ).trim().toLowerCase();
+
+                    const isSamplePayment =
+                        String(payment.id || "").startsWith("sample-") ||
+                        String(payment.booking_id || "").startsWith("BOOK-");
+
+                    const updatedPayment = {
+                        ...payment,
+                        status: isSamplePayment
+                            ? "Paid"
+                            : (
+                                ["paid", "fully paid", "fully_paid", "completed", "success", "successful"]
+                                    .includes(normalizedStatus)
+                                    ? "Paid"
+                                    : payment.status || "Pending"
+                            )
+                    };
+
+                    combinedPayments.push(updatedPayment);
+
+                    if (payment.booking_id) {
+                        recordedBookingIds.add(
+                            String(payment.booking_id)
                         );
-
-
-
-                        if (
-                            payment.booking_id
-                        ) {
-
-                            recordedBookingIds.add(
-                                String(
-                                    payment.booking_id
-                                )
-                            );
-
-                        }
-
                     }
-                );
+                });
+
+
                 (bookingRecords || []).forEach(
                     booking => {
 
@@ -628,58 +630,33 @@
                             return;
 
                         }
-
                         const databasePaymentStatus =
-                            String(
-                                booking.payment_status || ""
-                            )
+                            String(booking.payment_status || "")
                                 .trim()
                                 .toLowerCase();
 
-
-                        let paymentStatus =
-                            "Pending";
-
+                        let paymentStatus = "Pending";
 
                         if (
-                            databasePaymentStatus === "paid"
+                            [
+                                "paid",
+                                "fully paid",
+                                "fully_paid",
+                                "completed",
+                                "success",
+                                "successful"
+                            ].includes(databasePaymentStatus)
                         ) {
-
-                            paymentStatus =
-                                "Paid";
-
-                        }
-
-                        else if (
-                            databasePaymentStatus.includes(
-                                "fail"
-                            )
+                            paymentStatus = "Paid";
+                        } else if (databasePaymentStatus.includes("fail")) {
+                            paymentStatus = "Payment Failed";
+                        } else if (
+                            databasePaymentStatus.includes("cancel") ||
+                            databasePaymentStatus.includes("reject")
                         ) {
-
-                            paymentStatus =
-                                "Payment Failed";
-
-                        }
-
-                        else if (
-                            databasePaymentStatus.includes(
-                                "cancel"
-                            )
-                        ) {
-
-                            paymentStatus =
-                                "Cancelled";
-
-                        }
-
-                        else if (
-                            databasePaymentStatus ===
-                            "pending payment"
-                        ) {
-
-                            paymentStatus =
-                                "Pending";
-
+                            paymentStatus = "Cancelled";
+                        } else {
+                            paymentStatus = "Pending";
                         }
 
 

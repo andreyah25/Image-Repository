@@ -2076,6 +2076,26 @@ function money(value) {
 
     return Number(number.toFixed(2));
 }
+
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+function validateEmail(email) {
+    const normalizedEmail = String(email ?? "").trim().toLowerCase();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+        return null;
+    }
+
+    return normalizedEmail;
+}
 app.post("/send-booking-confirmation", async (req, res) => {
     try {
         const {
@@ -2091,13 +2111,24 @@ app.post("/send-booking-confirmation", async (req, res) => {
             galleryLink
         } = req.body;
 
-        if (!email) {
-            return res.status(400).json({
-                success: false,
-                message: "Customer email is required."
-            });
-        }
+                    
+            const recipientEmail = validateEmail(email);
 
+            if (!recipientEmail) {
+                return res.status(400).json({
+                    success: false,
+                    message: "A valid customer email address is required."
+                });
+            }
+
+            if (!resend || !process.env.RESEND_FROM_EMAIL) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Email service or sender address is not configured."
+                });
+            }
+
+            console.log("BOOKING CONFIRMATION RECIPIENT:", recipientEmail);
         const formattedDate = bookingDate
             ? new Date(`${bookingDate}T00:00:00`).toLocaleDateString(
                 "en-US",
@@ -2122,7 +2153,7 @@ app.post("/send-booking-confirmation", async (req, res) => {
 
         const { data, error } = await resend.emails.send({
             from: process.env.RESEND_FROM_EMAIL,
-            to: [email],
+            to: [recipientEmail],
             subject: "Booking Confirmation - Captured Photography Studio",
             html: `
                 <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:650px;margin:auto;">
@@ -2226,14 +2257,16 @@ app.post("/send-booking-rejection", async (req, res) => {
             rejectionReason
         } = req.body;
 
-        // Validate customer email
-        if (!email) {
+        const recipientEmail = validateEmail(email);
+
+        if (!recipientEmail) {
             return res.status(400).json({
                 success: false,
-                message: "Customer email is required."
+                message: "A valid customer email address is required."
             });
         }
 
+        console.log("BOOKING REJECTION RECIPIENT:", recipientEmail);
         // Validate Resend configuration
         if (!resend) {
             console.error("RESEND ERROR: Resend is not initialized.");
@@ -2274,13 +2307,13 @@ app.post("/send-booking-rejection", async (req, res) => {
             : "-";
 
         console.log("Sending rejection email...");
-        console.log("To:", email);
+        console.log("To:", recipientEmail);
         console.log("From:", RESEND_FROM_EMAIL);
         console.log("Booking ID:", bookingId);
 
         const { data, error } = await resend.emails.send({
             from: RESEND_FROM_EMAIL,
-            to: [email],
+            to: [recipientEmail],
             subject: "Booking Request Update - Captured Photography Studio",
             html: `
                 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 650px; margin: auto;">

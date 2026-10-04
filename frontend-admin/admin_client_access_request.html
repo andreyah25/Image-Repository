@@ -155,7 +155,27 @@
                     </div>
                 </div>
             </div>
+            <div class="client-actions-row">
+                <div class="access-request-tabs">
+                    <button type="button" class="access-tab active" data-status="pending">
+                        <i class="fa-solid fa-inbox"></i>
+                        Requests
+                        <span class="tab-count" id="pendingCount">0</span>
+                    </button>
 
+                    <button type="button" class="access-tab" data-status="approved">
+                        <i class="fa-solid fa-circle-check"></i>
+                        Approved
+                        <span class="tab-count" id="approvedCount">0</span>
+                    </button>
+
+                    <button type="button" class="access-tab" data-status="expired">
+                        <i class="fa-solid fa-clock"></i>
+                        Expired
+                        <span class="tab-count" id="expiredCount">0</span>
+                    </button>
+                </div>
+            </div>
             <div class="ui-table-card-panel">
                 <div class="table-scroll-container">
                     <table class="ui-data-grid">
@@ -232,6 +252,49 @@
             let allBookedSessions = [];
             let allAccessRequests = [];
             let selectedMonth = "all";
+            let activeAccessTab = "pending";
+            function updateAccessTabCounts() {
+                const counts = {
+                    pending: 0,
+                    approved: 0,
+                    expired: 0
+                };
+
+                allAccessRequests.forEach(request => {
+                    const status = String(request.status || "")
+                        .trim()
+                        .toLowerCase();
+
+                    if (status === "pending") {
+                        counts.pending++;
+                    } else if (status === "approved") {
+                        counts.approved++;
+                    } else if (status === "expired") {
+                        counts.expired++;
+                    }
+                });
+
+                document.getElementById("pendingCount").textContent =
+                    counts.pending;
+
+                document.getElementById("approvedCount").textContent =
+                    counts.approved;
+
+                document.getElementById("expiredCount").textContent =
+                    counts.expired;
+            }
+
+            document.querySelectorAll(".access-tab").forEach(button => {
+                button.addEventListener("click", () => {
+                    activeAccessTab = button.dataset.status;
+
+                    document.querySelectorAll(".access-tab").forEach(tab => {
+                        tab.classList.toggle("active", tab === button);
+                    });
+
+                    renderAccessRequests();
+                });
+            });
 
             function escapeHtml(value) {
                 if (value === null || value === undefined) return "";
@@ -362,6 +425,50 @@
                     badge.style.display = "inline-flex";
                 } else {
                     badge.style.display = "none";
+                }
+            }
+
+            async function autoArchiveAccessRequests() {
+                console.log("Checking expired gallery access requests...");
+
+                const now = new Date().toISOString();
+
+                const { data: requests, error } = await supabaseClient
+                    .from("gallery_access_requests")
+                    .select("id, status, access_expires_at")
+                    .eq("status", "approved")
+                    .not("access_expires_at", "is", null)
+                    .lte("access_expires_at", now);
+
+                if (error) {
+                    console.error("Error checking expired requests:", error);
+                    return;
+                }
+
+                if (!requests || requests.length === 0) {
+                    console.log("No expired requests found.");
+                    return;
+                }
+
+                for (const request of requests) {
+                    const { error: updateError } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .update({
+                            status: "expired",
+                            is_expired: true
+                        })
+                        .eq("id", request.id)
+                        .eq("status", "approved");
+
+                    if (updateError) {
+                        console.error(
+                            "Failed to expire request:",
+                            request.id,
+                            updateError
+                        );
+                    } else {
+                        console.log("Request expired:", request.id);
+                    }
                 }
             }
 
@@ -716,10 +823,10 @@
                 }
 
                 return `
-        <span class="payment-status-badge ${className}">
-            ${escapeHtml(label)}
-        </span>
-    `;
+                        <span class="payment-status-badge ${className}">
+                            ${escapeHtml(label)}
+                        </span>
+                    `;
             } function renderAccessRequests() {
 
                 const tbody =
@@ -744,60 +851,56 @@
                             .trim()
                             .toLowerCase()
                         : "";
+                updateAccessTabCounts();
                 const sortedRequests = [...allAccessRequests].sort((a, b) => {
-
-                    const bookingA = a.booking || {};
-                    const bookingB = b.booking || {};
-
                     const dateA = new Date(
-                        `${bookingA.booking_date || "9999-12-31"}T${bookingA.booking_time || "23:59"}`
-                    );
+                        a.created_at || "9999-12-31T23:59:59"
+                    ).getTime();
 
                     const dateB = new Date(
-                        `${bookingB.booking_date || "9999-12-31"}T${bookingB.booking_time || "23:59"}`
-                    );
+                        b.created_at || "9999-12-31T23:59:59"
+                    ).getTime();
 
                     return dateA - dateB;
                 });
-                const filteredRequests =
-                    sortedRequests.filter(
-                        request => {
 
-                            const booking =
-                                request.booking || {};
+                const filteredRequests = sortedRequests.filter(request => {
+                    const status = String(request.status || "")
+                        .trim()
+                        .toLowerCase();
 
-                            if (!searchTerm) {
-                                return true;
-                            }
+                    const booking = request.booking || {};
 
-                            const searchableText = [
+                    // Display only records belonging to the selected tab.
+                    if (status !== activeAccessTab) {
+                        return false;
+                    }
 
-                                booking.full_name,
-                                booking.email,
-                                request.customer_email,
-                                request.booking_id,
-                                request.request_number,
-                                booking.session_type,
-                                booking.booking_date,
-                                booking.booking_time,
-                                request.status,
-                                request.created_at,
-                                request.approved_at
+                    // Apply the existing search field to the selected tab.
+                    const searchableText = [
+                        booking.full_name,
+                        booking.email,
+                        request.customer_email,
+                        request.booking_id,
+                        request.request_number,
+                        booking.session_type,
+                        booking.booking_date,
+                        booking.booking_time,
+                        request.status,
+                        request.created_at,
+                        request.approved_at
+                    ]
+                        .filter(value => value !== null && value !== undefined)
+                        .join(" ")
+                        .toLowerCase();
 
-                            ]
-                                .filter(
-                                    value =>
-                                        value !== null &&
-                                        value !== undefined
-                                )
-                                .join(" ")
-                                .toLowerCase();
+                    const searchInput = document.getElementById("clientSearchInput");
+                    const searchTerm = searchInput
+                        ? searchInput.value.trim().toLowerCase()
+                        : "";
 
-                            return searchableText.includes(
-                                searchTerm
-                            );
-                        }
-                    );
+                    return searchableText.includes(searchTerm);
+                });
 
                 if (filteredRequests.length === 0) {
 

@@ -770,3 +770,111 @@ span.notification-badge,
         justify-content: flex-start;
     }
 }
+/* ACCESS REQUEST TABS + SEARCH ALIGNMENT */
+.client-actions-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 38px;
+    margin: 0 0 15px;
+    box-sizing: border-box;
+}
+
+/* Centered Access Request tabs */
+.access-request-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+/* Simple tab design */
+.access-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border: 1px solid #639A88;
+    border-radius: 5px;
+    background: #ffffff;
+    color: #639A88;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.access-tab:hover,
+.access-tab.active {
+    background: #639A88;
+    color: #ffffff;
+}
+
+/* Count badges */
+.tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 4px;
+    border-radius: 50%;
+    background: #eaf2ef;
+    color: #639A88;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.access-tab.active .tab-count {
+    background: #ffffff;
+    color: #639A88;
+}
+
+/* Search box aligned right */
+.client-actions-row .table-search-box {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 230px;
+    margin: 0;
+}
+
+.client-actions-row .table-search-box input {
+    width: 100%;
+    height: 38px;
+    padding: 0 35px 0 12px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+    .client-actions-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .access-request-tabs {
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .client-actions-row .table-search-box {
+        position: relative;
+        top: auto;
+        right: auto;
+        transform: none;
+        width: 100%;
+    }
+}

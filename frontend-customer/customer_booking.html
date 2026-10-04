@@ -52,18 +52,22 @@
             <div class="booking-layout-wrapper">
                 <div class="sessions-panel booking-container">
                     <form id="bookingForm" class="booking-form">
-
                         <div class="form-section">
                             <h3 class="section-title-form">Contact Information</h3>
                             <div class="form-grid-three">
                                 <div class="form-group">
                                     <label for="fullName">Full Name <span style="color:red;">*</span></label>
-                                    <input type="text" id="fullName" placeholder="Enter your name" required>
+                                    <input type="text" id="fullName" placeholder="Enter your name"
+                                        pattern="^[a-zA-Z\s\-']+$"
+                                        oninput="this.value = this.value.replace(/[0-9]/g, '')"
+                                        title="Numbers are not allowed. Please enter letters only." required>
                                 </div>
                                 <div class="form-group">
                                     <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
                                     <input type="tel" id="contactNumber" placeholder="Enter your contact number"
-                                        maxlength="11" inputmode="numeric" autocomplete="tel" required>
+                                        maxlength="11" inputmode="numeric" autocomplete="tel"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="^09\d{9}$"
+                                        title="Please enter an 11-digit mobile number starting with 09." required>
                                 </div>
                                 <div class="form-group">
                                     <label for="emailAddress">Email Address <span style="color:red;">*</span></label>
@@ -72,6 +76,7 @@
                                 </div>
                             </div>
                         </div>
+
 
                         <!-- Section 2: Date, Time & Session Details -->
                         <div class="form-section form-grid-two">
@@ -382,23 +387,20 @@
                                         <label for="paymentMethod">Payment Method</label>
                                         <select id="paymentMethod" name="payment_method" required>
                                             <option value="" selected disabled>Select a payment method</option>
-                                            <option value="PayMongo">PayMongo</option>
+                                            <option value="PayMongo">PayMongo QR Scan </option>
+                                            <option value="Gcash">Gcash</option>
                                         </select>
                                     </div>
                                 </div>
 
                             </div>
                         </div>
-
-                        <!-- Section 4: Notes / Special Requests -->
                         <div class="form-section">
                             <h3 class="section-title-form">Notes/Request (Optional)</h3>
                             <div class="form-group">
                                 <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
                             </div>
                         </div>
-
-                        <!-- Action Button -->
                         <div class="form-actions" style="justify-content: stretch;">
                             <button type="submit" class="btn-confirm"
                                 style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -408,8 +410,6 @@
 
                     </form>
                 </div>
-
-                <!-- Studio Services Side Panel -->
                 <aside class="studio-services-panel">
                     <h2>Studio Services</h2>
                     <p class="services-subtitle">Click a category below to view packages, inclusions, and pricing.</p>
@@ -428,8 +428,6 @@
         </main>
 
     </div>
-
-    <!-- Basic Packages Modal -->
     <div id="basicPackagesModal" class="modal-overlay">
         <div class="modal-card">
             <button type="button" class="modal-close-btn" id="closePackagesModal">&times;</button>
@@ -512,8 +510,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Graduation Package Modal -->
     <div id="graduationPackageModal" class="modal-overlay">
         <div class="modal-card">
             <button type="button" class="modal-close-btn" id="closeGraduationPackageModal">&times;</button>
@@ -528,7 +524,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Classic 1 -->
                         <tr>
                             <td class="pkg-name">Classic 1</td>
                             <td class="pkg-inclusions">
@@ -547,8 +542,6 @@
                             </td>
                             <td class="pkg-price">P1199</td>
                         </tr>
-
-                        <!-- Classic 2 -->
                         <tr>
                             <td class="pkg-name">Classic 2</td>
                             <td class="pkg-inclusions">
@@ -569,8 +562,6 @@
                             </td>
                             <td class="pkg-price">P1799</td>
                         </tr>
-
-                        <!-- Classic 3 -->
                         <tr>
                             <td class="pkg-name">Classic 3</td>
                             <td class="pkg-inclusions">
@@ -595,8 +586,6 @@
                         </tr>
                     </tbody>
                 </table>
-
-                <!-- Graduation Add-Ons Section -->
                 <div style="margin-top: 25px; padding-top: 20px; border-top: 2px dashed #e0e0e0;">
                     <h3
                         style="font-size: 1rem; font-weight: 700; color: #353535; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -637,8 +626,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Special Sessions Modal -->
     <div id="specialSessionsModal" class="modal-overlay">
         <div class="modal-card">
             <button type="button" class="modal-close-btn" id="closeSpecialSessionsModal">&times;</button>
@@ -2019,6 +2006,7 @@
             }
         }
 
+
         document.addEventListener("DOMContentLoaded", function () {
             const emailInput = document.getElementById("emailAddress");
             const nameInput = document.getElementById("fullName");
@@ -2032,27 +2020,124 @@
             const sessionTypeSelect = document.getElementById("sessionType");
             const bookingDate = document.getElementById("bookingDate");
 
-            // Attach change listeners directly to force dynamic updating
+            // NAME VALIDATION
+            function validateFullName() {
+                if (!nameInput) return true;
+
+                const name = nameInput.value.trim();
+
+                // Allow letters, spaces, hyphens, and apostrophes
+                const validName =
+                    /^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/.test(name) &&
+                    name.length >= 2 &&
+                    name.length <= 100;
+
+                nameInput.setCustomValidity(
+                    validName
+                        ? ""
+                        : "Enter a valid name using letters, spaces, hyphens, or apostrophes only."
+                );
+
+                return validName;
+            }
+
+            // CONTACT NUMBER VALIDATION
+            function validateContactNumber() {
+                if (!contactInput) return true;
+
+                const contact = contactInput.value.trim();
+
+                // Philippine mobile number: 09 followed by 9 digits
+                const validContact = /^09[0-9]{9}$/.test(contact);
+
+                contactInput.setCustomValidity(
+                    validContact
+                        ? ""
+                        : "Enter an 11-digit Philippine mobile number starting with 09."
+                );
+
+                return validContact;
+            }
+
+            // Prevent numbers and symbols in the name field
+            if (nameInput) {
+                nameInput.addEventListener("input", function () {
+                    validateFullName();
+                });
+
+                nameInput.addEventListener("blur", function () {
+                    validateFullName();
+                });
+            }
+
+            // Allow digits only, up to 11 digits, in the contact field
+            if (contactInput) {
+                contactInput.setAttribute("inputmode", "numeric");
+                contactInput.setAttribute("maxlength", "11");
+                contactInput.setAttribute("minlength", "11");
+                contactInput.setAttribute("pattern", "09[0-9]{9}");
+
+                contactInput.addEventListener("input", function () {
+                    this.value = this.value.replace(/\D/g, "").slice(0, 11);
+                    validateContactNumber();
+                });
+
+                contactInput.addEventListener("blur", function () {
+                    validateContactNumber();
+                });
+            }
+
+            // Validate before booking submission.
+            // Add these checks to your EXISTING submit handler if you already have one.
+            const bookingForm = document.getElementById("bookingForm");
+
+            if (bookingForm) {
+                bookingForm.addEventListener("submit", function (event) {
+                    const nameValid = validateFullName();
+                    const contactValid = validateContactNumber();
+
+                    if (!nameValid || !contactValid) {
+                        event.preventDefault();
+
+                        if (!nameValid && nameInput) {
+                            nameInput.reportValidity();
+                            nameInput.focus();
+                        } else if (contactInput) {
+                            contactInput.reportValidity();
+                            contactInput.focus();
+                        }
+
+                        return;
+                    }
+                });
+            }
+
+            // Update available booking options when package changes
             if (photoPackageSelect) {
                 photoPackageSelect.addEventListener("change", async function () {
                     if (this.value && sessionTypeSelect) {
                         sessionTypeSelect.value = "";
                     }
+
                     updateDownpaymentUI();
                     updateBackdropUI();
+
                     if (bookingDate && bookingDate.value) {
                         await loadAvailableTimeSlots();
                     }
                 });
             }
 
+            // Update available booking options when session type changes
             if (sessionTypeSelect) {
                 sessionTypeSelect.addEventListener("change", async function () {
                     if (this.value && photoPackageSelect) {
                         photoPackageSelect.value = "";
                     }
+
                     updateDownpaymentUI();
                     updateBackdropUI();
+
                     if (bookingDate && bookingDate.value) {
                         await loadAvailableTimeSlots();
                     }
@@ -2061,6 +2146,22 @@
 
             // Initial UI update on page load
             updateDownpaymentUI();
+        
+        if (sessionTypeSelect) {
+            sessionTypeSelect.addEventListener("change", async function () {
+                if (this.value && photoPackageSelect) {
+                    photoPackageSelect.value = "";
+                }
+                updateDownpaymentUI();
+                updateBackdropUI();
+                if (bookingDate && bookingDate.value) {
+                    await loadAvailableTimeSlots();
+                }
+            });
+        }
+
+   
+        updateDownpaymentUI();
         });
 
         const addonContainer =
@@ -2223,7 +2324,7 @@
                     "Theme/Holiday": "theme_holiday",
                     "Theme Holiday": "theme_holiday",
                     "Theme / Holiday": "theme_holiday",
-      
+
                     "Maternity": "maternity",
                     "Maternity Shoot": "maternity"
 
@@ -2714,17 +2815,11 @@
 
         });
 
-        /* =========================================================
-    PAYMONGO BOOKING SUBMISSION
-    ========================================================= */
-
         const bookingForm = document.getElementById("bookingForm");
 
         bookingForm.addEventListener("submit", async (e) => {
 
             e.preventDefault();
-
-            // Policy agreement check
             const modalCheck = document.getElementById('modalPolicyCheck');
             if (modalCheck && !modalCheck.checked) {
                 alert("Please review and agree to our Down Payment & Cancellation Policy before confirming your booking.");
@@ -2737,17 +2832,7 @@
             );
 
             try {
-
-                /* =====================================================
-                   1. GUEST BOOKING - NO LOGIN REQUIRED
-                ===================================================== */
-                // The customer is identified by the information entered
-                // in the booking form. No Supabase Auth user is required.
                 const customerId = null;
-
-                /* =====================================================
-                   2. GET FORM VALUES
-                ===================================================== */
 
                 const fullName =
                     document.getElementById("fullName").value.trim();
@@ -2767,27 +2852,15 @@
                 const photoPackage =
                     document.getElementById("photoPackage").value.trim();
 
-                const sessionType =
-                    document.getElementById("sessionType").value.trim();
+                const sessionType = document.getElementById("sessionType").value.trim();
 
-                const paymentMethod =
-                    document.getElementById("paymentMethod").value;
+                const paymentMethod = document.getElementById("paymentMethod").value;
 
-                const notes =
-                    document.getElementById("notes").value.trim();
+                const notes = document.getElementById("notes").value.trim();
 
-                /* =====================================================
-                   GET BACKDROP SELECTION
-                   ===================================================== */
+                const selectedBackdrops = getSelectedBackdrops();
 
-                const selectedBackdrops =
-                    getSelectedBackdrops();
-
-                const requiredBackdrops =
-                    getRequiredBackdropCount();
-                /* =====================================================
-                   3. DETERMINE SELECTED SERVICE
-                ===================================================== */
+                const requiredBackdrops = getRequiredBackdropCount();
 
                 const selectedType =
                     sessionType || photoPackage;
@@ -2891,11 +2964,6 @@
                     return;
                 }
 
-
-                /* =====================================================
-                   4. VALIDATE CONTACT NUMBER
-                ===================================================== */
-
                 if (!/^09\d{9}$/.test(contact)) {
 
                     alert(
@@ -2908,9 +2976,6 @@
 
                     return;
                 }
-
-
-
                 if (!fullName) {
 
                     alert("Please enter your full name.");
@@ -2921,8 +2986,6 @@
 
                     return;
                 }
-
-
                 if (!email) {
 
                     alert("Please enter your email address.");
@@ -2933,8 +2996,6 @@
 
                     return;
                 }
-
-
                 if (!contact) {
 
                     alert("Please enter your contact number.");
@@ -2985,10 +3046,6 @@
                     return;
                 }
 
-                /* =====================================================
-                   6. VALIDATE DATE
-                ===================================================== */
-
                 const today = new Date();
 
                 const todayYear =
@@ -3037,12 +3094,6 @@
 
                     return;
                 }
-
-
-                /* =====================================================
-                   8. CALCULATE PAYMENT
-                ===================================================== */
-
                 const payment =
                     getCalculatedDownpayment();
 
@@ -3065,11 +3116,6 @@
                     return;
                 }
 
-
-                /* =====================================================
-                   9. CHECK PAYMENT METHOD
-                ===================================================== */
-
                 if (paymentMethod !== "PayMongo") {
 
                     alert(
@@ -3079,20 +3125,12 @@
                     return;
                 }
 
-
-                /* =====================================================
-                   10. DOUBLE-CHECK AVAILABILITY
-                   
-                   Prevents submitting a slot that became occupied
-                   while the customer was filling out the form.
-                ===================================================== */
-
                 submitButton.disabled = true;
 
                 submitButton.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Checking availability...
-        `;
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Checking availability...
+                    `;
 
 
                 const {
