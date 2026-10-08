@@ -657,12 +657,6 @@ app.post(
                 });
 
             }
-
-
-            // ------------------------------------------------
-            // FIRST HEARTBEAT / NEW SESSION
-            // ------------------------------------------------
-
             if (!existingPresence) {
 
                 const {
@@ -735,11 +729,6 @@ app.post(
 
 
             } else {
-
-                // ------------------------------------------------
-                // EXISTING SESSION
-                // ------------------------------------------------
-
                 const {
                     error: updateError
                 } = await supabaseAdmin
@@ -1170,12 +1159,6 @@ app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
         const staffUser = authData.user;
 
         console.log("Created Auth user:", staffUser.id);
-
-        // ----------------------------------------------------
-        // IMPORTANT:
-        // handle_new_user() may have already created the profile
-        // ----------------------------------------------------
-
         const {
             data: autoCreatedProfile,
             error: profileCheckError
@@ -1299,10 +1282,6 @@ app.get(
 
         try {
 
-            // ------------------------------------------------
-            // GET STAFF PROFILES
-            // ------------------------------------------------
-
             const {
                 data: staffList,
                 error: staffError
@@ -1335,11 +1314,6 @@ app.get(
                 });
             }
 
-
-            // ------------------------------------------------
-            // GET STAFF PRESENCE
-            // ------------------------------------------------
-
             const {
                 data: presenceList,
                 error: presenceError
@@ -1369,11 +1343,6 @@ app.get(
                 });
             }
 
-
-            // ------------------------------------------------
-            // MAP PRESENCE BY STAFF ID
-            // ------------------------------------------------
-
             const presenceMap =
                 new Map(
                     (presenceList || []).map(
@@ -1383,12 +1352,6 @@ app.get(
                         ]
                     )
                 );
-
-
-            // ------------------------------------------------
-            // COMBINE STAFF + PRESENCE
-            // ------------------------------------------------
-
             const now =
                 Date.now();
 
@@ -1461,12 +1424,6 @@ app.get(
 
                     }
                 );
-
-
-            // ------------------------------------------------
-            // RESPONSE
-            // ------------------------------------------------
-
             console.log(
                 "STAFF LIST WITH PRESENCE:",
                 staffWithPresence
@@ -1619,11 +1576,6 @@ app.delete(
                     error: "You cannot delete your own account."
                 });
             }
-
-            // ------------------------------------------------
-            // GET STAFF PROFILE
-            // ------------------------------------------------
-
             const {
                 data: staff,
                 error: staffError
@@ -1654,10 +1606,6 @@ app.delete(
 
             console.log("TARGET STAFF:", staff);
 
-            // ------------------------------------------------
-            // PROTECT ADMIN ACCOUNTS
-            // ------------------------------------------------
-
             if (
                 staff.role &&
                 staff.role.toLowerCase() === "admin"
@@ -1668,11 +1616,6 @@ app.delete(
                         "Administrator accounts cannot be deleted."
                 });
             }
-
-            // ------------------------------------------------
-            // DISABLE SUPABASE AUTH ACCOUNT
-            // ------------------------------------------------
-
             console.log(
                 "Disabling Auth account:",
                 staffId
@@ -1707,11 +1650,6 @@ app.delete(
                 "AUTH ACCOUNT DISABLED:",
                 disabledUser?.user?.id
             );
-
-            // ------------------------------------------------
-            // DELETE LOGIN HISTORY
-            // ------------------------------------------------
-
             const {
                 error: historyError
             } = await supabaseAdmin
@@ -1727,11 +1665,6 @@ app.delete(
                 );
 
             }
-
-            // ------------------------------------------------
-            // DELETE STAFF PROFILE
-            // ------------------------------------------------
-
             const {
                 error: profileDeleteError
             } = await supabaseAdmin
@@ -1816,21 +1749,12 @@ app.post(
             console.log("TARGET STAFF ID:", req.params.staffId);
 
             const { staffId } = req.params;
-
-            // --------------------------------------------------
-            // VALIDATE STAFF ID
-            // --------------------------------------------------
-
             if (!staffId) {
                 return res.status(400).json({
                     success: false,
                     error: "Staff account ID is required."
                 });
             }
-
-            // --------------------------------------------------
-            // PREVENT ADMIN FROM SIGNING THEMSELVES OUT
-            // --------------------------------------------------
 
             if (staffId === req.authUser.id) {
                 return res.status(400).json({
@@ -1839,11 +1763,6 @@ app.post(
                         "You cannot sign out your own account using this button."
                 });
             }
-
-            // --------------------------------------------------
-            // GET TARGET STAFF
-            // --------------------------------------------------
-
             const {
                 data: targetStaff,
                 error: targetError
@@ -1884,11 +1803,6 @@ app.post(
                 targetStaff.full_name,
                 targetStaff.email
             );
-
-            // --------------------------------------------------
-            // FORCE SIGN OUT
-            // --------------------------------------------------
-
             const signOutTime =
                 new Date().toISOString();
 
@@ -1973,10 +1887,6 @@ app.post("/send-otp", async (req, res) => {
 
         console.log("Generated OTP:", otp);
 
-        /* -------------------------------------------------
-           REMOVE OLD OTP
-        ------------------------------------------------- */
-
         const { error: deleteError } = await supabase
             .from("otp_verifications")
             .delete()
@@ -2011,9 +1921,9 @@ app.post("/send-otp", async (req, res) => {
         const { error: emailError } =
             await resend.emails.send({
 
-                from: "onboarding@resend.dev",
+                from: RESEND_FROM_EMAIL,
 
-                to: email,
+                to: [email],
 
                 subject:
                     "Your Verification Code",
@@ -2090,10 +2000,10 @@ function escapeHtml(value) {
 function validateEmail(email) {
     const normalizedEmail = String(email ?? "").trim().toLowerCase();
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if(!emailPattern.test(normalizedEmail)) {
         return null;
     }
-
     return normalizedEmail;
 }
 app.post("/send-booking-confirmation", async (req, res) => {
@@ -2121,7 +2031,7 @@ app.post("/send-booking-confirmation", async (req, res) => {
                 });
             }
 
-            if (!resend || !process.env.RESEND_FROM_EMAIL) {
+            if (!resend || !RESEND_FROM_EMAIL) {
                 return res.status(500).json({
                     success: false,
                     message: "Email service or sender address is not configured."
@@ -2129,6 +2039,10 @@ app.post("/send-booking-confirmation", async (req, res) => {
             }
 
             console.log("BOOKING CONFIRMATION RECIPIENT:", recipientEmail);
+            
+            const safeGalleryLink = galleryLink
+                ? escapeHtml(galleryLink)
+                : "";
         const formattedDate = bookingDate
             ? new Date(`${bookingDate}T00:00:00`).toLocaleDateString(
                 "en-US",
@@ -2152,7 +2066,7 @@ app.post("/send-booking-confirmation", async (req, res) => {
             : "-";
 
         const { data, error } = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL,
+            from: RESEND_FROM_EMAIL,
             to: [recipientEmail],
             subject: "Booking Confirmation - Captured Photography Studio",
             html: `
@@ -2162,7 +2076,7 @@ app.post("/send-booking-confirmation", async (req, res) => {
                     </h2>
 
                     <p>
-                        Hello ${name || "Customer"},
+                        Hello ${escapeHtml(name) || "Customer"},
                     </p>
 
                     <p>
@@ -2170,10 +2084,10 @@ app.post("/send-booking-confirmation", async (req, res) => {
                     </p>
 
                     <div style="background:#f6f8f7;padding:20px;border-radius:10px;margin:20px 0;">
-                        <p><strong>Booking ID:</strong> ${bookingId || "-"}</p>
-                        <p><strong>Session:</strong> ${sessionType || "-"}</p>
-                        <p><strong>Date:</strong> ${formattedDate}</p>
-                        <p><strong>Time:</strong> ${formattedTime}</p>
+                        <p><strong>Booking ID:</strong> ${escapeHtml(bookingId) || "-"}</p>
+                        <p><strong>Session:</strong> ${escapeHtml(sessionType) || "-"}</p>
+                        <p><strong>Date:</strong> ${escapeHtml(formattedDate)}</p>
+                        <p><strong>Time:</strong> ${escapeHtml(formattedTime)}</p>
                         <p><strong>Total Price:</strong> ₱${Number(totalPrice || 0).toLocaleString("en-PH", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
@@ -2188,18 +2102,13 @@ app.post("/send-booking-confirmation", async (req, res) => {
                         })}</p>
                     </div>
 
-                    ${
-                        galleryLink
+                  ${
+                        safeGalleryLink
                             ? `
+                                <p>Your customer gallery access link is available below:</p>
                                 <p>
-                                    Your customer gallery access link is available below:
-                                </p>
-
-                                <p>
-                                    <a
-                                        href="${galleryLink}"
-                                        style="display:inline-block;padding:12px 20px;background:#639A88;color:white;text-decoration:none;border-radius:6px;"
-                                    >
+                                    <a href="${safeGalleryLink}"
+                                    style="display:inline-block;padding:12px 20px;background:#639A88;color:white;text-decoration:none;border-radius:6px;">
                                         Open Customer Gallery
                                     </a>
                                 </p>
@@ -2529,18 +2438,6 @@ const remainingBalance = Number(
 
 const amountInCentavos =
     Math.round(downpayment * 100);
-
-console.log("====================================");
-console.log("PAYMENT CALCULATION");
-console.log("====================================");
-console.log("Total Price:", totalPrice);
-console.log("Down Payment:", downpayment);
-console.log("Remaining Balance:", remainingBalance);
-console.log("PayMongo Amount:", amountInCentavos);
-console.log("====================================");
-
-
-
         const selectedBackdrops =
             Array.isArray(backdrops)
                 ? backdrops
@@ -2559,12 +2456,6 @@ console.log("====================================");
               error: "Invalid booking duration."
               });         
             }           
-
-
-        console.log("Selected backdrops:", selectedBackdrops);
-        console.log("Selected add-ons:", selectedAddons);
-        console.log("Booking duration:", duration);
-
 
         const bookingReference =
             `CAPTURED-${Date.now()}-${crypto
@@ -3068,11 +2959,6 @@ console.log(
 app.post("/api/paymongo/webhook", async (req, res) => {
 
     try {
-
-        /* =====================================================
-           1. VERIFY PAYMONGO WEBHOOK SIGNATURE
-        ===================================================== */
-
         const signatureHeader =
             req.headers["paymongo-signature"];
 
@@ -3602,11 +3488,6 @@ console.log(
 
 console.log("====================================");
 
-
-/* =================================================
-   PREVENT DUPLICATE PAYMENT PROCESSING
-================================================= */
-
 if (
     String(
         booking.payment_status || ""
@@ -3980,7 +3861,7 @@ Down Payment Paid: ₱${downPaymentAmount.toLocaleString(
                             }
                         )}
 
-Remaining Balance: ₱${remainingBalance.toLocaleString(
+                            Remaining Balance: ₱${remainingBalance.toLocaleString(
                             "en-PH",
                             {
                                 minimumFractionDigits: 2,
@@ -4018,12 +3899,6 @@ Payment Status: Paid`,
             );
 
         }
-
-
-        /* =====================================================
-           9. PAYMENT FAILED
-        ===================================================== */
-
         if (
             eventType ===
             "checkout_session.payment.failed"
@@ -4135,12 +4010,6 @@ The booking has been cancelled. Please create a new booking if you would like to
             }
 
         }
-
-
-        /* =====================================================
-           10. TELL PAYMONGO WEBHOOK WAS RECEIVED
-        ===================================================== */
-
         return res.json({
 
             success:
@@ -4231,15 +4100,6 @@ app.get("/api/bookings/availability", async (req, res) => {
             });
 
         }
-
-
-        /* =====================================================
-           ONLY RETURN ACTIVE BOOKINGS
-
-           We do NOT return customer names, emails,
-           phone numbers, payment references, etc.
-        ===================================================== */
-
         const activeBookings =
             (bookings || []).filter(
                 booking => {
@@ -4317,11 +4177,6 @@ app.get("/api/bookings/availability", async (req, res) => {
 
         };
 
-
-        /* =====================================================
-           CALCULATE LEGACY BOOKING DURATION
-        ===================================================== */
-
         function getBookingDuration(booking) {
 
             const savedDuration =
@@ -4352,12 +4207,6 @@ app.get("/api/bookings/availability", async (req, res) => {
                 PACKAGE_DURATIONS[
                     sessionType
                 ] || 0;
-
-
-            /* =================================================
-               ADD PHOTOGRAPHER ADD-ON TIME
-            ================================================= */
-
             const addons =
                 Array.isArray(
                     booking.addons
@@ -4762,15 +4611,159 @@ app.get("/api/customer/bookings", async (req, res) => {
     }
 
 });
+app.delete(
+    "/api/admin/bookings/:id",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const bookingId =
+                String(req.params.id || "").trim();
+
+            if (!bookingId) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Booking ID is required."
+                });
+            }
+
+            const {
+                data: booking,
+                error: bookingError
+            } = await supabase
+                .from("bookings")
+                .select("id, full_name, status")
+                .eq("id", bookingId)
+                .single();
+
+            if (bookingError || !booking) {
+
+                return res.status(404).json({
+                    success: false,
+                    error: "Booking was not found."
+                });
+
+            }
+
+            const status =
+                String(booking.status || "")
+                    .trim()
+                    .toLowerCase();
+                    console.log(
+                        "DELETE BOOKING STATUS:",
+                        booking.status,
+                        "NORMALIZED:",
+                        status
+                    );
+          if (
+                    status !== "rejected" &&
+                    status !== "cancelled"
+                ) {
+                    return res.status(403).json({
+                        success: false,
+                        error: "Only rejected or cancelled bookings can be deleted."
+                    });
+                }
+             const {
+                error: notificationDeleteError
+            } = await supabase
+                .from("notifications")
+                .delete()
+                .eq("booking_id", bookingId);
+
+            if (notificationDeleteError) {
+
+                console.error(
+                    "Notification cleanup error:",
+                    notificationDeleteError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to clean related notifications.",
+                    message:
+                        notificationDeleteError.message
+                });
+
+            }
+
+            const {
+                error: repositoryDeleteError
+            } = await supabase
+                .from("repository_client_links")
+                .delete()
+                .eq("booking_id", bookingId);
+
+            if (repositoryDeleteError) {
+
+                console.error(
+                    "Repository cleanup error:",
+                    repositoryDeleteError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to clean related repository data.",
+                    message:
+                        repositoryDeleteError.message
+                });
+
+            }
+
+            const {
+                error: deleteError
+            } = await supabase
+                .from("bookings")
+                .delete()
+                .eq("id", bookingId);
+
+            if (deleteError) {
+
+                console.error(
+                    "Rejected booking deletion error:",
+                    deleteError
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Unable to delete the rejected booking.",
+                    message:
+                        deleteError.message
+                });
+
+            }
+
+            return res.status(200).json({
+                success: true,
+                message:
+                    `${booking.full_name || "Customer"}'s rejected booking was deleted successfully.`
+            });
+
+        } catch (error) {
+
+            console.error(
+                "DELETE REJECTED BOOKING ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal server error.",
+                message: error.message
+            });
+
+        }
+    }
+);
 app.post(
     "/api/gallery-access/request",
     async (req, res) => {
 
         try {
-
-            console.log("========================================");
-            console.log("CUSTOMER GALLERY ACCESS REQUEST");
-            console.log("========================================");
 
 
             const {
