@@ -290,7 +290,7 @@ i.fa-brands {
     width: 100%;
     min-height: 45px;
     padding: 11px 15px;
-    border-radius: 7px;
+    border-radius: 5px;
     color: #353535;
     text-decoration: none;
     font-size: 14px;
@@ -335,7 +335,7 @@ i.fa-brands {
     margin-top: auto;
     padding: 10px;
     border: 1.5px solid #dc2626 !important;
-    border-radius: 7px;
+    border-radius: 5px;
     background-color: #ffffff;
     color: #dc2626 !important;
     text-decoration: none;
@@ -401,7 +401,7 @@ i.fa-brands {
     padding: 40px;
     background: #ffffff;
     border: 1px solid #e3e7e5;
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 3px 16px rgba(0, 0, 0, 0.035);
     flex: 1;
 }
@@ -415,7 +415,7 @@ i.fa-brands {
 
 .studio-services-panel h2 {
     font-size: 1.55rem;
-    font-weight: 600;
+    font-weight: 400;
     color: #161515;
     margin-bottom: 10px;
     letter-spacing: -0.2px;
@@ -442,7 +442,7 @@ i.fa-brands {
     background: #639A88;
     color: #ffffff;
     border: none;
-    border-radius: 7px;
+    border-radius: 5px;
     font-family: inherit;
     font-size: 0.9rem;
     font-weight: 600;
@@ -559,7 +559,7 @@ select[name="package_id"],
     height: 45px;
     padding: 10px 13px;
     border: 1px solid #d5d9d7 !important;
-    border-radius: 7px;
+    border-radius: 5px;
     font-family: inherit;
     font-size: 0.9rem;
     color: #353535 !important;
@@ -721,7 +721,7 @@ select[name="package_id"],
     height: 45px;
     padding: 10px 13px;
     border: 1px solid #d5d9d7 !important;
-    border-radius: 7px;
+    border-radius: 5px;
     font-family: inherit;
     font-size: 0.9rem;
     color: #353535 !important;
@@ -795,7 +795,7 @@ select[name="package_id"],
     color: #ffffff;
     background-color: #639A88;
     border: none;
-    border-radius: 7px;
+    border-radius: 5px;
     padding: 0 14px;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -849,7 +849,7 @@ select[name="package_id"],
     background-color: #639A88;
     color: #ffffff;
     border: none;
-    border-radius: 7px;
+    border-radius: 5px;
     font-family: inherit;
     font-size: 0.92rem;
     font-weight: 600;
@@ -1297,11 +1297,7 @@ select[name="package_id"],
         width: 100%;
         display: flex;
         flex-direction: row;
-        gap: 7px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding-bottom: 1px;
-        scrollbar-width: none;
+        gap: 8px;
     }
 
     .sidebar nav::-webkit-scrollbar {
@@ -1309,19 +1305,19 @@ select[name="package_id"],
     }
 
     .sidebar nav a {
-        flex: 0 0 auto;
-        width: auto;
-        min-width: 125px;
+        flex: 1; /* Makes Book a Session & View Gallery split width equally */
         justify-content: center;
-        padding: 10px 13px;
-        font-size: 13px;
-        white-space: nowrap;
+    }
+
+    .mobile-home-btn {
+        display: flex !important;
     }
 
     .sidebar > .logout-btn,
     .sidebar > .back-home-btn {
         width: 100%;
         margin-top: 9px;
+        display: none !important;
     }
 
     .content {
@@ -1468,6 +1464,7 @@ select[name="package_id"],
 
     .btn-confirm {
         width: 100%;
+        margin-top: -15px !important;
     }
 }
 
@@ -1709,4 +1706,23 @@ select[name="package_id"],
 .sidebar a:hover {
     background: #f4f4f4;
     color: #353535;
+}
+
+.mobile-home-btn {
+    display: none; /* Hidden on Desktop */
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 5px;
+    color: #dc2626;
+    border: 1.5px solid #dc2626;
+    background-color: transparent;
+    text-decoration: none;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.mobile-home-btn:hover {
+    background-color: rgba(220, 38, 38, 0.08);
 }

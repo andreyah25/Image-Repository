@@ -1589,10 +1589,6 @@ body.payment-proof-modal-open {
 }
 
 
-/* =========================================================
-   CLIENT NAME
-   ========================================================= */
-
 .client-name-cell {
     display: flex;
     flex-direction: column;
@@ -1610,10 +1606,6 @@ body.payment-proof-modal-open {
     font-size: 12px;
 }
 
-
-/* =========================================================
-   DATE / TIME
-   ========================================================= */
 
 .booking-date-cell {
     display: flex;
@@ -1633,9 +1625,6 @@ body.payment-proof-modal-open {
 }
 
 
-/* =========================================================
-   PAYMENT STATUS
-   ========================================================= */
 
 .payment-status {
     display: inline-flex;
@@ -1667,9 +1656,7 @@ body.payment-proof-modal-open {
     background: #fff1cc;
     color: #805b00;
 }
-
-
-/* FAILED */
+AILED */
 
 .payment-status.failed {
     background: #fbe2e2;
@@ -1696,9 +1683,6 @@ body.payment-proof-modal-open {
     background: #fff1cc;
     color: #805b00;
 }
-
-
-/* CONFIRMED */
 
 .booking-status.confirmed {
     background: #dff2e9;
@@ -1739,7 +1723,32 @@ body.payment-proof-modal-open {
     background: #639A88;
     color: #ffffff;
 }
+.delete-rejected-btn {
+    border: 1px solid #e8aaaa;
+    background: #fbe2e2;
+    color: #9b2929;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 110px;
+}
 
+.delete-rejected-btn:hover {
+    background: #f6d4d4;
+    border-color: #d98f8f;
+}
+
+.delete-rejected-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 
 .confirm-btn {
     background: #639A88;
@@ -2566,4 +2575,177 @@ body.payment-proof-modal-open {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
 
     z-index: 100000 !important;
+}
+/* =========================================================
+   NO SHOW STATUS
+   ========================================================= */
+
+.status-badge.no-show,
+.booking-status.no-show {
+    background-color: #F3F0E8 !important;
+    color: #756B4A !important;
+    border: 1px solid #D8CFB5 !important;
+}
+
+/* =========================================================
+   NO SHOW BUTTON
+   ========================================================= */
+
+.no-show-btn {
+    background: #ffffff;
+    color: #756B4A;
+    border: 1px solid #D8CFB5;
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: 0.2s ease;
+}
+
+.no-show-btn:hover {
+    background: #F3F0E8;
+    border-color: #C8BFA3;
+    color: #625A3E;
+}
+
+.no-show-btn:active {
+    transform: scale(0.97);
+}
+
+/* =========================================================
+   NO SHOW MODAL
+   ========================================================= */
+
+#noShowModal {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+    z-index: 99999 !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+}
+
+#noShowModal.show {
+    display: flex !important;
+}
+
+#noShowModal .simple-rejection-card {
+    width: min(500px, calc(100% - 40px)) !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    padding: 30px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+    box-sizing: border-box !important;
+}
+
+#noShowModal h2 {
+    margin: 0 0 10px;
+    color: #26332f;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+#noShowModal p {
+    margin: 0 0 20px;
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#noShowNote {
+    width: 100%;
+    min-height: 110px;
+    padding: 12px 14px;
+    border: 1px solid #d7ddda;
+    border-radius: 8px;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    color: #333333;
+    background: #ffffff;
+    outline: none;
+}
+
+#noShowNote:focus {
+    border-color: #639A88;
+    box-shadow: 0 0 0 2px rgba(99, 154, 136, 0.10);
+}
+
+#noShowNote::placeholder {
+    color: #9a9a9a;
+}
+
+.simple-rejection-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+#cancelNoShowBtn {
+    border: 1px solid #d7d7d7;
+    background: #ffffff;
+    color: #555555;
+    padding: 9px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#cancelNoShowBtn:hover {
+    background: #f5f5f5;
+}
+
+#confirmNoShowBtn {
+    border: 1px solid #D8CFB5;
+    background: #F3F0E8;
+    color: #756B4A;
+    padding: 9px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#confirmNoShowBtn:hover {
+    background: #E9E4D7;
+    border-color: #C8BFA3;
+}
+
+#confirmNoShowBtn:disabled,
+#cancelNoShowBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+    #noShowModal .simple-rejection-card {
+        width: calc(100% - 20px) !important;
+        padding: 22px !important;
+    }
+
+    .simple-rejection-actions {
+        flex-direction: column-reverse;
+    }
+
+    #cancelNoShowBtn,
+    #confirmNoShowBtn {
+        width: 100%;
+    }
 }

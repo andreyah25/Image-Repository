@@ -946,11 +946,10 @@
             SUPABASE_ANON_KEY
         );
 
-        const MAX_BOOKINGS_PER_DAY = 6;
-        const BOOKING_START_MINUTES = 10 * 60;
-        const BOOKING_END_MINUTES = 19 * 60;
+        const BOOKING_START_MINUTES = 10 * 60; // 10:00 AM
+        const BOOKING_END_MINUTES = 19 * 60;   // 7:00 PM
         const BOOKING_INTERVAL = 15;
-        const BOOKING_PREPARATION_TIME = 5;
+        const BOOKING_PREPARATION_TIME = 15;
         const ADDON_OPTIONS = {
             additional_person: {
                 name: "Additional Person",
@@ -1379,334 +1378,368 @@
             return dateString < todayString;
         }
 
+        const MAX_ADVANCE_BOOKING_YEARS = 3;
+
+        function getMaximumBookingDate() {
+            const maxDate = new Date();
+            maxDate.setHours(0, 0, 0, 0);
+
+            maxDate.setFullYear(
+                maxDate.getFullYear() + MAX_ADVANCE_BOOKING_YEARS
+            );
+
+            const year = maxDate.getFullYear();
+            const month = String(maxDate.getMonth() + 1).padStart(2, "0");
+            const day = String(maxDate.getDate()).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+        }
+
+        function validateAdvanceBookingDate(dateString) {
+            if (!dateString) {
+                return {
+                    valid: false,
+                    message: "Please select a booking date."
+                };
+            }
+
+            if (isPastDate(dateString)) {
+                return {
+                    valid: false,
+                    message: "Past dates are not allowed."
+                };
+            }
+
+            const maximumDate = getMaximumBookingDate();
+
+            if (dateString > maximumDate) {
+                return {
+                    valid: false,
+                    message: `Bookings are only allowed up to ${MAX_ADVANCE_BOOKING_YEARS} year(s) in advance. Please select a date on or before ${maximumDate}.`
+                };
+            }
+
+            return { valid: true, message: "" };
+        }
         async function loadAvailableTimeSlots() {
 
-            const dateInput =
-                document.getElementById("bookingDate");
-
-            const timeSelect =
-                document.getElementById("bookingTime");
-
+            const dateInput = document.getElementById("bookingDate");
+            const timeSelect = document.getElementById("bookingTime");
+            const message = document.getElementById("bookingAvailabilityMessage");
 
             if (!dateInput || !timeSelect) {
-
-                console.error(
-                    "Booking date or time element not found."
-                );
-
+                console.error("Booking date or time element not found.");
                 return;
             }
 
+            const selectedDate = dateInput.value;
 
-            const selectedDate =
-                dateInput.value;
+            if (selectedDate) {
+                const dateValidation = validateAdvanceBookingDate(selectedDate);
 
+                if (!dateValidation.valid) {
+                    timeSelect.innerHTML =
+                        '<option value="">Select a valid booking date</option>';
 
-            /* =========================================================
-               RESET DROPDOWN
-            ========================================================= */
+                    timeSelect.disabled = true;
 
-            timeSelect.innerHTML =
-                '<option value="">Select a time</option>';
+                    if (message) {
+                        message.textContent = dateValidation.message;
+                    }
+
+                    console.warn("Booking date rejected:", selectedDate);
+                    return;
+                }
+            }
+
+            timeSelect.innerHTML = `
+        <option value="">Select a time</option>
+    `;
 
             timeSelect.disabled = true;
 
+            if (message) {
+                message.textContent =
+                    "Please select a date and package/session to see available times.";
+            }
 
             if (!selectedDate) {
                 return;
             }
 
+            // ---------------------------------------------------------
+            // GET CURRENTLY SELECTED SESSION DURATION
+            // ---------------------------------------------------------
 
-            /* =========================================================
-               GET SELECTED BOOKING DURATION
-            ========================================================= */
-
-            const requestedDuration =
-                Number(
-                    getSelectedDuration()
-                );
-
+            const requestedDuration = Number(getSelectedDuration());
 
             if (
                 !Number.isFinite(requestedDuration) ||
                 requestedDuration <= 0
             ) {
 
-                timeSelect.innerHTML =
-                    '<option value="">Select a package/session first</option>';
+                timeSelect.innerHTML = `
+            <option value="">
+                Select a package/session first
+            </option>
+        `;
+
+                if (message) {
+                    message.textContent =
+                        "Select a package or session first to calculate available time ranges.";
+                }
 
                 return;
             }
 
-
+            console.log("====================================");
+            console.log("LOADING BOOKING AVAILABILITY");
+            console.log("Date:", selectedDate);
+            console.log("Requested session duration:", requestedDuration);
             console.log(
-                "===================================="
+                "Preparation/buffer time:",
+                BOOKING_PREPARATION_TIME
             );
+            console.log("====================================");
 
-            console.log(
-                "LOADING BOOKING AVAILABILITY"
-            );
-
-            console.log(
-                "Selected date:",
-                selectedDate
-            );
-
-            console.log(
-                "Requested duration:",
-                requestedDuration,
-                "minutes"
-            );
-
-            console.log(
-                "===================================="
-            );
-
-
-            /* =========================================================
-               CHECK PAST DATE
-            ========================================================= */
+            // ---------------------------------------------------------
+            // CHECK PAST DATE
+            // ---------------------------------------------------------
 
             const selectedDateObject =
-                new Date(
-                    `${selectedDate}T00:00:00`
-                );
+                new Date(`${selectedDate}T00:00:00`);
 
-            const today =
-                new Date();
+            const today = new Date();
 
-            today.setHours(
-                0,
-                0,
-                0,
-                0
-            );
+            today.setHours(0, 0, 0, 0);
 
+            if (selectedDateObject < today) {
 
-            if (
-                selectedDateObject < today
-            ) {
+                timeSelect.innerHTML = `
+            <option value="">Date is in the past</option>
+        `;
 
-                timeSelect.innerHTML =
-                    '<option value="">Date is in the past</option>';
+                if (message) {
+                    message.textContent =
+                        "Please select today or a future date.";
+                }
 
                 return;
             }
-
 
             try {
 
-                /* =====================================================
-                   ASK OUR NODE SERVER FOR AVAILABILITY
-        
-                   IMPORTANT:
-                   Do NOT use supabase.rpc here.
-                ===================================================== */
+                // -----------------------------------------------------
+                // GET ALL BOOKINGS FOR SELECTED DATE
+                // -----------------------------------------------------
 
-                const response = await fetch(
-                    `https://image-repository-1.onrender.com/api/bookings/availability?date=${encodeURIComponent(selectedDate)}`
-                );
+                const {
+                    data: existingBookings,
+                    error: availabilityError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select(`
+                id,
+                booking_date,
+                booking_time,
+                status,
+                payment_status,
+                session_type,
+                booking_duration,
+                addons
+            `)
+                    .eq("booking_date", selectedDate);
 
-
-                const result =
-                    await response.json();
-
-
-                console.log(
-                    "Availability API response:",
-                    result
-                );
-
-
-                if (!response.ok) {
+                if (availabilityError) {
 
                     console.error(
-                        "Availability API error:",
-                        result
+                        "Failed to load bookings:",
+                        availabilityError
                     );
 
-                    timeSelect.innerHTML =
-                        '<option value="">Unable to load available times</option>';
-
-                    return;
-                }
-
-
-                const existingBookings =
-                    Array.isArray(
-                        result.bookings
-                    )
-                        ? result.bookings
-                        : [];
-
-
-                console.log(
-                    "Existing bookings:",
-                    existingBookings
-                );
-
-
-                /* =====================================================
-                   DAILY BOOKING LIMIT
-                ===================================================== */
-
-                if (
-                    existingBookings.length >=
-                    MAX_BOOKINGS_PER_DAY
-                ) {
-
-                    timeSelect.innerHTML =
-                        '<option value="">Fully booked for this date</option>';
-
-                    timeSelect.disabled = true;
-
-
-                    const message =
-                        document.getElementById(
-                            "bookingAvailabilityMessage"
-                        );
-
+                    timeSelect.innerHTML = `
+                <option value="">
+                    Unable to load available times
+                </option>
+            `;
 
                     if (message) {
-
                         message.textContent =
-                            `${existingBookings.length}/${MAX_BOOKINGS_PER_DAY} daily bookings — fully booked`;
-
+                            "Unable to check availability. Please try again.";
                     }
-
 
                     return;
                 }
 
+                // -----------------------------------------------------
+                // REMOVE CANCELLED / REJECTED BOOKINGS
+                // -----------------------------------------------------
 
-                /* =====================================================
-                   TIME → MINUTES
-                ===================================================== */
+                const activeBookings =
+                    (existingBookings || []).filter(booking => {
 
-                function timeToMinutes(
-                    timeString
-                ) {
+                        const status =
+                            String(booking.status || "")
+                                .toLowerCase()
+                                .trim();
+
+                        const paymentStatus =
+                            String(booking.payment_status || "")
+                                .toLowerCase()
+                                .trim();
+
+                        // Ignore cancelled/rejected bookings.
+                        if (
+                            status === "cancelled" ||
+                            status === "canceled" ||
+                            status === "rejected" ||
+                            status === "declined"
+                        ) {
+                            return false;
+                        }
+
+                        if (
+                            paymentStatus === "cancelled" ||
+                            paymentStatus === "rejected"
+                        ) {
+                            return false;
+                        }
+
+                        return true;
+                    });
+
+                function timeToMinutes(timeString) {
 
                     if (!timeString) {
                         return null;
                     }
 
+                    const cleanTime =
+                        String(timeString)
+                            .trim()
+                            .split("+")[0]
+                            .split("Z")[0];
 
                     const parts =
-                        String(timeString)
-                            .substring(0, 5)
-                            .split(":");
+                        cleanTime.split(":");
 
-
-                    const hours =
-                        Number(parts[0]);
-
-                    const minutes =
-                        Number(parts[1]);
-
+                    const hours = Number(parts[0]);
+                    const minutes = Number(parts[1]);
 
                     if (
                         !Number.isFinite(hours) ||
                         !Number.isFinite(minutes)
                     ) {
-
                         return null;
                     }
 
-
-                    return (
-                        hours * 60
-                    ) + minutes;
-
+                    return (hours * 60) + minutes;
                 }
 
+
                 const existingBookingRanges =
-                    existingBookings
-                        .map(
-                            booking => {
+                    activeBookings
+                        .map(booking => {
 
-                                const start =
-                                    timeToMinutes(
-                                        booking.booking_time
-                                    );
+                            const start =
+                                timeToMinutes(
+                                    booking.booking_time
+                                );
 
-
-                                const duration =
-                                    Number(
-                                        booking.booking_duration
-                                    );
-
-
-                                if (
-                                    start === null ||
-                                    !Number.isFinite(duration) ||
-                                    duration <= 0
-                                ) {
-
-                                    return null;
-
-                                }
-
-
-                                const end =
-                                    start +
-                                    duration +
-                                    BOOKING_PREPARATION_TIME;
-
-
-                                return {
-
-                                    start,
-                                    end,
-                                    duration
-
-                                };
-
+                            if (start === null) {
+                                return null;
                             }
-                        )
-                        .filter(
-                            Boolean
-                        )
+
+                            // First priority:
+                            // duration saved in database.
+                            let duration =
+                                Number(
+                                    booking.booking_duration
+                                );
+
+                            // Fallback:
+                            // calculate duration from package/session.
+                            if (
+                                !Number.isFinite(duration) ||
+                                duration <= 0
+                            ) {
+
+                                const packageDuration =
+                                    getPackageDuration(
+                                        booking.session_type
+                                    );
+
+                                const addonDuration =
+                                    getAddonDurationFromKeys(
+                                        normalizeAddonKeys(
+                                            booking.addons
+                                        )
+                                    );
+
+                                duration =
+                                    packageDuration +
+                                    addonDuration;
+                            }
+
+                            if (
+                                !Number.isFinite(duration) ||
+                                duration <= 0
+                            ) {
+
+                                console.warn(
+                                    "Unable to determine booking duration:",
+                                    booking
+                                );
+
+                                return null;
+                            }
+                            const sessionEnd =
+                                start + duration;
+
+                            const occupiedEnd =
+                                sessionEnd +
+                                BOOKING_PREPARATION_TIME;
+
+                            return {
+                                start,
+                                sessionEnd,
+                                occupiedEnd,
+                                duration
+                            };
+
+                        })
+                        .filter(Boolean)
                         .sort(
                             (a, b) =>
-                                a.start -
-                                b.start
+                                a.start - b.start
                         );
-
-
                 console.log(
                     "Existing booking ranges:"
                 );
 
-
                 console.table(
-                    existingBookingRanges.map(
-                        range => ({
+                    existingBookingRanges.map(range => ({
+                        sessionStart:
+                            minutesToTime(
+                                range.start
+                            ),
 
-                            start:
-                                minutesToTime(
-                                    range.start
-                                ),
+                        sessionEnd:
+                            minutesToTime(
+                                range.sessionEnd
+                            ),
 
-                            end:
-                                minutesToTime(
-                                    range.end
-                                ),
+                        bufferEnd:
+                            minutesToTime(
+                                range.occupiedEnd
+                            ),
 
-                            duration:
-                                range.duration
-
-                        })
-                    )
+                        duration:
+                            range.duration
+                    }))
                 );
 
-
-                /* =====================================================
-                   GENERATE AVAILABLE TIMES
-                ===================================================== */
-
                 const availableTimes = [];
-
 
                 for (
                     let candidateStart =
@@ -1719,165 +1752,127 @@
                     BOOKING_INTERVAL
                 ) {
 
-                    /* -------------------------------------------------
-                       Candidate occupied duration
-                    ------------------------------------------------- */
 
-                    const candidateEnd =
+                    const candidateSessionEnd =
                         candidateStart +
-                        requestedDuration +
+                        requestedDuration;
+
+
+                    const candidateOccupiedEnd =
+                        candidateSessionEnd +
                         BOOKING_PREPARATION_TIME;
 
-
                     if (
-                        candidateEnd >
+                        candidateOccupiedEnd >
                         BOOKING_END_MINUTES
                     ) {
-
                         continue;
                     }
 
-
-                    let conflict =
-                        false;
-
+                    let conflict = false;
 
                     for (
                         const existing
                         of existingBookingRanges
                     ) {
 
+
                         const overlaps =
                             candidateStart <
-                            existing.end
+                            existing.occupiedEnd
                             &&
-                            candidateEnd >
+                            candidateOccupiedEnd >
                             existing.start;
-
 
                         if (overlaps) {
 
-                            conflict =
-                                true;
+                            conflict = true;
 
                             break;
-
                         }
-
 
                         if (
                             existing.start >
-                            candidateEnd
+                            candidateOccupiedEnd
                         ) {
-
                             break;
-
                         }
-
                     }
-
 
                     if (!conflict) {
 
-                        availableTimes.push(
-                            minutesToTime(
-                                candidateStart
-                            )
-                        );
-
+                        availableTimes.push({
+                            start: candidateStart,
+                            end: candidateSessionEnd
+                        });
                     }
-
                 }
 
-                if (
-                    availableTimes.length === 0
-                ) {
+                if (availableTimes.length === 0) {
 
-                    timeSelect.innerHTML =
-                        '<option value="">No available time slots</option>';
+                    timeSelect.innerHTML = `
+                <option value="">
+                    No available time slots
+                </option>
+            `;
 
                     timeSelect.disabled = true;
 
-
-                    const message =
-                        document.getElementById(
-                            "bookingAvailabilityMessage"
-                        );
-
-
                     if (message) {
-
                         message.textContent =
-                            `No available times, ${existingBookings.length}/${MAX_BOOKINGS_PER_DAY} daily bookings`;
-
+                            `No available time ranges for this package/session on ${selectedDate}.`;
                     }
-
 
                     return;
                 }
 
+                timeSelect.innerHTML = `
+            <option value="">
+                Select an available time
+            </option>
+        `;
 
-                /* =====================================================
-                   DISPLAY TIMES
-                ===================================================== */
+                availableTimes.forEach(slot => {
 
-                timeSelect.innerHTML =
-                    '<option value="">Select a time</option>';
+                    const option =
+                        document.createElement("option");
 
-
-                availableTimes.forEach(
-                    time => {
-
-                        const option =
-                            document.createElement(
-                                "option"
-                            );
-
-
-                        option.value =
-                            time;
-
-
-                        option.textContent =
-                            formatBookingTime(
-                                time
-                            );
-
-
-                        timeSelect.appendChild(
-                            option
+                    const startTime =
+                        minutesToTime(
+                            slot.start
                         );
 
-                    }
-                );
+                    const endTime =
+                        minutesToTime(
+                            slot.end
+                        );
 
+                    option.value =
+                        startTime;
 
-                timeSelect.disabled =
-                    false;
+                    option.textContent =
+                        `${formatBookingTime(startTime)} – ${formatBookingTime(endTime)}`;
 
+                    option.dataset.start =
+                        startTime;
 
-                /* =====================================================
-                   AVAILABILITY MESSAGE
-                ===================================================== */
+                    option.dataset.end =
+                        endTime;
 
-                const message =
-                    document.getElementById(
-                        "bookingAvailabilityMessage"
-                    );
+                    option.dataset.duration =
+                        requestedDuration;
 
+                    timeSelect.appendChild(option);
+                });
+
+                timeSelect.disabled = false;
 
                 if (message) {
 
                     message.textContent =
-                        `${availableTimes.length} time slot(s) available, ` +
-                        `${existingBookings.length}/${MAX_BOOKINGS_PER_DAY} daily bookings`;
-
+                        `${availableTimes.length} available time with a ${requestedDuration}-minute session. ` +
+                        `A ${BOOKING_PREPARATION_TIME}-minute for choosing their best photos`;
                 }
-
-
-                /* =====================================================
-                   FINAL DEBUG
-                ===================================================== */
 
                 console.log(
                     "===================================="
@@ -1894,7 +1889,7 @@
 
                 console.log(
                     "Existing bookings:",
-                    existingBookings.length
+                    activeBookings.length
                 );
 
                 console.log(
@@ -1903,14 +1898,21 @@
                 );
 
                 console.log(
-                    "Available times:",
-                    availableTimes
+                    "Buffer:",
+                    BOOKING_PREPARATION_TIME
+                );
+
+                console.log(
+                    "Available ranges:",
+                    availableTimes.map(slot => ({
+                        start: minutesToTime(slot.start),
+                        end: minutesToTime(slot.end)
+                    }))
                 );
 
                 console.log(
                     "===================================="
                 );
-
 
             } catch (error) {
 
@@ -1919,15 +1921,19 @@
                     error
                 );
 
+                timeSelect.innerHTML = `
+            <option value="">
+                Unable to load available times
+            </option>
+        `;
 
-                timeSelect.innerHTML =
-                    '<option value="">Unable to load available times</option>';
+                timeSelect.disabled = true;
 
-                timeSelect.disabled =
-                    true;
-
+                if (message) {
+                    message.textContent =
+                        "An unexpected error occurred while checking availability.";
+                }
             }
-
         }
         function getCalculatedDownpayment() {
             const photoPackageSelect = document.getElementById("photoPackage");
@@ -2146,22 +2152,22 @@
 
             // Initial UI update on page load
             updateDownpaymentUI();
-        
-        if (sessionTypeSelect) {
-            sessionTypeSelect.addEventListener("change", async function () {
-                if (this.value && photoPackageSelect) {
-                    photoPackageSelect.value = "";
-                }
-                updateDownpaymentUI();
-                updateBackdropUI();
-                if (bookingDate && bookingDate.value) {
-                    await loadAvailableTimeSlots();
-                }
-            });
-        }
 
-   
-        updateDownpaymentUI();
+            if (sessionTypeSelect) {
+                sessionTypeSelect.addEventListener("change", async function () {
+                    if (this.value && photoPackageSelect) {
+                        photoPackageSelect.value = "";
+                    }
+                    updateDownpaymentUI();
+                    updateBackdropUI();
+                    if (bookingDate && bookingDate.value) {
+                        await loadAvailableTimeSlots();
+                    }
+                });
+            }
+
+
+            updateDownpaymentUI();
         });
 
         const addonContainer =
@@ -2279,7 +2285,6 @@
                 });
 
             });
-        /* Initial state */
 
         updateBackdropUI();
 
@@ -2668,8 +2673,7 @@
                     `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
 
                 bookingDate.setAttribute("min", tomorrowString);
-
-                bookingDate.addEventListener(
+                bookingDate.setAttribute("max", getMaximumBookingDate()); bookingDate.addEventListener(
                     "change",
                     async function () {
 
@@ -3015,6 +3019,15 @@
                     return;
                 }
 
+                const dateValidation = validateAdvanceBookingDate(date);
+
+                if (!dateValidation.valid) {
+                    alert(dateValidation.message);
+
+                    document.getElementById("bookingDate").focus();
+
+                    return;
+                }
 
                 if (!time) {
 
