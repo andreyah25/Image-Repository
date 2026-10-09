@@ -26,3 +26,16 @@ __pycache__/
 
 # YOLO training outputs
 runs/
+
+# Training outputs
+ml-object-detection/runs/
+ml-object-detection/results/
+ml-object-detection/test-images/
+
+# Local datasets (keep out of deployment repository)
+ml-object-detection/dataset/
+ml-object-detection/dataset_props/
+ml-object-detection/dataset_props_backup_before_split_fix/
+
+# ML model artifacts that are not used by the API
+ml-object-detection/yolo26s.pt
