@@ -130,7 +130,7 @@ select {
     width: 100%;
     min-height: 45px;
     padding: 11px 15px;
-    border-radius: 7px;
+    border-radius: 5px;
     color: #353535;
     text-decoration: none;
     font-size: 14px;
@@ -175,7 +175,7 @@ select {
     margin-top: auto;
     padding: 10px;
     border: 1.5px solid #dc2626 !important;
-    border-radius: 7px;
+    border-radius: 5px;
     background-color: #ffffff;
     color: #dc2626 !important;
     text-decoration: none;
@@ -222,7 +222,7 @@ select {
     padding: 29px 30px;
     background: #ffffff;
     border: 1px solid #e3e7e5;
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 3px 16px rgba(0, 0, 0, 0.035);
 }
 
@@ -434,6 +434,11 @@ select {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 
 #galleryRequestForm .btn-request:hover {
@@ -493,10 +498,9 @@ select {
 }
 
 #galleryMessage {
-    grid-column: 1 / -1;
+    grid-column: 2 / 3;
     width: 100%;
-    max-width: 900px;
-    margin: -3px auto 0;
+    margin-top: -65px; /* Adjusts proximity to the green button */
     color: #888888;
     font-size: 13px;
     line-height: 1.5;
@@ -597,11 +601,9 @@ select {
         width: 100%;
         display: flex;
         flex-direction: row;
-        gap: 7px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding-bottom: 1px;
-        scrollbar-width: none;
+        gap: 8px;
+        overflow: visible;
+        padding-bottom: 0;
     }
 
     .sidebar nav::-webkit-scrollbar {
@@ -609,19 +611,22 @@ select {
     }
 
     .sidebar nav a {
-        flex: 0 0 auto;
-        width: auto;
-        min-width: 125px;
+        flex: 1; /* Split width equally between Book a Session & View Gallery */
+        min-width: 0;
         justify-content: center;
-        padding: 10px 13px;
-        font-size: 13px;
+        padding: 11px 15px;
         white-space: nowrap;
+    }
+
+    .mobile-home-btn {
+        display: flex !important;
     }
 
     .sidebar > .logout-btn,
     .sidebar > .back-home-btn {
         width: 100%;
         margin-top: 9px;
+        display: none !important;
     }
 
     .content {
@@ -648,8 +653,11 @@ select {
     }
 
     #galleryMessage {
+        grid-column: 1 / -1; /* Resets to full width on mobile stack */
         width: 100%;
         max-width: 100%;
+        text-align: center;
+        margin-top: -3px;
     }
 
     .regulations-header h2,
@@ -893,4 +901,23 @@ select {
         min-height: 43px;
         font-size: 12.5px;
     }
+}
+
+.mobile-home-btn {
+    display: none; /* Hidden on Desktop */
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 5px;
+    color: #dc2626;
+    border: 1.5px solid #dc2626;
+    background-color: transparent;
+    text-decoration: none;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.mobile-home-btn:hover {
+    background-color: rgba(220, 38, 38, 0.08);
 }
