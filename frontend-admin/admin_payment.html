@@ -161,15 +161,14 @@
 
                         <div class="filter-dropdown-menu" id="statusDropdown">
 
-                            <a href="#" data-filter="paid">
-                                Paid
+                            <a href="#" data-filter="fully paid">
+                                Fully Paid
                             </a>
 
 
-                            <a href="#" data-filter="pending">
-                                Pending
+                            <a href="#" data-filter="downpayment paid">
+                                Downpayment Paid
                             </a>
-
 
                             <div class="dropdown-divider"></div>
 
@@ -405,9 +404,6 @@
 
                 console.log("STAFF PROFILE:", profile);
 
-                // =========================
-                // DISPLAY STAFF NAME
-                // =========================
                 const fullName =
                     profile?.full_name ||
                     user.user_metadata?.full_name ||
@@ -479,25 +475,27 @@
                 `;
 
             try {
-                const {
-                    data: paymentRecords,
-                    error: paymentsError
-                } = await supabaseClient
-                    .from("payments")
-                    .select("*")
-                    .order("payment_date", {
-                        ascending: false
-                    });
-
-
-                if (paymentsError) {
-
-                    console.error(
-                        "Payments table error:",
-                        paymentsError
-                    );
-
-                }
+                const paymentRecords = [];
+                /* const {
+                     data: paymentRecords,
+                     error: paymentsError
+                 } = await supabaseClient
+                     .from("payments")
+                     .select("*")
+                     .order("payment_date", {
+                         ascending: false
+                     });
+ 
+ 
+                 if (paymentsError) {
+ 
+                     console.error(
+                         "Payments table error:",
+                         paymentsError
+                     );
+ 
+                 }
+                 */
 
                 const {
                     data: bookingRecords,
@@ -579,12 +577,12 @@
                     const updatedPayment = {
                         ...payment,
                         status: isSamplePayment
-                            ? "Paid"
+                            ? "Fully Paid"
                             : (
                                 ["paid", "fully paid", "fully_paid", "completed", "success", "successful"]
                                     .includes(normalizedStatus)
-                                    ? "Paid"
-                                    : payment.status || "Pending"
+                                    ? "Fully Paid"
+                                    : payment.status || "Downpayment Paid"
                             )
                     };
 
@@ -635,7 +633,7 @@
                                 .trim()
                                 .toLowerCase();
 
-                        let paymentStatus = "Pending";
+                        let paymentStatus = "Downpayment Paid";
 
                         if (
                             [
@@ -647,7 +645,7 @@
                                 "successful"
                             ].includes(databasePaymentStatus)
                         ) {
-                            paymentStatus = "Paid";
+                            paymentStatus = "Fully Paid";
                         } else if (databasePaymentStatus.includes("fail")) {
                             paymentStatus = "Payment Failed";
                         } else if (
@@ -656,7 +654,7 @@
                         ) {
                             paymentStatus = "Cancelled";
                         } else {
-                            paymentStatus = "Pending";
+                            paymentStatus = "Downpayment Paid";
                         }
 
 
@@ -743,9 +741,31 @@
                 (galleryAccessRecords || []).forEach(
                     gallery => {
 
+                        const galleryRequestId =
+                            gallery.id;
+
+                        if (!galleryRequestId) {
+                            return;
+                        }
+
+                        const relatedBooking =
+                            (bookingRecords || []).find(
+                                booking =>
+                                    gallery.booking_id &&
+                                    String(booking.id) ===
+                                    String(gallery.booking_id)
+                            );
+
                         const paymentStatus =
                             String(
                                 gallery.payment_status ||
+                                ""
+                            )
+                                .trim()
+                                .toLowerCase();
+
+                        const requestStatus =
+                            String(
                                 gallery.status ||
                                 ""
                             )
@@ -754,18 +774,41 @@
 
                         const isPaid =
                             gallery.payment_confirmed === true ||
-                            paymentStatus === "paid" ||
-                            paymentStatus === "confirmed";
+                            [
+                                "paid",
+                                "fully paid",
+                                "fully_paid",
+                                "completed",
+                                "complete",
+                                "success",
+                                "successful",
+                                "confirmed"
+                            ].includes(paymentStatus) ||
+                            [
+                                "paid",
+                                "fully paid",
+                                "fully_paid",
+                                "completed",
+                                "complete",
+                                "success",
+                                "successful",
+                                "confirmed"
+                            ].includes(requestStatus);
 
-                        if (!isPaid) {
-                            return;
-                        }
+                        const isCancelled =
+                            paymentStatus.includes("cancel") ||
+                            paymentStatus.includes("reject") ||
+                            paymentStatus.includes("declin") ||
+                            requestStatus.includes("cancel") ||
+                            requestStatus.includes("reject") ||
+                            requestStatus.includes("declin");
 
-                        const galleryRequestId =
-                            gallery.id;
 
-                        if (!galleryRequestId) {
-                            return;
+
+                        if (isPaid) {
+                            displayStatus = "Fully Paid";
+                        } else if (isCancelled) {
+                            displayStatus = "Cancelled";
                         }
 
                         const existingGalleryPayment =
@@ -795,41 +838,66 @@
                             gallery.created_at ||
                             new Date().toISOString();
 
+                        let paymentMethod =
+                            gallery.payment_method ||
+                            "PayMongo";
+
+                        if (
+                            String(paymentMethod)
+                                .toLowerCase()
+                                .trim() === "paymongo"
+                        ) {
+                            paymentMethod = "qrph";
+                        }
+
+                        const customerId =
+                            gallery.customer_id ||
+                            relatedBooking?.customer_id ||
+                            null;
+
+                        const clientName =
+                            gallery.full_name ||
+                            gallery.customer_name ||
+                            gallery.name ||
+                            relatedBooking?.full_name ||
+                            "Unknown";
+
+                        const customerEmail =
+                            gallery.customer_email ||
+                            gallery.email ||
+                            relatedBooking?.email ||
+                            null;
+
                         combinedPayments.push({
 
                             id:
                                 `gallery-${galleryRequestId}`,
 
                             customer_id:
-                                gallery.customer_id ||
-                                null,
+                                customerId,
 
                             booking_id:
                                 gallery.booking_id ||
+                                relatedBooking?.id ||
                                 null,
 
                             gallery_access_request_id:
                                 galleryRequestId,
 
                             client_name:
-                                gallery.full_name ||
-                                gallery.customer_name ||
-                                gallery.name ||
-                                "Unknown",
+                                clientName,
 
                             email:
-                                gallery.customer_email ||
-                                null,
+                                customerEmail,
 
                             amount:
                                 galleryAmount,
 
                             payment_method:
-                                gallery.payment_method ||
-                                "PayMongo",
+                                paymentMethod,
 
                             status:
-                                "Paid",
+                                displayStatus,
 
                             payment_type:
                                 "Gallery Access",
@@ -886,34 +954,34 @@
                     combinedPayments;
 
 
-                console.log(
-                    "===================================="
-                );
-
-                console.log(
-                    "PAYMENTS TABLE RECORDS:",
-                    paymentRecords || []
-                );
-
-                console.log(
-                    "BOOKINGS WITH DOWNPAYMENTS:",
-                    bookingRecords || []
-                );
-
-                console.log(
-                    "COMBINED PAYMENT RECORDS:",
-                    allPayments
-                );
-
-                console.log(
-                    "TOTAL PAYMENT RECORDS:",
-                    allPayments.length
-                );
-
-                console.log(
-                    "===================================="
-                );
-
+                /* console.log(
+                     "===================================="
+                 );
+ 
+                 console.log(
+                     "PAYMENTS TABLE RECORDS:",
+                     paymentRecords || []
+                 );
+ 
+                 console.log(
+                     "BOOKINGS WITH DOWNPAYMENTS:",
+                     bookingRecords || []
+                 );
+ 
+                 console.log(
+                     "COMBINED PAYMENT RECORDS:",
+                     allPayments
+                 );
+ 
+                 console.log(
+                     "TOTAL PAYMENT RECORDS:",
+                     allPayments.length
+                 );
+ 
+                 console.log(
+                     "===================================="
+                 );
+ */
                 renderPayments();
 
 
@@ -1089,6 +1157,9 @@
                             const clientName =
                                 payment.client_name ||
                                 "Unknown";
+                            const clientEmail =
+                                payment.email ||
+                                "";
 
                             const amount =
                                 Number(
@@ -1101,39 +1172,23 @@
                                     }
                                 );
 
-
-                            // =================================
-                            // PAYMENT METHOD
-                            // =================================
-
                             const method =
                                 formatPaymentMethod(
                                     payment.payment_method
                                 );
 
 
-                            // =================================
-                            // STATUS
-                            // =================================
-
                             const status =
                                 payment.status ||
-                                "Pending";
+                                "Downpayment Paid";
 
 
-                            // =================================
-                            // PAYMENT DATE
-                            // =================================
 
                             const paymentDate =
                                 formatPaymentDate(
                                     payment.payment_date
                                 );
 
-
-                            // =================================
-                            // PAYMENT TYPE
-                            // =================================
 
                             let accessType =
                                 "Booking";
@@ -1165,16 +1220,29 @@
 
 
                                     <td>
-                                        ${escapeHtml(
-                                clientName
-                            )}
-                                    </td>
+                                    <div style="font-weight: 500;">
+                                        ${escapeHtml(clientName)}
+                                    </div>
+
+                                    ${clientEmail
+                                    ? `
+                                                <div style="
+                                                    font-size: 12px;
+                                                    color: #777;
+                                                    margin-top: 3px;
+                                                ">
+                                                    ${escapeHtml(clientEmail)}
+                                                </div>
+                                            `
+                                    : ""
+                                }
+                                </td>
 
 
                                     <td>
                                         ${escapeHtml(
-                                accessType
-                            )}
+                                    accessType
+                                )}
                                     </td>
 
 
@@ -1185,8 +1253,8 @@
 
                                     <td>
                                         ${escapeHtml(
-                                method
-                            )}
+                                    method
+                                )}
                                     </td>
 
 
@@ -1196,8 +1264,8 @@
                                             class="status-badge ${getStatusClass(status)}"
                                         >
                                             ${escapeHtml(
-                                status
-                            )}
+                                    status
+                                )}
                                         </span>
 
                                     </td>
@@ -1280,7 +1348,7 @@
         function getStatusClass(status) {
 
             return String(
-                status || "pending"
+                status || "downpayment-paid"
             )
                 .toLowerCase()
                 .replace(/\s+/g, "-");
@@ -1572,17 +1640,8 @@
             );
 
 
-
-        // =====================================================
-        // NOTIFICATION SYSTEM
-        // =====================================================
-
         document.addEventListener("DOMContentLoaded", function () {
 
-            // =================================================
-            // FIX HEADER NOTIFICATION POSITION
-            // Put notification beside the actual user profile
-            // =================================================
 
             const topNavbar =
                 document.querySelector(".top-navbar");
@@ -2220,8 +2279,9 @@
 
             }
 
-
-            loadAdminNotifications();
+            if (typeof loadAdminNotifications === "function") {
+                loadAdminNotifications();
+            }
 
         });
         function initSidebar() {
@@ -2267,7 +2327,9 @@
 
         loadPayments();
 
-        loadAdminNotifications();
+        if (typeof loadAdminNotifications === "function") {
+            loadAdminNotifications();
+        }
 
     </script>
 

@@ -21,15 +21,6 @@
     <link rel="stylesheet" href="/design/admin_customer_folders.css">
 </head>
 
-<script>
-    // Run immediately to load persisted state
-    (function () {
-        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
-        if (isCollapsed) {
-            document.documentElement.classList.add("sidebar-is-collapsed");
-        }
-    })();
-</script>
 
 <body>
     <header class="top-navbar">
@@ -131,11 +122,7 @@
                     </div>
 
                 </div>
-
-
                 <div class="repo-actions-row">
-
-                    <!-- CUSTOMER SEARCH -->
                     <div class="table-search-box">
 
                         <input type="text" id="repoFolderSearchInput"
@@ -149,9 +136,6 @@
                 </div>
 
                 <div class="repo-view-container" id="customerFoldersContainer">
-
-                    <!-- JavaScript will insert folders here -->
-
                 </div>
 
             </div>
@@ -201,10 +185,6 @@
                     </div>
 
                 </div>
-
-
-
-                <!-- CLIENT LINK -->
 
                 <div class="client-link-section">
 
@@ -307,10 +287,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        /* =========================================================
-   PHOTO LIGHTBOX
-   ========================================================= */
-
+        (function () {
+            const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+            if (isCollapsed) {
+                document.documentElement.classList.add("sidebar-is-collapsed");
+            }
+        })();
         (function () {
 
             const lightbox = document.getElementById('photoLightbox');
@@ -623,11 +605,11 @@
         async function loadCompletedClients() {
 
             customerFoldersContainer.innerHTML = `
-        <div class="customer-folder-empty">
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            <div>Loading customers...</div>
-        </div>
-    `;
+                    <div class="customer-folder-empty">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <div>Loading customers...</div>
+                    </div>
+                `;
             try {
 
                 const {
@@ -778,81 +760,76 @@
 
                     card.innerHTML = `
 
-    <div class="folder-icon-wrapper">
-        <i class="fa-solid fa-folder folder-icon"></i>
-    </div>
+                        <div class="folder-icon-wrapper">
+                            <i class="fa-solid fa-folder folder-icon"></i>
+                        </div>
 
-    <div class="client-name">
-        <span class="info-label"></span>
-        <strong>
-            ${escapeHTML(
+                        <div class="client-name">
+                            <span class="info-label"></span>
+                            <strong>
+                                ${escapeHTML(
                         client.full_name ||
                         client.name ||
                         client.client_name ||
                         "Unnamed Client"
                     )}
-        </strong>
-    </div>
+                            </strong>
+                        </div>
 
-    <div class="client-id">
-        <span class="info-label">Booking ID</span>
-        <span class="info-value">
-            ${escapeHTML(client.id)}
-        </span>
-    </div>
+                        <div class="client-id">
+                            <span class="info-label">Booking ID</span>
+                            <span class="info-value">
+                                ${escapeHTML(client.id)}
+                            </span>
+                        </div>
 
-    <div class="client-event">
-        <i class="fa-solid fa-camera"></i>
-        <span>
-            ${escapeHTML(eventType)}
-        </span>
-    </div>
+                        <div class="client-event">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>
+                                ${escapeHTML(eventType)}
+                            </span>
+                        </div>
 
-    <div class="client-date">
-        <i class="fa-regular fa-calendar"></i>
-        <span>
-            ${escapeHTML(bookingDate)}
-        </span>
-    </div>
+                        <div class="client-date">
+                            <i class="fa-regular fa-calendar"></i>
+                            <span>
+                                ${escapeHTML(bookingDate)}
+                            </span>
+                        </div>
 
-    <div class="client-status">
-        <i class="fa-solid fa-circle-check"></i>
-        Completed
-    </div>
+                        <div class="client-status">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Completed
+                        </div>
 
-    <div
-        class="photo-count"
-        data-photo-count="${escapeHTML(client.id)}"
-    >
-        Checking photos...
-    </div>
+                        <div
+                            class="photo-count"
+                            data-photo-count="${escapeHTML(client.id)}"
+                        >
+                            Checking photos...
+                        </div>
 
-    <div class="quick-actions">
+                        <div class="quick-actions">
 
-        <button
-            type="button"
-            class="open-client-btn primary"
-        >
-            <i class="fa-solid fa-folder-open"></i>
-            Open
-        </button>
+                            <button
+                                type="button"
+                                class="open-client-btn primary"
+                            >
+                                <i class="fa-solid fa-folder-open"></i>
+                                Open
+                            </button>
 
-        <button
-            type="button"
-            class="copy-client-link-btn"
-        >
-            <i class="fa-regular fa-copy"></i>
-            Copy Link
-        </button>
+                            <button
+                                type="button"
+                                class="copy-client-link-btn"
+                            >
+                                <i class="fa-regular fa-copy"></i>
+                                Copy Link
+                            </button>
 
-    </div>
+                        </div>
 
-`;
-
-
-                    /* -----------------------------------------
-                       OPEN CARD
-                    ----------------------------------------- */
+                    `;
 
                     card.addEventListener(
                         "click",
@@ -1419,7 +1396,7 @@
 
             return (
                 siteURL +
-                "/frontend-customer/customer_gallery_view.html?token=" +
+                "/gallery?token=" +
                 encodeURIComponent(token)
             );
 
@@ -1533,9 +1510,6 @@
 
             try {
 
-                // =====================================================
-                // 1. MARK AS PROCESSING
-                // =====================================================
 
                 console.log("Changing status to processing...");
 
@@ -1563,9 +1537,6 @@
                 );
 
 
-                // =====================================================
-                // 2. SEND TO PYTHON ML
-                // =====================================================
 
                 console.log(
                     "Sending image to ML service..."
@@ -1590,24 +1561,19 @@
 
                 try {
 
-                    response =
-                        await fetch(
-                            "http://127.0.0.1:8000/analyze",
-                            {
-                                method: "POST",
-
-                                headers: {
-                                    "Content-Type":
-                                        "application/json"
-                                },
-
-                                body: JSON.stringify({
-                                    image_url: imageUrl
-                                }),
-
-                                signal: controller.signal
-                            }
-                        );
+                    response = await fetch(
+                        "http://127.0.0.1:8001/analyze",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                image_url: imageUrl
+                            }),
+                            signal: controller.signal
+                        }
+                    );
 
                 } catch (fetchError) {
 
@@ -1650,10 +1616,6 @@
                 }
 
 
-                // =====================================================
-                // 3. GET ML RESULT
-                // =====================================================
-
                 console.log(
                     "Reading ML response..."
                 );
@@ -1677,72 +1639,31 @@
                 }
 
 
-                // =====================================================
-                // 4. PREPARE ML DATA
-                // =====================================================
-
-                const detectedObjects =
-                    Array.isArray(result.objects)
-                        ? result.objects
-                        : [];
-
-                const detectedFaces =
-                    Array.isArray(result.faces)
-                        ? result.faces
-                        : [];
-
-                const faceCount =
-                    Number(
-                        result.face_count ??
-                        detectedFaces.length ??
-                        0
-                    );
+                // YOLO object detection results
+                const detectedObjects = Array.isArray(result.objects)
+                    ? result.objects
+                    : [];
 
 
                 const updateData = {
-
-                    processing_status:
-                        "completed",
-
-                    face_count:
-                        faceCount,
-
-                    detected_objects:
-                        detectedObjects,
-
-                    detected_faces:
-                        detectedFaces,
-
-                    ml_processed_at:
-                        new Date().toISOString()
-
+                    processing_status: "completed",
+                    detected_objects: detectedObjects,
+                    ml_processed_at: new Date().toISOString()
                 };
 
+                // Update face information only if the API returns it.
+                if (Array.isArray(result.faces)) {
+                    updateData.detected_faces = result.faces;
 
-                console.log(
-                    "================================="
-                );
+                    updateData.face_count = Number(
+                        result.face_count ?? result.faces.length
+                    );
+                }
 
-                console.log(
-                    "UPDATING DATABASE WITH ML DATA"
-                );
-
-                console.log(
-                    JSON.stringify(
-                        updateData,
-                        null,
-                        2
-                    )
-                );
-
-                console.log(
-                    "================================="
-                );
-
-
-                // =====================================================
-                // 5. UPDATE repository_photos
-                // =====================================================
+                console.log("=================================");
+                console.log("UPDATING DATABASE WITH ML DATA");
+                console.log(JSON.stringify(updateData, null, 2));
+                console.log("=================================");
 
                 const {
                     error: updateError
@@ -1754,33 +1675,17 @@
 
                 if (updateError) {
 
-                    console.error(
-                        "================================="
-                    );
-
-                    console.error(
-                        "SUPABASE UPDATE ERROR:"
-                    );
-
-                    console.error(
-                        updateError
-                    );
-
-                    console.error(
-                        "================================="
-                    );
+                    console.error("=================================");
+                    console.error("SUPABASE UPDATE ERROR:");
+                    console.error(updateError);
+                    console.error("=================================");
 
                     throw updateError;
                 }
 
 
-                console.log(
-                    "DATABASE UPDATE REQUEST SUCCESS."
-                );
-
-                console.log(
-                    "Verifying saved ML data..."
-                );
+                console.log("DATABASE UPDATE REQUEST SUCCESS.");
+                console.log("Verifying saved ML data...");
 
                 const {
                     data: verifiedPhoto,
@@ -1807,18 +1712,9 @@
                     );
 
                 }
-                console.log(
-                    "================================="
-                );
-
-                console.log(
-                    "DATABASE VERIFICATION RESULT:"
-                );
-
-                console.log(
-                    verifiedPhoto
-                );
-
+                console.log("=================================");
+                console.log("DATABASE VERIFICATION RESULT:");
+                console.log(verifiedPhoto);
                 console.log("=================================");
                 if (!verifiedPhoto) {
 
@@ -2156,7 +2052,7 @@
 
 
             photos.forEach(
-                (photo,index) => {
+                (photo, index) => {
 
                     const card =
                         document.createElement("div");
@@ -2378,7 +2274,7 @@
                         .from("client-photos")
                         .createSignedUrl(
                             storagePath,
-                            300
+                            3600
                         );
 
                     if (signedUrlError) {

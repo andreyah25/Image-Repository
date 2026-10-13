@@ -61,6 +61,8 @@
           </button>
 
         </div>
+        <div class="login-message" id="loginMessage" role="alert" aria-live="polite" hidden></div>
+
 
         <div class="forgot-password-wrapper">
           <a href="/admin/forgot-password" class="forgot-link"> Forgot Password
@@ -70,7 +72,7 @@
         <button type="submit" class="submit-login-btn">
           Log in
         </button>
-
+        <!--
         <div class="form-divider">
           <span>or</span>
         </div>
@@ -98,7 +100,7 @@
 
           <span>Log in with Google</span>
         </button>
-
+      -->
       </form>
 
     </div>
@@ -137,89 +139,161 @@
           ? "fa-regular fa-eye"
           : "fa-regular fa-eye-slash";
     });
-
-
-    document
-      .getElementById("googleLoginBtn")
-      .addEventListener("click", async (e) => {
-
-        e.preventDefault();
-
-        const { data, error } =
-          await supabaseClient.auth.signInWithOAuth({
-
-            provider: "google",
-
-            options: {
-
-              redirectTo: "http://localhost:3000/admin/auth-callback",
-              queryParams: {
-                access_type: "offline",
-                prompt: "select_account"
-              }
-
+    /*
+        document
+          .getElementById("googleLoginBtn")
+          .addEventListener("click", async (e) => {
+    
+            e.preventDefault();
+    
+            const { data, error } =
+              await supabaseClient.auth.signInWithOAuth({
+    
+                provider: "google",
+    
+                options: {
+    
+                  redirectTo: "http://localhost:3000/admin/auth-callback",
+                  queryParams: {
+                    access_type: "offline",
+                    prompt: "select_account"
+                  }
+    
+                }
+    
+              });
+    
+            if (error) {
+    
+              alert(error.message);
+    
             }
-
+    
           });
+    */
 
-        if (error) {
+    const loginForm = document.getElementById("staffLoginForm");
+    const loginMessage = document.getElementById("loginMessage");
+    const emailInput = document.getElementById("email");
+    const submitButton = document.querySelector(".submit-login-btn");
 
-          alert(error.message);
+    let loginTimer = null;
 
+    function showLoginMessage(message, type = "error") {
+      loginMessage.className = `login-message ${type === "success" ? "success" : ""}`;
+      loginMessage.textContent = message;
+      loginMessage.hidden = false;
+    }
+
+    function clearLoginMessage() {
+      loginMessage.hidden = true;
+      loginMessage.textContent = "";
+      loginMessage.className = "login-message";
+
+      if (loginTimer) {
+        clearInterval(loginTimer);
+        loginTimer = null;
+      }
+    }
+
+    function startLoginCountdown(seconds) {
+      if (loginTimer) {
+        clearInterval(loginTimer);
+      }
+
+      let remaining = Math.max(1, Number(seconds) || 60);
+      submitButton.disabled = true;
+      emailInput.disabled = true;
+      passwordInput.disabled = true;
+
+      const updateCountdown = () => {
+        const minutes = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+
+        showLoginMessage(
+          `Too many failed attempts. Please try again in ${minutes}:${String(secs).padStart(2, "0")}.`
+        );
+
+        if (remaining <= 0) {
+          clearInterval(loginTimer);
+          loginTimer = null;
+          submitButton.disabled = false;
+          emailInput.disabled = false;
+          passwordInput.disabled = false;
+          showLoginMessage("You can try logging in again.", "success");
+          return;
         }
 
-      });
+        remaining--;
+      };
 
+      updateCountdown();
+      loginTimer = setInterval(updateCountdown, 1000);
+    }
 
-    document.getElementById("staffLoginForm").addEventListener("submit", async (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      if (submitButton.disabled) return;
+
+      clearLoginMessage();
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      const SERVER_URL =
+        window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1"
+          ? "http://localhost:3000"
+          : "https://captured-server.onrender.com";
+
+      submitButton.disabled = true;
 
       try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email,
-          password
+        const response = await fetch(`${SERVER_URL}/api/admin/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, password })
         });
 
-        if (error) {
-          alert("Login failed: " + error.message);
+        const contentType = response.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+          throw new Error(
+            `Login server returned an unexpected response (${response.status}).`
+          );
+        }
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          if (result.locked || response.status === 429) {
+            startLoginCountdown(result.retryAfter || 60);
+            return;
+          }
+
+          showLoginMessage(result.error || "Login failed.");
           return;
         }
 
-        const user = data.user;
+        const { error: sessionError } =
+          await supabaseClient.auth.setSession({
+            access_token: result.session.access_token,
+            refresh_token: result.session.refresh_token
+          });
 
-        if (!user) {
-          alert("Login succeeded but no user returned.");
+        if (sessionError) {
+          showLoginMessage("Unable to establish your login session.");
           return;
         }
 
-        console.log("LOGIN SUCCESS:", user.id);
+        const user = result.user;
+        const finalProfile = result.profile;
 
-        const { data: staff_profile, error: profileError } = await supabaseClient
-          .from("staff_profiles")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error(profileError);
-          alert("Error fetching profile");
-          return;
-        }
-
-        let finalProfile = staff_profile;
-        if (!staff_profile) {
-          alert("Profile not found. PLease sign up first.");
-          return;
-        }
-
-        console.log("PROFILE:", finalProfile);
-        console.log("Verified:", finalProfile.verified);
-
-        if (finalProfile?.verified === false) {
-          alert("Account not verified.");
+        if (finalProfile.verified === false) {
+          showLoginMessage("Account not verified.");
 
           await fetch(`${SUPABASE_URL}/functions/v1/send-otp`, {
             method: "POST",
@@ -228,14 +302,9 @@
           });
 
           localStorage.setItem("verification_email", user.email);
-
           window.location.href = "/admin/verification";
           return;
         }
-
-        /* =========================================================
-           RECORD STAFF / ADMIN LOGIN
-        ========================================================= */
 
         try {
           const { error: activityError } = await supabaseClient
@@ -250,38 +319,30 @@
 
           if (activityError) {
             console.error("LOGIN ACTIVITY LOG ERROR:", activityError);
-          } else {
-            console.log("LOGIN ACTIVITY RECORDED");
           }
         } catch (activityError) {
           console.error("LOGIN ACTIVITY LOG FAILED:", activityError);
         }
+
         try {
-          const {
-            data: { session }
-          } = await supabaseClient.auth.getSession();
+          const { data: { session } } =
+            await supabaseClient.auth.getSession();
 
           if (session?.access_token) {
             const presenceResponse = await fetch(
-              "http://localhost:3000/api/admin/staff/presence",
+              `${SERVER_URL}/api/admin/staff/presence`,
               {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify({
-                  page: "/admin/login"
-                })
+                body: JSON.stringify({ page: "/admin/login" })
               }
             );
 
-            const presenceResult = await presenceResponse.json();
-
             if (!presenceResponse.ok) {
-              console.error("PRESENCE UPDATE ERROR:", presenceResult);
-            } else {
-              console.log("STAFF PRESENCE UPDATED:", presenceResult);
+              console.error("PRESENCE UPDATE ERROR");
             }
           }
         } catch (presenceError) {
@@ -293,11 +354,19 @@
         localStorage.setItem("staffProfile", JSON.stringify(finalProfile));
 
         window.location.href = "/admin/dashboard";
+
       } catch (err) {
-        console.error(err);
-        alert("Unexpected error occurred.");
+        console.error("LOGIN ERROR:", err);
+        showLoginMessage(
+          err.message || "Unable to connect to the login server. Please try again."
+        );
+      } finally {
+        if (!loginTimer) {
+          submitButton.disabled = false;
+        }
       }
     });
+
 
   </script>
 

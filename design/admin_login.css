@@ -181,8 +181,9 @@ body {
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  margin-top: -12px;
+  margin-top: -16px;
   margin-bottom: 25px;
+  position: relative;
 }
 
 .forgot-link {
@@ -271,6 +272,31 @@ body {
 
 .google-icon {
   flex-shrink: 0;
+}
+.login-message {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e5b7b7;
+  border-radius: 4px;
+  color: #b42318;
+  background: #fff5f5;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.login-message[hidden] {
+  display: none;
+}
+
+.login-message.success {
+  border-color: #b7d9c0;
+  color: #216e39;
+  background: #f2fbf4;
+}
+
+.submit-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Animations & Responsive */

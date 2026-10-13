@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings</title>
+    <title>Settings - Captured</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,12 +15,22 @@
     <link rel="stylesheet" href="/design/admin_settings.css">
 </head>
 
+<script>
+    // Run immediately to load persisted state
+    (function () {
+        const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+        if (isCollapsed) {
+            document.documentElement.classList.add("sidebar-is-collapsed");
+        }
+    })();
+</script>
+
 <body>
 
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" class="logo-box" alt="Captured Studio Logo">
-            <span>Captured Admin Studio</span>
+            <span>Captured Studio Workspace</span>
         </div>
 
         <div class="navbar-right">
@@ -33,10 +43,14 @@
 
     <div class="dashboard-wrapper">
 
+        <button id="sidebarToggle" class="sidebar-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
         <aside class="sidebar">
             <nav>
 
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
@@ -63,7 +77,7 @@
 
                 <a href="/admin/packages">
                     <i class="fa-solid fa-box"></i>
-                    Packages
+                    Setup
                 </a>
 
                 <a href="/admin/profile">
@@ -71,7 +85,7 @@
                     Profile
                 </a>
 
-                <a href="/admin/settings">
+                <a href="/admin/settings" class="active">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
@@ -224,7 +238,8 @@
                 <div style="margin-top:35px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
                         <div>
-                            <h3 style="margin:0;font-size:18px;">Staff Login Activity</h3>
+                            <h3 style="margin:0; font-size:20px; font-weight: 500; color: #353535;">Staff Login Activity
+                            </h3>
                             <p style="margin:5px 0 0;color:#888;font-size:13px;">
                                 Records of staff and administrator login and logout activity.
                             </p>
@@ -236,7 +251,7 @@
                         </button>
                     </div>
 
-                    <div class="staff-table-wrapper">
+                    <div class="activity-log-table-wrapper">
                         <table class="staff-table">
                             <thead>
                                 <tr>
@@ -247,177 +262,182 @@
                                     <th>Date & Time</th>
                                 </tr>
                             </thead>
-                            <tbody id="activityLogTableBody"></tbody>
                         </table>
+
+                        <!-- Scrollbar starts here below the green header -->
+                        <div class="table-scroll-body">
+                            <table class="staff-table">
+                                <tbody id="activityLogTableBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script>
+            const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document
-            .getElementById("staffManagementForm")
-            .addEventListener("submit", async (e) => {
+            document
+                .getElementById("staffManagementForm")
+                .addEventListener("submit", async (e) => {
 
-                e.preventDefault();
+                    e.preventDefault();
 
-                const staffName =
-                    document.getElementById("staffName").value.trim();
+                    const staffName =
+                        document.getElementById("staffName").value.trim();
 
-                const email =
-                    document.getElementById("emailAddress").value.trim();
+                    const email =
+                        document.getElementById("emailAddress").value.trim();
 
-                const password =
-                    document.getElementById("staffPassword").value;
+                    const password =
+                        document.getElementById("staffPassword").value;
 
-                if (!staffName || !email || !password) {
-                    alert("Please complete all fields.");
-                    return;
-                }
+                    if (!staffName || !email || !password) {
+                        alert("Please complete all fields.");
+                        return;
+                    }
 
-                const strongPassword =
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+                    const strongPassword =
+                        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
-                if (!strongPassword.test(password)) {
-
-                    alert(
-                        "Password must contain:\n\n" +
-                        "• At least 8 characters\n" +
-                        "• One uppercase letter\n" +
-                        "• One lowercase letter\n" +
-                        "• One number"
-                    );
-
-                    return;
-                }
-
-                try {
-
-                    const {
-                        data: { session }
-                    } = await supabaseClient.auth.getSession();
-
-                    if (!session) {
+                    if (!strongPassword.test(password)) {
 
                         alert(
-                            "Your session has expired. Please log in again."
+                            "Password must contain:\n\n" +
+                            "• At least 8 characters\n" +
+                            "• One uppercase letter\n" +
+                            "• One lowercase letter\n" +
+                            "• One number"
                         );
-
-                        window.location.href =
-                            "admin_login.html";
 
                         return;
                     }
 
-                    const response = await fetch(
-                        "http://localhost:3000/api/admin/staff/create",
-                        {
-                            method: "POST",
+                    try {
 
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization":
-                                    `Bearer ${session.access_token}`
-                            },
+                        const {
+                            data: { session }
+                        } = await supabaseClient.auth.getSession();
 
-                            body: JSON.stringify({
-                                fullName: staffName,
-                                email: email,
-                                password: password
-                            })
+                        if (!session) {
+
+                            alert(
+                                "Your session has expired. Please log in again."
+                            );
+
+                            window.location.href =
+                                "admin_login.html";
+
+                            return;
                         }
-                    );
 
-                    const result = await response.json();
+                        const response = await fetch(
+                            "http://localhost:3000/api/admin/staff/create",
+                            {
+                                method: "POST",
 
-                    if (!response.ok || !result.success) {
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization":
+                                        `Bearer ${session.access_token}`
+                                },
 
-                        alert(
-                            result.error ||
-                            "Failed to create staff account."
+                                body: JSON.stringify({
+                                    fullName: staffName,
+                                    email: email,
+                                    password: password
+                                })
+                            }
                         );
 
-                        return;
+                        const result = await response.json();
+
+                        if (!response.ok || !result.success) {
+
+                            alert(
+                                result.error ||
+                                "Failed to create staff account."
+                            );
+
+                            return;
+                        }
+
+                        alert(
+                            "Staff account created successfully!"
+                        );
+
+                        document
+                            .getElementById("staffManagementForm")
+                            .reset();
+
+                    } catch (error) {
+
+                        console.error(
+                            "Create staff error:",
+                            error
+                        );
+
+                        alert(
+                            "Unable to connect to the server."
+                        );
                     }
-
-                    alert(
-                        "Staff account created successfully!"
-                    );
-
-                    document
-                        .getElementById("staffManagementForm")
-                        .reset();
-
-                } catch (error) {
-
-                    console.error(
-                        "Create staff error:",
-                        error
-                    );
-
-                    alert(
-                        "Unable to connect to the server."
-                    );
-                }
+                });
+            // Password Visibility Toggle
+            document.querySelectorAll('.toggle-password-visibility').forEach(icon => {
+                icon.addEventListener('click', function () {
+                    const targetInputField = this.previousElementSibling;
+                    if (targetInputField.type === 'password') {
+                        targetInputField.type = 'text';
+                        this.classList.replace('fa-eye-slash', 'fa-eye');
+                    } else {
+                        targetInputField.type = 'password';
+                        this.classList.replace('fa-eye', 'fa-eye-slash');
+                    }
+                });
             });
-        // Password Visibility Toggle
-        document.querySelectorAll('.toggle-password-visibility').forEach(icon => {
-            icon.addEventListener('click', function () {
-                const targetInputField = this.previousElementSibling;
-                if (targetInputField.type === 'password') {
-                    targetInputField.type = 'text';
-                    this.classList.replace('fa-eye-slash', 'fa-eye');
-                } else {
-                    targetInputField.type = 'password';
-                    this.classList.replace('fa-eye', 'fa-eye-slash');
-                }
-            });
-        });
 
 
-        const staffModal = document.getElementById("staffModal");
-        const viewStaffListBtn = document.getElementById("viewStaffListBtn");
-        const staffTableBody = document.getElementById("staffTableBody");
+            const staffModal = document.getElementById("staffModal");
+            const viewStaffListBtn = document.getElementById("viewStaffListBtn");
+            const staffTableBody = document.getElementById("staffTableBody");
 
-        viewStaffListBtn.addEventListener("click", async () => {
+            viewStaffListBtn.addEventListener("click", async () => {
 
-            staffModal.classList.add("active");
+                staffModal.classList.add("active");
 
-            await fetchStaffList();
-
-            await fetchStaffActivityLogs();
-        });
-        document
-            .getElementById("refreshActivityLogsBtn")
-            .addEventListener("click", async () => {
+                await fetchStaffList();
 
                 await fetchStaffActivityLogs();
+            });
+            document
+                .getElementById("refreshActivityLogsBtn")
+                .addEventListener("click", async () => {
+
+                    await fetchStaffActivityLogs();
+
+                });
+            staffModal.addEventListener("click", (e) => {
+
+                if (e.target === staffModal) {
+
+                    staffModal.classList.remove("active");
+
+                }
 
             });
-        staffModal.addEventListener("click", (e) => {
+            async function fetchStaffActivityLogs() {
+                const activityLogTableBody = document.getElementById("activityLogTableBody");
 
-            if (e.target === staffModal) {
+                if (!activityLogTableBody) {
+                    return;
+                }
 
-                staffModal.classList.remove("active");
-
-            }
-
-        });
-        async function fetchStaffActivityLogs() {
-            const activityLogTableBody = document.getElementById("activityLogTableBody");
-
-            if (!activityLogTableBody) {
-                return;
-            }
-
-            activityLogTableBody.innerHTML = `
+                activityLogTableBody.innerHTML = `
         <tr>
             <td colspan="5" style="text-align:center;padding:30px;">
                 Loading activity records...
@@ -425,80 +445,80 @@
         </tr>
     `;
 
-            try {
-                const {
-                    data: { session },
-                    error: sessionError
-                } = await supabaseClient.auth.getSession();
+                try {
+                    const {
+                        data: { session },
+                        error: sessionError
+                    } = await supabaseClient.auth.getSession();
 
-                if (sessionError || !session) {
-                    activityLogTableBody.innerHTML = `
+                    if (sessionError || !session) {
+                        activityLogTableBody.innerHTML = `
                 <tr>
                     <td colspan="5" style="text-align:center;padding:30px;">
                         Session expired.
                     </td>
                 </tr>
             `;
-                    return;
-                }
+                        return;
+                    }
 
-                const { data: logs, error } = await supabaseClient
-                    .from("staff_activity_logs")
-                    .select("*")
-                    .order("logged_at", { ascending: false })
-                    .limit(100);
+                    const { data: logs, error } = await supabaseClient
+                        .from("staff_activity_logs")
+                        .select("*")
+                        .order("logged_at", { ascending: false })
+                        .limit(100);
 
-                if (error) {
-                    console.error("ACTIVITY LOG FETCH ERROR:", error);
+                    if (error) {
+                        console.error("ACTIVITY LOG FETCH ERROR:", error);
 
-                    activityLogTableBody.innerHTML = `
+                        activityLogTableBody.innerHTML = `
                 <tr>
                     <td colspan="5" style="text-align:center;padding:30px;">
                         Unable to load activity records.
                     </td>
                 </tr>
             `;
-                    return;
-                }
+                        return;
+                    }
 
-                if (!logs || logs.length === 0) {
-                    activityLogTableBody.innerHTML = `
+                    if (!logs || logs.length === 0) {
+                        activityLogTableBody.innerHTML = `
                 <tr>
                     <td colspan="5" style="text-align:center;padding:30px;">
                         No activity records yet.
                     </td>
                 </tr>
             `;
-                    return;
-                }
+                        return;
+                    }
 
-                activityLogTableBody.innerHTML = "";
+                    activityLogTableBody.innerHTML = "";
 
-                logs.forEach(log => {
-                    const tr = document.createElement("tr");
+                    logs.forEach(log => {
+                        const tr = document.createElement("tr");
 
-                    const isLogin = log.action === "LOGIN";
+                        const isLogin = log.action === "LOGIN";
 
-                    const actionClass = isLogin
-                        ? "activity-login"
-                        : "activity-logout";
+                        const actionClass = isLogin
+                            ? "activity-login"
+                            : "activity-logout";
 
-                    const actionIcon = isLogin
-                        ? "fa-right-to-bracket"
-                        : "fa-right-from-bracket";
+                        const actionIcon = isLogin
+                            ? "fa-right-to-bracket"
+                            : "fa-right-from-bracket";
 
-                    const date = new Date(log.logged_at);
+                        const date = new Date(log.logged_at);
 
-                    const formattedDate = date.toLocaleString("en-PH", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        second: "2-digit"
-                    });
+                        const formattedDate = date.toLocaleString("en-PH", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                            second: "2-digit"
+                        });
 
-                    tr.innerHTML = `
+                        tr.innerHTML = `
                 <td>${log.staff_name || "Unknown"}</td>
                 <td>${log.staff_email || "N/A"}</td>
                 <td>
@@ -515,162 +535,162 @@
                 <td>${formattedDate}</td>
             `;
 
-                    activityLogTableBody.appendChild(tr);
-                });
+                        activityLogTableBody.appendChild(tr);
+                    });
 
-            } catch (error) {
-                console.error("FETCH ACTIVITY LOGS ERROR:", error);
+                } catch (error) {
+                    console.error("FETCH ACTIVITY LOGS ERROR:", error);
 
-                activityLogTableBody.innerHTML = `
+                    activityLogTableBody.innerHTML = `
             <tr>
                 <td colspan="5" style="text-align:center;padding:30px;">
                     Error loading activity records.
                 </td>
             </tr>
         `;
+                }
             }
-        }
-        function formatStaffLastActive(lastActiveAt) {
-            if (!lastActiveAt) {
-                return "Never active";
+            function formatStaffLastActive(lastActiveAt) {
+                if (!lastActiveAt) {
+                    return "Never active";
+                }
+
+                const date = new Date(lastActiveAt);
+
+                if (isNaN(date.getTime())) {
+                    return "Last active: Unknown";
+                }
+
+                const now = new Date();
+                const diffMs = now - date;
+                const diffSeconds = Math.floor(diffMs / 1000);
+
+                if (diffSeconds < 10) {
+                    return "Active just now";
+                }
+
+                if (diffSeconds < 60) {
+                    return `Active ${diffSeconds} second${diffSeconds === 1 ? "" : "s"} ago`;
+                }
+
+                const diffMinutes = Math.floor(diffSeconds / 60);
+
+                if (diffMinutes < 60) {
+                    return `Last active ${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
+                }
+
+                const diffHours = Math.floor(diffMinutes / 60);
+
+                if (diffHours < 24) {
+                    return `Last active ${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+                }
+
+                const diffDays = Math.floor(diffHours / 24);
+
+                if (diffDays < 7) {
+                    return `Last active ${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+                }
+
+                return `Last active ${date.toLocaleDateString("en-PH", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                })}`;
             }
+            // =========================================================
+            // STAFF PRESENCE HEARTBEAT
+            // =========================================================
 
-            const date = new Date(lastActiveAt);
+            let staffPresenceInterval = null;
 
-            if (isNaN(date.getTime())) {
-                return "Last active: Unknown";
-            }
+            async function sendStaffHeartbeat() {
 
-            const now = new Date();
-            const diffMs = now - date;
-            const diffSeconds = Math.floor(diffMs / 1000);
+                try {
 
-            if (diffSeconds < 10) {
-                return "Active just now";
-            }
+                    const {
+                        data: {
+                            session
+                        } = {}
+                    } = await supabaseClient
+                        .auth
+                        .getSession();
 
-            if (diffSeconds < 60) {
-                return `Active ${diffSeconds} second${diffSeconds === 1 ? "" : "s"} ago`;
-            }
-
-            const diffMinutes = Math.floor(diffSeconds / 60);
-
-            if (diffMinutes < 60) {
-                return `Last active ${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
-            }
-
-            const diffHours = Math.floor(diffMinutes / 60);
-
-            if (diffHours < 24) {
-                return `Last active ${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-            }
-
-            const diffDays = Math.floor(diffHours / 24);
-
-            if (diffDays < 7) {
-                return `Last active ${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
-            }
-
-            return `Last active ${date.toLocaleDateString("en-PH", {
-                month: "short",
-                day: "numeric",
-                year: "numeric"
-            })}`;
-        }
-        // =========================================================
-        // STAFF PRESENCE HEARTBEAT
-        // =========================================================
-
-        let staffPresenceInterval = null;
-
-        async function sendStaffHeartbeat() {
-
-            try {
-
-                const {
-                    data: {
-                        session
-                    } = {}
-                } = await supabaseClient
-                    .auth
-                    .getSession();
-
-                console.log(
-                    "HEARTBEAT SESSION:",
-                    !!session?.access_token
-                );
-
-                if (!session?.access_token) {
-
-                    console.warn(
-                        "HEARTBEAT: NO SESSION"
+                    console.log(
+                        "HEARTBEAT SESSION:",
+                        !!session?.access_token
                     );
 
+                    if (!session?.access_token) {
+
+                        console.warn(
+                            "HEARTBEAT: NO SESSION"
+                        );
+
+                        return;
+                    }
+
+                    const response = await fetch(
+                        "http://localhost:3000/api/admin/staff/presence",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Authorization":
+                                    `Bearer ${session.access_token}`
+                            },
+
+                            body: JSON.stringify({
+                                page:
+                                    window.location.pathname
+                            })
+                        }
+                    );
+
+                    const result =
+                        await response.json();
+
+                    console.log(
+                        "HEARTBEAT RESPONSE:",
+                        response.status,
+                        result
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "HEARTBEAT FAILED:",
+                        error
+                    );
+
+                }
+            }
+
+
+            async function startStaffPresence() {
+
+                // Send immediately
+                await sendStaffHeartbeat();
+
+                // Prevent duplicate intervals
+                if (staffPresenceInterval) {
                     return;
                 }
 
-                const response = await fetch(
-                    "http://localhost:3000/api/admin/staff/presence",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            "Authorization":
-                                `Bearer ${session.access_token}`
-                        },
-
-                        body: JSON.stringify({
-                            page:
-                                window.location.pathname
-                        })
-                    }
-                );
-
-                const result =
-                    await response.json();
-
-                console.log(
-                    "HEARTBEAT RESPONSE:",
-                    response.status,
-                    result
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "HEARTBEAT FAILED:",
-                    error
-                );
-
+                // Send every 30 seconds
+                staffPresenceInterval =
+                    setInterval(
+                        sendStaffHeartbeat,
+                        30000
+                    );
             }
-        }
+            async function fetchStaffList() {
 
+                try {
 
-        async function startStaffPresence() {
-
-            // Send immediately
-            await sendStaffHeartbeat();
-
-            // Prevent duplicate intervals
-            if (staffPresenceInterval) {
-                return;
-            }
-
-            // Send every 30 seconds
-            staffPresenceInterval =
-                setInterval(
-                    sendStaffHeartbeat,
-                    30000
-                );
-        }
-        async function fetchStaffList() {
-
-            try {
-
-                staffTableBody.innerHTML = `
+                    staffTableBody.innerHTML = `
             <tr>
                 <td colspan="6" style="text-align:center; padding:30px;">
                     Loading staff accounts...
@@ -678,42 +698,42 @@
             </tr>
         `;
 
-                const {
-                    data: { session },
-                    error: sessionError
-                } = await supabaseClient.auth.getSession();
+                    const {
+                        data: { session },
+                        error: sessionError
+                    } = await supabaseClient.auth.getSession();
 
-                if (sessionError || !session) {
+                    if (sessionError || !session) {
 
-                    alert("Your session has expired. Please log in again.");
+                        alert("Your session has expired. Please log in again.");
 
-                    window.location.href = "admin_login.html";
+                        window.location.href = "admin_login.html";
 
-                    return;
-                }
-
-                const response = await fetch(
-                    "http://localhost:3000/api/admin/staff",
-                    {
-                        method: "GET",
-
-                        headers: {
-                            "Authorization":
-                                `Bearer ${session.access_token}`,
-
-                            "Content-Type":
-                                "application/json"
-                        }
+                        return;
                     }
-                );
 
-                const result = await response.json();
+                    const response = await fetch(
+                        "http://localhost:3000/api/admin/staff",
+                        {
+                            method: "GET",
 
-                console.log("STAFF LIST RESPONSE:", result);
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${session.access_token}`,
 
-                if (!response.ok || !result.success) {
+                                "Content-Type":
+                                    "application/json"
+                            }
+                        }
+                    );
 
-                    staffTableBody.innerHTML = `
+                    const result = await response.json();
+
+                    console.log("STAFF LIST RESPONSE:", result);
+
+                    if (!response.ok || !result.success) {
+
+                        staffTableBody.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align:center; padding:30px;">
                         Unable to load staff accounts.
@@ -721,21 +741,21 @@
                 </tr>
             `;
 
-                    alert(
-                        result.error ||
-                        "Unable to load staff list."
-                    );
+                        alert(
+                            result.error ||
+                            "Unable to load staff list."
+                        );
 
-                    return;
-                }
+                        return;
+                    }
 
-                const staffList = result.staff || [];
+                    const staffList = result.staff || [];
 
-                staffTableBody.innerHTML = "";
+                    staffTableBody.innerHTML = "";
 
-                if (staffList.length === 0) {
+                    if (staffList.length === 0) {
 
-                    staffTableBody.innerHTML = `
+                        staffTableBody.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align:center; padding:30px;">
                         No staff accounts found.
@@ -743,35 +763,35 @@
                 </tr>
             `;
 
-                    return;
-                }
+                        return;
+                    }
 
-                staffList.forEach(staff => {
+                    staffList.forEach(staff => {
 
-                    const tr = document.createElement("tr");
+                        const tr = document.createElement("tr");
 
-                    const statusText =
-                        staff.status || "Active";
+                        const statusText =
+                            staff.status || "Active";
 
-                    const statusClass =
-                        statusText.toLowerCase() === "inactive"
-                            ? "status-inactive"
-                            : "status-active";
+                        const statusClass =
+                            statusText.toLowerCase() === "inactive"
+                                ? "status-inactive"
+                                : "status-active";
 
-                    // Escape values used inside onclick.
-                    const staffName =
-                        String(
-                            staff.full_name ||
-                            staff.email ||
-                            "Staff Account"
-                        )
-                            .replace(/\\/g, "\\\\")
-                            .replace(/'/g, "\\'");
+                        // Escape values used inside onclick.
+                        const staffName =
+                            String(
+                                staff.full_name ||
+                                staff.email ||
+                                "Staff Account"
+                            )
+                                .replace(/\\/g, "\\\\")
+                                .replace(/'/g, "\\'");
 
-                    const isOnline = staff.is_online === true;
+                        const isOnline = staff.is_online === true;
 
-                    const loginStatusHtml = isOnline
-                        ? `
+                        const loginStatusHtml = isOnline
+                            ? `
                         <div style="
                             display:flex;
                             align-items:center;
@@ -799,7 +819,7 @@
                         </div>
 
                         ${staff.current_page
-                            ? `
+                                ? `
                             <div style="
                                 font-size:11px;
                                 color:#639A88;
@@ -812,9 +832,9 @@
                                 ${staff.current_page}
                             </div>
                         `
-                            : ""}
+                                : ""}
                     `
-                        : `
+                            : `
                         <div style="
                             display:flex;
                             align-items:center;
@@ -841,9 +861,9 @@
                             ${formatStaffLastActive(staff.last_active_at)}
                         </div>
                     `;
-                    if (staff.id === session.user.id) {
+                        if (staff.id === session.user.id) {
 
-                        tr.innerHTML = `
+                            tr.innerHTML = `
                     <td>${staff.full_name || "N/A"}</td>
 
                     <td>${staff.email || "N/A"}</td>
@@ -875,9 +895,9 @@
                     </td>
                 `;
 
-                    } else {
+                        } else {
 
-                        tr.innerHTML = `
+                            tr.innerHTML = `
                     <td>${staff.full_name || "N/A"}</td>
 
                     <td>${staff.email || "N/A"}</td>
@@ -915,7 +935,7 @@
                         </button>
 
                         ${staff.role !== "admin"
-                                ? `
+                                    ? `
                                     <button
                                         type="button"
                                         class="btn-table-delete"
@@ -927,26 +947,26 @@
 
                                     </button>
                                 `
-                                : ""
-                            }
+                                    : ""
+                                }
 
                     </td>
                 `;
 
-                    }
+                        }
 
-                    staffTableBody.appendChild(tr);
+                        staffTableBody.appendChild(tr);
 
-                });
+                    });
 
-            } catch (error) {
+                } catch (error) {
 
-                console.error(
-                    "FETCH STAFF ERROR:",
-                    error
-                );
+                    console.error(
+                        "FETCH STAFF ERROR:",
+                        error
+                    );
 
-                staffTableBody.innerHTML = `
+                    staffTableBody.innerHTML = `
             <tr>
                 <td colspan="6" style="text-align:center; padding:30px;">
                     Error loading staff accounts.
@@ -954,494 +974,532 @@
             </tr>
         `;
 
-                alert(
-                    "Unable to connect to the server."
-                );
-            }
-        }
-
-
-        setInterval(async () => {
-            if (staffModal.classList.contains("active")) {
-                await fetchStaffList();
-            }
-        }, 30000);
-
-        async function signOutStaff(staffId, staffName) {
-
-            if (!staffId) {
-
-                alert("Invalid staff account.");
-
-                return;
-
-            }
-
-
-            const confirmed = confirm(
-                `Are you sure you want to sign out "${staffName}" from all devices?\n\n` +
-                `This will end their active sessions and they will need to log in again.`
-            );
-
-
-            if (!confirmed) {
-
-                return;
-
-            }
-
-
-            try {
-
-                const {
-                    data: { session },
-                    error: sessionError
-                } = await supabaseClient.auth.getSession();
-
-
-                if (sessionError || !session) {
-
                     alert(
-                        "Your admin session has expired. Please log in again."
+                        "Unable to connect to the server."
                     );
+                }
+            }
 
-                    window.location.href =
-                        "admin_login.html";
+
+            setInterval(async () => {
+                if (staffModal.classList.contains("active")) {
+                    await fetchStaffList();
+                }
+            }, 30000);
+
+            async function signOutStaff(staffId, staffName) {
+
+                if (!staffId) {
+
+                    alert("Invalid staff account.");
 
                     return;
 
                 }
 
 
-                console.log(
-                    "Signing out staff:",
-                    staffId
+                const confirmed = confirm(
+                    `Are you sure you want to sign out "${staffName}" from all devices?\n\n` +
+                    `This will end their active sessions and they will need to log in again.`
                 );
 
 
-                const response = await fetch(
-                    `http://localhost:3000/api/admin/staff/${staffId}/signout`,
-                    {
-                        method: "POST",
+                if (!confirmed) {
 
-                        headers: {
-                            "Authorization":
-                                `Bearer ${session.access_token}`,
+                    return;
 
-                            "Content-Type":
-                                "application/json"
-                        }
+                }
+
+
+                try {
+
+                    const {
+                        data: { session },
+                        error: sessionError
+                    } = await supabaseClient.auth.getSession();
+
+
+                    if (sessionError || !session) {
+
+                        alert(
+                            "Your admin session has expired. Please log in again."
+                        );
+
+                        window.location.href =
+                            "admin_login.html";
+
+                        return;
+
                     }
-                );
 
 
-                const result = await response.json();
+                    console.log(
+                        "Signing out staff:",
+                        staffId
+                    );
 
 
-                console.log(
-                    "SIGN OUT RESPONSE:",
-                    result
-                );
+                    const response = await fetch(
+                        `http://localhost:3000/api/admin/staff/${staffId}/signout`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${session.access_token}`,
+
+                                "Content-Type":
+                                    "application/json"
+                            }
+                        }
+                    );
 
 
-                if (!response.ok || !result.success) {
+                    const result = await response.json();
+
+
+                    console.log(
+                        "SIGN OUT RESPONSE:",
+                        result
+                    );
+
+
+                    if (!response.ok || !result.success) {
+
+                        alert(
+                            result.error ||
+                            "Failed to sign out the account."
+                        );
+
+                        return;
+
+                    }
+
 
                     alert(
-                        result.error ||
-                        "Failed to sign out the account."
+                        result.message ||
+                        `${staffName} has been signed out from all devices.`
                     );
+
+
+                    // Refresh list
+                    await fetchStaffList();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "SIGN OUT STAFF ERROR:",
+                        error
+                    );
+
+
+                    alert(
+                        "Unable to connect to the server."
+                    );
+
+                }
+
+            }
+
+
+            async function checkForcedSignOut() {
+
+                try {
+
+                    const {
+                        data: { session }
+                    } = await supabaseClient.auth.getSession();
+
+                    if (!session) {
+                        return;
+                    }
+
+                    const {
+                        data: profile,
+                        error
+                    } = await supabaseClient
+                        .from("staff_profiles")
+                        .select("force_signout_at")
+                        .eq("id", session.user.id)
+                        .maybeSingle();
+
+                    if (error) {
+
+                        console.error(
+                            "Force sign-out check error:",
+                            error
+                        );
+
+                        return;
+                    }
+
+                    if (!profile) {
+                        return;
+                    }
+
+                    if (profile.force_signout_at) {
+
+                        console.log(
+                            "ACCOUNT WAS FORCE SIGNED OUT"
+                        );
+
+                        await supabaseClient.auth.signOut();
+
+                        alert(
+                            "Your account has been signed out by an administrator."
+                        );
+
+                        window.location.href =
+                            "admin_login.html";
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "FORCE SIGN OUT CHECK ERROR:",
+                        error
+                    );
+                }
+            }
+            async function deleteStaff(staffId) {
+
+                if (!staffId) {
+
+                    alert("Invalid staff account.");
 
                     return;
 
                 }
 
 
-                alert(
-                    result.message ||
-                    `${staffName} has been signed out from all devices.`
+                const confirmed = confirm(
+                    "Are you sure you want to delete this staff account?"
                 );
 
 
-                // Refresh list
-                await fetchStaffList();
+                if (!confirmed) {
+
+                    return;
+
+                }
 
 
-            } catch (error) {
+                try {
 
-                console.error(
-                    "SIGN OUT STAFF ERROR:",
-                    error
-                );
+                    const {
+                        data: { session }
+                    } = await supabaseClient.auth.getSession();
 
 
-                alert(
-                    "Unable to connect to the server."
-                );
+                    if (!session) {
+
+                        alert(
+                            "Your session has expired. Please log in again."
+                        );
+
+                        window.location.href =
+                            "admin_login.html";
+
+                        return;
+
+                    }
+
+
+                    const response = await fetch(
+                        `http://localhost:3000/api/admin/staff/${staffId}`,
+                        {
+                            method: "DELETE",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${session.access_token}`,
+
+                                "Content-Type":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+
+                    const result =
+                        await response.json();
+
+
+                    console.log(
+                        "DELETE STAFF RESPONSE:",
+                        result
+                    );
+
+
+                    if (!response.ok || !result.success) {
+
+                        alert(
+                            result.error ||
+                            "Failed to delete staff account."
+                        );
+
+                        return;
+
+                    }
+
+
+                    alert(
+                        "Staff account deleted successfully."
+                    );
+
+
+                    await fetchStaffList();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "DELETE STAFF ERROR:",
+                        error
+                    );
+
+
+                    alert(
+                        "Unable to connect to the server."
+                    );
+
+                }
 
             }
+            document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const { data: { user } } = await supabaseClient.auth.getUser();
 
-        }
-
-
-        async function checkForcedSignOut() {
-
-            try {
-
-                const {
-                    data: { session }
-                } = await supabaseClient.auth.getSession();
-
-                if (!session) {
+                if (user.app_metadata?.provider === "google") {
+                    alert("Google accounts must change their password through Google.");
                     return;
+                }
+                const currentPassword = document.getElementById("currentPassword").value;
+                const newPassword = document.getElementById("newPassword").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+
+                if (newPassword !== confirmPassword) {
+                    alert("New passwords do not match.");
+                    return;
+                }
+
+                const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                if (!strongPassword.test(newPassword)) {
+                    alert(
+                        "Password must contain:\n\n" +
+                        "• At least 8 characters\n" +
+                        "• One uppercase letter\n" +
+                        "• One lowercase letter\n" +
+                        "• One number"
+                    );
+                    return;
+                }
+
+                if (!user) {
+                    alert("You are not logged in.");
+                    return;
+                }
+
+                const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+                    email: user.email,
+                    password: currentPassword
+                });
+
+                if (loginError) {
+                    alert("Current password is incorrect.");
+                    return;
+                }
+
+                const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+                if (error) {
+                    alert(error.message);
+                    return;
+                }
+
+                alert("Password updated successfully!");
+                document.getElementById("changePasswordForm").reset();
+            });
+            /* =========================================================
+               LOGOUT ACTIVITY RECORD
+            ========================================================= */
+
+            document.getElementById("logoutBtn").addEventListener("click", async (e) => {
+                e.preventDefault();
+
+                try {
+                    const {
+                        data: { session }
+                    } = await supabaseClient.auth.getSession();
+
+                    if (!session) {
+                        window.location.href = "/admin/login";
+                        return;
+                    }
+
+                    const {
+                        data: profile
+                    } = await supabaseClient
+                        .from("staff_profiles")
+                        .select("full_name, role")
+                        .eq("id", session.user.id)
+                        .maybeSingle();
+
+                    /* Record logout */
+                    const { error: activityError } = await supabaseClient
+                        .from("staff_activity_logs")
+                        .insert({
+                            staff_id: session.user.id,
+                            staff_name: profile?.full_name || session.user.email,
+                            staff_email: session.user.email,
+                            role: profile?.role || "staff",
+                            action: "LOGOUT"
+                        });
+
+                    if (activityError) {
+                        console.error("LOGOUT ACTIVITY LOG ERROR:", activityError);
+                    } else {
+                        console.log("LOGOUT ACTIVITY RECORDED");
+                    }
+
+                    /* Sign out from Supabase */
+                    await supabaseClient.auth.signOut();
+
+                    localStorage.removeItem("loggedInUserId");
+                    localStorage.removeItem("loggedInUserEmail");
+                    localStorage.removeItem("staffProfile");
+
+                    window.location.href = "/admin/login";
+
+                } catch (error) {
+                    console.error("LOGOUT ERROR:", error);
+
+                    /* Still sign out even if activity logging fails */
+                    await supabaseClient.auth.signOut();
+
+                    localStorage.removeItem("loggedInUserId");
+                    localStorage.removeItem("loggedInUserEmail");
+                    localStorage.removeItem("staffProfile");
+
+                    window.location.href = "/admin/login";
+                }
+            });
+            window.addEventListener("load", async () => {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    window.location.href = "admin_login.html";
+                    return;
+                }
+
+                const user = session.user;
+                const provider = user.app_metadata?.provider;
+
+                if (provider === "google") {
+                    const passwordForm = document.getElementById("changePasswordForm");
+                    if (passwordForm) passwordForm.style.display = "none";
+                    const googleMsg = document.getElementById("googlePasswordMessage");
+                    if (googleMsg) googleMsg.style.display = "block";
                 }
 
                 const {
                     data: profile,
-                    error
+                    error: profileError
                 } = await supabaseClient
                     .from("staff_profiles")
-                    .select("force_signout_at")
-                    .eq("id", session.user.id)
+                    .select("*")
+                    .eq("id", user.id)
                     .maybeSingle();
 
-                if (error) {
+                if (profileError) {
 
                     console.error(
-                        "Force sign-out check error:",
-                        error
+                        "Profile lookup error:",
+                        profileError
+                    );
+
+                    alert(
+                        "Unable to load your staff profile."
                     );
 
                     return;
                 }
 
                 if (!profile) {
-                    return;
-                }
 
-                if (profile.force_signout_at) {
+                    console.error(
+                        "No staff profile found for:",
+                        user.id
+                    );
 
-                    console.log(
-                        "ACCOUNT WAS FORCE SIGNED OUT"
+                    alert(
+                        "Your account does not have a staff profile."
                     );
 
                     await supabaseClient.auth.signOut();
 
-                    alert(
-                        "Your account has been signed out by an administrator."
-                    );
-
-                    window.location.href =
-                        "admin_login.html";
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "FORCE SIGN OUT CHECK ERROR:",
-                    error
-                );
-            }
-        }
-        async function deleteStaff(staffId) {
-
-            if (!staffId) {
-
-                alert("Invalid staff account.");
-
-                return;
-
-            }
-
-
-            const confirmed = confirm(
-                "Are you sure you want to delete this staff account?"
-            );
-
-
-            if (!confirmed) {
-
-                return;
-
-            }
-
-
-            try {
-
-                const {
-                    data: { session }
-                } = await supabaseClient.auth.getSession();
-
-
-                if (!session) {
-
-                    alert(
-                        "Your session has expired. Please log in again."
-                    );
-
                     window.location.href =
                         "admin_login.html";
 
                     return;
-
                 }
 
-
-                const response = await fetch(
-                    `http://localhost:3000/api/admin/staff/${staffId}`,
-                    {
-                        method: "DELETE",
-
-                        headers: {
-                            "Authorization":
-                                `Bearer ${session.access_token}`,
-
-                            "Content-Type":
-                                "application/json"
-                        }
-                    }
-                );
-
-
-                const result =
-                    await response.json();
-
-
-                console.log(
-                    "DELETE STAFF RESPONSE:",
-                    result
-                );
-
-
-                if (!response.ok || !result.success) {
-
-                    alert(
-                        result.error ||
-                        "Failed to delete staff account."
-                    );
-
-                    return;
-
+                document.getElementById("userName").textContent = profile.full_name;
+                if (profile.avatar_url) {
+                    document.getElementById("userAvatar").src = profile.avatar_url;
                 }
+                const staffManagementCard =
+                    document.getElementById("staffManagementCard");
 
+                if (
+                    profile.role !== "admin" &&
+                    staffManagementCard
+                ) {
+                    staffManagementCard.style.display = "none";
+                }
+                // Start staff online presence
+                await startStaffPresence();
 
-                alert(
-                    "Staff account deleted successfully."
-                );
-
-
-                await fetchStaffList();
-
-
-            } catch (error) {
-
-                console.error(
-                    "DELETE STAFF ERROR:",
-                    error
-                );
-
-
-                alert(
-                    "Unable to connect to the server."
-                );
-
-            }
-
-        }
-        document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const { data: { user } } = await supabaseClient.auth.getUser();
-
-            if (user.app_metadata?.provider === "google") {
-                alert("Google accounts must change their password through Google.");
-                return;
-            }
-            const currentPassword = document.getElementById("currentPassword").value;
-            const newPassword = document.getElementById("newPassword").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
-
-            if (newPassword !== confirmPassword) {
-                alert("New passwords do not match.");
-                return;
-            }
-
-            const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-            if (!strongPassword.test(newPassword)) {
-                alert(
-                    "Password must contain:\n\n" +
-                    "• At least 8 characters\n" +
-                    "• One uppercase letter\n" +
-                    "• One lowercase letter\n" +
-                    "• One number"
-                );
-                return;
-            }
-
-            if (!user) {
-                alert("You are not logged in.");
-                return;
-            }
-
-            const { error: loginError } = await supabaseClient.auth.signInWithPassword({
-                email: user.email,
-                password: currentPassword
             });
 
-            if (loginError) {
-                alert("Current password is incorrect.");
-                return;
-            }
 
-            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-            if (error) {
-                alert(error.message);
-                return;
-            }
+            document.addEventListener("DOMContentLoaded", () => {
+                const sidebar = document.querySelector(".sidebar");
+                const sidebarToggle = document.getElementById("sidebarToggle");
 
-            alert("Password updated successfully!");
-            document.getElementById("changePasswordForm").reset();
-        });
-        /* =========================================================
-           LOGOUT ACTIVITY RECORD
-        ========================================================= */
+                if (sidebarToggle && sidebar) {
+                    const icon = sidebarToggle.querySelector("i");
 
-        document.getElementById("logoutBtn").addEventListener("click", async (e) => {
-            e.preventDefault();
+                    // 1. Restore saved collapsed state from localStorage on page load
+                    const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                    if (isCollapsed) {
+                        sidebar.classList.add("collapsed");
+                        if (icon) {
+                            icon.classList.remove("fa-bars");
+                            icon.classList.add("fa-chevron-right");
+                        }
+                    }
 
-            try {
-                const {
-                    data: { session }
-                } = await supabaseClient.auth.getSession();
+                    // 2. Toggle state and save preference to localStorage on click
+                    sidebarToggle.addEventListener("click", () => {
+                        sidebar.classList.toggle("collapsed");
+                        const collapsed = sidebar.classList.contains("collapsed");
 
-                if (!session) {
-                    window.location.href = "/admin/login";
-                    return;
-                }
+                        localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
 
-                const {
-                    data: profile
-                } = await supabaseClient
-                    .from("staff_profiles")
-                    .select("full_name, role")
-                    .eq("id", session.user.id)
-                    .maybeSingle();
-
-                /* Record logout */
-                const { error: activityError } = await supabaseClient
-                    .from("staff_activity_logs")
-                    .insert({
-                        staff_id: session.user.id,
-                        staff_name: profile?.full_name || session.user.email,
-                        staff_email: session.user.email,
-                        role: profile?.role || "staff",
-                        action: "LOGOUT"
+                        if (icon) {
+                            if (collapsed) {
+                                icon.classList.remove("fa-bars");
+                                icon.classList.add("fa-chevron-right");
+                            } else {
+                                icon.classList.remove("fa-chevron-right");
+                                icon.classList.add("fa-bars");
+                            }
+                        }
                     });
-
-                if (activityError) {
-                    console.error("LOGOUT ACTIVITY LOG ERROR:", activityError);
-                } else {
-                    console.log("LOGOUT ACTIVITY RECORDED");
                 }
+            });
 
-                /* Sign out from Supabase */
-                await supabaseClient.auth.signOut();
-
-                localStorage.removeItem("loggedInUserId");
-                localStorage.removeItem("loggedInUserEmail");
-                localStorage.removeItem("staffProfile");
-
-                window.location.href = "/admin/login";
-
-            } catch (error) {
-                console.error("LOGOUT ERROR:", error);
-
-                /* Still sign out even if activity logging fails */
-                await supabaseClient.auth.signOut();
-
-                localStorage.removeItem("loggedInUserId");
-                localStorage.removeItem("loggedInUserEmail");
-                localStorage.removeItem("staffProfile");
-
-                window.location.href = "/admin/login";
-            }
-        });
-        window.addEventListener("load", async () => {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = "admin_login.html";
-                return;
-            }
-
-            const user = session.user;
-            const provider = user.app_metadata?.provider;
-
-            if (provider === "google") {
-                const passwordForm = document.getElementById("changePasswordForm");
-                if (passwordForm) passwordForm.style.display = "none";
-                const googleMsg = document.getElementById("googlePasswordMessage");
-                if (googleMsg) googleMsg.style.display = "block";
-            }
-
-            const {
-                data: profile,
-                error: profileError
-            } = await supabaseClient
-                .from("staff_profiles")
-                .select("*")
-                .eq("id", user.id)
-                .maybeSingle();
-
-            if (profileError) {
-
-                console.error(
-                    "Profile lookup error:",
-                    profileError
-                );
-
-                alert(
-                    "Unable to load your staff profile."
-                );
-
-                return;
-            }
-
-            if (!profile) {
-
-                console.error(
-                    "No staff profile found for:",
-                    user.id
-                );
-
-                alert(
-                    "Your account does not have a staff profile."
-                );
-
-                await supabaseClient.auth.signOut();
-
-                window.location.href =
-                    "admin_login.html";
-
-                return;
-            }
-
-            document.getElementById("userName").textContent = profile.full_name;
-            if (profile.avatar_url) {
-                document.getElementById("userAvatar").src = profile.avatar_url;
-            }
-            const staffManagementCard =
-                document.getElementById("staffManagementCard");
-
-            if (
-                profile.role !== "admin" &&
-                staffManagementCard
-            ) {
-                staffManagementCard.style.display = "none";
-            }
-            // Start staff online presence
-            await startStaffPresence();
-
-        });
-
-    </script>
+        </script>
 </body>
 
 </html>

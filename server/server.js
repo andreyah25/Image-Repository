@@ -60,11 +60,20 @@ app.use(express.json({
 const PORT = process.env.PORT || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
 const PAYMONGO_WEBHOOK_SECRET = process.env.PAYMONGO_WEBHOOK_SECRET;
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
+    console.error("Missing required Supabase environment variables:", {
+        SUPABASE_URL: Boolean(SUPABASE_URL),
+        SUPABASE_SERVICE_ROLE_KEY: Boolean(SUPABASE_SERVICE_ROLE_KEY),
+        SUPABASE_ANON_KEY: Boolean(SUPABASE_ANON_KEY)
+    });
 
+    process.exit(1);
+}
 const resend = RESEND_API_KEY
     ? new Resend(RESEND_API_KEY)
     : null;
@@ -309,6 +318,169 @@ async function requireAdmin(req, res, next) {
         });
     }
 }
+const loginAuthClient = createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
+);
+app.post("/api/admin/login-test", (req, res) => {
+    res.json({ success: true, message: "Login route is reachable." });
+});
+console.log("ADMIN LOGIN ROUTE REGISTERED");
+app.post("/api/admin/login", async (req, res) => {
+    try {
+        const email = String(req.body.email || "")
+            .trim()
+            .toLowerCase();
+
+        const password = String(req.body.password || "");
+
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                error: "Email and password are required."
+            });
+        }
+
+        const { data: attempt, error: attemptError } =
+            await supabaseAdmin
+                .from("admin_login_attempts")
+                .select("*")
+                .eq("email", email)
+                .maybeSingle();
+
+        if (attemptError) {
+            console.error("LOGIN ATTEMPT CHECK:", attemptError);
+            return res.status(500).json({
+                success: false,
+                error: "Unable to process login."
+            });
+        }
+
+        if (
+            attempt?.locked_until &&
+            new Date(attempt.locked_until).getTime() > Date.now()
+        ) {
+            const seconds = Math.ceil(
+                (new Date(attempt.locked_until).getTime() - Date.now()) / 1000
+            );
+
+            return res.status(429).json({
+                success: false,
+                locked: true,
+                retryAfter: seconds,
+                error: `Too many failed attempts. Try again in ${seconds} seconds.`
+            });
+        }
+
+        if (attempt?.locked_until) {
+            await supabaseAdmin
+                .from("admin_login_attempts")
+                .delete()
+                .eq("email", email);
+        }
+
+        const { data, error } =
+            await loginAuthClient.auth.signInWithPassword({
+                email,
+                password
+            });
+
+        if (error || !data.user || !data.session) {
+            const failedAttempts = attempt?.locked_until
+                ? 1
+                : (attempt?.failed_attempts || 0) + 1;
+
+            const isLocked = failedAttempts >= 3;
+
+            const { error: saveError } = await supabaseAdmin
+                .from("admin_login_attempts")
+                .upsert({
+                    email,
+                    failed_attempts: failedAttempts,
+                    locked_until: isLocked
+                        ? new Date(Date.now() + 60 * 1000).toISOString()
+                        : null,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: "email"
+                });
+
+            if (saveError) {
+                console.error("SAVE LOGIN ATTEMPT:", saveError);
+                return res.status(500).json({
+                    success: false,
+                    error: "Unable to process login."
+                });
+            }
+
+            if (isLocked) {
+                return res.status(429).json({
+                    success: false,
+                    locked: true,
+                    retryAfter: 60,
+                    error: "Three failed attempts. Login is locked for 1 minute."
+                });
+            }
+
+            return res.status(401).json({
+                success: false,
+                error: `Invalid email or password. Attempt ${failedAttempts} of 3.`
+            });
+        }
+
+        const { data: profile, error: profileError } =
+            await supabaseAdmin
+                .from("staff_profiles")
+                .select("*")
+                .eq("id", data.user.id)
+                .maybeSingle();
+
+        if (
+            profileError ||
+            !profile ||
+            profile.verified !== true ||
+            String(profile.status || "").toLowerCase() !== "active" ||
+            String(profile.role || "").toLowerCase() !== "admin"
+        ) {
+            await loginAuthClient.auth.signOut();
+
+            return res.status(403).json({
+                success: false,
+                error: "This account is not authorized to access the admin panel."
+            });
+        }
+
+        const { error: clearError } = await supabaseAdmin
+            .from("admin_login_attempts")
+            .delete()
+            .eq("email", email);
+
+        if (clearError) {
+            console.error("CLEAR LOGIN ATTEMPTS:", clearError);
+        }
+
+        return res.json({
+            success: true,
+            user: data.user,
+            session: data.session,
+            profile
+        });
+
+    } catch (error) {
+        console.error("ADMIN LOGIN ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: "An unexpected login error occurred."
+        });
+    }
+});
 async function recordStaffActivity({
     staffId,
     action,

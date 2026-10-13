@@ -260,16 +260,14 @@
 
         <div class="booking-details-card">
 
-            <!-- CLOSE BUTTON -->
             <button type="button" class="booking-details-close" id="closeBookingDetailsModal">
                 &times;
             </button>
 
-
-            <!-- HEADER -->
             <div class="booking-details-header">
 
                 <div>
+
                     <span class="booking-details-eyebrow">
                         BOOKING DETAILS
                     </span>
@@ -281,6 +279,7 @@
                     <p id="bookingDetailsSubtitle">
                         -
                     </p>
+
                 </div>
 
                 <span id="bookingDetailsStatus" class="booking-status pending">
@@ -289,20 +288,14 @@
 
             </div>
 
-
-            <!-- DETAILS -->
             <div class="booking-details-grid" id="bookingDetailsGrid">
             </div>
 
-
-            <!-- PAYMENT SUMMARY -->
             <div class="booking-payment-summary">
 
                 <div class="booking-payment-box">
 
-                    <span>
-                        Total Price
-                    </span>
+                    <span>Total Price</span>
 
                     <strong id="detailsTotalPrice">
                         ₱0.00
@@ -310,12 +303,9 @@
 
                 </div>
 
-
                 <div class="booking-payment-box">
 
-                    <span>
-                        Downpayment
-                    </span>
+                    <span>Downpayment</span>
 
                     <strong id="detailsDownpayment">
                         ₱0.00
@@ -323,12 +313,9 @@
 
                 </div>
 
-
                 <div class="booking-payment-box">
 
-                    <span>
-                        Balance
-                    </span>
+                    <span>Balance</span>
 
                     <strong id="detailsBalance">
                         ₱0.00
@@ -338,18 +325,45 @@
 
             </div>
 
-
-            <!-- PAYMENT PROOF -->
             <div class="booking-details-proof" id="bookingDetailsProof">
             </div>
 
-
-            <!-- ACTIONS -->
             <div class="booking-details-actions" id="bookingDetailsActions">
             </div>
 
         </div>
 
+    </div>
+
+    <div class="simple-rejection-modal" id="noShowModal">
+        <div class="simple-rejection-card">
+            <h2>Mark Booking as No Show</h2>
+
+            <p>
+                The client did not attend the scheduled session.
+                Please provide an admin note.
+            </p>
+
+            <form id="noShowForm">
+
+                <div class="form-field">
+                    <textarea id="noShowNote" placeholder="Enter reason or additional notes..." rows="4"
+                        required></textarea>
+                </div>
+
+                <div class="simple-rejection-actions">
+                    <button type="button" id="cancelNoShowBtn">
+                        Cancel
+                    </button>
+
+                    <button type="submit" id="confirmNoShowBtn">
+                        Mark as No Show
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -364,12 +378,12 @@
         )
 
 
+
         const SERVER_URL =
             (window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1")
                 ? "http://localhost:3000"
-                : "";
-
+                : "https://captured-server.onrender.com";
         let allBookedSessions = [];
         let allAccessRequests = [];
         let selectedMonth = "all";
@@ -1005,6 +1019,19 @@
                             </button>
                         `;
                     }
+                    if (status === "confirmed") {
+
+                        actionHTML += `
+                            <button
+                                type="button"
+                                class="no-show-btn"
+                                data-id="${escapeHtml(booking.id)}"
+                            >
+                                <i class="fa-solid fa-user-xmark"></i>
+                                No Show
+                            </button>
+                        `;
+                    }
                     const statusLabel =
                         booking.status
                             ? String(booking.status).charAt(0).toUpperCase() +
@@ -1457,7 +1484,24 @@
                     `
                         : ""
                     }
+                        ${booking.admin_note
+                            ? `
+                                <div class="booking-detail-item full-width">
 
+                                    <span class="booking-detail-label">
+                                        Admin Note
+                                    </span>
+
+                                    <span class="booking-detail-value">
+                                        ${escapeHtml(
+                                            booking.admin_note
+                                        )}
+                                    </span>
+
+                                </div>
+                            `
+                            : ""
+                        }
 
             ${booking.rejection_reason
                         ? `
@@ -1570,7 +1614,6 @@
                 if (isBookingPending(status)) {
 
                     actions.innerHTML = `
-
             <button
                 type="button"
                 class="reject-btn"
@@ -1580,56 +1623,82 @@
                 Reject
             </button>
 
-                        <button
-                            type="button"
-                            class="confirm-btn"
-                            data-id="${escapeHtml(booking.id)}"
-                        >
-                            <i class="fa-solid fa-check"></i>
-                            Confirm
-                        </button>
-
-                    `;
+            <button
+                type="button"
+                class="confirm-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                <i class="fa-solid fa-check"></i>
+                Confirm
+            </button>
+        `;
 
                 } else if (status === "confirmed") {
 
                     actions.innerHTML = `
+                        <button
+                            type="button"
+                            class="complete-btn"
+                            data-id="${escapeHtml(booking.id)}"
+                        >
+                            <i class="fa-solid fa-check-double"></i>
+                            Complete
+                        </button>
 
-                    <button
-                        type="button"
-                        class="complete-btn"
-                        data-id="${escapeHtml(booking.id)}"
-                    >
-                        <i class="fa-solid fa-check-double"></i>
-                        Complete
-                    </button>
+                        <button
+                            type="button"
+                            class="no-show-btn"
+                            data-id="${escapeHtml(booking.id)}"
+                        >
+                            <i class="fa-solid fa-user-xmark"></i>
+                            Mark as No Show
+                        </button>
+                    `;
+                } else if (
+                    status === "rejected" ||
+                    status === "cancelled"
+                ) {
 
-                `;
+                    actions.innerHTML = `
+            <button
+                type="button"
+                class="delete-rejected-btn"
+                data-id="${escapeHtml(booking.id)}"
+                data-name="${escapeHtml(
+                        booking.full_name || "this customer"
+                    )}"
+            >
+                <i class="fa-solid fa-trash"></i>
+                Delete
+            </button>
+
+            <button
+                type="button"
+                class="booking-modal-close-btn"
+                id="closeBookingDetailsAction"
+            >
+                Close
+            </button>
+        `;
 
                 } else {
 
                     actions.innerHTML = `
-
-                    <button
-                        type="button"
-                        class="booking-modal-close-btn"
-                        id="closeBookingDetailsAction"
-                    >
-                        Close
-                    </button>
-
-                `;
-
+            <button
+                type="button"
+                class="booking-modal-close-btn"
+                id="closeBookingDetailsAction"
+            >
+                Close
+            </button>
+        `;
                 }
             }
 
             modal.classList.add("show");
 
-            document.body.style.overflow =
-                "hidden";
-
+            document.body.style.overflow = "hidden";
         }
-
 
 
         function closeBookingDetailsModal() {
@@ -1838,11 +1907,11 @@
             const uniqueToken =
                 crypto.randomUUID();
 
-           
-                const {
-                    data: repository,
-                    error
-                } =
+
+            const {
+                data: repository,
+                error
+            } =
                 await supabaseClient
                     .from("repository_client_links")
                     .insert({
@@ -2100,7 +2169,7 @@
 
                 closeBookingDetailsModal();
                 setTimeout(() => {
-                    window.location.href ="/admin/repository";
+                    window.location.href = "/admin/repository";
                 }, 1000);
 
                 await loadBookedSessions();
@@ -2128,6 +2197,142 @@
 
             }
 
+        });
+
+        document.addEventListener("click", async function (e) {
+
+            const deleteBtn =
+                e.target.closest(".delete-rejected-btn");
+
+            if (!deleteBtn) return;
+
+            const bookingId =
+                deleteBtn.dataset.id;
+
+            const customerName =
+                deleteBtn.dataset.name || "this customer";
+
+            if (!bookingId) {
+                alert("Booking ID is missing.");
+                return;
+            }
+
+            const confirmed =
+                confirm(
+                    `Are you sure you want to permanently delete ${customerName}'s rejected booking?\n\nThis action cannot be undone.`
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            deleteBtn.disabled = true;
+
+            deleteBtn.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Deleting...
+    `;
+
+            try {
+
+                const {
+                    data: { session },
+                    error: sessionError
+                } = await supabaseClient.auth.getSession();
+
+                if (sessionError) {
+                    throw sessionError;
+                }
+
+                if (!session) {
+                    throw new Error(
+                        "Your admin session has expired. Please log in again."
+                    );
+                }
+
+                const response =
+                    await fetch(
+                        `${SERVER_URL}/api/admin/bookings/${encodeURIComponent(bookingId)}`,
+                        {
+                            method: "DELETE",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${session.access_token}`,
+
+                                "Content-Type":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+                const responseText =
+                    await response.text();
+
+                let result;
+
+                try {
+
+                    result =
+                        JSON.parse(responseText);
+
+                } catch {
+
+                    console.error(
+                        "DELETE RESPONSE:",
+                        responseText
+                    );
+
+                    throw new Error(
+                        `Server returned an invalid response (${response.status}).`
+                    );
+                }
+
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
+
+                    throw new Error(
+                        result.error ||
+                        result.message ||
+                        "The rejected booking could not be deleted."
+                    );
+                }
+
+                showToast(
+                    "Booking Deleted",
+                    result.message ||
+                    "The rejected booking was deleted successfully."
+                );
+
+                closeBookingDetailsModal();
+
+                await loadBookedSessions();
+
+            } catch (error) {
+
+                console.error(
+                    "DELETE REJECTED BOOKING ERROR:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "The rejected booking could not be deleted."
+                );
+
+                await loadBookedSessions();
+
+            } finally {
+
+                deleteBtn.disabled = false;
+
+                deleteBtn.innerHTML = `
+            <i class="fa-solid fa-trash"></i>
+            Delete
+        `;
+            }
         });
         document.addEventListener("click", function (e) {
             const rejectBtn = e.target.closest(".reject-btn");
@@ -2366,12 +2571,192 @@
                     }
                 }
             });
+        let noShowTargetId = null;
+
+        function openNoShowModal(bookingId) {
+
+            noShowTargetId = bookingId;
+
+            const modal =
+                document.getElementById("noShowModal");
+
+            const form =
+                document.getElementById("noShowForm");
+
+            const note =
+                document.getElementById("noShowNote");
+
+            if (form) {
+                form.reset();
+            }
+
+            if (note) {
+                note.value = "";
+            }
+
+            if (modal) {
+                modal.classList.add("show");
+                document.body.style.overflow = "hidden";
+            }
+        }
+
+        function closeNoShowModal() {
+
+            const modal =
+                document.getElementById("noShowModal");
+
+            const form =
+                document.getElementById("noShowForm");
+
+            if (modal) {
+                modal.classList.remove("show");
+            }
+
+            if (form) {
+                form.reset();
+            }
+
+            document.body.style.overflow = "";
+
+            noShowTargetId = null;
+        }
+
+        document.addEventListener("click", function (e) {
+
+            const noShowBtn =
+                e.target.closest(".no-show-btn");
+
+            if (!noShowBtn) {
+                return;
+            }
+
+            const bookingId =
+                noShowBtn.dataset.id;
+
+            if (!bookingId) {
+                alert("Booking ID is missing.");
+                return;
+            }
+
+            openNoShowModal(bookingId);
+        });
+
+        document.getElementById("cancelNoShowBtn")
+            ?.addEventListener("click", function () {
+
+                closeNoShowModal();
+
+            });
+
+        document.getElementById("noShowForm")
+            ?.addEventListener("submit", async function (e) {
+
+                e.preventDefault();
+
+                if (!noShowTargetId) {
+                    alert("The booking information is missing.");
+                    return;
+                }
+
+                const note =
+                    document.getElementById("noShowNote")
+                        ?.value
+                        .trim();
+
+                if (!note) {
+                    alert("Please enter an admin note.");
+                    return;
+                }
+
+                const submitButton =
+                    document.getElementById("confirmNoShowBtn");
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Saving...";
+                }
+
+                try {
+
+                    const {
+                        data: booking,
+                        error: bookingError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .eq("id", noShowTargetId)
+                        .single();
+
+                    if (bookingError) {
+                        throw bookingError;
+                    }
+
+                    if (!booking) {
+                        throw new Error("Booking was not found.");
+                    }
+
+                    const {
+                        data: updatedBooking,
+                        error: updateError
+                    } = await supabaseClient
+                        .from("bookings")
+                        .update({
+                            status: "No Show",
+                            admin_note: note
+                        })
+                        .eq("id", noShowTargetId)
+                        .select()
+                        .single();
+
+                    if (updateError) {
+                        throw updateError;
+                    }
+
+                    if (!updatedBooking) {
+                        throw new Error(
+                            "The booking could not be updated."
+                        );
+                    }
+
+                    showToast(
+                        "Booking Marked as No Show",
+                        `${updatedBooking.full_name}'s booking has been marked as No Show.`
+                    );
+
+                    closeNoShowModal();
+                    closeBookingDetailsModal();
+
+                    await loadBookedSessions();
+
+                } catch (error) {
+
+                    console.error(
+                        "NO SHOW UPDATE ERROR:",
+                        error
+                    );
+
+                    alert(
+                        "The booking could not be marked as No Show.\n\n" +
+                        error.message
+                    );
+
+                } finally {
+
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent =
+                            "Mark as No Show";
+                    }
+
+                }
+
+            });
         async function loadAdminProfile() {
             const { data: { session }, error } =
                 await supabaseClient.auth.getSession();
 
             if (error || !session) {
-                window.location.href = "admin_login.html";
+                window.location.href = "/admin/login";
                 return false;
             }
 
@@ -2435,7 +2820,7 @@
             logoutBtn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 await supabaseClient.auth.signOut();
-                window.location.href = "admin_login.html";
+                window.location.href = "/admin/login";
             });
         }
 

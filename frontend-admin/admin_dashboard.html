@@ -1185,7 +1185,8 @@
             final_payment_amount,
             paymongo_paid_at,
             paymongo_payment_id
-        `);
+        `)
+         .in("status", ["Confirmed", "Completed"]);
 
             if (error) {
                 console.error("Error loading booking payments:", error);
@@ -1295,10 +1296,6 @@
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 })}`;
-
-            console.log("==========================================");
-            console.log("TOTAL INCOME:", totalIncome);
-            console.log("==========================================");
         }
 
 

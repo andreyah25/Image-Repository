@@ -1,0 +1,7 @@
+path: 'C:/Users/conce/OneDrive/Image Repository/ml-service/tags_v2'
+
+train: 'images/train'
+
+val: 'images/val'
+
+names: ['person', 'balloon', 'cake', 'dog', 'sunglasses', 'graduation cap', 'flowers', 'dress', 'hat', 'shoes', 'baby', 'candle']
