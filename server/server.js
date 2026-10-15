@@ -9,6 +9,7 @@ const express = require("express");
 const cors = require("cors");
 const { Resend } = require("resend");
 const { createClient } = require("@supabase/supabase-js");
+const sharp = require("sharp");
 
 const app = express();
 
@@ -218,6 +219,23 @@ app.get("/gallery-requests", (req, res) => {
         )
     );
 });
+async function compressImage(inputBuffer) {
+    return await sharp(inputBuffer)
+        .rotate()
+        .resize({
+            width: 2560,
+            height: 2560,
+            fit: 'inside',
+            withoutEnlargement: true
+        })
+        .jpeg({
+            quality: 75,
+            mozjpeg: true
+        })
+        .toBuffer();
+}
+
+module.exports = { compressImage };
 async function requireAdmin(req, res, next) {
 
     try {

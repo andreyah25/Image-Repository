@@ -78,8 +78,8 @@
                     Archives
                 </a>
                 <a href="/admin/packages">
-                    <i class="fa-solid fa-box"></i>
-                    Setup
+                    <i class="fa-solid fa-sliders"></i>
+                    Packages
                 </a>
 
                 <a href="/admin/profile">
@@ -176,321 +176,201 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-        function renderArchiveTable() {
 
-            const tbody =
-                document.getElementById("archiveTableBody");
+        function renderArchiveTable() {
+            const tbody = document.getElementById("archiveTableBody");
+            const searchInput = document.getElementById("archiveSearchInput");
+            const packageFilter = document.getElementById("packageFilter");
+
+            const searchTerm = searchInput?.value.trim().toLowerCase() || "";
+            const selectedPackage = packageFilter?.value.toLowerCase() || "all";
 
             tbody.innerHTML = "";
 
-            const searchInput =
-                document.getElementById("archiveSearchInput");
+            const filteredItems = archiveItems.filter(item => {
+                if (currentFilter !== "all" && item.category !== currentFilter) {
+                    return false;
+                }
 
-            const packageFilter =
-                document.getElementById("packageFilter");
+                if (
+                    selectedPackage !== "all" &&
+                    String(item.sessionType || "").trim().toLowerCase() !== selectedPackage
+                ) {
+                    return false;
+                }
 
-            const searchTerm =
-                searchInput
-                    ? searchInput.value.trim().toLowerCase()
-                    : "";
+                if (searchTerm) {
+                    const searchableText = [
+                        item.title,
+                        item.subtext,
+                        item.email,
+                        item.sessionType,
+                        item.bookingDate,
+                        item.archivedDate,
+                        item.date,
+                        item.time,
+                        item.bookingId,
+                        item.repositoryId,
+                        ...(item.photos || []).map(photo => photo.original_name)
+                    ].filter(Boolean).join(" ").toLowerCase();
 
-            const selectedPackage =
-                packageFilter
-                    ? packageFilter.value.toLowerCase()
-                    : "all";
-
-
-            const filteredItems =
-                archiveItems.filter(item => {
-
-
-                    if (
-                        currentFilter !== "all" &&
-                        item.category !== currentFilter
-                    ) {
+                    if (!searchableText.includes(searchTerm)) {
                         return false;
                     }
+                }
 
-                    if (
-                        selectedPackage !== "all" &&
-                        String(item.sessionType || "")
-                            .trim()
-                            .toLowerCase() !== selectedPackage
-                    ) {
-                        return false;
-                    }
-
-                    if (searchTerm) {
-
-                        const searchableText = [
-
-                            item.title,
-                            item.subtext,
-                            item.email,
-                            item.sessionType,
-                            item.bookingDate,
-                            item.archivedDate,
-                            item.date,
-                            item.time,
-                            item.bookingId,
-                            item.repositoryId
-
-                        ]
-                            .filter(Boolean)
-                            .join(" ")
-                            .toLowerCase();
-
-
-                        if (
-                            !searchableText.includes(searchTerm)
-                        ) {
-                            return false;
-                        }
-
-                    }
-
-
-                    return true;
-
-                });
+                return true;
+            });
 
             if (filteredItems.length === 0) {
-
                 tbody.innerHTML = `
             <tr>
-                <td colspan="4"
-                    style="
-                        text-align:center;
-                        color:#888;
-                        padding:40px;
-                    ">
-
-                    <i
-                        class="fa-regular fa-folder-open"
-                        style="
-                            font-size:28px;
-                            margin-bottom:10px;
-                            display:block;
-                        "
-                    ></i>
-
+                <td colspan="4" style="text-align:center;color:#888;padding:40px;">
+                    <i class="fa-regular fa-folder-open"
+                       style="font-size:28px;margin-bottom:10px;display:block;"></i>
                     No archived items found.
-
                 </td>
             </tr>
         `;
-
                 return;
             }
 
             filteredItems.forEach(item => {
+                const tr = document.createElement("tr");
 
-                const tr =
-                    document.createElement("tr");
+                const typeLabel = item.category === "folder"
+                    ? "Folder"
+                    : "Customer";
 
+                const folderPhotos = item.category === "folder"
+                    ? (item.photos || []).map(photo => {
+                        // Prefer the compressed copy when it is available.
+                        const path =
+                            photo.compression_status === "completed" &&
+                                photo.compressed_storage_path
+                                ? photo.compressed_storage_path
+                                : photo.storage_path;
 
-                let typeLabel = "Booking";
+                        const imageUrl = path
+                            ? supabaseClient.storage
+                                .from("client-photos")
+                                .getPublicUrl(path).data.publicUrl
+                            : photo.image_url || "";
 
-                if (item.category === "customer") {
-                    typeLabel = "Customer";
-                }
-
-                if (item.category === "folder") {
-                    typeLabel = "Folder";
-                }
-
-                if (item.category === "photo") {
-                    typeLabel = "Photo";
-                }
-
+                        return `
+                    <div class="archived-photo-item">
+                        <img
+                            src="${escapeHtml(imageUrl)}"
+                            alt="${escapeHtml(photo.original_name || "Archived photo")}"
+                            loading="lazy"
+                            onerror="this.style.display='none';"
+                        >
+                        <span title="${escapeHtml(photo.original_name || "Photo")}">
+                            ${escapeHtml(photo.original_name || "Photo")}
+                        </span>
+                        <small>
+                            ${photo.compression_status === "completed" &&
+                                photo.compressed_storage_path
+                                ? "WebP copy"
+                                : "Original"
+                            }
+                        </small>
+                    </div>
+                `;
+                    }).join("")
+                    : "";
 
                 tr.innerHTML = `
-
             <td>
-
                 <div class="item-meta-cell">
-
                     <h4>
+                        <i class="fa-solid ${item.category === "folder"
+                        ? "fa-folder-open"
+                        : "fa-user"}"></i>
                         ${escapeHtml(item.title)}
                     </h4>
+                    <p>${escapeHtml(item.subtext || "")}</p>
 
-                    <p>
-                        ${escapeHtml(item.subtext || "")}
-                    </p>
-
+                    ${item.category === "folder"
+                        ? `
+                                <div class="archived-folder-photos">
+                                    ${folderPhotos ||
+                        '<p class="no-archived-photos">No photos found in this folder.</p>'
+                        }
+                                </div>
+                            `
+                        : ""
+                    }
                 </div>
-
             </td>
 
+            <td>${typeLabel}</td>
 
             <td>
-
-                <span class="badge booking-type">
-
-                    ${typeLabel}
-
-                </span>
-
+                <div>${escapeHtml(item.date || "-")}</div>
+                <small>${escapeHtml(item.time || "")}</small>
             </td>
 
-
-            <td>
-
-                <div class="timestamp-cell">
-
-                    ${escapeHtml(item.date)}
-
-                    <span>
-                        ${escapeHtml(item.time)}
-                    </span>
-
-                </div>
-
-            </td>
-
-
-            <td class="actions-cell">
-
-                <select
-                    class="archive-actions-select"
-                    data-id="${escapeHtml(item.id)}"
-                >
-
-                    <option value="" selected disabled>
-                        Select Action
-                    </option>
-
-                    <option value="restore">
-                        Restore
-                    </option>
-
-                    <option value="delete">
-                        Delete Permanently
-                    </option>
-
+            <td style="text-align:right;">
+                <select class="archive-actions-select" aria-label="Actions for ${escapeHtml(item.title)}">
+                    <option value="">Choose action</option>
+                    <option value="restore">Restore</option>
+                    <option value="delete">Delete permanently</option>
                 </select>
-
             </td>
-
         `;
+
                 tbody.appendChild(tr);
 
+                const actionSelect = tr.querySelector(".archive-actions-select");
 
-                const select =
-                    tr.querySelector(
-                        ".archive-actions-select"
-                    );
+                actionSelect.addEventListener("change", async function () {
+                    const action = this.value;
 
+                    if (!action) return;
 
-                select.addEventListener(
-                    "change",
-                    async function () {
+                    try {
+                        if (action === "restore") {
+                            const confirmed = confirm(
+                                `Restore "${item.title}" and its archived photos, if applicable?`
+                            );
 
-                        const action =
-                            this.value;
-
-
-                        try {
-                            if (
-                                action === "restore"
-                            ) {
-
-                                const confirmed =
-                                    confirm(
-                                        `Restore "${item.title}"?`
-                                    );
-
-
-                                if (!confirmed) {
-
-                                    this.value = "";
-
-                                    return;
-
-                                }
-
-
-                                await restoreArchiveItem(
-                                    item
-                                );
-
-
-                                archiveItems =
-                                    archiveItems.filter(
-                                        archivedItem =>
-                                            !(
-                                                archivedItem.id ===
-                                                item.id
-                                                &&
-                                                archivedItem.category ===
-                                                item.category
-                                            )
-                                    );
-
-
-                                populatePackageFilter();
-
-                                renderArchiveTable();
-
+                            if (!confirmed) {
+                                this.value = "";
                                 return;
-
-                            }
-                            if (
-                                action === "delete"
-                            ) {
-
-                                const confirmed =
-                                    confirm(
-                                        `PERMANENTLY DELETE "${item.title}"?\n\n` +
-                                        `This will permanently remove the archived ${item.category}.\n\n` +
-                                        `This action cannot be undone.`
-                                    );
-
-
-                                if (!confirmed) {
-
-                                    this.value = "";
-
-                                    return;
-
-                                }
-
-
-                                await permanentlyDeleteArchiveItem(item);
-
-                                // Reload the actual database state
-                                await loadArchivedItems();
-
-                                populatePackageFilter();
-
-                                renderArchiveTable();
-
                             }
 
-                        } catch (error) {
-
-                            console.error(
-                                "Archive action error:",
-                                error
+                            await restoreArchiveItem(item);
+                        } else if (action === "delete") {
+                            const confirmed = confirm(
+                                `PERMANENTLY DELETE "${item.title}"?\n\n` +
+                                `This permanently deletes the archived ${item.category}` +
+                                (item.category === "folder" ? " and its photos" : "") +
+                                `, including stored compressed copies where present.\n\n` +
+                                `This action cannot be undone.`
                             );
 
+                            if (!confirmed) {
+                                this.value = "";
+                                return;
+                            }
 
-                            alert(
-                                "Action failed:\n\n" +
-                                error.message
-                            );
-
-
-                            this.value = "";
-
+                            await permanentlyDeleteArchiveItem(item);
                         }
 
+                        await loadArchivedItems();
+                        populatePackageFilter();
+                        renderArchiveTable();
+
+                    } catch (error) {
+                        console.error("Archive action error:", error);
+                        alert("Archive action failed:\n\n" + (error.message || error));
+                        this.value = "";
                     }
-                );
-
+                });
             });
-
         }
+
 
         // Initialize display on load
         let currentUser = null;
@@ -542,11 +422,7 @@
 
                 }
 
-                await archiveCompletedBookings();
-                await archiveFoldersOlderThanTwoMonths();
-
                 await loadArchivedItems();
-
                 populatePackageFilter();
 
                 initializeArchiveTabs();
@@ -562,392 +438,203 @@
             }
 
         });
+
         async function restoreArchiveItem(item) {
             if (item.category === "customer") {
-
-                const {
-                    error
-                } = await supabaseClient
+                const { error: bookingError } = await supabaseClient
                     .from("bookings")
-                    .update({
-                        is_archived: false,
-                        archived_at: null
-                    })
+                    .update({ is_archived: false, archived_at: null })
                     .eq("id", item.id);
 
-                if (error) {
-                    throw error;
-                }
+                if (bookingError) throw bookingError;
 
-                return;
-            }
-            if (item.category === "folder") {
-
-                const {
-                    error
-                } = await supabaseClient
-                    .from("repository_client_links")
-                    .update({
-                        is_archived: false,
-                        archived_at: null
-                    })
-                    .eq("id", item.id);
-
-                if (error) {
-                    throw error;
-                }
-
-                return;
-            }
-
-            if (item.category === "photo") {
-
-                const {
-                    error
-                } = await supabaseClient
-                    .from("repository_photos")
-                    .update({
-                        is_archived: false,
-                        archived_at: null
-                    })
-                    .eq("id", item.id);
-
-                if (error) {
-                    throw error;
-                }
-
-                return;
-            }
-
-        }
-        async function permanentlyDeleteArchiveItem(item) {
-
-            console.log("PERMANENT DELETE STARTED:", item);
-
-            if (item.category === "photo") {
-
-                if (item.storagePath) {
-
-                    console.log(
-                        "Deleting storage file:",
-                        item.storagePath
-                    );
-
-                    const {
-                        error: storageError
-                    } = await supabaseClient
-                        .storage
-                        .from("client-photos")
-                        .remove([
-                            item.storagePath
-                        ]);
-
-                    if (storageError) {
-                        throw new Error(
-                            "Storage deletion failed: " +
-                            storageError.message
-                        );
-                    }
-                }
-
-                const {
-                    error: photoDeleteError
-                } = await supabaseClient
-                    .from("repository_photos")
-                    .delete()
-                    .eq("id", item.id);
-
-                if (photoDeleteError) {
-                    throw photoDeleteError;
-                }
-
-                const {
-                    data: remainingPhoto,
-                    error: verifyError
-                } = await supabaseClient
-                    .from("repository_photos")
-                    .select("id")
-                    .eq("id", item.id)
-                    .maybeSingle();
-
-                if (verifyError) {
-                    throw verifyError;
-                }
-
-                if (remainingPhoto) {
-                    throw new Error(
-                        "Photo was not permanently deleted from the database."
-                    );
-                }
-
-
-                console.log(
-                    "Photo permanently deleted."
-                );
-
-                return;
-            }
-
-
-            if (item.category === "folder") {
-
-                const {
-                    data: photos,
-                    error: photoFetchError
-                } = await supabaseClient
-                    .from("repository_photos")
-                    .select("id, storage_path")
-                    .eq("repository_id", item.id);
-
-                if (photoFetchError) {
-                    throw photoFetchError;
-                }
-
-                const storagePaths =
-                    (photos || [])
-                        .map(photo => photo.storage_path)
-                        .filter(Boolean);
-
-
-                if (storagePaths.length > 0) {
-
-                    const {
-                        error: storageError
-                    } = await supabaseClient
-                        .storage
-                        .from("client-photos")
-                        .remove(storagePaths);
-
-                    if (storageError) {
-                        throw storageError;
-                    }
-                }
-
-                const {
-                    error: photoDeleteError
-                } = await supabaseClient
-                    .from("repository_photos")
-                    .delete()
-                    .eq("repository_id", item.id);
-
-                if (photoDeleteError) {
-                    throw photoDeleteError;
-                }
-
-
-                // --------------------------------------------
-                // 4. Delete folder
-                // --------------------------------------------
-
-                const {
-                    error: folderDeleteError
-                } = await supabaseClient
-                    .from("repository_client_links")
-                    .delete()
-                    .eq("id", item.id);
-
-                if (folderDeleteError) {
-                    throw folderDeleteError;
-                }
-
-
-                // --------------------------------------------
-                // 5. Verify folder is gone
-                // --------------------------------------------
-
-                const {
-                    data: remainingFolder,
-                    error: verifyFolderError
-                } = await supabaseClient
-                    .from("repository_client_links")
-                    .select("id")
-                    .eq("id", item.id)
-                    .maybeSingle();
-
-                if (verifyFolderError) {
-                    throw verifyFolderError;
-                }
-
-                if (remainingFolder) {
-                    throw new Error(
-                        "Folder was not permanently deleted."
-                    );
-                }
-
-
-                console.log(
-                    "Folder permanently deleted."
-                );
-
-                return;
-            }
-
-
-            /*
-             ============================================================
-             CUSTOMER
-             ============================================================
-            */
-
-            if (item.category === "customer") {
-
-                // --------------------------------------------
-                // 1. Get all customer folders
-                // --------------------------------------------
-
-                const {
-                    data: folders,
-                    error: folderFetchError
-                } = await supabaseClient
+                const { data: folders, error: folderFetchError } = await supabaseClient
                     .from("repository_client_links")
                     .select("id")
                     .eq("booking_id", item.id);
 
-                if (folderFetchError) {
-                    throw folderFetchError;
-                }
+                if (folderFetchError) throw folderFetchError;
 
+                for (const folder of folders || []) {
+                    const { error: folderError } = await supabaseClient
+                        .from("repository_client_links")
+                        .update({ is_archived: false, archived_at: null })
+                        .eq("id", folder.id);
 
-                // --------------------------------------------
-                // 2. Get all photos
-                // --------------------------------------------
+                    if (folderError) throw folderError;
 
-                let allStoragePaths = [];
-
-
-                for (const folder of (folders || [])) {
-
-                    const {
-                        data: photos,
-                        error: photoFetchError
-                    } = await supabaseClient
+                    const { error: photoError } = await supabaseClient
                         .from("repository_photos")
-                        .select("id, storage_path")
+                        .update({ is_archived: false, archived_at: null })
                         .eq("repository_id", folder.id);
 
-                    if (photoFetchError) {
-                        throw photoFetchError;
-                    }
-
-
-                    const paths =
-                        (photos || [])
-                            .map(photo => photo.storage_path)
-                            .filter(Boolean);
-
-                    allStoragePaths.push(...paths);
+                    if (photoError) throw photoError;
                 }
 
+                return;
+            }
 
-                // --------------------------------------------
-                // 3. Delete physical images
-                // --------------------------------------------
+            if (item.category === "folder") {
+                const { error: folderError } = await supabaseClient
+                    .from("repository_client_links")
+                    .update({ is_archived: false, archived_at: null })
+                    .eq("id", item.id);
 
-                if (allStoragePaths.length > 0) {
+                if (folderError) throw folderError;
 
-                    console.log(
-                        "Deleting customer storage files:",
-                        allStoragePaths
-                    );
+                const { error: photoError } = await supabaseClient
+                    .from("repository_photos")
+                    .update({ is_archived: false, archived_at: null })
+                    .eq("repository_id", item.id);
 
-                    const {
-                        error: storageError
-                    } = await supabaseClient
-                        .storage
-                        .from("client-photos")
-                        .remove(allStoragePaths);
+                if (photoError) throw photoError;
 
-                    if (storageError) {
-                        throw storageError;
-                    }
+                return;
+            }
+
+            if (item.category === "photo") {
+                const { error } = await supabaseClient
+                    .from("repository_photos")
+                    .update({ is_archived: false, archived_at: null })
+                    .eq("id", item.id);
+
+                if (error) throw error;
+                return;
+            }
+
+            throw new Error("Unknown archive category: " + item.category);
+        }
+
+        async function permanentlyDeleteArchiveItem(item) {
+            // Remove original and compressed objects for the supplied photos.
+            async function removePhotoFiles(photos) {
+                const paths = [
+                    ...new Set(
+                        (photos || []).flatMap(photo => [
+                            photo.storage_path,
+                            photo.compressed_storage_path
+                        ]).filter(Boolean)
+                    )
+                ];
+
+                if (!paths.length) return;
+
+                const { error } = await supabaseClient
+                    .storage
+                    .from("client-photos")
+                    .remove(paths);
+
+                if (error) {
+                    throw new Error("Could not remove stored photo files: " + error.message);
+                }
+            }
+
+            if (item.category === "photo") {
+                const { data: photo, error: fetchError } = await supabaseClient
+                    .from("repository_photos")
+                    .select("id, storage_path, compressed_storage_path")
+                    .eq("id", item.id)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                await removePhotoFiles([photo]);
+
+                const { error: deleteError } = await supabaseClient
+                    .from("repository_photos")
+                    .delete()
+                    .eq("id", item.id);
+
+                if (deleteError) throw deleteError;
+                return;
+            }
+
+            if (item.category === "folder") {
+                const { data: photos, error: photoFetchError } = await supabaseClient
+                    .from("repository_photos")
+                    .select("id, storage_path, compressed_storage_path")
+                    .eq("repository_id", item.id);
+
+                if (photoFetchError) throw photoFetchError;
+
+                // Delete the original and compressed files first.
+                await removePhotoFiles(photos);
+
+                const { error: photoDeleteError } = await supabaseClient
+                    .from("repository_photos")
+                    .delete()
+                    .eq("repository_id", item.id);
+
+                if (photoDeleteError) throw photoDeleteError;
+
+                const { error: folderDeleteError } = await supabaseClient
+                    .from("repository_client_links")
+                    .delete()
+                    .eq("id", item.id);
+
+                if (folderDeleteError) throw folderDeleteError;
+                return;
+            }
+
+            if (item.category === "customer") {
+                const { data: folders, error: folderFetchError } = await supabaseClient
+                    .from("repository_client_links")
+                    .select("id")
+                    .eq("booking_id", item.id);
+
+                if (folderFetchError) throw folderFetchError;
+
+                const allPhotos = [];
+
+                for (const folder of folders || []) {
+                    const { data: photos, error: photoFetchError } = await supabaseClient
+                        .from("repository_photos")
+                        .select("id, storage_path, compressed_storage_path")
+                        .eq("repository_id", folder.id);
+
+                    if (photoFetchError) throw photoFetchError;
+                    allPhotos.push(...(photos || []));
                 }
 
+                await removePhotoFiles(allPhotos);
 
-                // --------------------------------------------
-                // 4. Delete customer database records
-                // --------------------------------------------
-
-                const {
-                    data: deleteResult,
-                    error: rpcError
-                } = await supabaseClient
-                    .rpc(
-                        "permanently_delete_customer",
-                        {
-                            p_booking_id: item.id
-                        }
-                    );
-
-                if (rpcError) {
-                    throw rpcError;
-                }
-
-
-                console.log(
-                    "Permanent customer deletion result:",
-                    deleteResult
+                // Keep the existing database cleanup RPC.
+                const { error: rpcError } = await supabaseClient.rpc(
+                    "permanently_delete_customer",
+                    { p_booking_id: item.id }
                 );
 
+                if (rpcError) throw rpcError;
 
-                // --------------------------------------------
-                // 5. FINAL VERIFICATION
-                // --------------------------------------------
-
-                const {
-                    data: remainingBooking,
-                    error: verifyBookingError
-                } = await supabaseClient
+                const { data: remainingBooking, error: verifyError } = await supabaseClient
                     .from("bookings")
                     .select("id")
                     .eq("id", item.id)
                     .maybeSingle();
 
-                if (verifyBookingError) {
-                    throw verifyBookingError;
-                }
-
+                if (verifyError) throw verifyError;
 
                 if (remainingBooking) {
-
                     throw new Error(
-                        "Customer still exists in the bookings table."
+                        "Customer still exists in the bookings table after deletion."
                     );
                 }
-
-
-                console.log(
-                    "CUSTOMER PERMANENTLY DELETED:",
-                    item.id
-                );
 
                 return;
             }
 
-
-            throw new Error(
-                "Unknown archive category: " +
-                item.category
-            );
+            throw new Error("Unknown archive category: " + item.category);
         }
+
         async function archiveCompletedBookings() {
 
-            // Calculate the date exactly 14 days (2 weeks) ago from today
             const twoWeeksAgo = new Date();
             twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
             const archiveCutoffDate = twoWeeksAgo.toISOString().split("T")[0];
 
             console.log("Checking for records ready to archive (older than 2 weeks)...", archiveCutoffDate);
 
-            /*
-             ============================================================
-             1. FIND COMPLETED BOOKINGS THAT ARE READY TO BE ARCHIVED
-             ============================================================
-             
-             Conditions:
-             - status = Completed
-             - booking_date is on or before 14 days ago
-             - is_archived = false
-            */
+
 
             const {
                 data: bookings,
@@ -985,12 +672,6 @@
 
 
 
-            /*
-             ============================================================
-             2. ARCHIVE EACH CUSTOMER
-             ============================================================
-            */
-
             for (const booking of bookings) {
 
                 const archiveTime =
@@ -1002,11 +683,6 @@
                 );
 
 
-                /*
-                 ========================================================
-                 2A. FIND ALL FOLDERS FOR THIS CUSTOMER
-                 ========================================================
-                */
 
                 const {
                     data: folders,
@@ -1262,282 +938,171 @@
                 "Finished automatic 2-month folder archiving."
             );
         }
+
+
         async function loadArchivedItems() {
+            const tbody = document.getElementById("archiveTableBody");
 
             archiveItems = [];
 
-            /*
-             ============================================================
-             1. ARCHIVED CLIENTS / BOOKINGS
-             ============================================================
-            */
+            if (tbody) {
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align:center;padding:30px;">
+                    Loading archived folders and photos...
+                </td>
+            </tr>
+        `;
+            }
 
-            const {
-                data: archivedBookings,
-                error: bookingError
-            } = await supabaseClient
-                .from("bookings")
-                .select("*")
-                .eq("is_archived", true)
-                .order("archived_at", {
-                    ascending: false
-                });
+            try {
+                // 1. Load bookings independently; no nested relationship required.
+                const { data: bookings, error: bookingError } = await supabaseClient
+                    .from("bookings")
+                    .select("id, full_name, email, session_type, booking_date, status, is_archived, archived_at");
 
-            if (bookingError) {
+                if (bookingError) throw new Error("Bookings query: " + bookingError.message);
 
-                console.error(
-                    "Error loading archived bookings:",
-                    bookingError
+                const bookingMap = new Map(
+                    (bookings || []).map(booking => [String(booking.id), booking])
                 );
 
-            } else {
+                // Show archived customers.
+                for (const booking of bookings || []) {
+                    if (booking.is_archived !== true) continue;
 
-                (archivedBookings || []).forEach(item => {
-
-                    const archivedDate = item.archived_at
-                        ? new Date(item.archived_at)
+                    const archivedDate = booking.archived_at
+                        ? new Date(booking.archived_at)
                         : null;
 
                     archiveItems.push({
-
-                        id: item.id,
-
+                        id: booking.id,
                         category: "customer",
-
-                        title:
-                            item.full_name ||
-                            item.name ||
-                            item.client_name ||
-                            "Unknown Client",
-
-                        email:
-                            item.email || "",
-
-                        sessionType:
-                            item.session_type ||
-                            "Unspecified",
-
-                        subtext: [
-                            item.email,
-                            item.session_type
-                        ]
-                            .filter(Boolean)
-                            .join(" • "),
-
-                        bookingDate:
-                            item.booking_date || "",
-
-                        archivedDate:
-                            item.archived_at || "",
-
-                        date:
-                            archivedDate
-                                ? archivedDate.toLocaleDateString()
-                                : "-",
-
-                        time:
-                            archivedDate
-                                ? archivedDate.toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                })
-                                : "-"
-
+                        title: booking.full_name || "Unknown Client",
+                        email: booking.email || "",
+                        sessionType: booking.session_type || "Unspecified",
+                        subtext: booking.email || booking.session_type || "Archived customer",
+                        bookingDate: booking.booking_date || "",
+                        archivedDate: booking.archived_at || "",
+                        date: archivedDate && !Number.isNaN(archivedDate.getTime())
+                            ? archivedDate.toLocaleDateString()
+                            : "-",
+                        time: archivedDate && !Number.isNaN(archivedDate.getTime())
+                            ? archivedDate.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit"
+                            })
+                            : "-"
                     });
+                }
 
-                });
+                // 2. Fetch folders without a nested bookings relationship.
+                const { data: folders, error: folderError } = await supabaseClient
+                    .from("repository_client_links")
+                    .select("id, booking_id, is_archived, archived_at");
 
-            }
+                if (folderError) throw new Error("Folders query: " + folderError.message);
 
+                // 3. Fetch photos for each folder.
+                for (const folder of folders || []) {
+                    const { data: photos, error: photoError } = await supabaseClient
+                        .from("repository_photos")
+                        .select(`
+                    id,
+                    repository_id,
+                    booking_id,
+                    original_name,
+                    storage_path,
+                    image_url,
+                    is_archived,
+                    archived_at,
+                    compressed_storage_path,
+                    compressed_file_size,
+                    compressed_size_bytes,
+                    compression_format,
+                    compression_status
+                `)
+                        .eq("repository_id", folder.id);
 
-            /*
-             ============================================================
-             2. ARCHIVED FOLDERS
-             ============================================================
-            */
+                    if (photoError) {
+                        throw new Error(
+                            `Photos query for folder ${folder.id}: ${photoError.message}`
+                        );
+                    }
 
-            const {
-                data: archivedFolders,
-                error: folderError
-            } = await supabaseClient
-                .from("repository_client_links")
-                .select(`
-            *,
-            bookings (
-                id,
-                full_name,
-                email,
-                session_type
-            )
-        `)
-                .eq("is_archived", true)
-                .order("archived_at", {
-                    ascending: false
-                });
+                    const folderPhotos = photos || [];
+                    const booking = bookingMap.get(String(folder.booking_id));
 
-            if (folderError) {
+                    // A folder belongs in Archives if the folder itself is archived,
+                    // its booking is archived, or at least one of its photos is archived.
+                    const shouldDisplay =
+                        folder.is_archived === true ||
+                        booking?.is_archived === true ||
+                        folderPhotos.some(photo => photo.is_archived === true);
 
-                console.error(
-                    "Error loading archived folders:",
-                    folderError
-                );
+                    if (!shouldDisplay) continue;
 
-            } else {
+                    const archiveDate =
+                        folder.archived_at ||
+                        booking?.archived_at ||
+                        folderPhotos.find(photo => photo.archived_at)?.archived_at ||
+                        null;
 
-                (archivedFolders || []).forEach(folder => {
-
-                    const booking = folder.bookings || {};
-
-                    const archivedDate = folder.archived_at
-                        ? new Date(folder.archived_at)
-                        : null;
+                    const parsedDate = archiveDate ? new Date(archiveDate) : null;
 
                     archiveItems.push({
-
                         id: folder.id,
-
                         category: "folder",
-
-                        title:
-                            booking.full_name ||
-                            "Customer Folder",
-
-                        email:
-                            booking.email || "",
-
-                        sessionType:
-                            booking.session_type ||
-                            "Folder",
-
-                        subtext:
-                            "Customer Repository Folder",
-
-                        bookingId:
-                            folder.booking_id,
-
-                        repositoryId:
-                            folder.id,
-
-                        archivedDate:
-                            folder.archived_at || "",
-
-                        date:
-                            archivedDate
-                                ? archivedDate.toLocaleDateString()
-                                : "-",
-
-                        time:
-                            archivedDate
-                                ? archivedDate.toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                })
-                                : "-"
-
+                        title: booking?.full_name || "Customer Repository Folder",
+                        email: booking?.email || "",
+                        sessionType: booking?.session_type || "Folder",
+                        subtext: `${folderPhotos.length} photo(s) in this folder`,
+                        bookingId: folder.booking_id,
+                        repositoryId: folder.id,
+                        photos: folderPhotos,
+                        archivedDate: archiveDate || "",
+                        date: parsedDate && !Number.isNaN(parsedDate.getTime())
+                            ? parsedDate.toLocaleDateString()
+                            : "-",
+                        time: parsedDate && !Number.isNaN(parsedDate.getTime())
+                            ? parsedDate.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit"
+                            })
+                            : "-"
                     });
+                }
 
+                console.log("Archive loading completed:", {
+                    bookingsFound: (bookings || []).length,
+                    archivedCustomers: archiveItems.filter(x => x.category === "customer").length,
+                    foldersFound: (folders || []).length,
+                    displayedFolders: archiveItems.filter(x => x.category === "folder").length,
+                    displayedFoldersWithPhotos: archiveItems.filter(
+                        x => x.category === "folder" && x.photos.length > 0
+                    ).length
                 });
 
+            } catch (error) {
+                console.error("Failed to load Archives:", error);
+
+                if (tbody) {
+                    tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center;padding:30px;color:#b91c1c;">
+                        <strong>Could not load Archives.</strong>
+                        <p>${escapeHtml(error.message || String(error))}</p>
+                        <p>Open the browser console for details.</p>
+                    </td>
+                </tr>
+            `;
+                }
+
+                throw error;
             }
-
-
-            /*
-             ============================================================
-             3. ARCHIVED PHOTOS
-             ============================================================
-            */
-
-            const {
-                data: archivedPhotos,
-                error: photoError
-            } = await supabaseClient
-                .from("repository_photos")
-                .select(`
-            *,
-            bookings (
-                id,
-                full_name,
-                email,
-                session_type
-            )
-        `)
-                .eq("is_archived", true)
-                .order("archived_at", {
-                    ascending: false
-                });
-
-            if (photoError) {
-
-                console.error(
-                    "Error loading archived photos:",
-                    photoError
-                );
-
-            } else {
-
-                (archivedPhotos || []).forEach(photo => {
-
-                    const booking = photo.bookings || {};
-
-                    const archivedDate = photo.archived_at
-                        ? new Date(photo.archived_at)
-                        : null;
-
-                    archiveItems.push({
-
-                        id: photo.id,
-
-                        category: "photo",
-
-                        title:
-                            photo.original_name ||
-                            "Photo",
-
-                        email:
-                            booking.email || "",
-
-                        sessionType:
-                            booking.session_type ||
-                            "Photo",
-
-                        subtext:
-                            booking.full_name
-                                ? `Photo from ${booking.full_name}`
-                                : "Archived Photo",
-
-                        bookingId:
-                            photo.booking_id,
-
-                        repositoryId:
-                            photo.repository_id,
-
-                        storagePath:
-                            photo.storage_path,
-
-                        archivedDate:
-                            photo.archived_at || "",
-
-                        date:
-                            archivedDate
-                                ? archivedDate.toLocaleDateString()
-                                : "-",
-
-                        time:
-                            archivedDate
-                                ? archivedDate.toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                })
-                                : "-"
-
-                    });
-
-                });
-
-            }
-
-            renderArchiveTable();
         }
+
+
         function initializeArchiveTabs() {
 
             const tabButtons =

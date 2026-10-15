@@ -88,8 +88,8 @@
                 </a>
 
                 <a href="/admin/packages">
-                    <i class="fa-solid fa-box"></i>
-                    Setup
+                    <i class="fa-solid fa-sliders"></i>
+                    Packages
                 </a>
 
                 <a href="/admin/profile">
@@ -1485,7 +1485,7 @@
                         : ""
                     }
                         ${booking.admin_note
-                            ? `
+                        ? `
                                 <div class="booking-detail-item full-width">
 
                                     <span class="booking-detail-label">
@@ -1494,14 +1494,14 @@
 
                                     <span class="booking-detail-value">
                                         ${escapeHtml(
-                                            booking.admin_note
-                                        )}
+                            booking.admin_note
+                        )}
                                     </span>
 
                                 </div>
                             `
-                            : ""
-                        }
+                        : ""
+                    }
 
             ${booking.rejection_reason
                         ? `

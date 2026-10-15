@@ -266,3 +266,33 @@
     background-repeat: no-repeat;
     background-position: right 12px center;
 }
+
+.archived-folder-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.archived-photo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 110px;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.archived-photo-item img {
+    width: 110px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #f3f4f6;
+}
+
+.archived-photo-item small {
+    color: #639A88;
+}
+

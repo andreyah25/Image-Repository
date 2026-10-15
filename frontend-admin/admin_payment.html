@@ -99,8 +99,8 @@
                 </a>
 
                 <a href="/admin/packages">
-                    <i class="fa-solid fa-box"></i>
-                    Setup
+                    <i class="fa-solid fa-sliders"></i>
+                    Packages
                 </a>
 
                 <a href="/admin/profile">
@@ -496,7 +496,6 @@
  
                  }
                  */
-
                 const {
                     data: bookingRecords,
                     error: bookingsError
@@ -504,43 +503,31 @@
                     .from("bookings")
                     .select(`
                 id,
-                customer_id,
-                full_name,
-                email,
-                downpayment_amount,
-                payment_method,
-                payment_status,
-                created_at,
-                paymongo_payment_id,
-                paymongo_reference,
-                paymongo_reference_number,
-                paymongo_paid_at
-            `)
-                    .not(
-                        "downpayment_amount",
-                        "is",
-                        null
-                    )
-                    .gt(
-                        "downpayment_amount",
-                        0
-                    )
-                    .order(
-                        "created_at",
-                        {
-                            ascending: false
-                        }
-                    );
-
+                    customer_id,
+                    full_name,
+                    email,
+                    downpayment_amount,
+                    total_price,
+                    remaining_balance,
+                    payment_method,
+                    payment_status,
+                    status,
+                    created_at,
+                    paymongo_payment_id,
+                    paymongo_reference,
+                    paymongo_reference_number,
+                    paymongo_paid_at
+                        `)
+                    .not("downpayment_amount", "is", null)
+                    .gt("downpayment_amount", 0)
+                    .order("created_at", {
+                        ascending: false
+                    });
 
                 if (bookingsError) {
-
-                    console.error(
-                        "Bookings payment lookup error:",
-                        bookingsError
-                    );
-
+                    console.error("Bookings payment lookup error:", bookingsError);
                 }
+
                 const {
                     data: galleryAccessRecords,
                     error: galleryAccessError
@@ -596,148 +583,107 @@
                 });
 
 
-                (bookingRecords || []).forEach(
-                    booking => {
 
-                        const bookingId =
-                            String(
-                                booking.id
-                            );
+                (bookingRecords || []).forEach(booking => {
+                    const bookingId = String(booking.id);
 
-                        if (
-                            recordedBookingIds.has(
-                                bookingId
-                            )
-                        ) {
-
-                            return;
-
-                        }
-
-
-                        const downpayment =
-                            Number(
-                                booking.downpayment_amount
-                            ) || 0;
-
-
-                        if (
-                            downpayment <= 0
-                        ) {
-
-                            return;
-
-                        }
-                        const databasePaymentStatus =
-                            String(booking.payment_status || "")
-                                .trim()
-                                .toLowerCase();
-
-                        let paymentStatus = "Downpayment Paid";
-
-                        if (
-                            [
-                                "paid",
-                                "fully paid",
-                                "fully_paid",
-                                "completed",
-                                "success",
-                                "successful"
-                            ].includes(databasePaymentStatus)
-                        ) {
-                            paymentStatus = "Fully Paid";
-                        } else if (databasePaymentStatus.includes("fail")) {
-                            paymentStatus = "Payment Failed";
-                        } else if (
-                            databasePaymentStatus.includes("cancel") ||
-                            databasePaymentStatus.includes("reject")
-                        ) {
-                            paymentStatus = "Cancelled";
-                        } else {
-                            paymentStatus = "Downpayment Paid";
-                        }
-
-
-                        let paymentMethod =
-                            booking.payment_method ||
-                            "PayMongo";
-
-                        if (
-                            String(
-                                paymentMethod
-                            )
-                                .toLowerCase()
-                                .trim() === "paymongo"
-                        ) {
-
-                            paymentMethod =
-                                "qrph";
-
-                        }
-
-                        const paymentDate =
-                            booking.paymongo_paid_at ||
-                            booking.created_at ||
-                            new Date().toISOString();
-
-                        combinedPayments.push({
-
-                            id:
-                                `booking-${bookingId}`,
-
-                            customer_id:
-                                booking.customer_id ||
-                                null,
-
-                            booking_id:
-                                booking.id,
-
-                            gallery_access_request_id:
-                                null,
-
-                            client_name:
-                                booking.full_name ||
-                                "Unknown",
-
-                            email:
-                                booking.email ||
-                                null,
-
-                            amount:
-                                downpayment,
-
-                            payment_method:
-                                paymentMethod,
-
-                            status:
-                                paymentStatus,
-
-                            payment_type:
-                                "Booking",
-
-                            payment_date:
-                                paymentDate,
-
-                            paymongo_payment_id:
-                                booking.paymongo_payment_id ||
-                                null,
-
-                            paymongo_checkout_id:
-                                null,
-
-                            payment_reference:
-                                booking.paymongo_reference_number ||
-                                booking.paymongo_reference ||
-                                null,
-
-                            created_at:
-                                booking.created_at ||
-                                null
-
-                        });
-
+                    // Avoid duplicate booking payment records.
+                    if (recordedBookingIds.has(bookingId)) {
+                        return;
                     }
-                );
+                    const downpayment = Number(booking.downpayment_amount) || 0;
+                    const totalPrice = Number(booking.total_price) || 0;
+                    const remainingBalance = Number(booking.remaining_balance);
+
+                    const databasePaymentStatus = String(
+                        booking.payment_status || ""
+                    ).trim().toLowerCase();
+
+                    const bookingStatus = String(
+                        booking.status || ""
+                    ).trim().toLowerCase();
+
+                    const normalizedBookingStatus = String(
+                        booking.status || ""
+                    ).trim().toLowerCase();
+
+                    const isExplicitlyFullyPaid = [
+                        "fully paid",
+                        "fully_paid"
+                    ].includes(databasePaymentStatus);
+
+                    const isBalanceSettled =
+                        booking.remaining_balance !== null &&
+                        booking.remaining_balance !== undefined &&
+                        booking.remaining_balance !== "" &&
+                        Number.isFinite(remainingBalance) &&
+                        remainingBalance <= 0 &&
+                        totalPrice > 0;
+
+                    // Completed means fully paid ONLY if the booking has a valid total price.
+                    // Confirm that your workflow uses Completed only after full payment.
+                    const isCompletedBooking =
+                        normalizedBookingStatus === "completed" &&
+                        totalPrice > 0;
+
+                    let paymentStatus = "Downpayment Paid";
+                    let recordedAmount = downpayment;
+
+                    if (
+                        isExplicitlyFullyPaid ||
+                        isBalanceSettled ||
+                        isCompletedBooking
+                    ) {
+                        paymentStatus = "Fully Paid";
+                        recordedAmount = totalPrice;
+                    } else if (
+                        databasePaymentStatus.includes("fail") ||
+                        databasePaymentStatus.includes("declin")
+                    ) {
+                        paymentStatus = "Payment Failed";
+                    } else if (
+                        databasePaymentStatus.includes("cancel") ||
+                        databasePaymentStatus.includes("reject") ||
+                        normalizedBookingStatus === "rejected" ||
+                        normalizedBookingStatus === "cancelled"
+                    ) {
+                        paymentStatus = "Cancelled";
+                    }
+
+
+                    let paymentMethod = booking.payment_method || "PayMongo";
+
+                    if (String(paymentMethod).trim().toLowerCase() === "paymongo") {
+                        paymentMethod = "QRPH";
+                    }
+
+                    const paymentDate =
+                        booking.paymongo_paid_at ||
+                        booking.created_at ||
+                        new Date().toISOString();
+
+                    combinedPayments.push({
+                        id: `booking - ${bookingId} `,
+                        customer_id: booking.customer_id || null,
+                        booking_id: booking.id,
+                        gallery_access_request_id: null,
+                        client_name: booking.full_name || "Unknown",
+                        email: booking.email || null,
+                        amount: recordedAmount,
+                        payment_method: paymentMethod,
+                        status: paymentStatus,
+                        payment_type: "Booking",
+                        payment_date: paymentDate,
+                        paymongo_payment_id: booking.paymongo_payment_id || null,
+                        paymongo_checkout_id: null,
+                        payment_reference:
+                            booking.paymongo_reference_number ||
+                            booking.paymongo_reference ||
+                            null,
+                        created_at: booking.created_at || null
+                    });
+                });
+
                 (galleryAccessRecords || []).forEach(
                     gallery => {
 
@@ -804,7 +750,7 @@
                             requestStatus.includes("declin");
 
 
-
+                        let displayStatus = "Downpayment Paid";
                         if (isPaid) {
                             displayStatus = "Fully Paid";
                         } else if (isCancelled) {

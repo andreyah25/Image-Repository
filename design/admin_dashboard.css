@@ -2056,3 +2056,42 @@ i.fa-brands,
     margin: 10px 0;
     font-size: 28px;
 }
+
+.income-report-export {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.income-report-export button {
+    flex: 1;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #639A88;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.income-report-export button:hover:not(:disabled) {
+    background: #527f70;
+}
+
+.income-report-export button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.income-report-export button i {
+    margin-right: 6px;
+}
+
+@media (max-width: 400px) {
+    .income-report-export {
+        flex-direction: column;
+    }
+}

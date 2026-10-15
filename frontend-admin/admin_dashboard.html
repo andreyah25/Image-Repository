@@ -19,6 +19,7 @@
 
 </head>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <body>
 
@@ -108,8 +109,8 @@
                 </a>
 
                 <a href="/admin/packages">
-                    <i class="fa-solid fa-box"></i>
-                    Setup
+                    <i class="fa-solid fa-sliders"></i>
+                    Packages
                 </a>
 
                 <a href="/admin/profile">
@@ -310,16 +311,26 @@
                         <option value="2028">2028</option>
                     </select>
 
-                    <button type="button" id="generateIncomeReport">
-                        Generate Report
-                    </button>
 
                     <div class="income-report-result">
                         <p id="incomeReportPeriod">October 2026</p>
                         <h2 id="incomeReportAmount">₱0.00</h2>
-                        <p id="incomeReportCount">0 recorded payments</p>
+                        <p id="incomeReportCount">0 completed bookings</p>
                         <p id="incomeReportMessage" role="status"></p>
                     </div>
+
+                    <div class="income-report-export">
+                        <button type="button" id="exportIncomePDF" disabled>
+                            <i class="fa-solid fa-file-pdf"></i>
+                            Export PDF
+                        </button>
+
+                        <button type="button" id="exportIncomeCSV" disabled>
+                            <i class="fa-solid fa-file-csv"></i>
+                            Export CSV
+                        </button>
+                    </div>
+
                 </div>
             </div>
             <div id="bookingModal" class="booking-modal">
@@ -971,7 +982,11 @@
                 style: "currency",
                 currency: "PHP"
             }).format(Number(amount) || 0);
-
+        const monthNames = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+        let latestIncomeReport = null;
         function updateIncomeReportControls() {
             document.getElementById("incomeMonthGroup").style.display =
                 incomeReportType.value === "monthly" ? "block" : "none";
@@ -987,16 +1002,30 @@
             const year = Number(incomeReportYear.value);
             const month = Number(incomeReportMonth.value);
 
+            // Validate the selected reporting period.
+            if (
+                !Number.isInteger(year) ||
+                year < 1000 ||
+                (type === "monthly" &&
+                    (!Number.isInteger(month) || month < 1 || month > 12))
+            ) {
+                amountElement.textContent = formatPHP(0);
+                countElement.textContent = "Invalid reporting period";
+                messageElement.textContent = "Please select a valid month and year.";
+                return;
+            }
+
             const monthName = new Date(year, month - 1, 1)
                 .toLocaleString("en-US", { month: "long" });
 
             periodElement.textContent =
-                type === "monthly" ? `${monthName} ${year}` : `Year ${year} `;
+                type === "monthly" ? `${monthName} ${year}` : `Year ${year}`;
 
             amountElement.textContent = formatPHP(0);
             countElement.textContent = "Loading...";
             messageElement.textContent = "";
 
+            // Use an inclusive start date and exclusive end date.
             const startDate = type === "monthly"
                 ? `${year}-${String(month).padStart(2, "0")}-01`
                 : `${year}-01-01`;
@@ -1005,25 +1034,19 @@
                 ? new Date(year, month, 1)
                 : new Date(year + 1, 0, 1);
 
-            const endDate =
-                `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
+            const endDate = [
+                nextDate.getFullYear(),
+                String(nextDate.getMonth() + 1).padStart(2, "0"),
+                String(nextDate.getDate()).padStart(2, "0")
+            ].join("-");
+            latestIncomeReport = null;
+            document.getElementById("exportIncomePDF").disabled = true;
+            document.getElementById("exportIncomeCSV").disabled = true;
             try {
-
                 const { data, error } = await supabaseClient
                     .from("bookings")
-                    .select(`
-        id,
-        booking_date,
-        status,
-        payment_status,
-        total_price,
-        downpayment_amount,
-        remaining_balance,
-        full_payment_amount,
-        final_payment_amount,
-        paymongo_paid_at,
-        paymongo_payment_id
-    `)
+                    .select("id, booking_date, status, total_price")
+                    .ilike("status", "completed")
                     .gte("booking_date", startDate)
                     .lt("booking_date", endDate);
 
@@ -1031,55 +1054,91 @@
 
                 let totalIncome = 0;
                 let qualifyingBookings = 0;
+                let missingPrices = 0;
+                const reportBookings = [];
 
                 for (const booking of data || []) {
-                    const status = String(booking.status || "").trim().toLowerCase();
-                    const paymentStatus = String(booking.payment_status || "").trim().toLowerCase();
-
-                    if (["cancelled", "canceled", "rejected", "declined"].includes(status)) {
+                    // Only count completed bookings.
+                    if (
+                        String(booking.status || "").trim().toLowerCase() !== "completed"
+                    ) {
                         continue;
                     }
 
-                    let amount = 0;
+                    const amount = Number(booking.total_price);
 
-                    if (["paid", "fully paid", "fully_paid", "completed", "success", "successful"].includes(paymentStatus)) {
-                        amount = Number(booking.total_price) || 0;
-
-                        if (amount <= 0) {
-                            amount =
-                                (Number(booking.downpayment_amount) || 0) +
-                                (Number(booking.final_payment_amount) || 0);
-                        }
-                    } else if (["partial", "partially paid", "partially_paid", "half", "half paid", "downpayment", "downpayment paid"].includes(paymentStatus)) {
-                        amount = Number(booking.downpayment_amount) || 0;
+                    // Exclude missing or invalid prices.
+                    if (
+                        booking.total_price == null ||
+                        booking.total_price === "" ||
+                        !Number.isFinite(amount) ||
+                        amount < 0
+                    ) {
+                        missingPrices++;
+                        continue;
                     }
 
-                    if (amount > 0) {
-                        totalIncome += amount;
-                        qualifyingBookings++;
-                    }
+                    totalIncome += amount;
+                    qualifyingBookings++;
+
+                    // Store each valid booking for PDF and CSV exports.
+                    reportBookings.push({
+                        id: booking.id,
+                        booking_date: booking.booking_date,
+                        status: booking.status,
+                        total_price: amount
+                    });
                 }
 
+                // Round the final total to two decimal places.
+                totalIncome = Math.round((totalIncome + Number.EPSILON) * 100) / 100;
+
+                latestIncomeReport = {
+                    period: periodElement.textContent,
+                    type,
+                    startDate,
+                    endDate,
+                    totalIncome,
+                    qualifyingBookings,
+                    missingPrices,
+                    bookings: reportBookings
+                };
+
+                document.getElementById("exportIncomePDF").disabled = false;
+                document.getElementById("exportIncomeCSV").disabled = false;
+
                 amountElement.textContent = formatPHP(totalIncome);
-                countElement.textContent = `${qualifyingBookings} qualifying booking(s)`;
+                countElement.textContent =
+                    `${qualifyingBookings} completed booking(s)`;
 
-                messageElement.textContent = data?.length
-                    ? "Report generated based on booking dates."
-                    : "No bookings found for this booking date range.";
+                if ((data || []).length === 0) {
+                    messageElement.textContent =
+                        "No completed bookings found for this period.";
+                } else if (missingPrices > 0) {
+                    messageElement.textContent =
+                        `${missingPrices} completed booking(s) were excluded because their prices are missing or invalid.`;
+                } else {
+                    messageElement.textContent =
+                        "Report generated using completed bookings and their total prices, based on booking dates.";
+                }
 
-                console.log("Income report:", {
+                console.log("Completed booking income report:", {
                     period: periodElement.textContent,
                     startDate,
                     endDate,
-                    matchingBookings: data?.length || 0,
+                    completedBookingsRetrieved: (data || []).length,
                     qualifyingBookings,
+                    missingPrices,
                     totalIncome
                 });
 
             } catch (error) {
                 console.error("Income report error:", error);
+
+                amountElement.textContent = formatPHP(0);
                 countElement.textContent = "Unable to load report";
-                messageElement.textContent = error.message;
+                messageElement.textContent =
+                    error.message || "An error occurred while generating the report.";
             }
         }
 
@@ -1089,14 +1148,28 @@
             generateIncomeReport();
         }
 
+        const totalIncomeCard = document.getElementById("totalIncomeCard");
 
-        document.getElementById("totalIncomeCard")
-            ?.addEventListener("keydown", event => {
+        if (totalIncomeCard) {
+            totalIncomeCard.style.cursor = "pointer";
+            totalIncomeCard.setAttribute("role", "button");
+            totalIncomeCard.setAttribute("tabindex", "0");
+
+            totalIncomeCard.addEventListener("click", () => {
+                console.log("Total Income card clicked");
+                openIncomeReport();
+            });
+
+            totalIncomeCard.addEventListener("keydown", event => {
                 if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
                     openIncomeReport();
                 }
             });
+        } else {
+            console.error("Total Income card not found: #totalIncomeCard");
+        }
+
 
         document.getElementById("closeIncomeReport")
             ?.addEventListener("click", () => {
@@ -1116,9 +1189,6 @@
 
         incomeReportMonth.addEventListener("change", generateIncomeReport);
         incomeReportYear.addEventListener("change", generateIncomeReport);
-
-        document.getElementById("generateIncomeReport")
-            ?.addEventListener("click", generateIncomeReport);
 
 
         async function loadTotalPhotos() {
@@ -1163,8 +1233,8 @@
             );
         }
 
-        async function loadTotalIncome() {
 
+        async function loadTotalIncome() {
             const totalIncomeElement = document.getElementById("totalIncome");
 
             if (!totalIncomeElement) {
@@ -1172,173 +1242,223 @@
                 return;
             }
 
-            const { data: bookings, error } = await supabaseClient
-                .from("bookings")
-                .select(`
-            id,
-            status,
-            payment_status,
-            downpayment_amount,
-            total_price,
-            remaining_balance,
-            full_payment_amount,
-            final_payment_amount,
-            paymongo_paid_at,
-            paymongo_payment_id
-        `)
-         .in("status", ["Confirmed", "Completed"]);
+            totalIncomeElement.textContent = "Loading...";
 
-            if (error) {
-                console.error("Error loading booking payments:", error);
-                totalIncomeElement.textContent = "₱0.00";
+            try {
+                const { data: bookings, error } = await supabaseClient
+                    .from("bookings")
+                    .select("id, status, total_price")
+                    .ilike("status", "completed");
+
+                if (error) throw error;
+
+                let totalIncome = 0;
+                let completedBookings = 0;
+                let missingPrices = 0;
+
+                for (const booking of bookings || []) {
+                    if (
+                        String(booking.status || "").trim().toLowerCase() !==
+                        "completed"
+                    ) {
+                        continue;
+                    }
+
+                    const amount = Number(booking.total_price);
+
+                    if (
+                        booking.total_price == null ||
+                        booking.total_price === "" ||
+                        !Number.isFinite(amount) ||
+                        amount < 0
+                    ) {
+                        missingPrices++;
+                        continue;
+                    }
+
+                    totalIncome += amount;
+                    completedBookings++;
+                }
+
+                totalIncome = Math.round(
+                    (totalIncome + Number.EPSILON) * 100
+                ) / 100;
+
+                totalIncomeElement.textContent = formatPHP(totalIncome);
+
+                console.log("Dashboard completed-booking revenue:", {
+                    completedBookings,
+                    missingPrices,
+                    totalIncome
+                });
+
+            } catch (error) {
+                console.error(
+                    "Error loading completed-booking revenue:",
+                    error
+                );
+
+                totalIncomeElement.textContent = "Unable to load";
+            }
+        }
+
+        function downloadTextFile(content, filename, mimeType) {
+            const blob = new Blob([content], {
+                type: `${mimeType};charset=utf-8;`
+            });
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function exportIncomeCSV() {
+            if (!latestIncomeReport) {
+                alert("Please generate an income report first.");
                 return;
             }
 
-            console.log("Bookings fetched:", bookings);
+            const report = latestIncomeReport;
 
-            let totalIncome = 0;
+            const escapeCSV = value =>
+                `"${String(value ?? "").replace(/"/g, '""')}"`;
 
-            (bookings || []).forEach((booking) => {
+            const rows = [
+                ["Captured Photography Studio - Income Report"],
+                ["Reporting Period", report.period],
+                ["Start Date", report.startDate],
+                ["End Date (exclusive)", report.endDate],
+                ["Total Revenue", report.totalIncome.toFixed(2)],
+                ["Completed Bookings", report.qualifyingBookings],
+                ["Bookings Excluded (invalid prices)", report.missingPrices],
+                [],
+                ["Booking ID", "Booking Date", "Status", "Total Price (PHP)"],
+                ...report.bookings.map(booking => [
+                    booking.id,
+                    booking.booking_date,
+                    booking.status,
+                    booking.total_price.toFixed(2)
+                ])
+            ];
 
-                const status = String(booking.status || "")
-                    .trim()
-                    .toLowerCase();
+            const csv = "\uFEFF" +
+                rows.map(row => row.map(escapeCSV).join(",")).join("\r\n");
 
-                const paymentStatus = String(booking.payment_status || "")
-                    .trim()
-                    .toLowerCase();
+            const filename =
+                `Captured_Income_Report_${report.startDate}.csv`;
 
-                const totalPrice = Number(booking.total_price) || 0;
-                const downpayment = Number(booking.downpayment_amount) || 0;
-                const remainingBalance = Number(booking.remaining_balance) || 0;
-                const fullPayment = Number(booking.full_payment_amount) || 0;
-                const finalPayment = Number(booking.final_payment_amount) || 0;
-
-                let amountReceived = 0;
-
-                if (
-                    status === "cancelled" ||
-                    status === "canceled" ||
-                    status === "rejected" ||
-                    status === "declined"
-                ) {
-                    return;
-                }
-                if (
-                    paymentStatus === "paid" ||
-                    paymentStatus === "fully paid" ||
-                    paymentStatus === "fully_paid" ||
-                    paymentStatus === "completed" ||
-                    paymentStatus === "success" ||
-                    paymentStatus === "successful"
-                ) {
-
-
-                    if (totalPrice > 0) {
-                        amountReceived = totalPrice;
-                    } else {
-                        amountReceived = downpayment + finalPayment;
-                    }
-
-                }
-                else if (
-                    paymentStatus === "partial" ||
-                    paymentStatus === "partially paid" ||
-                    paymentStatus === "half" ||
-                    paymentStatus === "half paid" ||
-                    paymentStatus === "downpayment" ||
-                    paymentStatus === "downpayment paid"
-                ) {
-
-                    amountReceived = downpayment;
-                }
-                else if (booking.paymongo_paid_at || booking.paymongo_payment_id) {
-
-                    if (remainingBalance > 0) {
-                        amountReceived = downpayment;
-                    } else if (totalPrice > 0) {
-                        amountReceived = totalPrice;
-                    } else {
-                        amountReceived = downpayment + finalPayment;
-                    }
-
-                }
-
-                else if (
-                    status === "completed" &&
-                    totalPrice > 0
-                ) {
-                    amountReceived = totalPrice;
-                }
-                if (amountReceived < 0) {
-                    amountReceived = 0;
-                }
-
-                console.log(
-                    `Booking ${booking.id}:`,
-                    {
-                        status: booking.status,
-                        payment_status: booking.payment_status,
-                        total_price: totalPrice,
-                        downpayment: downpayment,
-                        remaining_balance: remainingBalance,
-                        full_payment_amount: fullPayment,
-                        final_payment_amount: finalPayment,
-                        amountReceived: amountReceived
-                    }
-                );
-
-                totalIncome += amountReceived;
-            });
-
-            totalIncomeElement.textContent =
-                `₱${totalIncome.toLocaleString("en-PH", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}`;
+            downloadTextFile(csv, filename, "text/csv");
         }
 
-
-        const incomeModal = document.getElementById("incomeReportModal");
-
-        document.getElementById("totalIncomeCard")
-            ?.addEventListener("click", async () => {
-                incomeModal.classList.add("show");
-                updateIncomeReportControls();
-                await generateIncomeReport();
-            });
-
-        document.getElementById("closeIncomeReport")
-            ?.addEventListener("click", () => {
-                incomeModal.classList.remove("show");
-            });
-
-        incomeModal?.addEventListener("click", event => {
-            if (event.target === incomeModal) {
-                incomeModal.classList.remove("show");
+        function exportIncomePDF() {
+            if (!latestIncomeReport) {
+                alert("Please generate an income report first.");
+                return;
             }
-        });
 
-        document.getElementById("incomeReportType")
-            ?.addEventListener("change", () => {
-                updateIncomeReportControls();
-                generateIncomeReport();
-            });
+            if (!window.jspdf?.jsPDF) {
+                alert("The PDF library could not load. Check your internet connection and reload the page.");
+                return;
+            }
 
-        document.getElementById("incomeReportMonth")
-            ?.addEventListener("change", generateIncomeReport);
+            const report = latestIncomeReport;
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
 
-        document.getElementById("incomeReportYear")
-            ?.addEventListener("change", generateIncomeReport);
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(18);
+            pdf.text("Captured Photography Studio", 15, 20);
 
-        document.getElementById("generateIncomeReport")
-            ?.addEventListener("click", generateIncomeReport);
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(14);
+            pdf.text("Income Report", 15, 30);
 
+            pdf.setFontSize(10);
+            pdf.text(`Reporting Period: ${report.period}`, 15, 42);
+            pdf.text(`Start Date: ${report.startDate}`, 15, 49);
+            pdf.text(`End Date (exclusive): ${report.endDate}`, 15, 56);
 
-        const monthNames = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        ];
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(12);
+            pdf.text(
+                `Total Revenue: PHP ${report.totalIncome.toLocaleString(
+                    "en-PH",
+                    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                )}`,
+                15,
+                70
+            );
+
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(10);
+            pdf.text(
+                `Completed bookings: ${report.qualifyingBookings}`,
+                15,
+                79
+            );
+            pdf.text(
+                `Bookings excluded due to invalid prices: ${report.missingPrices}`,
+                15,
+                86
+            );
+
+            let y = 101;
+
+            pdf.setFont("helvetica", "bold");
+            pdf.text("Booking ID", 15, y);
+            pdf.text("Booking Date", 65, y);
+            pdf.text("Status", 115, y);
+            pdf.text("Price (PHP)", 155, y);
+
+            y += 7;
+            pdf.setFont("helvetica", "normal");
+
+            for (const booking of report.bookings) {
+                if (y > 275) {
+                    pdf.addPage();
+                    y = 20;
+
+                    pdf.setFont("helvetica", "bold");
+                    pdf.text("Booking ID", 15, y);
+                    pdf.text("Booking Date", 65, y);
+                    pdf.text("Status", 115, y);
+                    pdf.text("Price (PHP)", 155, y);
+
+                    y += 7;
+                    pdf.setFont("helvetica", "normal");
+                }
+
+                pdf.text(String(booking.id).slice(0, 24), 15, y);
+                pdf.text(String(booking.booking_date || "—"), 65, y);
+                pdf.text(String(booking.status || "—"), 115, y);
+                pdf.text(
+                    booking.total_price.toLocaleString("en-PH", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }),
+                    155,
+                    y
+                );
+
+                y += 7;
+            }
+
+            pdf.save(`Captured_Income_Report_${report.startDate}.pdf`);
+        }
+
+        document.getElementById("exportIncomePDF")
+            ?.addEventListener("click", exportIncomePDF);
+
+        document.getElementById("exportIncomeCSV")
+            ?.addEventListener("click", exportIncomeCSV);
+
 
         async function loadBookingAnalytics(selectedYear) {
             const year = Number(selectedYear);
