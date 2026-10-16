@@ -157,36 +157,12 @@
                             <div id="addonContainer">
 
                                 <!-- Add-on dropdown -->
+
                                 <div class="addon-row">
                                     <select class="addon-select">
-                                        <option value="">Select Add-On</option>
-                                        <option value="additional_person">
-                                            Additional Person — ₱200/head
-                                        </option>
-                                        <option value="additional_pet">
-                                            Additional Pet — ₱100/head
-                                        </option>
-                                        <option value="additional_4r_print">
-                                            Additional 4R Print — ₱50
-                                        </option>
-                                        <option value="frame_8r">
-                                            8R Frame — ₱600
-                                        </option>
-                                        <option value="refrigerator_magnet">
-                                            3 pcs Refrigerator Magnet — ₱150
-                                        </option>
-                                        <option value="backdrop_request">
-                                            Backdrop Request — ₱300
-                                        </option>
-                                        <option value="photographer_15">
-                                            With Photographer — 15 minutes — ₱500
-                                        </option>
-                                        <option value="photographer_30">
-                                            With Photographer — 30 minutes — ₱800
-                                        </option>
+                                        <option value="">Loading add-ons...</option>
                                     </select>
 
-                                    <!-- Quantity field appears after selecting -->
                                     <input type="number" class="addon-quantity" min="1" value="1" placeholder="Quantity"
                                         style="display: none;">
 
@@ -194,6 +170,7 @@
                                         ×
                                     </button>
                                 </div>
+
 
                             </div>
 
@@ -389,7 +366,6 @@
                                         <select id="paymentMethod" name="payment_method" required>
                                             <option value="" selected disabled>Select a payment method</option>
                                             <option value="PayMongo">PayMongo QR Scan </option>
-                                            <option value="Gcash">Gcash</option>
                                         </select>
                                     </div>
                                 </div>
@@ -952,55 +928,10 @@
         const BOOKING_END_MINUTES = 19 * 60;   // 7:00 PM
         const BOOKING_INTERVAL = 15;
         const BOOKING_PREPARATION_TIME = 15;
-        const ADDON_OPTIONS = {
-            additional_person: {
-                name: "Additional Person",
-                price: 200,
-                duration: 0
-            },
 
-            additional_pet: {
-                name: "Additional Pet",
-                price: 100,
-                duration: 0
-            },
+        const ADDON_OPTIONS = {};
+        const ADDON_DATABASE = new Map();
 
-            additional_4r_print: {
-                name: "Additional 4R Print",
-                price: 50,
-                duration: 0
-            },
-
-            frame_8r: {
-                name: "8R Frame",
-                price: 600,
-                duration: 0
-            },
-
-            refrigerator_magnet: {
-                name: "3 pcs Refrigerator Magnet",
-                price: 150,
-                duration: 0
-            },
-
-            backdrop_request: {
-                name: "Backdrop Request",
-                price: 300,
-                duration: 0
-            },
-
-            photographer_15: {
-                name: "With Photographer for 15 minutes",
-                price: 500,
-                duration: 15
-            },
-
-            photographer_30: {
-                name: "With Photographer for 30 minutes",
-                price: 800,
-                duration: 30
-            }
-        };
         const BOOKING_DURATIONS = {
 
             basic_1: 15,
@@ -1050,67 +981,63 @@
             theme_holiday: 1,
             maternity: 1
         };
+
         function getSelectedAddons() {
             const addons = [];
 
             document.querySelectorAll(".addon-row").forEach(row => {
-
                 const select = row.querySelector(".addon-select");
                 const quantityInput = row.querySelector(".addon-quantity");
 
-                if (!select || !select.value) {
+                if (!select || !select.value) return;
+
+                const addon = ADDON_DATABASE.get(select.value);
+
+                if (!addon) {
+                    console.error("Selected add-on not found:", select.value);
                     return;
                 }
 
-                const quantity =
-                    parseInt(quantityInput.value, 10) || 1;
+                const quantity = Math.max(
+                    1,
+                    parseInt(quantityInput?.value, 10) || 1
+                );
 
                 addons.push({
-                    key: select.value,
-                    quantity: quantity
+                    id: addon.id,
+                    key: addon.key,
+                    name: addon.name,
+                    price: addon.price,
+                    quantity,
+                    duration: addon.duration,
+                    unit: addon.unit
                 });
             });
 
             return addons;
         }
+
         function getSelectedAddonTotal() {
-            const selectedAddons = getSelectedAddons();
-
-            return selectedAddons.reduce((total, addonItem) => {
-
-                const addon =
-                    ADDON_OPTIONS[addonItem.key];
-
-                if (!addon) {
-                    return total;
-                }
-
-                return total +
-                    (addon.price * addonItem.quantity);
-
+            return getSelectedAddons().reduce((total, addon) => {
+                return total + addon.price * addon.quantity;
             }, 0);
         }
 
         function getAddonDurationFromKeys(addons) {
+            if (!Array.isArray(addons)) return 0;
 
-            if (!Array.isArray(addons)) {
-                return 0;
-            }
+            return addons.reduce((total, item) => {
+                const key = String(item.key || item.id || "");
+                const addon = ADDON_DATABASE.get(key);
 
-            return addons.reduce((total, addonItem) => {
+                const duration = addon
+                    ? addon.duration
+                    : Number(item.duration) || 0;
 
-                const addon =
-                    ADDON_OPTIONS[addonItem.key];
-
-                if (!addon) {
-                    return total;
-                }
-
-                return total +
-                    ((addon.duration || 0) * addonItem.quantity);
-
+                return total + duration * (Number(item.quantity) || 1);
             }, 0);
         }
+
         function normalizeAddonKeys(addons) {
 
             if (Array.isArray(addons)) {
@@ -1380,8 +1307,8 @@
             return dateString < todayString;
         }
 
-        const MAX_ADVANCE_BOOKING_YEARS = 3;
-
+        const MAX_ADVANCE_BOOKING_YEARS = 2;
+        const MAX_BOOKINGS_PER_DAY = 8;
         function getMaximumBookingDate() {
             const maxDate = new Date();
             maxDate.setHours(0, 0, 0, 0);
@@ -1423,6 +1350,24 @@
 
             return { valid: true, message: "" };
         }
+
+        function updateBookingDateLimits() {
+            const dateInput = document.getElementById("bookingDate");
+
+            if (!dateInput) {
+                console.warn("Booking date input was not found.");
+                return;
+            }
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const day = String(today.getDate()).padStart(2, "0");
+
+            dateInput.min = `${year}-${month}-${day}`;
+            dateInput.max = getMaximumBookingDate();
+        }
+
         async function loadAvailableTimeSlots() {
 
             const dateInput = document.getElementById("bookingDate");
@@ -2172,110 +2117,92 @@
             updateDownpaymentUI();
         });
 
-        const addonContainer =
-            document.getElementById("addonContainer");
-
-        const addAddonBtn =
-            document.getElementById("addAddonBtn");
-
+        const addAddonBtn = document.getElementById("addAddonBtn");
+        const addonContainer = document.getElementById("addonContainer");
 
         function updateAddonRow(row) {
+            const select = row.querySelector(".addon-select");
+            const quantityInput = row.querySelector(".addon-quantity");
+            const removeButton = row.querySelector(".remove-addon");
 
-            const select =
-                row.querySelector(".addon-select");
+            if (!select || !quantityInput || !removeButton) return;
 
-            const quantityInput =
-                row.querySelector(".addon-quantity");
+            const selected = Boolean(select.value);
 
-            const removeButton =
-                row.querySelector(".remove-addon");
+            quantityInput.style.display = selected ? "inline-block" : "none";
+            quantityInput.value = quantityInput.value || "1";
 
-            if (select.value) {
-
-                quantityInput.style.display = "block";
-
-                quantityInput.value =
-                    quantityInput.value || 1;
-
-                removeButton.style.display = "block";
-
-            } else {
-
-                quantityInput.style.display = "none";
-
-                removeButton.style.display = "none";
-
-                quantityInput.value = 1;
-            }
+            removeButton.style.display =
+                selected && addonContainer.querySelectorAll(".addon-row").length > 1
+                    ? "inline-block"
+                    : "none";
         }
 
         function setupAddonRow(row) {
-            const select = row.querySelector(".addon-select");
-            const removeButton = row.querySelector(".remove-addon");
-            const quantityInput = row.querySelector(".addon-quantity");
+            if (!row) return;
 
-            if (quantityInput) {
-                quantityInput.addEventListener("input", () => {
-                    updateDownpaymentUI();
-                });
-            }
+            const select = row.querySelector(".addon-select");
+            const quantityInput = row.querySelector(".addon-quantity");
+            const removeButton = row.querySelector(".remove-addon");
+
+            if (!select || !quantityInput || !removeButton) return;
 
             select.addEventListener("change", async () => {
                 updateAddonRow(row);
                 updateDownpaymentUI();
 
                 const bookingDate = document.getElementById("bookingDate");
-                if (bookingDate && bookingDate.value) {
+
+                if (bookingDate?.value) {
                     await loadAvailableTimeSlots();
                 }
             });
 
+            quantityInput.addEventListener("input", updateDownpaymentUI);
+
             removeButton.addEventListener("click", async () => {
-                row.remove();
+                if (addonContainer.querySelectorAll(".addon-row").length <= 1) {
+                    select.value = "";
+                    quantityInput.value = "1";
+                    updateAddonRow(row);
+                } else {
+                    row.remove();
+                }
+
                 updateDownpaymentUI();
 
                 const bookingDate = document.getElementById("bookingDate");
-                if (bookingDate && bookingDate.value) {
+
+                if (bookingDate?.value) {
                     await loadAvailableTimeSlots();
                 }
             });
         }
 
+        if (addonContainer && addAddonBtn) {
+            const firstRow = addonContainer.querySelector(".addon-row");
 
-        setupAddonRow(
-            addonContainer.querySelector(".addon-row")
-        );
+            setupAddonRow(firstRow);
 
+            addAddonBtn.addEventListener("click", () => {
+                const template = addonContainer.querySelector(".addon-row");
+                if (!template) return;
 
-        addAddonBtn.addEventListener("click", () => {
+                const newRow = template.cloneNode(true);
+                const select = newRow.querySelector(".addon-select");
+                const quantityInput = newRow.querySelector(".addon-quantity");
+                const removeButton = newRow.querySelector(".remove-addon");
 
-            const firstRow =
-                addonContainer.querySelector(".addon-row");
+                select.value = "";
+                quantityInput.value = "1";
+                quantityInput.style.display = "none";
+                removeButton.style.display = "none";
 
-            const newRow =
-                firstRow.cloneNode(true);
-
-            const select =
-                newRow.querySelector(".addon-select");
-
-            const quantityInput =
-                newRow.querySelector(".addon-quantity");
-
-            select.value = "";
-
-            quantityInput.value = 1;
-
-            quantityInput.style.display = "none";
-
-            const removeButton =
-                newRow.querySelector(".remove-addon");
-
-            removeButton.style.display = "none";
-
-            addonContainer.appendChild(newRow);
-
-            setupAddonRow(newRow);
-        });
+                addonContainer.appendChild(newRow);
+                setupAddonRow(newRow);
+                updateAddonRow(newRow);
+            });
+        }
         document
             .querySelectorAll('input[name="backdrop"]')
             .forEach(input => {
@@ -2554,65 +2481,149 @@
                 );
             }
         }
-        const addonKeyMap = {
-            "Additional Person": "additional_person",
-            "Additional Pet": "additional_pet",
-            "Additional 4R Print": "additional_4r_print",
-            "8R Frame": "frame_8r",
-            "3 pcs Refrigerator Magnet": "refrigerator_magnet",
-            "Backdrop Request": "backdrop_request",
-            "With Photographer - 15 minutes": "photographer_15",
-            "With Photographer - 30 minutes": "photographer_30"
-        };
+
+        function createAddonKey(addon) {
+            return String(addon.id);
+        }
+
+        function getAddonDurationFromName(name) {
+            const normalized = String(name || "").toLowerCase();
+
+            if (normalized.includes("15 minute")) return 15;
+            if (normalized.includes("30 minute")) return 30;
+
+            return 0;
+        }
+
         async function loadAvailableAddons() {
+            const container = document.getElementById("addonContainer");
+
+            if (!container) {
+                console.error("Add-on container was not found.");
+                return;
+            }
+
             const { data, error } = await supabaseClient
                 .from("addons")
-                .select("id, name, price, unit, status")
-                .eq("status", "Available")
+                .select("id, name, price, status")
                 .order("name", { ascending: true });
 
             if (error) {
                 console.error("Load available add-ons error:", error);
+                container.innerHTML = `
+            <p class="addon-error">
+                Unable to load add-ons. Please refresh the page.
+            </p>
+        `;
                 return;
             }
 
-            document.querySelectorAll(".addon-select").forEach(select => {
-                select.innerHTML = '<option value="">Select an add-on</option>';
+            ADDON_DATABASE.clear();
+
+            Object.keys(ADDON_OPTIONS).forEach(key => {
+                delete ADDON_OPTIONS[key];
             });
 
-            const addonKeyMap = {
-                "Additional Person": "additional_person",
-                "Additional Pet": "additional_pet",
-                "Additional 4R Print (any layout)": "additional_4r_print",
-                "8R Frame": "frame_8r",
-                '3 pcs. Refrigerator Magnet (2"x2")': "refrigerator_magnet",
-                "Backdrop Request": "backdrop_request",
-                "With Photographer for 15 minutes": "photographer_15",
-                "With Photographer for 30 minutes": "photographer_30"
-            };
+            const availableAddons = (data || []).filter(addon => {
+                return String(addon.status || "")
+                    .trim()
+                    .toLowerCase() === "available";
+            });
 
-            (data || []).forEach(addon => {
-                const key = addonKeyMap[addon.name];
+            availableAddons.forEach(addon => {
+                const key = createAddonKey(addon);
 
-                if (!key) {
-                    return;
-                }
+                const item = {
+                    id: addon.id,
+                    key,
+                    name: addon.name,
+                    price: Number(addon.price) || 0,
+                    unit: addon.unit || "",
+                    duration: getAddonDurationFromName(addon.name)
+                };
 
-                if (ADDON_OPTIONS[key]) {
-                    ADDON_OPTIONS[key].price = Number(addon.price) || 0;
-                }
+                ADDON_DATABASE.set(key, item);
+                ADDON_OPTIONS[key] = item;
+            });
 
-                document.querySelectorAll(".addon-select").forEach(select => {
+            function populateSelect(select) {
+                const previousValue = select.value;
+
+                select.innerHTML = "";
+
+                const placeholder = document.createElement("option");
+                placeholder.value = "";
+                placeholder.textContent = "Select an add-on";
+                select.appendChild(placeholder);
+
+                availableAddons.forEach(addon => {
                     const option = document.createElement("option");
+                    option.value = createAddonKey(addon);
 
-                    option.value = key;
+                    const price = Number(addon.price) || 0;
+                    const unit = addon.unit ? ` / ${addon.unit}` : "";
+
                     option.textContent =
-                        `${addon.name} - ₱${Number(addon.price).toLocaleString()}`;
+                        `${addon.name} — ₱${price.toLocaleString("en-PH")}${unit}`;
 
                     select.appendChild(option);
                 });
+
+                if ([...select.options].some(option => option.value === previousValue)) {
+                    select.value = previousValue;
+                }
+            }
+
+            document.querySelectorAll(".addon-select").forEach(populateSelect);
+
+            renderAddonsModal(availableAddons);
+
+            updateDownpaymentUI();
+
+            console.log("Loaded available add-ons:", availableAddons);
+        }
+
+        function renderAddonsModal(addons) {
+            const modal = document.getElementById("addOnsModal");
+            const tbody = modal?.querySelector("tbody");
+
+            if (!tbody) return;
+
+            tbody.innerHTML = "";
+
+            if (!addons.length) {
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+
+                cell.colSpan = 2;
+                cell.textContent = "No add-ons are currently available.";
+
+                row.appendChild(cell);
+                tbody.appendChild(row);
+                return;
+            }
+
+            addons.forEach(addon => {
+                const row = document.createElement("tr");
+                const nameCell = document.createElement("td");
+                const priceCell = document.createElement("td");
+
+                nameCell.className = "pkg-name";
+                priceCell.className = "pkg-price";
+
+                nameCell.textContent = addon.name;
+
+                const price = Number(addon.price) || 0;
+                priceCell.textContent =
+                    `₱${price.toLocaleString("en-PH")}` +
+                    (addon.unit ? ` / ${addon.unit}` : "");
+
+                row.appendChild(nameCell);
+                row.appendChild(priceCell);
+                tbody.appendChild(row);
             });
         }
+
         document.addEventListener("DOMContentLoaded", async function () {
 
             await loadAvailablePackages();
@@ -2735,7 +2746,7 @@
                         updateDownpaymentUI();
 
                         updateBackdropUI();
-
+                        updateBookingDateLimits();
                         if (bookingDate.value) {
                             await loadAvailableTimeSlots();
                         }
@@ -3216,21 +3227,6 @@
 
                             return true;
                         });
-
-
-                if (
-                    activeBookings.length >=
-                    MAX_BOOKINGS_PER_DAY
-                ) {
-
-                    alert(
-                        "Sorry, this date has just become fully booked."
-                    );
-
-                    await loadAvailableTimeSlots();
-
-                    return;
-                }
 
 
                 /* =====================================================
