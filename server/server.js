@@ -3610,10 +3610,6 @@ const webhookSecret =
             });
         }
 
-                const paidAt = payment?.attributes?.paid_at
-            ? new Date(payment.attributes.paid_at * 1000).toISOString()
-            : new Date().toISOString();
-
         const totalBookingAmount =
             Number(bookingData.total_price) || 0;
 
@@ -3632,25 +3628,36 @@ const webhookSecret =
             });
         }
 
-        // Record verified payment only in the temporary checkout.
-        // Do NOT insert into bookings until the customer confirms.
+       
+        // Save the payment only after PayMongo verification succeeds.
+        const paidAt =
+            payment?.attributes?.paid_at
+                ? new Date(
+                    payment.attributes.paid_at * 1000
+                ).toISOString()
+                : new Date().toISOString();
+
         const { data: updatedCheckout, error: updateError } =
             await supabase
                 .from("pending_booking_checkouts")
                 .update({
                     payment_status: "Paid",
                     paid_at: paidAt,
-                    paymongo_payment_id: paymentId
+                    paymongo_payment_id: paymentId,
+                    checkout_session_id:
+                        checkoutSessionId ||
+                        pendingCheckout.checkout_session_id
                 })
                 .eq("id", pendingCheckout.id)
                 .select()
                 .single();
 
         if (updateError || !updatedCheckout) {
-            console.error(
-                "Could not save verified payment:",
-                updateError
-            );
+            console.error("Could not save verified PayMongo payment:", {
+                reference: pendingCheckout.booking_reference,
+                checkoutId: pendingCheckout.id,
+                error: updateError
+            });
 
             return res.status(500).json({
                 success: false,
@@ -3659,11 +3666,13 @@ const webhookSecret =
         }
 
         console.log("PAYMENT VERIFIED:", {
-            reference: pendingCheckout.booking_reference,
-            paymentId,
-            amount: downPaymentAmount,
-            paymentStatus: updatedCheckout.payment_status
+            reference: updatedCheckout.booking_reference,
+            paymentId: updatedCheckout.paymongo_payment_id,
+            checkoutSessionId: updatedCheckout.checkout_session_id,
+            paymentStatus: updatedCheckout.payment_status,
+            paidAt: updatedCheckout.paid_at
         });
+
 
         return res.status(200).json({
             success: true,

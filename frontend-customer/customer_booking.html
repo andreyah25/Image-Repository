@@ -2508,7 +2508,34 @@
 
             return 0;
         }
+        async function checkBookingPayment(reference) {
+            try {
+                const response = await fetch(
+                    `/api/paymongo/booking-status/${encodeURIComponent(reference)}`,
+                    { cache: "no-store" }
+                );
 
+                if (!response.ok) {
+                    throw new Error(
+                        `Payment status request failed: ${response.status}`
+                    );
+                }
+
+                const result = await response.json();
+
+                if (result.payment_verified === true) {
+                    // Update your existing payment status UI here.
+                    // Display "Payment Verified".
+                    // Stop the verification polling.
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                console.error("Payment verification check failed:", error);
+                return false;
+            }
+        }
         async function loadAvailableAddons() {
             const container = document.getElementById("addonContainer");
 
