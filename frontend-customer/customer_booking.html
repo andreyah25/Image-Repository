@@ -49,7 +49,19 @@
                 <h1>Schedule a Session</h1>
                 <p>Provide your booking details so we can prepare for your session.</p>
             </div>
+            <div id="paidBookingPanel" style="display:none; background:#f6f8f7; border:1px solid #d5e5dd;
+            border-radius:12px; padding:24px; margin-bottom:24px;">
 
+                <h2 id="paidBookingHeading">Verifying Payment</h2>
+
+                <p id="paidBookingMessage">
+                    Please wait while we verify your PayMongo payment.
+                </p>
+
+                <div id="paidBookingDetails" style="line-height:1.9; margin-top:16px;">
+                </div>
+
+            </div>
             <div class="booking-layout-wrapper">
                 <div class="sessions-panel booking-container">
                     <form id="bookingForm" class="booking-form">
@@ -378,12 +390,14 @@
                                 <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
                             </div>
                         </div>
+
                         <div class="form-actions" style="justify-content: stretch;">
-                            <button type="submit" class="btn-confirm"
+                            <button type="submit" id="proceedToPaymentBtn" class="btn-confirm"
                                 style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <i class="fa-solid fa-calendar-check"></i> Confirm Booking
+                                <i class="fa-solid fa-credit-card"></i> Proceed to Payment
                             </button>
                         </div>
+
 
                     </form>
                 </div>
@@ -2505,7 +2519,7 @@
 
             const { data, error } = await supabaseClient
                 .from("addons")
-                .select("id, name, price, status")
+                .select("*")
                 .order("name", { ascending: true });
 
             if (error) {
@@ -2834,9 +2848,245 @@
 
         const bookingForm = document.getElementById("bookingForm");
 
+        const BOOKING_API_BASE = "https://image-repository-1.onrender.com";
+        const paidReturnReference =
+            new URLSearchParams(window.location.search).get("reference");
+
+        let paidReturnVerified = false;
+        let paidReturnAlreadyConfirmed = false;
+
+        async function loadPaidBookingDetails() {
+            if (!paidReturnReference) return;
+
+            const panel = document.getElementById("paidBookingPanel");
+            const heading = document.getElementById("paidBookingHeading");
+            const message = document.getElementById("paidBookingMessage");
+            const details = document.getElementById("paidBookingDetails");
+            const submitButton = document.getElementById("proceedToPaymentBtn");
+
+            panel.style.display = "block";
+
+            // The returning customer should confirm the existing booking,
+            // not create another payment checkout.
+            bookingForm.noValidate = true;
+
+            bookingForm.querySelectorAll(".form-section").forEach(section => {
+                section.style.display = "none";
+            });
+
+            submitButton.disabled = true;
+            submitButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Verifying Payment...';
+
+            function addDetail(label, value) {
+                const row = document.createElement("p");
+                const strong = document.createElement("strong");
+
+                strong.textContent = `${label}: `;
+                row.appendChild(strong);
+                row.appendChild(document.createTextNode(String(value ?? "-")));
+
+                details.appendChild(row);
+            }
+
+            for (let attempt = 0; attempt < 30; attempt++) {
+                try {
+                    const response = await fetch(
+                        `${BOOKING_API_BASE}/api/paymongo/booking-status/${encodeURIComponent(paidReturnReference)}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Accept": "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success && result.booking) {
+                        const booking = result.booking;
+
+                        if (result.payment_verified) {
+                            paidReturnVerified = true;
+                            paidReturnAlreadyConfirmed =
+                                result.customer_confirmed === true;
+
+                            heading.textContent = paidReturnAlreadyConfirmed
+                                ? "Booking Already Submitted"
+                                : "Payment Successful";
+
+                            message.textContent = paidReturnAlreadyConfirmed
+                                ? "Your booking has already been submitted. The studio will review and confirm it."
+                                : "Your downpayment is PAID. Review your booking details, then click Confirm Booking to submit it to the studio.";
+
+                            details.replaceChildren();
+
+                            addDetail("Customer", booking.full_name);
+                            addDetail("Email", booking.email);
+                            addDetail("Contact Number", booking.contact_number);
+                            addDetail("Session", booking.session_type);
+                            addDetail("Date", booking.booking_date);
+                            addDetail("Time", booking.booking_time);
+                            addDetail(
+                                "Total Booking Amount",
+                                `₱${Number(booking.total_price || 0).toLocaleString("en-PH", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}`
+                            );
+                            addDetail(
+                                "Downpayment",
+                                `₱${Number(booking.downpayment_amount || 0).toLocaleString("en-PH", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })} — PAID`
+                            );
+                            addDetail(
+                                "Remaining Balance",
+                                `₱${Number(booking.remaining_balance ?? (
+                                    Number(booking.total_price || 0) -
+                                    Number(booking.downpayment_amount || 0)
+                                )).toLocaleString("en-PH", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}`
+                            );
+                            addDetail("Payment Method", "PayMongo QRPH");
+                            addDetail("Payment Reference", paidReturnReference);
+
+                            if (Array.isArray(booking.backdrops)) {
+                                addDetail("Backdrops", booking.backdrops.join(", "));
+                            }
+
+                            if (Array.isArray(booking.addons)) {
+                                addDetail(
+                                    "Add-ons",
+                                    booking.addons.map(addon =>
+                                        typeof addon === "string"
+                                            ? addon
+                                            : addon.name || addon.addon_name || JSON.stringify(addon)
+                                    ).join(", ") || "None"
+                                );
+                            }
+
+                            if (booking.notes) {
+                                addDetail("Notes", booking.notes);
+                            }
+                            if (paidReturnAlreadyConfirmed) {
+                                submitButton.disabled = true;
+                                submitButton.innerHTML =
+                                    '<i class="fa-solid fa-check"></i> Booking Submitted';
+                            } else {
+                                submitButton.disabled = false;
+                                submitButton.innerHTML =
+                                    '<i class="fa-solid fa-calendar-check"></i> Confirm Booking';
+                            }
+
+                            return;
+                        }
+
+                        heading.textContent = "Verifying Payment";
+                        message.textContent =
+                            "PayMongo has redirected you back. We are waiting for verified payment confirmation.";
+                    } else if (response.status === 404) {
+                        heading.textContent = "Booking Not Found";
+                        message.textContent =
+                            "The payment reference could not be found. Please contact the studio.";
+                        submitButton.disabled = true;
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Payment-return verification error:", error);
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            heading.textContent = "Payment Verification Pending";
+            message.textContent =
+                "Your payment has not been verified by the server yet. Do not pay again. Refresh this page shortly to check again.";
+            submitButton.disabled = true;
+            submitButton.innerHTML =
+                '<i class="fa-solid fa-clock"></i> Awaiting Payment Verification';
+        }
+
+        if (paidReturnReference) {
+            loadPaidBookingDetails();
+        }
+
         bookingForm.addEventListener("submit", async (e) => {
 
             e.preventDefault();
+            // Returning from PayMongo: confirm the existing paid booking.
+            // Returning from PayMongo: confirm the existing paid booking.
+            if (paidReturnReference) {
+                const submitButton =
+                    document.getElementById("proceedToPaymentBtn");
+
+                if (!paidReturnVerified) {
+                    alert(
+                        "Payment has not been verified yet. Please wait and refresh the page."
+                    );
+                    return;
+                }
+
+                if (paidReturnAlreadyConfirmed) {
+                    alert("This booking has already been submitted.");
+                    return;
+                }
+
+                submitButton.disabled = true;
+                submitButton.textContent = "Submitting Booking...";
+
+                try {
+                    const response = await fetch(
+                        `${BOOKING_API_BASE}/api/paymongo/confirm-booking`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Accept": "application/json"
+                            },
+                            body: JSON.stringify({
+                                reference: paidReturnReference
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.error || "Unable to submit your booking."
+                        );
+                    }
+
+                    paidReturnAlreadyConfirmed = true;
+
+                    document.getElementById("paidBookingHeading").textContent =
+                        "Booking Submitted Successfully";
+
+                    document.getElementById("paidBookingMessage").textContent =
+                        "Your downpayment is paid. Your booking has been submitted to Captured Photography Studio and is awaiting admin confirmation.";
+
+                    submitButton.disabled = true;
+                    submitButton.innerHTML =
+                        '<i class="fa-solid fa-check"></i> Booking Submitted';
+
+                } catch (error) {
+                    console.error("Booking confirmation error:", error);
+
+                    alert(error.message || "Unable to submit your booking.");
+
+                    submitButton.disabled = false;
+                    submitButton.innerHTML =
+                        '<i class="fa-solid fa-check"></i> Confirm Booking';
+                }
+
+                return;
+            }
+
             const modalCheck = document.getElementById('modalPolicyCheck');
             if (modalCheck && !modalCheck.checked) {
                 alert("Please review and agree to our Down Payment & Cancellation Policy before confirming your booking.");
@@ -2847,6 +3097,10 @@
             const submitButton = bookingForm.querySelector(
                 'button[type="submit"]'
             );
+
+            // ADD THIS LINE
+            let redirectingToPayMongo = false;
+
 
             try {
                 const customerId = null;
@@ -3341,7 +3595,13 @@
 
                     return;
                 }
-
+                console.log("========== FINAL BOOKING CHECK ==========");
+                console.log("Selected date:", date);
+                console.log("Selected time:", time);
+                console.log("Requested start:", requestedStart);
+                console.log("Requested end:", requestedEnd);
+                console.log("Has conflict:", hasConflict);
+                console.log("=========================================");
 
 
 
@@ -3384,64 +3644,81 @@
                 console.log("booking_duration:", getSelectedDuration());
                 console.log("==================================");
 
+
+
+
                 const totalPrice = Number(totalAmount);
+                const downpayment = Number(downpaymentAmount);
 
-                const response = await fetch("https://image-repository-1.onrender.com/api/paymongo/create-checkout",
-                    {
-                        method: "POST",
+                const API_BASE = BOOKING_API_BASE;
+                console.log("CHECKPOINT 1: Starting PayMongo request");
+                console.log("Backend URL:", API_BASE);
+                console.log("Payment method:", paymentMethod);
+                console.log("Total price:", totalPrice);
+                console.log("Downpayment:", downpayment);
 
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
+                let response;
 
-                        body: JSON.stringify({
+                try {
+                    response = await fetch(
+                        `${API_BASE}/api/paymongo/create-checkout`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                customer_id: null,
+                                full_name: fullName,
+                                email: email,
+                                contact_number: contact,
+                                booking_date: date,
+                                booking_time: time,
+                                session_type: selectedType,
+                                notes: notes,
+                                payment_method: "PayMongo",
+                                total_price: totalPrice,
+                                downpayment_amount: downpayment,
+                                backdrops: selectedBackdrops,
+                                addons: getSelectedAddons(),
+                                booking_duration: getSelectedDuration()
+                            })
+                        }
+                    );
+                } catch (networkError) {
+                    console.error("PayMongo network request failed:", networkError);
 
-                            customer_id: null,
+                    alert(
+                        "Unable to connect to the payment server. Please try again."
+                    );
 
-                            full_name: fullName,
+                    return;
+                }
 
-                            email: email,
+                console.log("CHECKPOINT 2: PayMongo backend responded");
+                console.log("HTTP status:", response.status);
 
-                            contact_number: contact,
+                let result;
 
-                            booking_date: date,
+                try {
+                    result = await response.json();
+                } catch (parseError) {
+                    console.error("Could not read backend response:", parseError);
 
-                            booking_time: time,
+                    alert(
+                        "The payment server returned an invalid response. Please try again."
+                    );
 
-                            session_type: selectedType,
-
-                            notes: notes,
-
-                            payment_method: "PayMongo",
-
-                            total_price: totalPrice,
-                            downpayment_amount: downpaymentAmount,
-                            backdrops: selectedBackdrops,
-                            addons: getSelectedAddons(),
-                            booking_duration: getSelectedDuration()
-
-                        })
-                    }
-                );
-
-
-                const result =
-                    await response.json();
-
+                    return;
+                }
 
                 console.log(
-                    "PayMongo response:", JSON.stringify(result, null, 2)
-
+                    "PayMongo response:",
+                    JSON.stringify(result, null, 2)
                 );
 
-
-
                 if (!response.ok) {
-
-                    console.error(
-                        "PayMongo checkout error:",
-                        JSON.stringify(result, null, 2)
-                    );
+                    console.error("Checkout creation failed:", result);
 
                     alert(
                         result.message ||
@@ -3452,43 +3729,53 @@
                     return;
                 }
 
-
-
-
                 const checkoutUrl =
                     result.checkout_url ||
                     result.checkoutUrl ||
                     result.url;
 
-
                 if (!checkoutUrl) {
-
-                    console.error(
-                        "No PayMongo checkout URL returned:",
-                        result
-                    );
+                    console.error("Missing checkout URL:", result);
 
                     alert(
-                        "Payment checkout was created, but no checkout URL was returned."
+                        "The payment server did not return a checkout URL. Please contact the studio before retrying."
                     );
 
                     return;
                 }
 
+                try {
+                    const parsedCheckoutUrl = new URL(checkoutUrl);
 
-                console.log(
-                    "Redirecting to PayMongo:",
-                    checkoutUrl
-                );
+                    const validPayMongoHost =
+                        parsedCheckoutUrl.hostname === "checkout.paymongo.com" ||
+                        parsedCheckoutUrl.hostname.endsWith(".paymongo.com");
 
+                    if (
+                        parsedCheckoutUrl.protocol !== "https:" ||
+                        !validPayMongoHost
+                    ) {
+                        throw new Error("Unexpected checkout URL.");
+                    }
+                } catch (urlError) {
+                    console.error("Invalid checkout URL:", urlError);
 
+                    alert("The payment link is invalid. Please contact the studio.");
+
+                    return;
+                }
+
+                console.log("Redirecting to PayMongo:", checkoutUrl);
+
+                redirectingToPayMongo = true;
+
+                submitButton.disabled = true;
                 submitButton.innerHTML = `
-            <i class="fa-solid fa-arrow-right"></i>
-            Redirecting to PayMongo...
-        `;
+    <i class="fa-solid fa-arrow-right"></i>
+    Redirecting to PayMongo...
+`;
 
-                window.location.href =
-                    checkoutUrl;
+                window.location.href = checkoutUrl;
 
             }
             catch (error) {
@@ -3503,15 +3790,15 @@
                 );
 
             }
+
             finally {
-
-                submitButton.disabled = false;
-
-                submitButton.innerHTML = `
-            <i class="fa-solid fa-calendar-check"></i>
-            Confirm Booking
+                if (!redirectingToPayMongo && !paidReturnReference) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = `
+            <i class="fa-solid fa-credit-card"></i>
+            Proceed to Payment
         `;
-
+                }
             }
 
         });

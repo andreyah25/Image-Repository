@@ -383,7 +383,7 @@
             (window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1")
                 ? "http://localhost:3000"
-                : "https://captured-server.onrender.com";
+                : "https://image-repository-1.onrender.com";
         let allBookedSessions = [];
         let allAccessRequests = [];
         let selectedMonth = "all";
@@ -398,16 +398,17 @@
                 .replace(/'/g, "&#039;");
         }
         function isBookingPending(status) {
-            const normalizedStatus =
-                String(status || "")
-                    .trim()
-                    .toLowerCase();
+            const normalizedStatus = String(status || "")
+                .trim()
+                .toLowerCase()
+                .replace(/[_-]+/g, " ")
+                .replace(/\s+/g, " ");
 
-            return (
-                normalizedStatus === "pending" ||
-                normalizedStatus === "pending payment" ||
-                normalizedStatus === "payment pending"
-            );
+            return [
+                "pending",
+                "pending payment",
+                "payment pending"
+            ].includes(normalizedStatus);
         }
 
         function formatBookingTime(timeString) {
@@ -635,126 +636,119 @@
             }
         }
 
+
         async function loadBookedSessions() {
-
             try {
-
-                console.log("Loading ALL bookings...");
-
-                // IMPORTANT:
-                // Change supabaseClient below to whatever variable
-                // your admin_client.html uses for createClient().
+                // Use the Supabase client already initialized on this page.
                 const {
                     data: { session },
                     error: sessionError
                 } = await supabaseClient.auth.getSession();
 
                 if (sessionError) {
-
-                    console.error(
-                        "Supabase session error:",
-                        sessionError
+                    throw new Error(
+                        `Unable to retrieve session: ${sessionError.message}`
                     );
-
-                    return;
                 }
 
-                if (!session) {
-
-                    console.error(
-                        "No active Supabase session."
+                if (!session || !session.access_token) {
+                    throw new Error(
+                        "No active session. Please sign in again."
                     );
-
-                    return;
                 }
 
-                console.log(
-                    "Authenticated user:",
-                    session.user.id
-                );
-
-                console.log(
-                    "Authenticated email:",
-                    session.user.email
-                );
-
-                const accessToken =
-                    session.access_token;
-
-                const response =
-                    await fetch(
-                        `${SERVER_URL}/api/admin/bookings`,
-                        {
-                            method: "GET",
-
-                            headers: {
-                                "Authorization":
-                                    `Bearer ${accessToken}`,
-
-                                "Content-Type":
-                                    "application/json"
-                            }
+                // Use the existing local/live server URL.
+                const response = await fetch(
+                    `${SERVER_URL}/api/admin/bookings`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${session.access_token}`,
+                            "Accept": "application/json"
                         }
+                    }
+                );
+
+                let result;
+
+                try {
+                    result = await response.json();
+                } catch {
+                    throw new Error(
+                        `Invalid server response (HTTP ${response.status}).`
                     );
+                }
 
                 console.log(
-                    "Bookings API status:",
+                    "Bookings API HTTP status:",
                     response.status
                 );
 
-                const result =
-                    await response.json();
-
-                console.log(
-                    "Bookings API response:",
-                    result
-                );
-
                 if (!response.ok) {
+                    console.error("Bookings API result:", result);
 
-                    console.error(
-                        "Failed to load bookings:",
-                        result
+                    throw new Error(
+                        result.error ||
+                        `Failed to load bookings (HTTP ${response.status}).`
                     );
-
-                    return;
                 }
 
-                if (!result.success) {
-
-                    console.error(
-                        "Bookings request failed:",
-                        result
-                    );
-
-                    return;
-                }
-
-                allBookedSessions =
-                    Array.isArray(result.bookings)
+                // Support the response formats used by the API.
+                const bookings = Array.isArray(result)
+                    ? result
+                    : Array.isArray(result.bookings)
                         ? result.bookings
-                        : [];
+                        : Array.isArray(result.data)
+                            ? result.data
+                            : null;
+
+                if (!bookings) {
+                    console.error(
+                        "Unexpected bookings API response:",
+                        result
+                    );
+
+                    throw new Error(
+                        "The server response does not contain a bookings array."
+                    );
+                }
+
+                // Update the existing data source used by your status filters.
+                allBookedSessions = bookings;
 
                 console.log(
-                    "Total bookings loaded:",
+                    "Bookings loaded successfully:",
                     allBookedSessions.length
                 );
 
-                console.log(
-                    "Bookings:",
-                    allBookedSessions
-                );
-
+                // Your existing renderer reads from allBookedSessions.
                 renderBookedSessions();
 
             } catch (error) {
+                console.error("LOAD BOOKINGS ERROR:", error);
 
-                console.error(
-                    "Error loading bookings:",
-                    error
-                );
+                // Do not clear allBookedSessions or change the selected status.
+                // This prevents an authentication error from erasing existing data.
+
+                if (
+                    error.message.includes("No active session") ||
+                    error.message.includes("Unable to retrieve session")
+                ) {
+                    showToast(
+                        "Session Required",
+                        "Please sign in again to load bookings."
+                    );
+                } else {
+                    showToast(
+                        "Loading Error",
+                        error.message || "Unable to load bookings."
+                    );
+                }
             }
         }
+
+
+
         function renderBookedSessions() {
 
             const tbody =
@@ -783,66 +777,54 @@
             let filteredBookings =
                 [...allBookedSessions];
 
+
             if (selectedStatus !== "all") {
+                filteredBookings = filteredBookings.filter(booking => {
+                    const status = String(booking.status || "")
+                        .trim()
+                        .toLowerCase();
 
-                filteredBookings =
-                    filteredBookings.filter(booking => {
+                    const paymentStatus = String(booking.payment_status || "")
+                        .trim()
+                        .toLowerCase();
 
-                        const status =
-                            String(
-                                booking.status || ""
-                            )
-                                .trim()
-                                .toLowerCase();
 
-                        if (selectedStatus === "pending") {
+                    if (selectedStatus === "pending") {
+                        // Include booking records whose booking status indicates pending.
+                        // Payment status alone does not make a Confirmed or Completed
+                        // booking pending.
+                        return isBookingPending(status);
+                    }
 
-                            return isBookingPending(status);
 
+                    // UPCOMING: confirmed bookings with a date today or later.
+                    if (selectedStatus === "upcoming") {
+                        if (status !== "confirmed" || !booking.booking_date) {
+                            return false;
                         }
 
-                        if (selectedStatus === "upcoming") {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
 
-                            if (status !== "confirmed") {
-                                return false;
-                            }
+                        const bookingDate = new Date(
+                            `${booking.booking_date}T00:00:00`
+                        );
 
-                            if (!booking.booking_date) {
-                                return false;
-                            }
+                        return !Number.isNaN(bookingDate.getTime()) &&
+                            bookingDate >= today;
+                    }
 
-                            const today =
-                                new Date();
+                    if (selectedStatus === "completed") {
+                        return status === "completed";
+                    }
 
-                            today.setHours(
-                                0,
-                                0,
-                                0,
-                                0
-                            );
+                    if (selectedStatus === "rejected") {
+                        return status === "rejected" || status === "cancelled";
+                    }
 
-                            const bookingDate =
-                                new Date(
-                                    `${booking.booking_date}T00:00:00`
-                                );
-
-                            return bookingDate >= today;
-                        }
-
-                        if (selectedStatus === "rejected") {
-
-                            return (
-                                status === "rejected" ||
-                                status === "cancelled"
-                            );
-
-                        }
-
-                        return status === selectedStatus;
-
-                    });
+                    return status === selectedStatus;
+                });
             }
-
 
             if (searchTerm) {
 
@@ -929,21 +911,22 @@
 
                 }
             );
-            if (
-                filteredBookings.length === 0
-            ) {
+            console.log("Selected status:", selectedStatus);
+            console.log("Filtered bookings:", filteredBookings.length);
+            console.table(filteredBookings.map(booking => ({
+                name: booking.full_name,
+                status: booking.status,
+                payment_status: booking.payment_status
+            })));
 
+            if (filteredBookings.length === 0) {
                 tbody.innerHTML = `
-                    <tr>
-                        <td
-                            colspan="11"
-                            class="empty-table-message"
-                        >
-                            No booked sessions found.
-                        </td>
-                    </tr>
-                `;
-
+        <tr>
+            <td colspan="11" class="empty-table-message">
+                No booked sessions found.
+            </td>
+        </tr>
+    `;
                 return;
             }
             tbody.innerHTML = "";
@@ -996,19 +979,26 @@
                             View
                         </button>
                     `;
+                    const paymentStatusForAction = String(
+                        booking.payment_status || ""
+                    ).trim().toLowerCase();
 
                     if (isBookingPending(status)) {
+                        // Confirm is available only after a successful payment.
+                        if (paymentStatusForAction === "paid") {
+                            actionHTML += `
+                                <button
+                                    type="button"
+                                    class="confirm-btn"
+                                    data-id="${escapeHtml(booking.id)}"
+                                >
+                                    <i class="fa-solid fa-check"></i>
+                                    Confirm
+                                </button>
+                            `;
+                        }
 
                         actionHTML += `
-                            <button
-                                type="button"
-                                class="confirm-btn"
-                                data-id="${escapeHtml(booking.id)}"
-                            >
-                                <i class="fa-solid fa-check"></i>
-                                Confirm
-                            </button>
-
                             <button
                                 type="button"
                                 class="reject-btn"
@@ -1018,6 +1008,7 @@
                                 Reject
                             </button>
                         `;
+
                     }
                     if (status === "confirmed") {
 
@@ -1032,11 +1023,33 @@
                             </button>
                         `;
                     }
-                    const statusLabel =
-                        booking.status
-                            ? String(booking.status).charAt(0).toUpperCase() +
-                            String(booking.status).slice(1).toLowerCase()
-                            : "Pending";
+                    const paymentStatus = String(
+                        booking.payment_status || ""
+                    ).trim().toLowerCase();
+
+                    let statusLabel;
+
+                    if (isBookingPending(status) && paymentStatus === "paid") {
+                        statusLabel = "Downpayment Paid";
+                    } else if (isBookingPending(status) &&
+                        ["pending payment", "payment pending"].includes(paymentStatus)) {
+                        statusLabel = "Pending Payment";
+                    } else if (isBookingPending(status)) {
+                        statusLabel = "Pending";
+                    } else if (status === "confirmed") {
+                        statusLabel = "Confirmed";
+                    } else if (status === "completed") {
+                        statusLabel = "Completed";
+                    } else if (status === "rejected") {
+                        statusLabel = "Rejected";
+                    } else if (status === "cancelled") {
+                        statusLabel = "Cancelled";
+                    } else if (status === "no show") {
+                        statusLabel = "No Show";
+                    } else {
+                        statusLabel = booking.status || "Pending";
+                    }
+
 
                     const statusClass =
                         status.replace(
@@ -1604,16 +1617,29 @@
 
                 }
             }
-            const actions =
-                document.getElementById(
-                    "bookingDetailsActions"
-                );
+            const actions = document.getElementById("bookingDetailsActions");
 
             if (actions) {
+                const normalizedPaymentStatus = String(
+                    booking.payment_status || ""
+                ).trim().toLowerCase();
 
                 if (isBookingPending(status)) {
-
                     actions.innerHTML = `
+            ${normalizedPaymentStatus === "paid"
+                            ? `
+                        <button
+                            type="button"
+                            class="confirm-btn"
+                            data-id="${escapeHtml(booking.id)}"
+                        >
+                            <i class="fa-solid fa-check"></i>
+                            Confirm
+                        </button>
+                    `
+                            : ""
+                        }
+
             <button
                 type="button"
                 class="reject-btn"
@@ -1625,48 +1651,50 @@
 
             <button
                 type="button"
-                class="confirm-btn"
-                data-id="${escapeHtml(booking.id)}"
+                class="booking-modal-close-btn"
+                id="closeBookingDetailsAction"
             >
-                <i class="fa-solid fa-check"></i>
-                Confirm
+                Close
             </button>
         `;
-
                 } else if (status === "confirmed") {
-
                     actions.innerHTML = `
-                        <button
-                            type="button"
-                            class="complete-btn"
-                            data-id="${escapeHtml(booking.id)}"
-                        >
-                            <i class="fa-solid fa-check-double"></i>
-                            Complete
-                        </button>
+            <button
+                type="button"
+                class="complete-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                <i class="fa-solid fa-check-double"></i>
+                Complete
+            </button>
 
-                        <button
-                            type="button"
-                            class="no-show-btn"
-                            data-id="${escapeHtml(booking.id)}"
-                        >
-                            <i class="fa-solid fa-user-xmark"></i>
-                            Mark as No Show
-                        </button>
-                    `;
+            <button
+                type="button"
+                class="no-show-btn"
+                data-id="${escapeHtml(booking.id)}"
+            >
+                <i class="fa-solid fa-user-xmark"></i>
+                Mark as No Show
+            </button>
+
+            <button
+                type="button"
+                class="booking-modal-close-btn"
+                id="closeBookingDetailsAction"
+            >
+                Close
+            </button>
+        `;
                 } else if (
                     status === "rejected" ||
                     status === "cancelled"
                 ) {
-
                     actions.innerHTML = `
             <button
                 type="button"
                 class="delete-rejected-btn"
                 data-id="${escapeHtml(booking.id)}"
-                data-name="${escapeHtml(
-                        booking.full_name || "this customer"
-                    )}"
+                data-name="${escapeHtml(booking.full_name || "this customer")}"
             >
                 <i class="fa-solid fa-trash"></i>
                 Delete
@@ -1680,9 +1708,7 @@
                 Close
             </button>
         `;
-
                 } else {
-
                     actions.innerHTML = `
             <button
                 type="button"
@@ -1694,11 +1720,13 @@
         `;
                 }
             }
-
             modal.classList.add("show");
 
             document.body.style.overflow = "hidden";
         }
+
+
+
 
 
         function closeBookingDetailsModal() {
@@ -1987,8 +2015,15 @@
                     throw bookingError;
                 }
 
-                if (!booking) {
-                    throw new Error("Booking was not found.");
+
+                if (
+                    String(booking.payment_status || "")
+                        .trim()
+                        .toLowerCase() !== "paid"
+                ) {
+                    throw new Error(
+                        "Cannot confirm this booking because the downpayment has not been verified as paid."
+                    );
                 }
 
                 if (!booking.email) {
@@ -2148,7 +2183,7 @@
                     .from("bookings")
                     .update({
                         status: "Completed",
-                        payment_status: "Paid"
+
                     })
                     .eq("id", bookingId)
                     .select()
@@ -2164,9 +2199,8 @@
 
                 showToast(
                     "Booking Completed",
-                    `${updatedBooking.full_name}'s booking has been marked as completed and the payment status has been set to Paid.`
+                    `${updatedBooking.full_name}'s booking has been marked as completed.`
                 );
-
                 closeBookingDetailsModal();
                 setTimeout(() => {
                     window.location.href = "/admin/repository";
