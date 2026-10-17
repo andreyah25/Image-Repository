@@ -3275,7 +3275,14 @@ return res.json({
 
 app.post("/api/paymongo/webhook", async (req, res) => {
     try {
-       
+       console.log("PAYMONGO WEBHOOK RECEIVED:", {
+    receivedAt: new Date().toISOString(),
+    eventType: req.body?.data?.attributes?.type,
+    reference:
+        req.body?.data?.attributes?.data?.attributes?.reference_number,
+    checkoutSessionId:
+        req.body?.data?.attributes?.data?.id
+});
         const event = req.body;
         const signatureHeader =
             req.headers["paymongo-signature"];
@@ -3548,12 +3555,42 @@ const webhookSecret =
             });
         }
 
-        const payment = Array.isArray(attributes?.payments)
-            ? attributes.payments[0]
-            : null;
+const payments = Array.isArray(attributes?.payments)
+    ? attributes.payments
+    : [];
 
-        const paymentId =
-            payment?.id || null;
+console.log("PAYMONGO CHECKOUT PAYMENT DETAILS:", {
+    eventType,
+    checkoutSessionId,
+    reference,
+    payments: payments.map(p => ({
+        id: p.id,
+        status: p.attributes?.status,
+        amount: p.attributes?.amount,
+        currency: p.attributes?.currency,
+        paid_at: p.attributes?.paid_at
+    }))
+});
+
+// Select the payment PayMongo actually marked as paid.
+const payment = payments.find(
+    p => String(p.attributes?.status || "").toLowerCase() === "paid"
+);
+
+if (!payment) {
+    console.error(
+        "No payment with status 'paid' was found in the webhook."
+    );
+
+    return res.status(200).json({
+        success: true,
+        payment_verified: false,
+        message: "Waiting for a confirmed paid transaction."
+    });
+}
+
+const paymentId = payment.id;
+
 
         const paidAmountCentavos =
             Number(payment?.attributes?.amount);
