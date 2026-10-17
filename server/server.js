@@ -3733,6 +3733,169 @@ const paymentId = payment.id;
 }
 });
 
+async function reconcilePayMongoCheckout(checkout) {
+    const secretKey = process.env.PAYMONGO_SECRET_KEY;
+
+    if (!secretKey) {
+        throw new Error("PAYMONGO_SECRET_KEY is not configured.");
+    }
+
+    if (!checkout?.checkout_session_id) {
+        console.log("Reconciliation skipped: no Checkout Session ID.");
+        return checkout;
+    }
+
+    // Retrieve the session directly from PayMongo.
+    const response = await fetch(
+        `https://api.paymongo.com/v1/checkout_sessions/${encodeURIComponent(
+            checkout.checkout_session_id
+        )}`,
+        {
+            method: "GET",
+            headers: {
+                Authorization:
+                    `Basic ${Buffer.from(`${secretKey}:`).toString("base64")}`,
+                Accept: "application/json"
+            }
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        console.error("PayMongo Checkout Session retrieval failed:", {
+            status: response.status,
+            message: result?.errors?.[0]?.detail || "Request failed"
+        });
+
+        throw new Error("Unable to verify Checkout Session with PayMongo.");
+    }
+
+    const session = result?.data;
+    const attributes = session?.attributes || {};
+
+    if (session?.id !== checkout.checkout_session_id) {
+        throw new Error("PayMongo returned a different Checkout Session.");
+    }
+
+    // Do not allow a session for a different booking to be used.
+    const sessionReference = String(
+        attributes.reference_number ||
+        attributes.metadata?.booking_reference ||
+        ""
+    ).trim();
+
+    if (
+        sessionReference &&
+        sessionReference !== checkout.booking_reference
+    ) {
+        throw new Error("PayMongo reference does not match this booking.");
+    }
+
+    const payments = Array.isArray(attributes.payments)
+        ? attributes.payments
+        : [];
+
+    const paidPayment = payments.find(
+        payment =>
+            String(payment?.attributes?.status || "").toLowerCase() === "paid"
+    );
+
+    // A successful API request does not mean payment was successful.
+    if (!paidPayment) {
+        console.log("PayMongo has not confirmed a paid transaction:", {
+            reference: checkout.booking_reference,
+            checkoutSessionId: session?.id,
+            paymentStatuses: payments.map(payment => ({
+                id: payment?.id,
+                status: payment?.attributes?.status
+            }))
+        });
+
+        return checkout;
+    }
+
+    const paymentAttributes = paidPayment.attributes || {};
+    const paymentId = paidPayment.id;
+    const paidAmount = Number(paymentAttributes.amount);
+    const expectedAmount = Number(checkout.expected_amount_centavos);
+    const currency = String(paymentAttributes.currency || "").toUpperCase();
+
+    if (!paymentId) {
+        throw new Error("Verified PayMongo payment has no payment ID.");
+    }
+
+    if (
+        !Number.isSafeInteger(paidAmount) ||
+        !Number.isSafeInteger(expectedAmount) ||
+        expectedAmount <= 0 ||
+        paidAmount !== expectedAmount
+    ) {
+        throw new Error("PayMongo payment amount does not match the booking.");
+    }
+
+    if (currency !== "PHP") {
+        throw new Error("PayMongo payment currency is not PHP.");
+    }
+
+    // Also validate the saved booking's downpayment amount.
+    const bookingData = checkout.booking_data || {};
+    const downpayment = Number(bookingData.downpayment_amount);
+    const totalPrice = Number(bookingData.total_price);
+
+    if (
+        !Number.isFinite(downpayment) ||
+        !Number.isFinite(totalPrice) ||
+        downpayment <= 0 ||
+        totalPrice <= 0 ||
+        downpayment > totalPrice ||
+        Math.round(downpayment * 100) !== expectedAmount
+    ) {
+        throw new Error("Saved booking amounts do not match the payment.");
+    }
+
+    // PayMongo timestamps are normally Unix seconds.
+    const rawPaidAt = paymentAttributes.paid_at;
+    const paidAt = rawPaidAt
+        ? (
+            typeof rawPaidAt === "number" ||
+            /^\d+$/.test(String(rawPaidAt))
+        )
+            ? new Date(Number(rawPaidAt) * 1000).toISOString()
+            : new Date(rawPaidAt).toISOString()
+        : null;
+
+    if (!paidAt || !Number.isFinite(Date.parse(paidAt))) {
+        throw new Error("PayMongo did not return a valid payment timestamp.");
+    }
+
+    const { data: updatedCheckout, error } = await supabase
+        .from("pending_booking_checkouts")
+        .update({
+            payment_status: "Paid",
+            paymongo_payment_id: paymentId,
+            checkout_session_id: session.id,
+            paid_at: paidAt
+        })
+        .eq("id", checkout.id)
+        .select("*")
+        .single();
+
+    if (error || !updatedCheckout) {
+        console.error("Failed to save reconciled payment:", error);
+        throw new Error("Verified payment could not be saved to the database.");
+    }
+
+    console.log("PAYMENT VERIFIED VIA RECONCILIATION:", {
+        reference: updatedCheckout.booking_reference,
+        checkoutSessionId: updatedCheckout.checkout_session_id,
+        paymentId: updatedCheckout.paymongo_payment_id,
+        paidAt: updatedCheckout.paid_at
+    });
+
+    return updatedCheckout;
+}
+
 app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
     try {
         const reference = String(req.params.reference || "").trim();
@@ -3744,29 +3907,49 @@ app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
             });
         }
 
-        const { data: checkout, error: checkoutError } = await supabase
-            .from("pending_booking_checkouts")
-            .select("*")
-            .eq("booking_reference", reference)
-            .maybeSingle();
+        const { data: foundCheckout, error: checkoutError } =
+            await supabase
+                .from("pending_booking_checkouts")
+                .select("*")
+                .eq("booking_reference", reference)
+                .maybeSingle();
 
         if (checkoutError) throw checkoutError;
 
-        if (!checkout) {
+        if (!foundCheckout) {
             return res.status(404).json({
                 success: false,
                 error: "Booking reference not found."
             });
         }
 
-        // Payment is verified only after the webhook saves all required fields.
+        let checkout = foundCheckout;
+
+       if (
+    checkout.checkout_session_id &&
+    (
+        String(checkout.payment_status || "").toLowerCase() !== "paid" ||
+        !checkout.paymongo_payment_id ||
+        !checkout.paid_at
+    )
+) {
+    try {
+        checkout = await reconcilePayMongoCheckout(checkout);
+    } catch (reconcileError) {
+        console.error("Payment reconciliation error:", {
+            reference,
+            message: reconcileError.message
+        });
+    }
+}
+
+        // A database status alone is not sufficient proof of payment.
         const paymentVerified =
             String(checkout.payment_status || "").trim().toLowerCase() === "paid" &&
             Boolean(checkout.paymongo_payment_id) &&
             Boolean(checkout.checkout_session_id) &&
             Boolean(checkout.paid_at);
 
-        // Return the saved booking if the customer already confirmed.
         if (checkout.final_booking_id) {
             const { data: booking, error: bookingError } = await supabase
                 .from("bookings")
@@ -3804,7 +3987,6 @@ app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
                 paymongo_paid_at: checkout.paid_at || null
             }
         });
-
     } catch (error) {
         console.error("Booking status lookup error:", error);
 
@@ -3814,7 +3996,6 @@ app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
         });
     }
 });
-
 
 app.post("/api/paymongo/confirm-booking", async (req, res) => {
     try {
@@ -3877,8 +4058,9 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             });
         }
 
-        let booking = null;
-        let bookingCreatedNow = false;
+   let booking = null;
+let bookingCreatedNow = false;
+let bookingRecovered = false;
 
         // Reuse the booking if this checkout has already been finalized.
         if (checkout.final_booking_id) {
@@ -3916,22 +4098,30 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
 
 // Create only if no booking was found.
 if (!booking) {
-    const finalBookingData = {
-        ...bookingData,
-        payment_method: "PayMongo",
-        payment_status: "Paid",
-        downpayment_amount: downpaymentAmount,
-        admin_note: "Downpayment Paid",
-        status: "Pending",
-        paymongo_reference: reference,
-        paymongo_reference_number: reference,
-        paymongo_checkout_id: checkout.checkout_session_id,
-        paymongo_payment_id: checkout.paymongo_payment_id,
-        paymongo_paid_at: checkout.paid_at,
-        remaining_balance: Number(
-            (totalPrice - downpaymentAmount).toFixed(2)
-        )
-    };
+   const finalBookingData = {
+    ...bookingData,
+
+    // Payment confirmation
+    payment_method: "PayMongo",
+    payment_status: "Paid",
+    admin_note: "Downpayment Paid",
+
+    // Booking status remains pending admin approval
+    status: "Pending",
+
+    // Payment details
+    downpayment_amount: downpaymentAmount,
+    paymongo_reference: reference,
+    paymongo_reference_number: reference,
+    paymongo_checkout_id: checkout.checkout_session_id,
+    paymongo_payment_id: checkout.paymongo_payment_id,
+    paymongo_paid_at: checkout.paid_at,
+
+    // Remaining balance
+    remaining_balance: Number(
+        (totalPrice - downpaymentAmount).toFixed(2)
+    )
+};
 
     // Keep your existing insert, checkout-linking, and error-handling
     // code here.
@@ -3997,34 +4187,36 @@ if (!booking) {
         if (paymentLookupError) throw paymentLookupError;
 
         if (!existingPayment) {
-            const { error: paymentInsertError } = await supabase
-                .from("payments")
-                .insert({
-                    customer_id: booking.customer_id || null,
-                    booking_id: booking.id,
-                    gallery_access_request_id: null,
-                    client_name: booking.full_name,
-                    email: booking.email || null,
-                    amount: Number(booking.downpayment_amount),
-                    payment_method: "PayMongo",
-                    status: "Paid",
-                    payment_type: "Booking",
-                    payment_date: checkout.paid_at,
-                    paymongo_payment_id: checkout.paymongo_payment_id,
-                    paymongo_checkout_id: checkout.checkout_session_id,
-                    payment_reference: reference
-                });
+          const { error: paymentInsertError } = await supabase
+    .from("payments")
+    .insert({
+        customer_id: booking.customer_id || null,
+        booking_id: booking.id,
+        gallery_access_request_id: null,
+        client_name: booking.full_name,
+        email: booking.email || null,
 
-            if (paymentInsertError) {
-                console.error("Failed to record payment:", {
-                    message: paymentInsertError.message,
-                    code: paymentInsertError.code,
-                    details: paymentInsertError.details,
-                    hint: paymentInsertError.hint
-                });
+        amount: Number(booking.downpayment_amount),
+        payment_method: "PayMongo",
+        status: "Paid",
+        payment_type: "Booking",
+        payment_date: checkout.paid_at,
 
-                throw paymentInsertError;
-            }
+        paymongo_payment_id: checkout.paymongo_payment_id,
+        paymongo_checkout_id: checkout.checkout_session_id,
+        payment_reference: reference
+    });
+
+if (paymentInsertError) {
+    console.error("Failed to record downpayment:", {
+        message: paymentInsertError.message,
+        code: paymentInsertError.code,
+        details: paymentInsertError.details,
+        hint: paymentInsertError.hint
+    });
+
+    throw paymentInsertError;
+}
         }
 
         const peso = amount =>
