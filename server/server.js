@@ -3678,6 +3678,7 @@ app.post("/api/paymongo/webhook", async (req, res) => {
     });
 }
 });
+
 app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
     try {
         const reference = String(req.params.reference || "").trim();
@@ -3689,16 +3690,13 @@ app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
             });
         }
 
-        const { data: checkout, error: checkoutError } =
-            await supabase
-                .from("pending_booking_checkouts")
-                .select("*")
-                .eq("booking_reference", reference)
-                .maybeSingle();
+        const { data: checkout, error: checkoutError } = await supabase
+            .from("pending_booking_checkouts")
+            .select("*")
+            .eq("booking_reference", reference)
+            .maybeSingle();
 
-        if (checkoutError) {
-            throw checkoutError;
-        }
+        if (checkoutError) throw checkoutError;
 
         if (!checkout) {
             return res.status(404).json({
@@ -3707,45 +3705,52 @@ app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
             });
         }
 
-        // If the customer already confirmed, return the saved booking.
-        if (checkout.final_booking_id) {
-            const { data: booking, error: bookingError } =
-                await supabase
-                    .from("bookings")
-                    .select("*")
-                    .eq("id", checkout.final_booking_id)
-                    .maybeSingle();
+        // Payment is verified only after the webhook saves all required fields.
+        const paymentVerified =
+            String(checkout.payment_status || "").trim().toLowerCase() === "paid" &&
+            Boolean(checkout.paymongo_payment_id) &&
+            Boolean(checkout.checkout_session_id) &&
+            Boolean(checkout.paid_at);
 
-            if (bookingError) {
-                throw bookingError;
-            }
+        // Return the saved booking if the customer already confirmed.
+        if (checkout.final_booking_id) {
+            const { data: booking, error: bookingError } = await supabase
+                .from("bookings")
+                .select("*")
+                .eq("id", checkout.final_booking_id)
+                .maybeSingle();
+
+            if (bookingError) throw bookingError;
 
             if (booking) {
                 return res.json({
                     success: true,
-                    payment_verified: true,
+                    paid: paymentVerified,
+                    payment_verified: paymentVerified,
                     customer_confirmed: true,
+                    booking_id: booking.id,
                     booking
                 });
             }
         }
 
         const bookingData = checkout.booking_data || {};
-        const paymentVerified =
-            String(checkout.payment_status || "").toLowerCase() === "paid" &&
-            Boolean(checkout.paymongo_payment_id);
 
         return res.json({
             success: true,
+            paid: paymentVerified,
             payment_verified: paymentVerified,
             customer_confirmed: false,
             booking: {
                 ...bookingData,
                 reference: checkout.booking_reference,
-                payment_status: paymentVerified ? "Paid" : checkout.payment_status,
+                payment_status: paymentVerified
+                    ? "Paid"
+                    : checkout.payment_status || "Pending",
                 paymongo_paid_at: checkout.paid_at || null
             }
         });
+
     } catch (error) {
         console.error("Booking status lookup error:", error);
 
@@ -3755,6 +3760,8 @@ app.get("/api/paymongo/booking-status/:reference", async (req, res) => {
         });
     }
 });
+
+
 app.post("/api/paymongo/confirm-booking", async (req, res) => {
     try {
         const reference = String(req.body.reference || "").trim();
@@ -3766,12 +3773,11 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             });
         }
 
-        const { data: checkout, error: checkoutError } =
-            await supabase
-                .from("pending_booking_checkouts")
-                .select("*")
-                .eq("booking_reference", reference)
-                .maybeSingle();
+        const { data: checkout, error: checkoutError } = await supabase
+            .from("pending_booking_checkouts")
+            .select("*")
+            .eq("booking_reference", reference)
+            .maybeSingle();
 
         if (checkoutError) throw checkoutError;
 
@@ -3782,21 +3788,45 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             });
         }
 
-      if (
-    String(checkout.payment_status || "").trim().toLowerCase() !== "paid" ||
-    !checkout.paymongo_payment_id ||
-    !checkout.checkout_session_id ||
-    !checkout.paid_at
-) {
+        // Payment must be verified by the PayMongo webhook first.
+        if (
+            String(checkout.payment_status || "").trim().toLowerCase() !== "paid" ||
+            !checkout.paymongo_payment_id ||
+            !checkout.checkout_session_id ||
+            !checkout.paid_at
+        ) {
             return res.status(409).json({
                 success: false,
                 error: "Payment has not been verified. Please wait for PayMongo confirmation."
             });
         }
 
+        const bookingData = checkout.booking_data || {};
+        const totalPrice = Number(bookingData.total_price);
+        const downpaymentAmount = Number(bookingData.downpayment_amount);
+        const expectedAmountCentavos = Number(
+            checkout.expected_amount_centavos
+        );
+
+        // Validate stored booking amounts against the verified checkout.
+        if (
+            !Number.isFinite(totalPrice) ||
+            !Number.isFinite(downpaymentAmount) ||
+            !Number.isSafeInteger(expectedAmountCentavos) ||
+            totalPrice <= 0 ||
+            downpaymentAmount <= 0 ||
+            downpaymentAmount > totalPrice ||
+            Math.round(downpaymentAmount * 100) !== expectedAmountCentavos
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "Booking amount does not match the verified payment."
+            });
+        }
+
         let booking = null;
 
-        // Prevent duplicate booking records if the customer clicks twice.
+        // Reuse an existing booking if this reference was already confirmed.
         if (checkout.final_booking_id) {
             const { data, error } = await supabase
                 .from("bookings")
@@ -3805,81 +3835,56 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
                 .maybeSingle();
 
             if (error) throw error;
-
             booking = data;
         }
 
-        const bookingData = checkout.booking_data || {};
-
+        // Create the final booking only after payment verification
+        // and when the customer confirms the booking.
         if (!booking) {
-            const totalPrice = Number(bookingData.total_price || 0);
-            const downpaymentAmount =
-                Number(bookingData.downpayment_amount || 0);
+            const finalBookingData = {
+                ...bookingData,
+                payment_method: "PayMongo",
+                payment_status: "Paid",
+                downpayment_amount: downpaymentAmount,
+                admin_note: "Downpayment Paid",
+                status: "Pending",
+                paymongo_reference: reference,
+                paymongo_reference_number: reference,
+                paymongo_checkout_id: checkout.checkout_session_id,
+                paymongo_payment_id: checkout.paymongo_payment_id,
+                paymongo_paid_at: checkout.paid_at,
+                remaining_balance: Number(
+                    (totalPrice - downpaymentAmount).toFixed(2)
+                )
+            };
 
-            if (
-                !Number.isFinite(totalPrice) ||
-                !Number.isFinite(downpaymentAmount) ||
-                totalPrice <= 0 ||
-                downpaymentAmount <= 0 ||
-                downpaymentAmount > totalPrice
-            ) {
-                return res.status(400).json({
+            const { data: createdBooking, error: createError } =
+                await supabase
+                    .from("bookings")
+                    .insert(finalBookingData)
+                    .select()
+                    .single();
+
+            if (createError) {
+                console.error("Failed to create final booking:", createError);
+                return res.status(500).json({
                     success: false,
-                    error: "Invalid booking amounts."
+                    error: "Unable to confirm booking. Please try again."
                 });
             }
-const finalBookingData = {
-    ...bookingData,
 
-    // Payment details
-    payment_method: "PayMongo",
-    payment_status: "Paid",
-    downpayment_amount: downpaymentAmount,
-
-    // Admin Clients note
-    admin_note: "Downpayment Paid",
-
-    // Booking status for admin review
-    status: "Pending",
-
-    // PayMongo references
-    paymongo_reference: reference,
-    paymongo_reference_number: reference,
-    paymongo_checkout_id: checkout.checkout_session_id,
-    paymongo_payment_id: checkout.paymongo_payment_id,
-    paymongo_paid_at: checkout.paid_at,
-
-    // Remaining balance after downpayment
-    remaining_balance: Number(
-        (totalPrice - downpaymentAmount).toFixed(2)
-    )
-};
-
-const { data: createdBooking, error: createError } =
-  await supabase
-    .from("bookings")
-    .insert(finalBookingData)
-    .select()
-    .single();
-
-if (createError) {
-  console.error("Failed to create final booking:", createError);
-  return res.status(500).json({
-    success: false,
-    message: "Unable to confirm booking. Please try again."
-  });
-} else {
-                booking = createdBooking;
-            }
+            booking = createdBooking;
 
             const { error: checkoutUpdateError } = await supabase
                 .from("pending_booking_checkouts")
-                .update({
-                    final_booking_id: booking.id
-                })
+                .update({ final_booking_id: booking.id })
                 .eq("id", checkout.id);
 
             if (checkoutUpdateError) {
+                console.error(
+                    "Failed to link checkout to booking:",
+                    checkoutUpdateError
+                );
                 throw checkoutUpdateError;
             }
         }
@@ -3916,36 +3921,41 @@ if (createError) {
             if (paymentInsertError) throw paymentInsertError;
         }
 
-        // Create the existing admin dashboard notification.
         const peso = amount =>
             Number(amount || 0).toLocaleString("en-PH", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
 
-        const { error: notificationError } = await supabase
-            .from("notifications")
-            .insert({
-                recipient: "admin",
-                title: "New Paid Booking — Awaiting Admin Confirmation",
-                message:
-                    `${booking.full_name} submitted a booking and paid the downpayment.\n\n` +
-                    `Date: ${booking.booking_date}\n` +
-                    `Time: ${booking.booking_time}\n` +
-                    `Session: ${booking.session_type}\n` +
-                    `Total: ₱${peso(booking.total_price)}\n` +
-                    `Downpayment Paid: ₱${peso(booking.downpayment_amount)}\n` +
-                    `Remaining Balance: ₱${peso(booking.remaining_balance)}\n` +
-                    `Payment Status: Paid\n` +
-                    `Booking Status: Pending Admin Confirmation`,
-                is_read: false
-            });
+        // Notify admin only when this request creates a new booking.
+        if (!checkout.final_booking_id) {
+            const { error: notificationError } = await supabase
+                .from("notifications")
+                .insert({
+                    recipient: "admin",
+                    title: "New Paid Booking — Awaiting Admin Confirmation",
+                    message:
+                        `${booking.full_name} submitted a booking and paid the downpayment.\n\n` +
+                        `Date: ${booking.booking_date}\n` +
+                        `Time: ${booking.booking_time}\n` +
+                        `Session: ${booking.session_type}\n` +
+                        `Total: ₱${peso(booking.total_price)}\n` +
+                        `Downpayment Paid: ₱${peso(booking.downpayment_amount)}\n` +
+                        `Remaining Balance: ₱${peso(booking.remaining_balance)}\n` +
+                        `Payment Status: Paid\n` +
+                        `Booking Status: Pending Admin Confirmation`,
+                    is_read: false
+                });
 
-        if (notificationError) {
-            console.error("Admin dashboard notification error:", notificationError);
+            if (notificationError) {
+                console.error(
+                    "Admin dashboard notification error:",
+                    notificationError
+                );
+            }
         }
 
-        // Send the admin email. Retry this part if an earlier attempt failed.
+        // Send admin email and remember successful sending.
         if (!checkout.admin_email_sent) {
             if (!resend || !RESEND_FROM_EMAIL || !ADMIN_NOTIFICATION_EMAIL) {
                 console.error(
@@ -3961,11 +3971,11 @@ if (createError) {
                             <h2>New Paid Booking Reservation</h2>
                             <p>A customer has completed payment and submitted their booking for admin review.</p>
                             <p><strong>Customer:</strong> ${escapeHtml(booking.full_name)}</p>
-                            <p><strong>Email:</strong> ${escapeHtml(booking.email)}</p>
-                            <p><strong>Contact:</strong> ${escapeHtml(booking.contact_number)}</p>
-                            <p><strong>Date:</strong> ${escapeHtml(booking.booking_date)}</p>
-                            <p><strong>Time:</strong> ${escapeHtml(booking.booking_time)}</p>
-                            <p><strong>Session:</strong> ${escapeHtml(booking.session_type)}</p>
+                            <p><strong>Email:</strong> ${escapeHtml(booking.email || "")}</p>
+                            <p><strong>Contact:</strong> ${escapeHtml(booking.contact_number || "")}</p>
+                            <p><strong>Date:</strong> ${escapeHtml(booking.booking_date || "")}</p>
+                            <p><strong>Time:</strong> ${escapeHtml(booking.booking_time || "")}</p>
+                            <p><strong>Session:</strong> ${escapeHtml(booking.session_type || "")}</p>
                             <p><strong>Total:</strong> ₱${peso(booking.total_price)}</p>
                             <p><strong>Downpayment PAID:</strong> ₱${peso(booking.downpayment_amount)}</p>
                             <p><strong>Remaining balance:</strong> ₱${peso(booking.remaining_balance)}</p>
@@ -3984,7 +3994,10 @@ if (createError) {
                         .eq("id", checkout.id);
 
                     if (emailFlagError) {
-                        console.error("Could not save admin email status:", emailFlagError);
+                        console.error(
+                            "Could not save admin email status:",
+                            emailFlagError
+                        );
                     }
                 }
             }
@@ -4007,6 +4020,7 @@ if (createError) {
         });
     }
 });
+
 app.get("/api/bookings/availability", async (req, res) => {
 
     try {
