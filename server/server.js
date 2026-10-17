@@ -81,7 +81,15 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
-const PAYMONGO_WEBHOOK_SECRET = process.env.PAYMONGO_WEBHOOK_SECRET;
+
+// Booking webhook secret
+const PAYMONGO_BOOKING_WEBHOOK_SECRET =
+    process.env.PAYMONGO_BOOKING_WEBHOOK_SECRET;
+
+// Existing webhook secret
+const PAYMONGO_WEBHOOK_SECRET =
+    process.env.PAYMONGO_WEBHOOK_SECRET;
+
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
     console.error("Missing required Supabase environment variables:", {
         SUPABASE_URL: Boolean(SUPABASE_URL),
@@ -91,6 +99,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
 
     process.exit(1);
 }
+
 const resend = RESEND_API_KEY
     ? new Resend(RESEND_API_KEY)
     : null;
@@ -3270,9 +3279,9 @@ app.post("/api/paymongo/webhook", async (req, res) => {
         const event = req.body;
         const signatureHeader =
             req.headers["paymongo-signature"];
-
-        const webhookSecret =
-            process.env.PAYMONGO_WEBHOOK_SECRET;
+const webhookSecret =
+    PAYMONGO_BOOKING_WEBHOOK_SECRET ||
+    PAYMONGO_WEBHOOK_SECRET;
 
         if (
             !signatureHeader ||
