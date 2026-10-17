@@ -3796,7 +3796,7 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             });
         }
 
-        // Payment must be verified by the PayMongo webhook first.
+        // Require verified payment before finalizing the booking.
         if (
             String(checkout.payment_status || "").trim().toLowerCase() !== "paid" ||
             !checkout.paymongo_payment_id ||
@@ -3816,7 +3816,6 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             checkout.expected_amount_centavos
         );
 
-        // Validate stored booking amounts against the verified checkout.
         if (
             !Number.isFinite(totalPrice) ||
             !Number.isFinite(downpaymentAmount) ||
@@ -3833,8 +3832,9 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
         }
 
         let booking = null;
+        let bookingCreatedNow = false;
 
-        // Reuse an existing booking if this reference was already confirmed.
+        // Reuse the booking if this checkout has already been finalized.
         if (checkout.final_booking_id) {
             const { data, error } = await supabase
                 .from("bookings")
@@ -3846,8 +3846,7 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             booking = data;
         }
 
-        // Create the final booking only after payment verification
-        // and when the customer confirms the booking.
+        // Create the booking only if one has not already been linked.
         if (!booking) {
             const finalBookingData = {
                 ...bookingData,
@@ -3874,30 +3873,49 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
                     .single();
 
             if (createError) {
-                console.error("Failed to create final booking:", createError);
+                console.error("Failed to create final booking:", {
+                    message: createError.message,
+                    code: createError.code,
+                    details: createError.details,
+                    hint: createError.hint
+                });
+
                 return res.status(500).json({
                     success: false,
-                    error: "Unable to confirm booking. Please try again."
+                    error: "Unable to save the booking. Please check the server logs."
                 });
             }
 
             booking = createdBooking;
+            bookingCreatedNow = true;
 
-            const { error: checkoutUpdateError } = await supabase
-                .from("pending_booking_checkouts")
-                .update({ final_booking_id: booking.id })
-                .eq("id", checkout.id);
+            // Link the checkout to the newly created booking.
+            const { data: linkedCheckout, error: checkoutUpdateError } =
+                await supabase
+                    .from("pending_booking_checkouts")
+                    .update({ final_booking_id: booking.id })
+                    .eq("id", checkout.id)
+                    .select("id, final_booking_id")
+                    .single();
 
-            if (checkoutUpdateError) {
-                console.error(
-                    "Failed to link checkout to booking:",
-                    checkoutUpdateError
-                );
-                throw checkoutUpdateError;
+            if (checkoutUpdateError || !linkedCheckout) {
+                console.error("Failed to link checkout to booking:", {
+                    checkoutId: checkout.id,
+                    bookingId: booking.id,
+                    message: checkoutUpdateError?.message,
+                    code: checkoutUpdateError?.code,
+                    details: checkoutUpdateError?.details
+                });
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "Your booking was saved, but finalization failed. Please contact the studio before trying again."
+                });
             }
         }
 
-        // Record the successful payment once.
+        // Record the payment once.
         const { data: existingPayment, error: paymentLookupError } =
             await supabase
                 .from("payments")
@@ -3920,13 +3938,22 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
                     payment_method: "PayMongo",
                     status: "Paid",
                     payment_type: "Booking",
-                    payment_date: checkout.paid_at || new Date().toISOString(),
+                    payment_date: checkout.paid_at,
                     paymongo_payment_id: checkout.paymongo_payment_id,
                     paymongo_checkout_id: checkout.checkout_session_id,
                     payment_reference: reference
                 });
 
-            if (paymentInsertError) throw paymentInsertError;
+            if (paymentInsertError) {
+                console.error("Failed to record payment:", {
+                    message: paymentInsertError.message,
+                    code: paymentInsertError.code,
+                    details: paymentInsertError.details,
+                    hint: paymentInsertError.hint
+                });
+
+                throw paymentInsertError;
+            }
         }
 
         const peso = amount =>
@@ -3935,8 +3962,8 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
                 maximumFractionDigits: 2
             });
 
-        // Notify admin only when this request creates a new booking.
-        if (!checkout.final_booking_id) {
+        // Notify admin only for a newly created booking.
+        if (bookingCreatedNow) {
             const { error: notificationError } = await supabase
                 .from("notifications")
                 .insert({
@@ -3956,57 +3983,56 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
                 });
 
             if (notificationError) {
-                console.error(
-                    "Admin dashboard notification error:",
-                    notificationError
-                );
+                console.error("Admin dashboard notification error:", notificationError);
             }
         }
 
-        // Send admin email and remember successful sending.
-        if (!checkout.admin_email_sent) {
+        // Send the admin email only if it has not already been sent.
+        if (bookingCreatedNow && !checkout.admin_email_sent) {
             if (!resend || !RESEND_FROM_EMAIL || !ADMIN_NOTIFICATION_EMAIL) {
                 console.error(
                     "Admin email not sent: configure RESEND_API_KEY, RESEND_FROM_EMAIL and ADMIN_NOTIFICATION_EMAIL."
                 );
             } else {
-                const emailResult = await resend.emails.send({
-                    from: RESEND_FROM_EMAIL,
-                    to: [ADMIN_NOTIFICATION_EMAIL],
-                    subject: "New Paid Booking — Captured Photography Studio",
-                    html: `
-                        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
-                            <h2>New Paid Booking Reservation</h2>
-                            <p>A customer has completed payment and submitted their booking for admin review.</p>
-                            <p><strong>Customer:</strong> ${escapeHtml(booking.full_name)}</p>
-                            <p><strong>Email:</strong> ${escapeHtml(booking.email || "")}</p>
-                            <p><strong>Contact:</strong> ${escapeHtml(booking.contact_number || "")}</p>
-                            <p><strong>Date:</strong> ${escapeHtml(booking.booking_date || "")}</p>
-                            <p><strong>Time:</strong> ${escapeHtml(booking.booking_time || "")}</p>
-                            <p><strong>Session:</strong> ${escapeHtml(booking.session_type || "")}</p>
-                            <p><strong>Total:</strong> ₱${peso(booking.total_price)}</p>
-                            <p><strong>Downpayment PAID:</strong> ₱${peso(booking.downpayment_amount)}</p>
-                            <p><strong>Remaining balance:</strong> ₱${peso(booking.remaining_balance)}</p>
-                            <p><strong>Payment reference:</strong> ${escapeHtml(reference)}</p>
-                            <p><strong>Booking status:</strong> Pending admin confirmation</p>
-                        </div>
-                    `
-                });
+                try {
+                    const emailResult = await resend.emails.send({
+                        from: RESEND_FROM_EMAIL,
+                        to: [ADMIN_NOTIFICATION_EMAIL],
+                        subject: "New Paid Booking — Captured Photography Studio",
+                        html: `
+                            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+                                <h2>New Paid Booking Reservation</h2>
+                                <p>The customer has submitted a booking for admin review.</p>
+                                <p><strong>Customer:</strong> ${escapeHtml(booking.full_name || "")}</p>
+                                <p><strong>Email:</strong> ${escapeHtml(booking.email || "")}</p>
+                                <p><strong>Contact:</strong> ${escapeHtml(booking.contact_number || "")}</p>
+                                <p><strong>Date:</strong> ${escapeHtml(booking.booking_date || "")}</p>
+                                <p><strong>Time:</strong> ${escapeHtml(booking.booking_time || "")}</p>
+                                <p><strong>Session:</strong> ${escapeHtml(booking.session_type || "")}</p>
+                                <p><strong>Total:</strong> ₱${peso(booking.total_price)}</p>
+                                <p><strong>Downpayment PAID:</strong> ₱${peso(booking.downpayment_amount)}</p>
+                                <p><strong>Remaining balance:</strong> ₱${peso(booking.remaining_balance)}</p>
+                                <p><strong>Payment reference:</strong> ${escapeHtml(reference)}</p>
+                                <p><strong>Booking status:</strong> Pending admin confirmation</p>
+                            </div>
+                        `
+                    });
 
-                if (emailResult.error) {
-                    console.error("Admin booking email error:", emailResult.error);
-                } else {
-                    const { error: emailFlagError } = await supabase
-                        .from("pending_booking_checkouts")
-                        .update({ admin_email_sent: true })
-                        .eq("id", checkout.id);
+                    if (emailResult.error) {
+                        console.error("Admin booking email error:", emailResult.error);
+                    } else {
+                        const { error: emailFlagError } = await supabase
+                            .from("pending_booking_checkouts")
+                            .update({ admin_email_sent: true })
+                            .eq("id", checkout.id);
 
-                    if (emailFlagError) {
-                        console.error(
-                            "Could not save admin email status:",
-                            emailFlagError
-                        );
+                        if (emailFlagError) {
+                            console.error("Could not save admin email status:", emailFlagError);
+                        }
                     }
+                } catch (emailError) {
+                    // Email failure must not undo a successfully saved booking.
+                    console.error("Admin booking email failed:", emailError);
                 }
             }
         }
@@ -4017,18 +4043,24 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             booking_id: booking.id,
             payment_status: "Paid",
             booking_status: booking.status,
-            message: "Booking submitted successfully."
+            message:
+                "Your booking has been submitted successfully. Please wait for admin confirmation."
         });
     } catch (error) {
-        console.error("Customer booking confirmation error:", error);
+        console.error("Customer booking confirmation error:", {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            stack: error.stack
+        });
 
         return res.status(500).json({
             success: false,
-            error: error.message || "Unable to confirm booking."
+            error: "Unable to complete your booking. Please try again or contact the studio."
         });
     }
 });
-
 app.get("/api/bookings/availability", async (req, res) => {
 
     try {
