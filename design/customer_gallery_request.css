@@ -921,3 +921,96 @@ select {
 .mobile-home-btn:hover {
     background-color: rgba(220, 38, 38, 0.08);
 }
+
+/* ===== B39EB5 PURPLE THEME ===== */
+
+:root {
+    --theme-primary: #B39EB5;
+    --theme-hover: #9F879F;
+    --theme-focus: rgba(179, 158, 181, 0.18);
+}
+
+/* Active sidebar link */
+.sidebar a.active {
+    background-color: var(--theme-primary) !important;
+    color: #ffffff !important;
+}
+
+.sidebar a.active i {
+    color: #ffffff !important;
+}
+
+.sidebar a.active:hover {
+    background-color: var(--theme-hover) !important;
+    color: #ffffff !important;
+}
+
+/* Section header icons */
+.regulations-header i,
+.form-header > i {
+    color: var(--theme-primary);
+}
+
+/* Heading underline */
+.regulations-header h2::after,
+.form-header h2::after {
+    background-color: var(--theme-primary);
+}
+
+/* Numbered regulation list */
+.regulations-content li::marker {
+    color: var(--theme-primary);
+}
+
+/* Form input focus */
+#galleryRequestForm .form-group input[type="email"]:focus,
+#galleryRequestForm .form-group input[type="text"]:focus,
+#galleryRequestForm .form-group input[type="date"]:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px var(--theme-focus);
+}
+
+/* Agreement checkbox */
+.agreement-box input[type="checkbox"] {
+    accent-color: var(--theme-primary);
+}
+
+/* Request Access button */
+#galleryRequestForm .btn-request {
+    background-color: var(--theme-primary) !important;
+    color: #ffffff !important;
+}
+
+#galleryRequestForm .btn-request:hover {
+    background-color: var(--theme-hover) !important;
+}
+
+/* Gallery access status */
+.access-status-box {
+    border-left-color: var(--theme-primary);
+}
+
+.access-status-box .status-icon {
+    color: var(--theme-primary);
+}
+
+.access-status-box .access-countdown {
+    color: var(--theme-hover);
+}
+
+/* Preserve red Home and Logout buttons */
+.sidebar .logout-btn,
+.sidebar .back-home-btn,
+.mobile-home-btn {
+    color: #dc2626 !important;
+    border-color: #dc2626 !important;
+}
+
+.sidebar .logout-btn:hover,
+.sidebar .back-home-btn:hover {
+    background-color: #fff3f3 !important;
+}
+
+.mobile-home-btn:hover {
+    background-color: rgba(220, 38, 38, 0.08);
+}

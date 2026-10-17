@@ -489,14 +489,8 @@ body::after {
 
 
 /* =========================================================
-   BUTTONS — PURPLE THEME (#BF77F6)
+   BUTTONS
 ========================================================= */
-
-:root {
-    --button-purple: #BF77F6;
-    --button-purple-dark: #A85BE5;
-    --button-purple-light: #D9B1FF;
-}
 
 .btn {
     min-height: 48px;
@@ -532,68 +526,56 @@ body::after {
 }
 
 .btn:focus-visible {
-    outline: 3px solid rgba(191, 119, 246, 0.45);
+    outline: 3px solid rgba(99, 154, 136, 0.45);
     outline-offset: 4px;
 }
 
-/* Primary buttons */
 .btn-dark {
-    background: var(--button-purple);
-    color: #ffffff;
-    border: 1px solid var(--button-purple);
-    box-shadow: 0 7px 18px rgba(191, 119, 246, 0.23);
+    background: var(--green);
+    color: white;
+    border: 1px solid var(--green);
+    box-shadow: 0 7px 18px rgba(99, 154, 136, 0.23);
 }
 
 .btn-dark:hover {
-    background: var(--button-purple-dark);
-    border-color: var(--button-purple-dark);
-    box-shadow: 0 12px 25px rgba(168, 91, 229, 0.28);
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+    box-shadow: 0 12px 25px rgba(79, 128, 111, 0.28);
 }
 
-/* Outline buttons */
 .btn-outline {
-    background: rgba(255, 255, 255, 0.90);
-    color: var(--button-purple-dark);
-    border: 1px solid var(--button-purple);
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--dark);
+    border: 1px solid rgba(60, 70, 66, 0.25);
 }
 
 .btn-outline:hover {
-    background: #F7EEFF;
-    border-color: var(--button-purple-dark);
-    color: var(--button-purple-dark);
-    box-shadow: 0 8px 22px rgba(191, 119, 246, 0.15);
+    background: white;
+    border-color: var(--green);
+    color: var(--green-dark);
+    box-shadow: var(--card-shadow);
 }
 
-/* White buttons */
 .btn-light {
-    background: #ffffff;
-    color: var(--button-purple-dark);
-    border: 1px solid #ffffff;
+    background: white;
+    color: var(--green-dark);
+    border: 1px solid white;
 }
 
 .btn-light:hover {
-    background: #F7EEFF;
-    border-color: #F7EEFF;
-    color: var(--button-purple-dark);
+    background: #f1f5f3;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
-/* Transparent buttons */
 .btn-ghost {
     background: transparent;
-    color: #ffffff;
+    color: white;
     border: 1px solid rgba(255, 255, 255, 0.7);
 }
 
 .btn-ghost:hover {
-    background: rgba(191, 119, 246, 0.25);
-    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
 }
-
-
-/* =========================================================
-   GENERAL SECTIONS
-========================================================= */
 
 .section-container {
     width: min(1200px, 84%);
@@ -1546,11 +1528,10 @@ body::after {
    GENERAL INTERACTIVE POLISH
 ========================================================= */
 
-
 a:focus-visible,
 button:focus-visible,
 summary:focus-visible {
-    outline: 3px solid rgba(191, 119, 246, 0.6);
+    outline: 3px solid rgba(99, 154, 136, 0.6);
     outline-offset: 4px;
 }
 
@@ -2118,73 +2099,292 @@ summary {
 }
 
 /* =========================================================
-   FINAL BUTTON COLOR OVERRIDES
+   FINAL THEME OVERRIDE — MUTED PURPLE #B39EB5
 ========================================================= */
 
+:root {
+    --green: #B39EB5;
+    --green-dark: #9F879F;
+    --green-light: #F3EDF4;
+    --green-pale: #F8F4F8;
+
+    --button-purple: #B39EB5;
+    --button-purple-dark: #9F879F;
+    --button-purple-light: #D8C9D9;
+}
+
+/* Primary buttons */
 .btn-dark,
 button.btn-dark,
 a.btn-dark {
-    background-color: #BF77F6;
-    border-color: #BF77F6;
-    color: #FFFFFF;
+    background: #B39EB5 !important;
+    border-color: #B39EB5 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 7px 18px rgba(179, 158, 181, 0.25);
 }
 
 .btn-dark:hover,
 button.btn-dark:hover,
 a.btn-dark:hover {
-    background-color: #A85BE5;
-    border-color: #A85BE5;
-    color: #FFFFFF;
+    background: #9F879F !important;
+    border-color: #9F879F !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 12px 25px rgba(159, 135, 159, 0.28);
 }
 
+/* Outline buttons */
 .btn-outline {
-    border-color: #BF77F6;
-    color: #A85BE5;
+    background: rgba(255, 255, 255, 0.9);
+    color: #9F879F !important;
+    border-color: #B39EB5 !important;
 }
 
 .btn-outline:hover {
-    background-color: #F7EEFF;
-    border-color: #A85BE5;
-    color: #A85BE5;
+    background: #F3EDF4 !important;
+    border-color: #9F879F !important;
+    color: #9F879F !important;
 }
 
-/* =========================================================
-   PACKAGE PRICES — PURPLE THEME
-========================================================= */
+/* White buttons */
+.btn-light {
+    color: #9F879F !important;
+}
 
+.btn-light:hover {
+    background: #F3EDF4 !important;
+    border-color: #F3EDF4 !important;
+    color: #9F879F !important;
+}
+
+/* Transparent buttons */
+.btn-ghost:hover {
+    background: rgba(179, 158, 181, 0.25) !important;
+}
+
+/* Keyboard focus outlines */
+.btn:focus-visible,
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+    outline-color: rgba(179, 158, 181, 0.6) !important;
+}
+
+/* Navbar links and interactive accents */
+.nav-links a::after {
+    background: #B39EB5 !important;
+}
+
+.nav-links a:hover,
+.nav-links a:focus-visible {
+    color: #9F879F !important;
+}
+
+.hamburger {
+    border-color: rgba(179, 158, 181, 0.35);
+}
+
+.hamburger:hover {
+    background: #B39EB5 !important;
+}
+
+/* Hero accents */
+.accent-line-left {
+    border-top-color: #B39EB5 !important;
+}
+
+.scroll-down i {
+    color: #B39EB5 !important;
+}
+
+.hero-trust div {
+    border-left-color: rgba(179, 158, 181, 0.7);
+}
+
+/* Intro links and highlight cards */
+.text-link,
+.package-link {
+    color: #9F879F !important;
+}
+
+.text-link:hover,
+.package-link:hover {
+    color: #B39EB5 !important;
+}
+
+.highlight-card {
+    border-color: #E5D9E6;
+}
+
+.highlight-card:hover {
+    border-color: #C9B5CB;
+    box-shadow: 0 20px 40px rgba(179, 158, 181, 0.18);
+}
+
+.highlight-icon {
+    color: #9F879F !important;
+}
+
+.highlight-card:hover .highlight-icon {
+    background: #B39EB5 !important;
+    color: #FFFFFF !important;
+}
+
+/* Package cards and prices */
+.package-card {
+    border-color: rgba(179, 158, 181, 0.25);
+}
+
+.package-card:hover {
+    border-color: #B39EB5;
+}
+
+.package-image {
+    background: #F3EDF4;
+}
+
+.package-label {
+    color: #9F879F;
+}
+
+.package-number,
 .package-price {
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-    margin: 10px 0 14px;
-    color: #BF77F6;
+    color: #9F879F !important;
 }
 
-.package-price .currency {
-    font-size: 15px;
-    font-weight: 700;
+.package-link:hover {
+    color: #B39EB5 !important;
 }
 
-.package-price .amount {
-    font-size: 30px;
-    font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: -1px;
+.packages-bottom {
+    border-top-color: rgba(179, 158, 181, 0.3);
 }
 
-.package-price .price-note {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--muted);
-    letter-spacing: 0;
+/* Gallery accents */
+.gallery-item {
+    border-color: rgba(179, 158, 181, 0.2);
 }
 
-.package-content p {
-    min-height: 66px;
+.gallery-item:hover {
+    border-color: #B39EB5;
+    box-shadow: 0 18px 38px rgba(179, 158, 181, 0.2);
 }
 
-@media (max-width: 500px) {
-    .package-price .amount {
-        font-size: 27px;
-    }
+.gallery-caption span {
+    color: #E5D5E7;
+}
+
+/* How it works */
+.step-card {
+    border-color: rgba(179, 158, 181, 0.25);
+}
+
+.step-card:hover {
+    border-color: #C9B5CB;
+}
+
+.step-number {
+    color: #B39EB5;
+}
+
+.step-icon {
+    color: #9F879F;
+}
+
+.step-card:hover .step-icon {
+    background: #B39EB5 !important;
+    color: #FFFFFF !important;
+}
+
+/* About section */
+.section-eyebrow.light {
+    color: #E5D5E7;
+}
+
+.about-features i {
+    color: #D8C9D9;
+}
+
+/* FAQ accordion */
+.faq-list details {
+    border-color: rgba(179, 158, 181, 0.3);
+}
+
+.faq-list details:hover {
+    border-color: #C9B5CB;
+    box-shadow: 0 12px 30px rgba(179, 158, 181, 0.15);
+}
+
+.faq-list details[open] {
+    border-color: #B39EB5;
+    box-shadow: 0 14px 35px rgba(179, 158, 181, 0.16);
+}
+
+.faq-list details[open] summary {
+    color: #9F879F;
+    border-bottom-color: rgba(179, 158, 181, 0.2);
+}
+
+.faq-list summary i {
+    background: #F3EDF4;
+    color: #9F879F;
+}
+
+.faq-list details:hover summary i,
+.faq-list details[open] summary i {
+    background: #B39EB5;
+    color: #FFFFFF;
+}
+
+/* Final call-to-action section */
+.cta-section {
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(255, 255, 255, 0.12),
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 90% 90%,
+            rgba(255, 255, 255, 0.12),
+            transparent 25%
+        ),
+        #B39EB5;
+}
+
+.cta-section .section-eyebrow {
+    color: #F3EAF4;
+}
+
+/* Footer interactive links and social buttons */
+.footer-column a:hover {
+    color: #9F879F;
+}
+
+.contact-column i {
+    color: #9F879F;
+}
+
+.social-links a:hover {
+    background: #9F879F;
+    border-color: #9F879F;
+    color: #FFFFFF;
+}
+
+/* Text selection */
+::selection {
+    background: #E5D5E7;
+    color: #252b2a;
+}
+
+/* Preserve the existing pastel highlight-card styling */
+.highlight-card {
+    background: linear-gradient(145deg, #FFF0F5 0%, #F4EDFF 100%);
+}
+
+.highlight-card:hover {
+    background: linear-gradient(145deg, #FFE2ED 0%, #E9DDFF 100%);
+}
+
+.highlight-card:focus-within {
+    outline-color: rgba(179, 158, 181, 0.55);
 }

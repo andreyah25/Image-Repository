@@ -1743,3 +1743,113 @@ select[name="package_id"],
 .mobile-home-btn:hover {
     background-color: rgba(220, 38, 38, 0.08);
 }
+
+/* =========================================
+   CAPTURED PHOTOGRAPHY STUDIO
+   MUTED MAUVE-PURPLE THEME
+   Primary: #B39EB5
+   Hover:   #9F879F
+   ========================================= */
+
+/* Notification booking button */
+.notification-booking-btn {
+    background-color: #B39EB5;
+    color: #ffffff;
+}
+
+.notification-booking-btn:hover {
+    background-color: #9F879F;
+}
+
+/* Active sidebar buttons */
+.sidebar a.active {
+    background-color: #B39EB5 !important;
+    color: #ffffff !important;
+}
+
+.sidebar a.active i {
+    color: #ffffff !important;
+}
+
+.sidebar a.active:hover {
+    background-color: #9F879F !important;
+    color: #ffffff !important;
+}
+
+/* Studio services buttons */
+.service-menu-btn {
+    background-color: #B39EB5;
+    color: #ffffff;
+}
+
+.service-menu-btn:hover {
+    background-color: #9F879F;
+}
+
+/* Add-ons button */
+#addAddonBtn {
+    background-color: #B39EB5;
+    color: #ffffff;
+}
+
+#addAddonBtn:hover {
+    background-color: #9F879F;
+}
+
+/* Confirm button */
+.btn-confirm {
+    background-color: #B39EB5;
+    color: #ffffff;
+}
+
+.btn-confirm:hover {
+    background-color: #9F879F;
+}
+
+/* Notification icon */
+.notification-icon {
+    background-color: #B39EB5;
+    color: #ffffff;
+}
+
+/* Form focus effects */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #B39EB5 !important;
+    box-shadow: 0 0 0 3px rgba(179, 158, 181, 0.25) !important;
+}
+
+/* Add-on field focus effects */
+.addon-row select:focus,
+.addon-row .addon-quantity:focus {
+    border-color: #B39EB5 !important;
+    box-shadow: 0 0 0 3px rgba(179, 158, 181, 0.25) !important;
+}
+
+/* Backdrop selection */
+.backdrop-card:hover {
+    border-color: #B39EB5;
+}
+
+.backdrop-option input:checked + .backdrop-card {
+    border-color: #B39EB5;
+    box-shadow: 0 0 0 2px rgba(179, 158, 181, 0.25);
+    background-color: #F8F3F8;
+}
+
+/* Package table header */
+.packages-table th {
+    background-color: #B39EB5;
+    color: #ffffff;
+}
+
+/* Payment summary highlight */
+.summary-row.highlight-row {
+    background-color: #F8F3F8;
+    border-color: rgba(179, 158, 181, 0.4);
+}
+
+.summary-row.highlight-row strong {
+    color: #8B718E;
+}
