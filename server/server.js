@@ -3310,8 +3310,7 @@ app.post("/api/paymongo/webhook", async (req, res) => {
             : null;
 
         const isLiveMode =
-            event?.data?.attributes?.livemode === true;
-
+    event?.data?.attributes?.data?.attributes?.livemode === true;
         const receivedSignature = isLiveMode
             ? liveSignaturePart?.slice(3)
             : testSignaturePart?.slice(3);
