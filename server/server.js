@@ -3845,25 +3845,50 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             if (error) throw error;
             booking = data;
         }
+// Recover an existing booking if the checkout link was not saved.
+                if (!booking) {
+                    const { data: existingBooking, error: existingBookingError } =
+                        await supabase
+                            .from("bookings")
+                            .select("*")
+                            .eq("paymongo_reference", reference)
+                            .maybeSingle();
 
-        // Create the booking only if one has not already been linked.
-        if (!booking) {
-            const finalBookingData = {
-                ...bookingData,
-                payment_method: "PayMongo",
-                payment_status: "Paid",
-                downpayment_amount: downpaymentAmount,
-                admin_note: "Downpayment Paid",
-                status: "Pending",
-                paymongo_reference: reference,
-                paymongo_reference_number: reference,
-                paymongo_checkout_id: checkout.checkout_session_id,
-                paymongo_payment_id: checkout.paymongo_payment_id,
-                paymongo_paid_at: checkout.paid_at,
-                remaining_balance: Number(
-                    (totalPrice - downpaymentAmount).toFixed(2)
-                )
-            };
+                    if (existingBookingError) throw existingBookingError;
+                if (existingBooking) {
+                    booking = existingBooking;
+                    bookingRecovered = true;
+
+                    const { error: relinkError } = await supabase
+                        .from("pending_booking_checkouts")
+                        .update({ final_booking_id: booking.id })
+                        .eq("id", checkout.id);
+
+                    if (relinkError) throw relinkError;
+                }
+                }
+
+// Create only if no booking was found.
+if (!booking) {
+    const finalBookingData = {
+        ...bookingData,
+        payment_method: "PayMongo",
+        payment_status: "Paid",
+        downpayment_amount: downpaymentAmount,
+        admin_note: "Downpayment Paid",
+        status: "Pending",
+        paymongo_reference: reference,
+        paymongo_reference_number: reference,
+        paymongo_checkout_id: checkout.checkout_session_id,
+        paymongo_payment_id: checkout.paymongo_payment_id,
+        paymongo_paid_at: checkout.paid_at,
+        remaining_balance: Number(
+            (totalPrice - downpaymentAmount).toFixed(2)
+        )
+    };
+
+    // Keep your existing insert, checkout-linking, and error-handling
+    // code here.
 
             const { data: createdBooking, error: createError } =
                 await supabase
@@ -6450,6 +6475,8 @@ app.post(
             }
 
             let booking = null;
+            let bookingCreatedNow = false;
+            let bookingRecovered = false;
 
             if (request.booking_id) {
 

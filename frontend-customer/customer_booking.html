@@ -3068,7 +3068,7 @@
             submitButton.innerHTML =
                 '<i class="fa-solid fa-clock"></i> Awaiting Payment Verification';
         }
-        F
+
 
         if (paidReturnReference) {
             loadPaidBookingDetails();
@@ -3119,20 +3119,33 @@
                         throw new Error(
                             result.error || "Unable to submit your booking."
                         );
-                    }
 
+                    }
 
                     paidReturnAlreadyConfirmed = true;
 
+                    document.getElementById("paidBookingHeading").textContent =
+                        "Booking Submitted Successfully";
+
+                    document.getElementById("paidBookingMessage").textContent =
+                        "Payment Status: PAID. Your downpayment has been recorded successfully. Your booking has been submitted and is awaiting admin confirmation.";
+
+                    submitButton.disabled = true;
+                    submitButton.innerHTML =
+                        '<i class="fa-solid fa-check"></i> Booking Submitted';
+
                     alert(
                         "Booking Submitted Successfully!\n\n" +
-                        "Your downpayment has been recorded as paid.\n" +
-                        "Your booking has been submitted to Captured Photography Studio.\n\n" +
+                        "Payment Status: PAID\n" +
+                        "Your downpayment has been recorded successfully.\n\n" +
+                        "Booking Status: PENDING\n" +
                         "Please wait for the admin to confirm your booking."
                     );
 
+                    // Reload only after successful confirmation.
                     window.location.replace(window.location.pathname);
                     return;
+
 
                     document.getElementById("paidBookingMessage").textContent =
                         "Your downpayment is paid. Your booking has been submitted to Captured Photography Studio and is awaiting admin confirmation.";
