@@ -476,6 +476,18 @@ span.notification-badge,
     }
 }
 
+.status-badge.downpayment-paid {
+        background-color: #f0fdf4 !important; /* Very pale sage tint */
+        color: #15803d !important;            /* Balanced medium-dark green text */
+        border: 1px solid #bbf7d0 !important; /* Soft, gentle green border */
+    }
+
+.status-badge.fully-paid {
+        background-color: #dcfce7 !important; /* Crisp, clean light emerald background */
+        color: #166534 !important;            /* Rich dark green text for readability */
+        border: 1px solid #4ade80 !important; /* A refined vibrant green border that pops nicely */
+    }
+    
 .client-header-container {
     display: flex !important;
     flex-direction: column !important;

@@ -295,4 +295,50 @@
 .archived-photo-item small {
     color: #639A88;
 }
+/* HORIZONTAL SCROLL FOR THE ENTIRE ARCHIVES TABLE */
+.archive-table-card {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
 
+/* Make the table wider than its container when needed */
+.archive-table-card .archive-table {
+    width: 100%;
+    min-width: 1100px;
+    table-layout: auto;
+    border-collapse: collapse;
+}
+
+/* Prevent columns from becoming too narrow */
+.archive-table-card .archive-table th,
+.archive-table-card .archive-table td {
+    white-space: nowrap;
+}
+
+/* Allow the photo gallery column to wrap its contents */
+.archive-table-card .archive-table td .archived-folder-photos {
+    white-space: normal;
+    min-width: 200px;
+}
+
+/* Keep the scrollbar visible when horizontal overflow exists */
+.archive-table-card::-webkit-scrollbar {
+    height: 12px;
+}
+
+.archive-table-card::-webkit-scrollbar-track {
+    background: #e5e7eb;
+    border-radius: 6px;
+}
+
+.archive-table-card::-webkit-scrollbar-thumb {
+    background: #639A88;
+    border-radius: 6px;
+}
+
+.archive-table-card::-webkit-scrollbar-thumb:hover {
+    background: #4d806f;
+}

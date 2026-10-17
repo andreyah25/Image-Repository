@@ -110,6 +110,7 @@
 
 /* Table Container & Scrolling Setup */
 .ui-table-card-panel {
+    margin-top: -53px;
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -786,55 +787,41 @@ span.notification-badge,
 .access-request-tabs {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: fit-content;
-    margin: 0 auto;
+    justify-content: center; /* Centers the 3 buttons horizontally */
+    gap: 12px;
+    width: 100%;
+    margin-top: -117px;            
+    margin-bottom: 0;
+    padding-bottom: 0;
+    overflow: visible;
 }
 
 /* Simple tab design */
 .access-tab {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 9px 16px;
-    border: 1px solid #639A88;
-    border-radius: 5px;
+    position: relative;
+    border: 1px solid #cdd5d2;
     background: #ffffff;
-    color: #639A88;
+    padding: 8px 18px;
+    border-radius: 6px;
     font-family: "DM Sans", sans-serif;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
+    color: #353535;
     cursor: pointer;
     white-space: nowrap;
-    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.access-tab:hover,
+.access-tab:hover {
+    color: #3f7567;
+    border-color: #639A88;
+    background: #f3f8f6;
+}
+
 .access-tab.active {
-    background: #639A88;
     color: #ffffff;
-}
-
-/* Count badges */
-.tab-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 19px;
-    height: 19px;
-    padding: 0 4px;
-    border-radius: 50%;
-    background: #eaf2ef;
-    color: #639A88;
-    font-size: 11px;
+    background: #639A88;
+    border-color: #639A88;
     font-weight: 600;
-}
-
-.access-tab.active .tab-count {
-    background: #ffffff;
-    color: #639A88;
 }
 
 /* Search box aligned right */

@@ -130,7 +130,7 @@ select {
     width: 100%;
     min-height: 45px;
     padding: 11px 15px;
-    border-radius: 5px;
+    border-radius: 50px;
     color: #353535;
     text-decoration: none;
     font-size: 14px;
@@ -175,7 +175,7 @@ select {
     margin-top: auto;
     padding: 10px;
     border: 1.5px solid #dc2626 !important;
-    border-radius: 5px;
+    border-radius: 50px;
     background-color: #ffffff;
     color: #dc2626 !important;
     text-decoration: none;
@@ -427,7 +427,7 @@ select {
     min-height: 46px;
     padding: 12px 20px;
     border: none;
-    border-radius: 7px;
+    border-radius: 50px;
     background-color: #639A88 !important;
     color: #ffffff !important;
     font-size: 14px;
@@ -909,7 +909,7 @@ select {
     justify-content: center;
     width: 38px;
     height: 38px;
-    border-radius: 5px;
+    border-radius: 50px;
     color: #dc2626;
     border: 1.5px solid #dc2626;
     background-color: transparent;

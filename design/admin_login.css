@@ -157,6 +157,10 @@ body {
   color: #6b7280;
 }
 
+.password-group {
+  margin-bottom: 8px !important; /* Overrides the 28px bottom margin from .input-group */
+}
+
 .password-group input {
   padding-right: 35px;
 }
@@ -181,8 +185,8 @@ body {
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  margin-top: -16px;
-  margin-bottom: 25px;
+  margin-top: 0;
+  margin-bottom: 16px;
   position: relative;
 }
 
@@ -274,14 +278,17 @@ body {
   flex-shrink: 0;
 }
 .login-message {
-  margin-top: 12px;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 16px;
   padding: 10px 12px;
   border: 1px solid #e5b7b7;
   border-radius: 4px;
   color: #b42318;
   background: #fff5f5;
   font-size: 12px;
-  line-height: 1;
+  line-height: 1.4;
+  box-sizing: border-box;
 }
 
 .login-message[hidden] {

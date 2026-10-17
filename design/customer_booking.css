@@ -290,7 +290,7 @@ i.fa-brands {
     width: 100%;
     min-height: 45px;
     padding: 11px 15px;
-    border-radius: 5px;
+    border-radius: 50px;
     color: #353535;
     text-decoration: none;
     font-size: 14px;
@@ -335,7 +335,7 @@ i.fa-brands {
     margin-top: auto;
     padding: 10px;
     border: 1.5px solid #dc2626 !important;
-    border-radius: 5px;
+    border-radius: 50px;
     background-color: #ffffff;
     color: #dc2626 !important;
     text-decoration: none;
@@ -442,7 +442,7 @@ i.fa-brands {
     background: #639A88;
     color: #ffffff;
     border: none;
-    border-radius: 5px;
+    border-radius: 50px;
     font-family: inherit;
     font-size: 0.9rem;
     font-weight: 600;
@@ -671,7 +671,7 @@ select[name="package_id"],
 }
 
 .backdrop-lavender {
-    background: #9b79b7;
+    background: #bf77f6;
 }
 
 .backdrop-sky {
@@ -795,7 +795,7 @@ select[name="package_id"],
     color: #ffffff;
     background-color: #639A88;
     border: none;
-    border-radius: 5px;
+    border-radius: 50px;
     padding: 0 14px;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -849,7 +849,7 @@ select[name="package_id"],
     background-color: #639A88;
     color: #ffffff;
     border: none;
-    border-radius: 5px;
+    border-radius: 50px;
     font-family: inherit;
     font-size: 0.92rem;
     font-weight: 600;
@@ -1591,6 +1591,23 @@ select[name="package_id"],
         width: 100%;
         min-height: 44px;
     }
+
+    .policy-agreement-container label {
+        align-items: flex-start !important;
+        gap: 8px !important;
+        font-size: 0.82rem !important; /* Slightly tighter text for mobile screens */
+        line-height: 1.4 !important;
+    }
+
+    .policy-agreement-container {
+        margin-top: 15px !important;
+        padding-top: 12px !important;
+    }
+
+    #acceptPolicyBtn {
+        margin-top: 12px !important;
+        width: 100% !important;
+    }
 }
 
 @media (max-width: 420px) {
@@ -1714,7 +1731,7 @@ select[name="package_id"],
     justify-content: center;
     width: 38px;
     height: 38px;
-    border-radius: 5px;
+    border-radius: 50px;
     color: #dc2626;
     border: 1.5px solid #dc2626;
     background-color: transparent;
