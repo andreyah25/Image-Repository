@@ -489,8 +489,14 @@ body::after {
 
 
 /* =========================================================
-   BUTTONS
+   BUTTONS — PURPLE THEME (#BF77F6)
 ========================================================= */
+
+:root {
+    --button-purple: #BF77F6;
+    --button-purple-dark: #A85BE5;
+    --button-purple-light: #D9B1FF;
+}
 
 .btn {
     min-height: 48px;
@@ -526,55 +532,62 @@ body::after {
 }
 
 .btn:focus-visible {
-    outline: 3px solid rgba(99, 154, 136, 0.45);
+    outline: 3px solid rgba(191, 119, 246, 0.45);
     outline-offset: 4px;
 }
 
+/* Primary buttons */
 .btn-dark {
-    background: var(--green);
-    color: white;
-    border: 1px solid var(--green);
-    box-shadow: 0 7px 18px rgba(99, 154, 136, 0.23);
+    background: var(--button-purple);
+    color: #ffffff;
+    border: 1px solid var(--button-purple);
+    box-shadow: 0 7px 18px rgba(191, 119, 246, 0.23);
 }
 
 .btn-dark:hover {
-    background: var(--green-dark);
-    border-color: var(--green-dark);
-    box-shadow: 0 12px 25px rgba(79, 128, 111, 0.28);
+    background: var(--button-purple-dark);
+    border-color: var(--button-purple-dark);
+    box-shadow: 0 12px 25px rgba(168, 91, 229, 0.28);
 }
 
+/* Outline buttons */
 .btn-outline {
-    background: rgba(255, 255, 255, 0.82);
-    color: var(--dark);
-    border: 1px solid rgba(60, 70, 66, 0.25);
+    background: rgba(255, 255, 255, 0.90);
+    color: var(--button-purple-dark);
+    border: 1px solid var(--button-purple);
 }
 
 .btn-outline:hover {
-    background: white;
-    border-color: var(--green);
-    color: var(--green-dark);
-    box-shadow: var(--card-shadow);
+    background: #F7EEFF;
+    border-color: var(--button-purple-dark);
+    color: var(--button-purple-dark);
+    box-shadow: 0 8px 22px rgba(191, 119, 246, 0.15);
 }
 
+/* White buttons */
 .btn-light {
-    background: white;
-    color: var(--green-dark);
-    border: 1px solid white;
+    background: #ffffff;
+    color: var(--button-purple-dark);
+    border: 1px solid #ffffff;
 }
 
 .btn-light:hover {
-    background: #f1f5f3;
+    background: #F7EEFF;
+    border-color: #F7EEFF;
+    color: var(--button-purple-dark);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
+/* Transparent buttons */
 .btn-ghost {
     background: transparent;
-    color: white;
+    color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.7);
 }
 
 .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(191, 119, 246, 0.25);
+    border-color: #ffffff;
 }
 
 
@@ -1533,10 +1546,11 @@ body::after {
    GENERAL INTERACTIVE POLISH
 ========================================================= */
 
+
 a:focus-visible,
 button:focus-visible,
 summary:focus-visible {
-    outline: 3px solid rgba(99, 154, 136, 0.6);
+    outline: 3px solid rgba(191, 119, 246, 0.6);
     outline-offset: 4px;
 }
 
@@ -2101,4 +2115,76 @@ summary {
 .highlight-card:focus-within {
     outline: 3px solid rgba(181, 138, 199, 0.45);
     outline-offset: 4px;
+}
+
+/* =========================================================
+   FINAL BUTTON COLOR OVERRIDES
+========================================================= */
+
+.btn-dark,
+button.btn-dark,
+a.btn-dark {
+    background-color: #BF77F6;
+    border-color: #BF77F6;
+    color: #FFFFFF;
+}
+
+.btn-dark:hover,
+button.btn-dark:hover,
+a.btn-dark:hover {
+    background-color: #A85BE5;
+    border-color: #A85BE5;
+    color: #FFFFFF;
+}
+
+.btn-outline {
+    border-color: #BF77F6;
+    color: #A85BE5;
+}
+
+.btn-outline:hover {
+    background-color: #F7EEFF;
+    border-color: #A85BE5;
+    color: #A85BE5;
+}
+
+/* =========================================================
+   PACKAGE PRICES — PURPLE THEME
+========================================================= */
+
+.package-price {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin: 10px 0 14px;
+    color: #BF77F6;
+}
+
+.package-price .currency {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.package-price .amount {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -1px;
+}
+
+.package-price .price-note {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0;
+}
+
+.package-content p {
+    min-height: 66px;
+}
+
+@media (max-width: 500px) {
+    .package-price .amount {
+        font-size: 27px;
+    }
 }
