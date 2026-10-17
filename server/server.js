@@ -3280,9 +3280,8 @@ app.post("/api/paymongo/webhook", async (req, res) => {
         const signatureHeader =
             req.headers["paymongo-signature"];
 const webhookSecret =
-    PAYMONGO_BOOKING_WEBHOOK_SECRET ||
-    PAYMONGO_WEBHOOK_SECRET;
-
+    process.env.PAYMONGO_BOOKING_WEBHOOK_SECRET ||
+    process.env.PAYMONGO_WEBHOOK_SECRET;
         if (
             !signatureHeader ||
             !req.rawBody ||
