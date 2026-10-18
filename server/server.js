@@ -2791,8 +2791,7 @@ app.post("/send-gallery-ready", async (req, res) => {
         const { data, error } = await resend.emails.send({
             from: process.env.RESEND_FROM_EMAIL,
             to: [recipientEmail],
-            subject: "Your Photo Gallery Is Ready - Captured Photography Studio",
-            html: `
+            subject: "Your Photos Are Ready to Request - Captured Photography Studio",            html: `
                 <div style="
                     font-family: Arial, sans-serif;
                     line-height: 1.7;
@@ -2806,12 +2805,14 @@ app.post("/send-gallery-ready", async (req, res) => {
                     </h2>
 
                     <p>Hi ${safeName},</p>
-
                     <p>
                         Thank you for choosing Captured Photography Studio!
-                        Your <strong>${safeSessionType}</strong> session
-                        has been marked as completed, and your photo gallery
-                        is ready to access.
+                        Your <strong>${safeSessionType}</strong> session has been
+                        marked as completed. You can now request access to your photo gallery.
+                    </p>
+
+                    <p>
+                        Click the button below to request access to your photos.
                     </p>
 
                     <p>
@@ -2837,8 +2838,8 @@ app.post("/send-gallery-ready", async (req, res) => {
                                 font-weight: bold;
                             "
                         >
-                            Access My Photo Gallery
-                        </a>
+                        Request Gallery Acces
+                      </a>
                     </p>
 
                     <p>
