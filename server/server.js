@@ -107,10 +107,23 @@ const supabase = createClient(
     SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY
 );
+
 const supabaseAdmin = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY
 );
+
+const loginAuthClient = createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
+);
+
 app.get("/admin", (req, res) => {
     res.sendFile(
         path.join(__dirname, "..", "frontend-admin", "admin_dashboard.html")
@@ -421,39 +434,131 @@ async function requireStaff(req, res, next) {
 
 
 async function requireAdmin(req, res, next) {
-    // First authenticate and verify the active staff profile.
-    return requireStaff(req, res, (error) => {
-        if (error) {
-            return next(error);
+    try {
+        // Verify the session and staff profile first.
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                error: "Missing authorization token."
+            });
         }
 
-        // Then enforce administrator-only access.
-        if (
-            String(req.profile?.role || "")
-                .trim()
-                .toLowerCase() !== "admin"
-        ) {
+        const token = authHeader.slice(7).trim();
+
+        const {
+            data: { user },
+            error: userError
+        } = await supabase.auth.getUser(token);
+
+        if (userError || !user) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid or expired session."
+            });
+        }
+
+        const { data: profile, error: profileError } =
+            await supabaseAdmin
+                .from("staff_profiles")
+                .select("*")
+                .eq("id", user.id)
+                .maybeSingle();
+
+        if (profileError) {
+            console.error("Admin profile lookup error:", profileError);
+
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify staff profile."
+            });
+        }
+
+        if (!profile) {
+            return res.status(403).json({
+                success: false,
+                error: "Staff profile not found."
+            });
+        }
+
+        const role = String(profile.role || "")
+            .trim()
+            .toLowerCase();
+
+        const status = String(profile.status || "")
+            .trim()
+            .toLowerCase();
+
+        if (profile.verified !== true || status !== "active") {
+            return res.status(403).json({
+                success: false,
+                error: "Staff account is not verified or active."
+            });
+        }
+
+        if (role !== "admin") {
             return res.status(403).json({
                 success: false,
                 error: "Administrator access required."
             });
         }
 
+        req.authUser = user;
+        req.profile = profile;
+
         return next();
-    });
+    } catch (error) {
+        console.error("Admin authorization error:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: "Authorization check failed."
+        });
+    }
 }
+app.get(
+    "/api/admin/bookings",
+    requireStaff,
+    async (req, res) => {
+        console.log("📋 BOOKINGS ROUTE REACHED");
+        console.log("Authenticated profile:", {
+            role: req.profile?.role,
+            verified: req.profile?.verified,
+            status: req.profile?.status
+        });
 
+        try {
+            const { data: bookings, error } = await supabase
+                .from("bookings")
+                .select("*")
+                .order("created_at", { ascending: false });
 
-const loginAuthClient = createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
+            if (error) {
+                console.error("ADMIN BOOKINGS QUERY ERROR:", error);
+
+                return res.status(500).json({
+                    success: false,
+                    error: "Failed to load bookings."
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                count: bookings?.length || 0,
+                bookings: bookings || []
+            });
+        } catch (error) {
+            console.error("Admin bookings API error:", error);
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal server error."
+            });
         }
     }
 );
+
 
 const ARCHIVE_PHOTO_BUCKET = "repository-photos";
 const ARCHIVE_AFTER_DAYS = 7; // Local testing only
@@ -912,7 +1017,7 @@ async function recordStaffActivity({
 }
 app.post(
     "/api/admin/staff/presence/offline",
-    requireAdmin,
+    requireStaff,
     async (req, res) => {
 
         try {
@@ -979,7 +1084,7 @@ app.post(
 );
 app.post(
     "/api/admin/staff/activity",
-    requireAdmin,
+    requireStaff,
     async (req, res) => {
 
         try {
@@ -2649,6 +2754,142 @@ app.post("/send-booking-confirmation", async (req, res) => {
         });
     }
 });
+
+app.post("/send-gallery-ready", async (req, res) => {
+    try {
+        const { email, name, bookingId, sessionType, galleryLink } = req.body;
+
+        const recipientEmail = validateEmail(email);
+
+        if (!recipientEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "A valid customer email address is required."
+            });
+        }
+
+        if (!galleryLink) {
+            return res.status(400).json({
+                success: false,
+                message: "The customer gallery link is required."
+            });
+        }
+
+        if (!resend || !process.env.RESEND_FROM_EMAIL) {
+            return res.status(500).json({
+                success: false,
+                message: "Email service or sender address is not configured."
+            });
+        }
+
+        const safeName = escapeHtml(name || "Valued Customer");
+        const safeSessionType = escapeHtml(sessionType || "Photography Session");
+        const safeBookingId = escapeHtml(bookingId || "");
+        const safeGalleryLink = escapeHtml(galleryLink);
+
+        const { data, error } = await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [recipientEmail],
+            subject: "Your Photo Gallery Is Ready - Captured Photography Studio",
+            html: `
+                <div style="
+                    font-family: Arial, sans-serif;
+                    line-height: 1.7;
+                    color: #333;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 24px;
+                ">
+                    <h2 style="color: #639A88;">
+                        Captured Photography Studio
+                    </h2>
+
+                    <p>Hi ${safeName},</p>
+
+                    <p>
+                        Thank you for choosing Captured Photography Studio!
+                        Your <strong>${safeSessionType}</strong> session
+                        has been marked as completed, and your photo gallery
+                        is ready to access.
+                    </p>
+
+                    <p>
+                        ${safeBookingId
+                            ? `<strong>Booking ID:</strong> ${safeBookingId}`
+                            : ""}
+                    </p>
+
+                    <p>
+                        Click the button below to view your photo gallery.
+                    </p>
+
+                    <p style="text-align: center; margin: 30px 0;">
+                        <a
+                            href="${safeGalleryLink}"
+                            style="
+                                display: inline-block;
+                                background: #639A88;
+                                color: #ffffff;
+                                text-decoration: none;
+                                padding: 13px 24px;
+                                border-radius: 8px;
+                                font-weight: bold;
+                            "
+                        >
+                            Access My Photo Gallery
+                        </a>
+                    </p>
+
+                    <p>
+                        You can also copy this link into your browser:
+                    </p>
+
+                    <p style="word-break: break-all;">
+                        <a href="${safeGalleryLink}">
+                            ${safeGalleryLink}
+                        </a>
+                    </p>
+
+                    <p>
+                        Thank you for being part of Captured Photography Studio.
+                        We hope you enjoy your photos!
+                    </p>
+
+                    <p>
+                        Best regards,<br>
+                        <strong>Captured Photography Studio</strong>
+                    </p>
+                </div>
+            `
+        });
+
+        if (error) {
+            console.error("GALLERY-READY EMAIL ERROR:", error);
+
+            return res.status(500).json({
+                success: false,
+                message: error.message || "Failed to send gallery-ready email."
+            });
+        }
+
+        console.log("GALLERY-READY EMAIL SENT TO:", recipientEmail);
+
+        return res.json({
+            success: true,
+            message: "Gallery-ready email sent successfully.",
+            emailId: data?.id || null
+        });
+
+    } catch (error) {
+        console.error("SEND GALLERY-READY EMAIL ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Unable to send gallery-ready email."
+        });
+    }
+});
+
 
 app.post("/send-booking-rejection", async (req, res) => {
     try {
@@ -4649,12 +4890,20 @@ app.get("/api/bookings/availability", async (req, res) => {
 
 app.get(
     "/api/admin/bookings",
-    requireAdmin,
+    requireStaff,
     async (req, res) => {
         try {
+            console.log("✅ BOOKINGS ROUTE REACHED", {
+                path: req.originalUrl,
+                role: req.profile?.role,
+                userId: req.authUser?.id
+            });
+
             console.log("====================================");
             console.log("📋 LOADING ALL BOOKINGS FOR ADMIN");
             console.log("====================================");
+
+            // Keep the rest of your existing route unchanged.
 
             const { data: bookings, error } = await supabase
                 .from("bookings")
@@ -4719,7 +4968,7 @@ app.get(
 
 app.delete(
     "/api/admin/bookings/:id",
-    requireAdmin,
+    requireStaff,
     async (req, res) => {
 
         try {

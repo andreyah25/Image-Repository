@@ -2733,18 +2733,24 @@
             calendarInstance.render();
 
         }
-        document
-            .getElementById("bookingProcess")
-            .addEventListener("click", function () {
 
+        const processBookingButton = document.getElementById("bookingProcess");
+
+        if (processBookingButton) {
+            processBookingButton.addEventListener("click", function () {
                 if (!selectedCalendarBooking) {
                     alert("Please select a booking first.");
                     return;
                 }
 
+                const bookingId = selectedCalendarBooking;
+
                 window.location.href =
-                    `/admin/clients?id=${encodeURIComponent(selectedCalendarBooking)}`;
+                    "/admin/clients?tab=pending&booking_id=" +
+                    encodeURIComponent(String(bookingId));
             });
+        }
+
 
         async function refreshBookingCalendar() {
 
@@ -3086,42 +3092,38 @@
 
         }
 
+        function getNotificationReadKey(notification) {
 
-        /* =========================================================
-           CREATE NOTIFICATION OBJECT
-        ========================================================= */
+            if (notification.booking?.id != null) {
+                return "booking-" + String(notification.booking.id);
+            }
+            return "notification-" + String(
+                notification.databaseId ?? notification.id
+            );
+        }
+
+
 
         function createBookingNotification(booking) {
+            if (!booking || booking.id == null) return null;
 
-            if (!booking || !booking.id) {
-                return null;
-            }
-
-            const notificationId =
-                "booking-" + String(booking.id);
-
-            return {
-
-                id: notificationId,
-
+            const notification = {
+                id: "booking-" + String(booking.id),
                 type: "booking",
-
                 title: "New Customer Booking",
-
                 message:
                     `${booking.full_name || "A customer"} booked a session. Proceed to confirm the session.`,
-
-                date:
-                    booking.created_at ||
-                    new Date().toISOString(),
-
-                unread:
-                    !readNotificationIds.has(notificationId),
-
+                date: booking.created_at || new Date().toISOString(),
+                unread: true,
                 booking: booking
-
             };
 
+            // Use the same read key as database notifications for this booking.
+            if (readNotificationIds.has(getNotificationReadKey(notification))) {
+                notification.unread = false;
+            }
+
+            return notification;
         }
 
         function cleanGalleryMessage(message) {
@@ -3180,45 +3182,112 @@
                         continue;
                     }
 
-                    // 1. FILTER: STRICTLY ALLOW ONLY "New Customer Booking" AND "Gallery Access"
                     const isBooking = rawType === "booking" || rawTitle.includes("new customer booking");
                     const isGallery = rawType === "gallery_access" || rawType === "gallery" || rawTitle.includes("gallery access");
 
                     if (!isBooking && !isGallery) {
-                        continue; // Skip any other notification types completely
+                        continue;
                     }
 
-                    // 2. REMOVE LINK/URL FROM GALLERY ACCESS SUBTEXT
                     if (isGallery) {
                         message = cleanGalleryMessage(message);
                     }
 
                     let booking = null;
+
                     if (notificationRow.booking_id) {
-                        const { data: bookingData } = await supabaseClient
-                            .from("bookings")
-                            .select("*")
-                            .eq("id", notificationRow.booking_id)
-                            .maybeSingle();
+                        const { data: bookingData, error: bookingError } =
+                            await supabaseClient
+                                .from("bookings")
+                                .select("*")
+                                .eq("id", notificationRow.booking_id)
+                                .maybeSingle();
+
+                        if (bookingError) {
+                            console.error(
+                                "Failed to load notification booking:",
+                                bookingError
+                            );
+                        }
 
                         booking = bookingData || null;
+                    }
+                    if (isBooking) {
+                        const bookingStatus = String(booking?.status || "").toLowerCase();
+
+                        if (booking && bookingStatus !== "pending") {
+                            continue;
+                        }
                     }
 
                     const notification = {
                         id: String(notificationRow.id),
                         type: isBooking ? "booking" : "gallery_access",
-                        title: isBooking ? "New Customer Booking" : "New Gallery Access Request",
+                        title: isBooking
+                            ? "New Customer Booking"
+                            : "New Gallery Access Request",
                         message: message,
-                        date: notificationRow.created_at || booking?.created_at || new Date().toISOString(),
+                        date: notificationRow.created_at ||
+                            booking?.created_at ||
+                            new Date().toISOString(),
                         unread: notificationRow.is_read !== true,
                         booking: booking,
                         databaseId: notificationRow.id
                     };
-
+                    if (readNotificationIds.has(getNotificationReadKey(notification))) {
+                        notification.unread = false;
+                    }
                     notifications.push(notification);
                 }
 
+
+                // Load ALL existing bookings that still need admin confirmation.
+                const {
+                    data: pendingBookings,
+                    error: pendingBookingsError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .ilike("status", "pending")
+                    .order("created_at", { ascending: false })
+                    .limit(100);
+
+                if (pendingBookingsError) {
+                    console.error(
+                        "Failed to load pending bookings:",
+                        pendingBookingsError
+                    );
+                } else {
+                    for (const booking of pendingBookings || []) {
+                        const notification =
+                            createBookingNotification(booking);
+
+                        if (!notification) continue;
+
+                        // Avoid duplicates if a database notification
+                        // already exists for this booking.
+                        const alreadyExists = notifications.some(item =>
+                            String(item.booking?.id) ===
+                            String(booking.id)
+                        );
+
+                        if (!alreadyExists) {
+                            notifications.push(notification);
+                        }
+                    }
+                }
+
+                // Show newest booking notifications first.
+                notifications.sort(
+                    (a, b) =>
+                        new Date(b.date).getTime() -
+                        new Date(a.date).getTime()
+                );
+
+                notifications = notifications.slice(0, 100);
+
                 renderNotifications();
+
             } catch (error) {
                 console.error("Notification loading failed:", error);
             }
@@ -3798,63 +3867,52 @@
 
         }
 
-        async function handleNotificationClick(
-            notification,
-            item
-        ) {
+        async function handleNotificationClick(notification, item) {
+            if (!notification) return;
 
-            console.log(
-                "Notification clicked:",
-                notification
-            );
-
+            // Mark this notification and its related booking as read.
             notification.unread = false;
 
-            item.classList.remove("unread");
+            const readKey = getNotificationReadKey(notification);
+            readNotificationIds.add(readKey);
+            saveReadNotifications();
+
+            if (item) {
+                item.classList.remove("unread");
+            }
 
             updateNotificationBadge();
 
-            /*
-             * Save read status in Supabase
-             */
-            if (notification.databaseId) {
-
-                const {
-                    error
-                } = await supabaseClient
+            // Persist the read state in Supabase when a database row exists.
+            if (notification.databaseId != null) {
+                const { error } = await supabaseClient
                     .from("notifications")
-                    .update({
-                        is_read: true
-                    })
+                    .update({ is_read: true })
                     .eq("id", notification.databaseId);
 
                 if (error) {
-
                     console.error(
-                        "Failed to mark notification as read:",
+                        "Failed to save notification read status:",
                         error
                     );
-
                 }
-
             }
 
             notificationPanel.classList.remove("show");
 
-            /*
-             * Open booking details
-             */
             if (
-                (notification.type === "booking" || notification.type === "gallery_access") &&
-                notification.booking &&
-                notification.booking.id
+                (
+                    notification.type === "booking" ||
+                    notification.type === "gallery_access"
+                ) &&
+                notification.booking?.id
             ) {
-                await openNotificationBooking(
-                    notification
-                );
+                await openNotificationBooking(notification);
             }
 
+            updateNotificationBadge();
         }
+
 
         function renderNotifications() {
             notificationList.innerHTML = "";
@@ -3920,41 +3978,19 @@
         }
 
         function updateNotificationBadge() {
-
-            const unreadCount =
-                notifications.filter(
-                    function (notification) {
-
-                        return notification.unread;
-
-                    }
-                ).length;
-
+            const unreadCount = notifications.filter(
+                notification => notification.unread
+            ).length;
 
             if (unreadCount <= 0) {
-
-                notificationBadge.classList.add(
-                    "hidden"
-                );
-
-                notificationBadge.textContent =
-                    "0";
-
+                notificationBadge.classList.add("hidden");
+                notificationBadge.textContent = "0";
                 return;
-
             }
 
-
-            notificationBadge.classList.remove(
-                "hidden"
-            );
-
-
+            notificationBadge.classList.remove("hidden");
             notificationBadge.textContent =
-                unreadCount > 99
-                    ? "99+"
-                    : String(unreadCount);
-
+                unreadCount > 99 ? "99+" : String(unreadCount);
         }
 
         markNotificationsRead.addEventListener(
@@ -3995,11 +4031,15 @@
 
                 }
 
+
                 notifications.forEach(notification => {
                     notification.unread = false;
+                    readNotificationIds.add(getNotificationReadKey(notification));
                 });
 
+                saveReadNotifications();
                 renderNotifications();
+
 
             }
         );
@@ -4040,40 +4080,67 @@
             }
         );
 
-        notificationBookingProcess.addEventListener(
-            "click",
-            function () {
-
-                if (
-                    !selectedNotificationBooking ||
-                    !selectedNotificationBooking.id
-                ) {
-
-                    console.error(
-                        "No booking selected for processing."
-                    );
-
-                    return;
-
-                }
-
-
-                const bookingId =
-                    selectedNotificationBooking.id;
-
-
-                console.log(
-                    "Processing booking:",
-                    bookingId
-                );
-
-
-                window.location.href =
-                    "/admin/clients?booking_id=" +
-                    encodeURIComponent(String(bookingId));
-                let analyticsInitialized = false;
+        notificationBookingProcess.addEventListener("click", function () {
+            if (!selectedNotificationBooking?.id) {
+                console.error("No booking selected for processing.");
+                return;
             }
-        );
+
+            const bookingId = selectedNotificationBooking.id;
+
+            window.location.href =
+                "/admin/clients?tab=pending&booking_id=" +
+                encodeURIComponent(String(bookingId));
+        });
+        function handleNotificationBookingRedirect() {
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.get("tab") !== "pending") return;
+
+            const bookingId = params.get("booking_id");
+
+            // Find the actual Pending tab by its displayed text.
+            const tabs = Array.from(
+                document.querySelectorAll(
+                    'button, [role="tab"], a, [data-tab]'
+                )
+            );
+
+            const pendingTab = tabs.find(element => {
+                const text = (element.textContent || "")
+                    .trim()
+                    .replace(/\s+/g, " ")
+                    .toLowerCase();
+
+                return text === "pending" ||
+                    element.getAttribute("data-tab")?.toLowerCase() === "pending" ||
+                    element.getAttribute("data-status")?.toLowerCase() === "pending";
+            });
+
+            if (!pendingTab) {
+                console.error(
+                    "Pending tab not found. Check the Admin Clients tab HTML."
+                );
+                return;
+            }
+
+            pendingTab.click();
+
+            console.log(
+                "Pending tab opened for booking:",
+                bookingId
+            );
+        }
+
+        // Run immediately if the page has already loaded.
+        if (document.readyState === "loading") {
+            document.addEventListener(
+                "DOMContentLoaded",
+                handleNotificationBookingRedirect
+            );
+        } else {
+            handleNotificationBookingRedirect();
+        }
 
         async function initializeAnalytics() {
 
@@ -4119,133 +4186,96 @@
                 .channel(
                     "staff-notifications-" + currentUser.id
                 )
+
+                // REAL-TIME: New customer bookings
                 .on(
                     "postgres_changes",
                     {
                         event: "INSERT",
                         schema: "public",
-                        table: "notifications"
+                        table: "bookings"
                     },
-                    async function (payload) {
-                        console.log("🔔 NEW NOTIFICATION:", payload);
+                    function (payload) {
+                        const booking = payload.new;
 
-                        const notificationRow = payload.new;
-                        const rawType = (notificationRow.type || "").toLowerCase();
-                        const rawTitle = (notificationRow.title || "").toLowerCase();
-
-                        // 1. FILTER: STRICTLY ALLOW ONLY "New Customer Booking" AND "Gallery Access"
-                        const isBooking = rawType === "booking" || rawTitle.includes("new customer booking");
-                        const isGallery = rawType === "gallery_access" || rawType === "gallery" || rawTitle.includes("gallery access");
-
-                        if (!isBooking && !isGallery) {
-                            return; // Ignore all other realtime notification types
+                        if (
+                            String(booking.status || "").toLowerCase()
+                            !== "pending"
+                        ) {
+                            return;
                         }
 
-                        let message = notificationRow.message || "";
+                        const alreadyExists = notifications.some(
+                            item =>
+                                String(item.booking?.id) ===
+                                String(booking.id)
+                        );
 
-                        // 2. REMOVE LINK/URL FROM GALLERY ACCESS SUBTEXT
-                        if (isGallery) {
-                            message = cleanGalleryMessage(message);
+                        if (!alreadyExists) {
+                            const notification =
+                                createBookingNotification(booking);
+
+                            if (notification) {
+                                notifications.unshift(notification);
+                                notifications.sort(
+                                    (a, b) =>
+                                        new Date(b.date).getTime() -
+                                        new Date(a.date).getTime()
+                                );
+
+                                notifications =
+                                    notifications.slice(0, 100);
+
+                                renderNotifications();
+                            }
                         }
 
-                        let booking = null;
-                        if (notificationRow.booking_id) {
-                            const { data: bookingData } = await supabaseClient
-                                .from("bookings")
-                                .select("*")
-                                .eq("id", notificationRow.booking_id)
-                                .maybeSingle();
-
-                            booking = bookingData;
-                        }
-
-                        const notification = {
-                            id: String(notificationRow.id),
-                            type: isBooking ? "booking" : "gallery_access",
-                            title: isBooking ? "New Customer Booking" : "New Gallery Access Request",
-                            message: message,
-                            date: notificationRow.created_at || new Date().toISOString(),
-                            unread: notificationRow.is_read !== true,
-                            booking: booking,
-                            databaseId: notificationRow.id
-                        };
-
-                        notifications.unshift(notification);
-                        notifications = notifications.slice(0, 15);
-
-                        renderNotifications();
-                        await refreshBookingCalendar();
-                        await loadDashboardStats();
-                        await loadAnalyticsYears();
+                        refreshBookingCalendar();
+                        loadDashboardStats();
                     }
                 )
+
+                // REAL-TIME: Booking status changes
                 .on(
                     "postgres_changes",
                     {
                         event: "UPDATE",
                         schema: "public",
-                        table: "notifications"
+                        table: "bookings"
                     },
-                    function (payload) {
+                    async function (payload) {
+                        const booking = payload.new;
 
-                        console.log(
-                            "🔔 NOTIFICATION UPDATED:",
-                            payload
-                        );
 
-                        const updated =
-                            payload.new;
+                        loadSavedReadNotifications();
 
-                        const index =
-                            notifications.findIndex(
-                                notification =>
-                                    String(
-                                        notification.databaseId
-                                    ) ===
-                                    String(
-                                        updated.id
-                                    )
+                        await loadNotifications();
+
+                        setupNotificationRealtime();
+
+                        if (
+                            String(booking.status || "").toLowerCase()
+                            === "pending"
+                        ) {
+                            const alreadyExists = notifications.some(
+                                item =>
+                                    String(item.booking?.id) ===
+                                    String(booking.id)
                             );
 
-                        if (index === -1) {
-                            return;
+                            if (!alreadyExists) {
+                                const notification =
+                                    createBookingNotification(booking);
+
+                                if (notification) {
+                                    notifications.unshift(notification);
+                                    renderNotifications();
+                                }
+                            }
                         }
 
-                        notifications[index].unread =
-                            updated.is_read !== true;
-
-                        renderNotifications();
-
-                    }
-                )
-
-                .on(
-                    "postgres_changes",
-                    {
-                        event: "DELETE",
-                        schema: "public",
-                        table: "notifications"
-                    },
-                    function (payload) {
-
-                        console.log(
-                            "🔔 NOTIFICATION DELETED:",
-                            payload
-                        );
-
-                        const deletedId =
-                            String(payload.old.id);
-
-                        notifications =
-                            notifications.filter(
-                                notification =>
-                                    String(
-                                        notification.databaseId
-                                    ) !== deletedId
-                            );
-
-                        renderNotifications();
-
+                        await refreshBookingCalendar();
+                        await loadDashboardStats();
                     }
                 )
 

@@ -378,12 +378,11 @@
         )
 
 
-
         const SERVER_URL =
             (window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1")
                 ? "http://localhost:3000"
-                : "https://image-repository-1.onrender.com";
+                : "https://captured-server.onrender.com";
         let allBookedSessions = [];
         let allAccessRequests = [];
         let selectedMonth = "all";
@@ -1728,7 +1727,54 @@
 
 
 
+        function openPendingTabFromNotification() {
+            const params = new URLSearchParams(window.location.search);
 
+            if (params.get("tab") !== "pending") {
+                return;
+            }
+
+            const bookingId = params.get("booking_id");
+
+            // Find the Pending tab button.
+            const pendingTab = Array.from(
+                document.querySelectorAll(
+                    'button, [role="tab"], [data-status], [data-tab]'
+                )
+            ).find(element => {
+                const text = (element.textContent || "")
+                    .trim()
+                    .replace(/\s+/g, " ")
+                    .toLowerCase();
+
+                return (
+                    element.dataset.status?.toLowerCase() === "pending" ||
+                    element.dataset.tab?.toLowerCase() === "pending" ||
+                    text === "pending"
+                );
+            });
+
+            if (!pendingTab) {
+                console.error(
+                    "Pending tab button not found. Check the Admin Clients tab HTML."
+                );
+                return;
+            }
+
+            // Activate Pending using the page's existing tab handler.
+            pendingTab.click();
+
+            console.log("Pending tab activated. Booking ID:", bookingId);
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener(
+                "DOMContentLoaded",
+                openPendingTabFromNotification
+            );
+        } else {
+            openPendingTabFromNotification();
+        }
         function closeBookingDetailsModal() {
 
             const modal =
@@ -1971,16 +2017,17 @@
             return repository;
         }
 
-        function getClientRepositoryLink(repository) {
+        const CUSTOMER_SITE_URL =
+            "https://captured-photo-studio.onrender.com";
 
+        function getClientRepositoryLink(repository) {
             if (!repository || !repository.access_token) {
                 console.error("Repository token is missing:", repository);
                 return null;
             }
 
             return (
-                window.location.origin +
-                "/frontend-customer/client-gallery.html?token=" +
+                `${CUSTOMER_SITE_URL}/gallery?token=` +
                 encodeURIComponent(repository.access_token)
             );
         }
@@ -2155,10 +2202,9 @@
 
             }
         });
+
         document.addEventListener("click", async function (e) {
-
             const completeBtn = e.target.closest(".complete-btn");
-
             if (!completeBtn) return;
 
             const bookingId = completeBtn.dataset.id;
@@ -2170,67 +2216,148 @@
 
             completeBtn.disabled = true;
             completeBtn.innerHTML = `
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                Completing...
-            `;
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Completing...
+    `;
 
             try {
+                // 1. Retrieve the booking details.
+                const {
+                    data: booking,
+                    error: bookingError
+                } = await supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .eq("id", bookingId)
+                    .single();
 
+                if (bookingError) throw bookingError;
+
+                if (!booking) {
+                    throw new Error("Booking could not be found.");
+                }
+
+                if (!booking.email) {
+                    throw new Error(
+                        "This booking has no customer email address. " +
+                        "Update the customer's email before completing the booking."
+                    );
+                }
+
+                // 2. Get the existing gallery or create one.
+                // These helper functions already exist in your admin code.
+                const repository = await createClientRepository(booking);
+                const clientLink = getClientRepositoryLink(repository);
+
+                if (!clientLink) {
+                    throw new Error("Could not generate the customer gallery link.");
+                }
+
+                // 3. Mark the booking as completed.
                 const {
                     data: updatedBooking,
                     error: updateError
                 } = await supabaseClient
                     .from("bookings")
                     .update({
-                        status: "Completed",
-
+                        status: "Completed"
                     })
                     .eq("id", bookingId)
                     .select()
                     .single();
 
-                if (updateError) {
-                    throw updateError;
-                }
+                if (updateError) throw updateError;
 
                 if (!updatedBooking) {
-                    throw new Error("Booking could not be updated.");
+                    throw new Error("Booking could not be marked as completed.");
+                }
+
+                // 4. Send the gallery-ready email through your backend.
+                const emailResponse = await fetch(
+                    `${SERVER_URL}/send-gallery-ready`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            email: updatedBooking.email,
+                            name: updatedBooking.full_name,
+                            bookingId: updatedBooking.id,
+                            sessionType: updatedBooking.session_type,
+                            galleryLink: clientLink
+                        })
+                    }
+                );
+
+                const emailResult = await emailResponse.json();
+
+                if (!emailResponse.ok || !emailResult.success) {
+                    throw new Error(
+                        "The booking was marked as completed, but the gallery-ready " +
+                        "email could not be sent. " +
+                        (emailResult.message || "Please check the server logs.")
+                    );
+                }
+
+                // 5. Create an in-app customer notification.
+                if (updatedBooking.customer_id) {
+                    const { error: notificationError } = await supabaseClient
+                        .from("notifications")
+                        .insert({
+                            customer_id: updatedBooking.customer_id,
+                            booking_id: updatedBooking.id,
+                            recipient: "customer",
+                            title: "Your Photo Gallery Is Ready",
+                            message:
+                                "Your photography session has been completed. " +
+                                "Your photo gallery is ready to access.",
+                            is_read: false,
+                            link: clientLink
+                        });
+
+                    if (notificationError) {
+                        // Email was sent successfully, so don't treat this as
+                        // a failed email or block the admin's redirect.
+                        console.error(
+                            "GALLERY-READY NOTIFICATION ERROR:",
+                            notificationError
+                        );
+                    }
                 }
 
                 showToast(
                     "Booking Completed",
-                    `${updatedBooking.full_name}'s booking has been marked as completed.`
+                    `${updatedBooking.full_name}'s booking is completed. ` +
+                    "The gallery-ready email has been sent."
                 );
+
                 closeBookingDetailsModal();
+
+                await loadBookedSessions();
+
+                // 6. Open the repository page after successful email sending.
                 setTimeout(() => {
                     window.location.href = "/admin/repository";
                 }, 1000);
 
-                await loadBookedSessions();
-
             } catch (error) {
-
-                console.error(
-                    "BOOKING COMPLETION ERROR:",
-                    error
-                );
+                console.error("BOOKING COMPLETION ERROR:", error);
 
                 alert(
-                    "The booking could not be completed.\n\n" +
+                    "The booking process encountered a problem.\n\n" +
                     error.message
                 );
 
+                await loadBookedSessions();
+
             } finally {
-
                 completeBtn.disabled = false;
-
                 completeBtn.innerHTML = `
             <i class="fa-solid fa-check-double"></i>
             Complete
         `;
-
             }
-
         });
 
         document.addEventListener("click", async function (e) {
