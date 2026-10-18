@@ -210,7 +210,6 @@
 
             const customerName =
                 booking.full_name ||
-                booking.customer_name ||
                 booking.customer?.full_name ||
                 "Customer";
 
@@ -290,7 +289,7 @@
                 } = await supabaseClient
                     .from("bookings")
                     .select(
-                        "id, full_name, customer_name, session_type, package_type, package_id, booking_date, event_date"
+                        "id, full_name, session_type, package_id, booking_date, event_date"
                     )
                     .eq("id", bookingId)
                     .maybeSingle();
@@ -342,8 +341,8 @@
                 console.log(
                     "GALLERY: Customer information displayed:",
                     {
-                        customer: booking.full_name || booking.customer_name,
-                        package: booking.package_name || booking.session_type
+                        customer: booking.full_name || "Customer",
+                        package: booking.package_name || booking.session_type || "Photography Package"
                     }
                 );
 
