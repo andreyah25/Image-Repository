@@ -241,7 +241,6 @@
             }
         }
 
-
         async function loadBookingInformation() {
             const request = currentAccessRequest || {};
 
@@ -250,64 +249,114 @@
                 request.bookingId ||
                 request.booking?.id ||
                 currentBooking?.id ||
-                currentPhotos?.find(photo =>
-                    photo?.booking_id || photo?.bookingId
-                )?.booking_id ||
-                currentPhotos?.find(photo =>
-                    photo?.booking_id || photo?.bookingId
-                )?.bookingId;
+                currentPhotos.find(photo => photo.booking_id)?.booking_id ||
+                currentPhotos.find(photo => photo.bookingId)?.bookingId;
 
             if (!bookingId) {
-                console.warn(
-                    "GALLERY: No booking ID found in request or photos.",
+                console.error(
+                    "GALLERY: Cannot load customer information because the API did not provide a booking ID.",
                     {
                         request,
-                        photoCount: currentPhotos.length
+                        photos: currentPhotos
                     }
                 );
-                return;
+
+                if (galleryTitle) {
+                    galleryTitle.textContent = "My Gallery";
+                }
+
+                if (gallerySubtitle) {
+                    gallerySubtitle.textContent =
+                        "Your booking information is currently unavailable.";
+                }
+
+                if (userName) {
+                    userName.textContent = "Customer";
+                }
+
+                return false;
             }
 
-            await fetchBooking(bookingId);
+            return await fetchBooking(bookingId);
         }
 
-
-        if (booking.package_id) {
+        async function fetchBooking(bookingId) {
             try {
+                console.log("GALLERY: Loading booking:", bookingId);
+
                 const {
-                    data: packageData,
-                    error: packageError
+                    data: booking,
+                    error
                 } = await supabaseClient
-                    .from("packages")
-                    .select("*")
-                    .eq("id", booking.package_id)
+                    .from("bookings")
+                    .select(
+                        "id, full_name, customer_name, session_type, package_type, package_id, booking_date, event_date"
+                    )
+                    .eq("id", bookingId)
                     .maybeSingle();
 
-                if (packageError) {
-                    console.warn(
-                        "GALLERY: Package query error:",
-                        packageError
+                if (error) {
+                    console.error(
+                        "GALLERY: Booking query failed:",
+                        error.message
                     );
+                    return false;
                 }
 
-                if (packageData) {
-                    booking.package_name =
-                        packageData.name ||
-                        packageData.package_name ||
-                        packageData.title ||
-                        booking.session_type ||
-                        "Photography Package";
+                if (!booking) {
+                    console.error(
+                        "GALLERY: Booking was not found or is not accessible.",
+                        bookingId
+                    );
+                    return false;
                 }
+
+                if (booking.package_id) {
+                    const {
+                        data: packageData,
+                        error: packageError
+                    } = await supabaseClient
+                        .from("packages")
+                        .select("id, name, package_name, title")
+                        .eq("id", booking.package_id)
+                        .maybeSingle();
+
+                    if (packageError) {
+                        console.warn(
+                            "GALLERY: Package lookup failed:",
+                            packageError.message
+                        );
+                    }
+
+                    if (packageData) {
+                        booking.package_name =
+                            packageData.name ||
+                            packageData.package_name ||
+                            packageData.title ||
+                            booking.session_type;
+                    }
+                }
+
+                displayClientInformation(booking);
+
+                console.log(
+                    "GALLERY: Customer information displayed:",
+                    {
+                        customer: booking.full_name || booking.customer_name,
+                        package: booking.package_name || booking.session_type
+                    }
+                );
+
+                return true;
+
             } catch (error) {
-                console.warn(
-                    "GALLERY: Could not load package:",
+                console.error(
+                    "GALLERY: Failed to retrieve booking:",
                     error
                 );
+                return false;
             }
         }
-
-        displayClientInformation(booking);
-
 
         async function loadRepositoryPhotos() {
 
@@ -410,7 +459,6 @@
 
                 };
 
-
                 const requestNumber = Number(result.request?.request_number || 1);
                 galleryAccessNumber =
                     requestNumber;
@@ -473,41 +521,43 @@
                     galleryPreviewMode
                 );
 
+
+                currentAccessRequest = {
+                    ...(currentAccessRequest || {}),
+                    ...(result.request || {})
+                };
+
+                currentPhotos = Array.isArray(result.photos)
+                    ? result.photos
+                    : [];
+
                 if (result.booking) {
-
-                    currentBooking =
-                        result.booking;
-
+                    currentBooking = result.booking;
+                    displayClientInformation(result.booking);
 
                     console.log(
                         "GALLERY: Booking received from server:",
                         result.booking
                     );
-
-
-                    displayClientInformation(
-                        result.booking
-                    );
-
                 } else {
-
                     console.warn(
                         "GALLERY: Server did not return booking information."
                     );
 
+                    await loadBookingInformation();
                 }
-                currentPhotos = result.photos || [];
 
                 console.log(
                     "GALLERY: Photos:",
                     currentPhotos
                 );
-                if (result.booking) {
-                    currentBooking = result.booking;
-                    displayClientInformation(result.booking);
-                } else {
-                    await loadBookingInformation();
-                }
+
+                renderGalleryPhotos(currentPhotos);
+
+                console.log(
+                    "GALLERY: Photos:",
+                    currentPhotos
+                );
 
                 renderGalleryPhotos(currentPhotos);
 
@@ -515,11 +565,7 @@
                     "GALLERY: Gallery loading complete."
                 );
 
-
-                // IMPORTANT:
-                // initializeGallery() expects true here.
                 return true;
-
             }
 
             catch (error) {
