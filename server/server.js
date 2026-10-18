@@ -7300,31 +7300,31 @@ app.get("/api/gallery-access/photos", async (req, res) => {
                     )
                 )
             );
+                const {
+                    data: booking,
+                    error: bookingError
+                } = await supabase
+                    .from("bookings")
+                    .select(`
+                        id,
+                        customer_id,
+                        full_name,
+                        email,
+                        booking_date,
+                        booking_time,
+                        session_type,
+                        total_price
+                    `)
+                    .eq("id", accessRequest.booking_id)
+                    .maybeSingle();
 
-        const {
-            data: booking,
-            error: bookingError
-        } = await supabase
-            .from("bookings")
-            .select(`
-                id,
-                customer_id,
-                full_name,
-                email,
-                booking_date,
-                session_type,
-                package_name,
-                total_price
-            `)
-            .eq("id", accessRequest.booking_id)
-            .maybeSingle();
+                if (bookingError) {
+                    console.error(
+                        "GALLERY BOOKING LOOKUP ERROR:",
+                        bookingError
+                    );
+                }
 
-        if (bookingError) {
-            console.error(
-                "GALLERY BOOKING LOOKUP ERROR:",
-                bookingError
-            );
-        }
 
         const {
             data: photos,
