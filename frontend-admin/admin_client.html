@@ -362,8 +362,8 @@
                 </div>
 
             </form>
+
         </div>
-    </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -2031,12 +2031,15 @@
                 "https://captured-photo-studio.onrender.com"
             );
 
-            galleryUrl.searchParams.set("token", repository.access_token);
+            galleryUrl.searchParams.set(
+                "token",
+                repository.access_token
+            );
+
             galleryUrl.searchParams.set("request", requestId);
 
             return galleryUrl.toString();
         }
-
 
 
         document.addEventListener("click", async function (e) {
@@ -2132,21 +2135,35 @@
                             totalPrice: totalPrice,
                             downpaymentAmount: downpaymentAmount,
                             remainingBalance: remainingBalance,
-                            galleryLink: clientLink
+                            galleryLink: galleryLink
                         })
                     }
                 );
 
-                const emailResult = await emailResponse.json();
+                let emailResult;
 
-                if (!emailResponse.ok) {
+                try {
+                    emailResult = await emailResponse.json();
+                } catch (error) {
                     console.error(
-                        "Booking confirmation email failed:",
-                        emailResult
+                        "Invalid booking confirmation email response:",
+                        error
                     );
 
                     throw new Error(
+                        `Email server returned an invalid response (HTTP ${emailResponse.status}).`
+                    );
+                }
+
+                if (!emailResponse.ok || !emailResult.success) {
+                    console.error("BOOKING CONFIRMATION EMAIL FAILED:", {
+                        httpStatus: emailResponse.status,
+                        response: emailResult
+                    });
+
+                    throw new Error(
                         emailResult.message ||
+                        emailResult.error ||
                         "The booking was confirmed, but the confirmation email could not be sent."
                     );
                 }
@@ -2167,7 +2184,7 @@
                                 `${formatBookingTime(updatedBooking.booking_time)} has been confirmed. ` +
                                 `Your photo repository link is now available.`,
                             is_read: false,
-                            link: clientLink
+                            link: galleryLink
                         });
 
                     if (notificationError) {
@@ -2250,15 +2267,9 @@
                     );
                 }
 
-                // 2. Get the existing gallery or create one.
-                // These helper functions already exist in your admin code.
                 const repository = await createClientRepository(booking);
-                const galleryLink = "https://image-repository-1.onrender.com/gallery-requests";
-                if (!clientLink) {
-                    throw new Error("Could not generate the customer gallery link.");
-                }
-
-                // 3. Mark the booking as completed.
+                const galleryLink =
+                    "https://image-repository-1.onrender.com/gallery-requests";
                 const {
                     data: updatedBooking,
                     error: updateError
@@ -2277,33 +2288,67 @@
                     throw new Error("Booking could not be marked as completed.");
                 }
 
-                // 4. Send the gallery-ready email through your backend.
+
                 const emailResponse = await fetch(
                     `${SERVER_URL}/send-gallery-ready`,
                     {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
                         },
                         body: JSON.stringify({
                             email: updatedBooking.email,
                             name: updatedBooking.full_name,
                             bookingId: updatedBooking.id,
                             sessionType: updatedBooking.session_type,
-                            galleryLink: clientLink
+                            galleryLink:
+                                "https://image-repository-1.onrender.com/gallery-requests"
                         })
                     }
                 );
 
-                const emailResult = await emailResponse.json();
+                const responseText = await emailResponse.text();
+
+                let emailResult;
+
+                try {
+                    emailResult = JSON.parse(responseText);
+                } catch (error) {
+                    console.error("GALLERY EMAIL: INVALID SERVER RESPONSE", {
+                        httpStatus: emailResponse.status,
+                        response: responseText
+                    });
+
+                    throw new Error(
+                        `Email server returned an invalid response ` +
+                        `(HTTP ${emailResponse.status}). Check the backend logs.`
+                    );
+                }
+
+                console.log(
+                    "GALLERY EMAIL HTTP STATUS:",
+                    emailResponse.status
+                );
+
+                console.log(
+                    "GALLERY EMAIL SERVER RESPONSE:",
+                    emailResult
+                );
 
                 if (!emailResponse.ok || !emailResult.success) {
                     throw new Error(
-                        "The booking was marked as completed, but the gallery-ready " +
-                        "email could not be sent. " +
-                        (emailResult.message || "Please check the server logs.")
+                        emailResult.error ||
+                        emailResult.message ||
+                        `Gallery-ready email failed (HTTP ${emailResponse.status}).`
                     );
                 }
+
+                console.log(
+                    "GALLERY-READY EMAIL SENT SUCCESSFULLY:",
+                    emailResult
+                );
+
 
                 // 5. Create an in-app customer notification.
                 if (updatedBooking.customer_id) {
@@ -2318,7 +2363,7 @@
                                 "Your photography session has been completed. " +
                                 "Your photo gallery is ready to access.",
                             is_read: false,
-                            link: clientLink
+                            link: galleryLink
                         });
 
                     if (notificationError) {

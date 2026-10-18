@@ -2755,139 +2755,44 @@ app.post("/send-booking-confirmation", async (req, res) => {
         });
     }
 });
-
 app.post("/send-gallery-ready", async (req, res) => {
     try {
-        const { email, name, bookingId, sessionType, galleryLink } = req.body;
+        const {
+            email,
+            name,
+            bookingId,
+            sessionType,
+            galleryLink
+        } = req.body;
 
-        const recipientEmail = validateEmail(email);
-
-        if (!recipientEmail) {
+        if (!email || !galleryLink) {
             return res.status(400).json({
                 success: false,
-                message: "A valid customer email address is required."
+                message: "Email and gallery link are required."
             });
         }
 
-        if (!galleryLink) {
-            return res.status(400).json({
-                success: false,
-                message: "The customer gallery link is required."
-            });
-        }
-
-        if (!resend || !process.env.RESEND_FROM_EMAIL) {
-            return res.status(500).json({
-                success: false,
-                message: "Email service or sender address is not configured."
-            });
-        }
-
-        const safeName = escapeHtml(name || "Valued Customer");
-        const safeSessionType = escapeHtml(sessionType || "Photography Session");
-        const safeBookingId = escapeHtml(bookingId || "");
-        const safeGalleryLink = escapeHtml(galleryLink);
-
-        const { data, error } = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL,
-            to: [recipientEmail],
-            subject: "Your Photos Are Ready to Request - Captured Photography Studio",            html: `
-                <div style="
-                    font-family: Arial, sans-serif;
-                    line-height: 1.7;
-                    color: #333;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 24px;
-                ">
-                    <h2 style="color: #639A88;">
-                        Captured Photography Studio
-                    </h2>
-
-                    <p>Hi ${safeName},</p>
-                    <p>
-                        Thank you for choosing Captured Photography Studio!
-                        Your <strong>${safeSessionType}</strong> session has been
-                        marked as completed. You can now request access to your photo gallery.
-                    </p>
-
-                    <p>
-                        Click the button below to request access to your photos.
-                    </p>
-
-                    <p>
-                        ${safeBookingId
-                            ? `<strong>Booking ID:</strong> ${safeBookingId}`
-                            : ""}
-                    </p>
-
-                    <p>
-                        Click the button below to view your photo gallery.
-                    </p>
-
-                    <p style="text-align: center; margin: 30px 0;">
-                        <a
-                            href="${safeGalleryLink}"
-                            style="
-                                display: inline-block;
-                                background: #639A88;
-                                color: #ffffff;
-                                text-decoration: none;
-                                padding: 13px 24px;
-                                border-radius: 8px;
-                                font-weight: bold;
-                            "
-                        >
-                        Request Gallery Acces
-                      </a>
-                    </p>
-
-                    <p>
-                        You can also copy this link into your browser:
-                    </p>
-
-                    <p style="word-break: break-all;">
-                        <a href="${safeGalleryLink}">
-                            ${safeGalleryLink}
-                        </a>
-                    </p>
-
-                    <p>
-                        Thank you for being part of Captured Photography Studio.
-                        We hope you enjoy your photos!
-                    </p>
-
-                    <p>
-                        Best regards,<br>
-                        <strong>Captured Photography Studio</strong>
-                    </p>
-                </div>
-            `
-        });
-
-        if (error) {
-            console.error("GALLERY-READY EMAIL ERROR:", error);
+        if (!process.env.RESEND_API_KEY ||
+            !process.env.RESEND_FROM_EMAIL) {
+            console.error(
+                "Missing Resend environment configuration."
+            );
 
             return res.status(500).json({
                 success: false,
-                message: error.message || "Failed to send gallery-ready email."
+                message: "Email service is not configured."
             });
         }
 
-        console.log("GALLERY-READY EMAIL SENT TO:", recipientEmail);
-
-        return res.json({
-            success: true,
-            message: "Gallery-ready email sent successfully.",
-            emailId: data?.id || null
-        });
+        // Panatilihin dito ang kasalukuyan mong
+        // Resend email-sending implementation.
 
     } catch (error) {
-        console.error("SEND GALLERY-READY EMAIL ERROR:", error);
+        console.error("SEND GALLERY READY ERROR:", error);
 
         return res.status(500).json({
             success: false,
-            message: error.message || "Unable to send gallery-ready email."
+            message: "Failed to send gallery-ready email."
         });
     }
 });
