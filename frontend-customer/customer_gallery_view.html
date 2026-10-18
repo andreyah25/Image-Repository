@@ -283,22 +283,14 @@
             try {
                 console.log("GALLERY: Loading booking:", bookingId);
 
-                const {
-                    data: booking,
-                    error
-                } = await supabaseClient
+                const { data: booking, error } = await supabaseClient
                     .from("bookings")
-                    .select(
-                        "id, full_name, session_type, package_id, booking_date, event_date"
-                    )
+                    .select("*")
                     .eq("id", bookingId)
                     .maybeSingle();
 
                 if (error) {
-                    console.error(
-                        "GALLERY: Booking query failed:",
-                        error.message
-                    );
+                    console.error("GALLERY: Booking query failed:", error.message);
                     return false;
                 }
 
@@ -310,49 +302,19 @@
                     return false;
                 }
 
-                if (booking.package_id) {
-                    const {
-                        data: packageData,
-                        error: packageError
-                    } = await supabaseClient
-                        .from("packages")
-                        .select("id, name, package_name, title")
-                        .eq("id", booking.package_id)
-                        .maybeSingle();
-
-                    if (packageError) {
-                        console.warn(
-                            "GALLERY: Package lookup failed:",
-                            packageError.message
-                        );
-                    }
-
-                    if (packageData) {
-                        booking.package_name =
-                            packageData.name ||
-                            packageData.package_name ||
-                            packageData.title ||
-                            booking.session_type;
-                    }
-                }
-
-                displayClientInformation(booking);
-
+                // Diagnostic: inspect the actual booking field names.
                 console.log(
-                    "GALLERY: Customer information displayed:",
-                    {
-                        customer: booking.full_name || "Customer",
-                        package: booking.package_name || booking.session_type || "Photography Package"
-                    }
+                    "GALLERY: Available booking columns:",
+                    Object.keys(booking)
                 );
 
+                console.log("GALLERY: Booking record:", booking);
+
+                displayClientInformation(booking);
                 return true;
 
             } catch (error) {
-                console.error(
-                    "GALLERY: Failed to retrieve booking:",
-                    error
-                );
+                console.error("GALLERY: Failed to retrieve booking:", error);
                 return false;
             }
         }
