@@ -534,9 +534,8 @@
                 );
 
                 const requestNumber = Number(newRequest.request_number);
-                if (
-                    Number(request.request_number) === 1
-                ) {
+
+                if (requestNumber === 1) {
 
                     showMessage(
                         "Your first gallery access request has been sent to the admin. Once approved, you will receive access to your folder for 24 hours free of charge.",
@@ -544,7 +543,7 @@
                     );
 
                 }
-                else if (Number(request.request_number) === 2) {
+                else if (requestNumber === 2) {
 
                     showMessage(
                         "Your second gallery access request has been sent to the admin. Once approved, a ₱100 payment will be required. After payment confirmation, your access will be valid for 3 days.",
@@ -552,7 +551,7 @@
                     );
 
                 }
-                else if (Number(request.request_number) === 3) {
+                else if (requestNumber === 3) {
 
                     showMessage(
                         "Your third and final gallery access request has been sent to the admin. A ₱100 payment will be required. After payment confirmation, your final access will be valid for 3 days.",
@@ -560,9 +559,17 @@
                     );
 
                 }
-                startApprovalChecker(
-                    request.id
-                );
+                else {
+
+                    showMessage(
+                        "Your gallery access request was submitted successfully.",
+                        "success"
+                    );
+
+                }
+
+                // Use the actual response returned by the server.
+                startApprovalChecker(newRequest.id);
 
             }
 
@@ -698,6 +705,40 @@
                     );
 
                 }
+                const newRequest = result.request;
+                const createdRequestNumber = Number(newRequest.request_number);
+
+                console.log(
+                    "GALLERY REQUEST CREATED SUCCESSFULLY:",
+                    newRequest
+                );
+
+                if (createdRequestNumber === 1) {
+
+                    showMessage(
+                        "Your first gallery access request has been sent to the admin. Once approved, you will receive free access to your folder for 24 hours.",
+                        "info"
+                    );
+
+                }
+                else if (createdRequestNumber === 2) {
+
+                    showMessage(
+                        "Your second gallery access request has been sent to the admin. Once approved, a ₱100 payment will be required. After payment confirmation, your access will be valid for 3 days.",
+                        "info"
+                    );
+
+                }
+                else if (createdRequestNumber === 3) {
+
+                    showMessage(
+                        "Your third and final gallery access request has been sent to the admin. A ₱100 payment will be required. After payment confirmation, your final access will be valid for 3 days.",
+                        "info"
+                    );
+
+                }
+
+                startApprovalChecker(newRequest.id);
 
                 console.log(
                     "GALLERY REQUEST CREATED SUCCESSFULLY:",
