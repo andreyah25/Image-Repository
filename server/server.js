@@ -14,41 +14,41 @@ const sharp = require("sharp");
 
 const app = express();
 
-
 const allowedOrigins = [
+    "https://captured-photo-studio.onrender.com",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5500",
-    "http://127.0.0.1:5500",
-    "https://captured-photo-studio.onrender.com"
+    "http://127.0.0.1:5500"
 ];
 
-app.use(cors({
-    origin: allowedOrigins,
-    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 204
-}));
-
-app.options(/.*/, cors({
-    origin: allowedOrigins,
-    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 204
-}));
 const corsOptions = {
-    origin: [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "https://captured-photo-studio.onrender.com"
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        console.error("CORS blocked origin:", origin);
+        return callback(new Error("Not allowed by CORS"));
+    },
+    methods: [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
     ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization"
+    ],
     credentials: false
 };
+
 app.use(cors(corsOptions));
+app.options("/{*splat}", cors(corsOptions));
+
 app.use(express.json());
 app.use((req, res, next) => {
     console.log(
