@@ -1888,53 +1888,281 @@
 
         }
 
-
-        async function initializeGallery() {
-
-            console.log(
-                "===================================="
-            );
-
-            console.log(
-                "GALLERY: Starting initialization..."
-            );
-
-            console.log(
-                "URL:",
-                window.location.href
-            );
-
-            console.log(
-                "===================================="
-            );
-
-
-            const photosLoaded =
-                await loadRepositoryPhotos();
-
-
-            if (!photosLoaded) {
-
-                console.warn(
-                    "GALLERY: Photo loading failed. Initialization stopped."
-                );
-
-                return;
-
+        function showGalleryRequestForm(token, message = "") {
+            if (galleryTitle) {
+                galleryTitle.textContent = "Request Gallery Access";
             }
 
-            await checkGalleryPayment();
+            if (gallerySubtitle) {
+                gallerySubtitle.textContent =
+                    "Enter the details used for your completed booking.";
+            }
 
-            renderGalleryPhotos(
-                currentPhotos
-            );
+            if (downloadAllBtn) {
+                downloadAllBtn.style.display = "none";
+            }
 
+            galleryGrid.innerHTML = `
+        <div class="gallery-loading" style="
+            max-width: 460px;
+            margin: 20px auto;
+            padding: 24px;
+            background: #fff;
+            border-radius: 12px;
+            text-align: left;
+        ">
+            <h2 style="margin-bottom: 10px;">Gallery Access Request</h2>
 
-            console.log(
-                "GALLERY: Initialization complete."
-            );
+            <p style="margin-bottom: 16px;">
+                Submit your booking details. Your gallery will remain
+                locked until the studio approves your request.
+            </p>
 
+            <p id="galleryRequestMessage" style="
+                color: #639A88;
+                margin-bottom: 12px;
+            ">${escapeHTML(message)}</p>
+
+            <form id="galleryAccessRequestForm">
+                <label for="galleryRequestName">Full name</label>
+                <input id="galleryRequestName" name="fullName"
+                    type="text" required autocomplete="name"
+                    style="display:block;width:100%;padding:11px;
+                    margin:6px 0 14px;box-sizing:border-box;">
+
+                <label for="galleryRequestEmail">Booking email</label>
+                <input id="galleryRequestEmail" name="email"
+                    type="email" required autocomplete="email"
+                    style="display:block;width:100%;padding:11px;
+                    margin:6px 0 14px;box-sizing:border-box;">
+
+                <label for="galleryRequestDate">Booking date</label>
+                <input id="galleryRequestDate" name="bookingDate"
+                    type="date" required
+                    style="display:block;width:100%;padding:11px;
+                    margin:6px 0 18px;box-sizing:border-box;">
+
+                <button id="submitGalleryRequest" type="submit"
+                    style="width:100%;padding:12px;background:#639A88;
+                    color:white;border:0;border-radius:8px;
+                    font-weight:700;cursor:pointer;">
+                    Submit Gallery Request
+                </button>
+            </form>
+        </div>
+    `;
+
+            const form = document.getElementById("galleryAccessRequestForm");
+            const submitButton = document.getElementById("submitGalleryRequest");
+            const messageElement = document.getElementById("galleryRequestMessage");
+
+            form.addEventListener("submit", async event => {
+                event.preventDefault();
+
+                const fullName = document.getElementById("galleryRequestName").value.trim();
+                const email = document.getElementById("galleryRequestEmail").value.trim();
+                const bookingDate = document.getElementById("galleryRequestDate").value;
+
+                submitButton.disabled = true;
+                submitButton.textContent = "Submitting...";
+
+                try {
+                    const response = await fetch(
+                        `${SERVER_URL}/api/gallery-access/request`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                fullName,
+                                email,
+                                bookingDate
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    // The existing API returns 409 with the pending request
+                    // when the customer already has one.
+                    if (result.request &&
+                        String(result.request.status || "").toLowerCase() === "pending") {
+                        showGalleryRequestStatus(
+                            "Your gallery request is pending. Please wait for admin approval."
+                        );
+                        return;
+                    }
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.error || result.message ||
+                            "Unable to submit gallery access request."
+                        );
+                    }
+
+                    if (result.request?.id) {
+                        showGalleryRequestStatus(
+                            "Your request has been submitted. Please wait for admin approval."
+                        );
+                    } else {
+                        throw new Error("The server did not return the gallery request.");
+                    }
+                } catch (error) {
+                    messageElement.textContent = error.message || "Request submission failed.";
+                    messageElement.style.color = "#d9534f";
+                    submitButton.disabled = false;
+                    submitButton.textContent = "Submit Gallery Request";
+                }
+            });
         }
+
+        function showGalleryRequestStatus(message) {
+            if (galleryTitle) {
+                galleryTitle.textContent = "Gallery Request Submitted";
+            }
+
+            if (gallerySubtitle) {
+                gallerySubtitle.textContent = message;
+            }
+
+            if (downloadAllBtn) {
+                downloadAllBtn.style.display = "none";
+            }
+
+            galleryGrid.innerHTML = `
+        <div class="gallery-loading">
+            <i class="fa-regular fa-clock"></i>
+            <p>${escapeHTML(message)}</p>
+            <small>Return to this gallery link after the studio updates your request.</small>
+        </div>
+    `;
+        }
+
+        async function initializeGallery() {
+            console.log("GALLERY: Starting initialization...");
+
+            const { token, requestId } = getGalleryParameters();
+
+            if (!token) {
+                showGalleryError(
+                    "Gallery Link Invalid",
+                    "The gallery token is missing. Please open the link provided by the studio."
+                );
+                return;
+            }
+
+            // If a request ID is present, preserve the existing gallery flow.
+            if (requestId) {
+                const photosLoaded = await loadRepositoryPhotos();
+
+                if (photosLoaded) {
+                    await checkGalleryPayment();
+                    renderGalleryPhotos(currentPhotos);
+                }
+
+                return;
+            }
+
+            // Token-only link: look up the customer's latest request.
+            try {
+                const response = await fetch(
+                    `${SERVER_URL}/api/gallery-access/current-request?token=${encodeURIComponent(token)
+                    }`
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || "Unable to check gallery request.");
+                }
+
+                if (!result.hasRequest) {
+                    showGalleryRequestForm(token);
+                    return;
+                }
+
+                const request = result.request;
+                const status = String(request.status || "").toLowerCase();
+
+                if (status === "pending") {
+                    showGalleryRequestStatus(
+                        "Your gallery access request is pending. Please wait for admin approval."
+                    );
+                    return;
+                }
+
+                if (status === "approved" && !result.expired) {
+                    const galleryUrl = new URL(window.location.href);
+                    galleryUrl.searchParams.set("request", request.id);
+                    window.history.replaceState({}, document.title, galleryUrl.toString());
+
+                    const photosLoaded = await loadRepositoryPhotos();
+
+                    if (photosLoaded) {
+                        await checkGalleryPayment();
+                        renderGalleryPhotos(currentPhotos);
+                    }
+
+                    return;
+                }
+
+                // Rejected or expired request: allow the customer to request access again.
+                showGalleryRequestForm(
+                    token,
+                    status === "rejected"
+                        ? "Your previous request was rejected. You may submit another request if eligible."
+                        : "Your previous gallery access has expired. Submit a new request if eligible."
+                );
+            } catch (error) {
+                console.error("GALLERY: Request initialization error:", error);
+
+                showGalleryError(
+                    "Unable to Check Gallery Request",
+                    error.message || "Please try again later."
+                );
+            }
+        }
+
+        /*
+                async function initializeGallery() {
+                    console.log( "====================================" );
+        
+                    console.log(
+                        "GALLERY: Starting initialization..."
+                    );
+        
+                    console.log(
+                        "URL:",
+                        window.location.href
+                    );
+        
+                    console.log(
+                        "===================================="
+                    );
+        
+        
+                    const photosLoaded =
+                        await loadRepositoryPhotos();
+        
+        
+                    if (!photosLoaded) {
+        
+                        console.warn(
+                            "GALLERY: Photo loading failed. Initialization stopped."
+                        );
+        
+                        return;
+                    }
+                    await checkGalleryPayment();
+        
+                    renderGalleryPhotos(
+                        currentPhotos
+                    );
+                    console.log(
+                        "GALLERY: Initialization complete."
+                    );
+                }*/
         window.addEventListener(
             "DOMContentLoaded",
             async () => {

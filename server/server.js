@@ -7500,6 +7500,104 @@ app.get("/api/gallery-access/photos", async (req, res) => {
         });
     }
 });
+
+app.get("/api/gallery-access/current-request", async (req, res) => {
+    try {
+        const token = String(req.query.token || "").trim();
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                error: "Gallery token is required."
+            });
+        }
+
+        const { data: repository, error: repositoryError } =
+            await supabase
+                .from("repository_client_links")
+                .select("id, booking_id, access_token")
+                .eq("access_token", token)
+                .maybeSingle();
+
+        if (repositoryError) {
+            console.error("CURRENT GALLERY REPOSITORY ERROR:", repositoryError);
+            return res.status(500).json({
+                success: false,
+                error: "Unable to verify gallery link."
+            });
+        }
+
+        if (!repository) {
+            return res.status(404).json({
+                success: false,
+                error: "Gallery link is invalid."
+            });
+        }
+
+        const { data: requests, error: requestError } =
+            await supabase
+                .from("gallery_access_requests")
+                .select(`
+                    id,
+                    booking_id,
+                    repository_id,
+                    customer_email,
+                    status,
+                    request_number,
+                    payment_required,
+                    payment_confirmed,
+                    payment_status,
+                    access_started_at,
+                    access_granted_at,
+                    access_expires_at
+                `)
+                .eq("repository_id", repository.id)
+                .eq("booking_id", repository.booking_id)
+                .order("request_number", { ascending: false })
+                .order("created_at", { ascending: false })
+                .limit(1);
+
+        if (requestError) {
+            console.error("CURRENT GALLERY REQUEST ERROR:", requestError);
+            return res.status(500).json({
+                success: false,
+                error: "Unable to check gallery request."
+            });
+        }
+
+        const request = requests?.[0] || null;
+
+        if (!request) {
+            return res.json({
+                success: true,
+                hasRequest: false
+            });
+        }
+
+        const expiresAt = request.access_expires_at
+            ? new Date(request.access_expires_at)
+            : null;
+
+        const expired = expiresAt
+            ? Number.isNaN(expiresAt.getTime()) || new Date() >= expiresAt
+            : false;
+
+        return res.json({
+            success: true,
+            hasRequest: true,
+            request,
+            expired
+        });
+    } catch (error) {
+        console.error("CURRENT GALLERY REQUEST ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: "Unable to check gallery request."
+        });
+    }
+});
+
 app.listen(
     PORT,
     "0.0.0.0",

@@ -2017,20 +2017,26 @@
             return repository;
         }
 
-        const CUSTOMER_SITE_URL =
-            "https://captured-photo-studio.onrender.com";
-
-        function getClientRepositoryLink(repository) {
-            if (!repository || !repository.access_token) {
-                console.error("Repository token is missing:", repository);
-                return null;
+        function getClientRepositoryLink(repository, requestId) {
+            if (!repository?.access_token) {
+                throw new Error("Repository access token is missing.");
             }
 
-            return (
-                `${CUSTOMER_SITE_URL}/gallery?token=` +
-                encodeURIComponent(repository.access_token)
+            if (!requestId) {
+                throw new Error("Gallery access request ID is missing.");
+            }
+
+            const galleryUrl = new URL(
+                "/gallery",
+                "https://captured-photo-studio.onrender.com"
             );
+
+            galleryUrl.searchParams.set("token", repository.access_token);
+            galleryUrl.searchParams.set("request", requestId);
+
+            return galleryUrl.toString();
         }
+
 
 
         document.addEventListener("click", async function (e) {
