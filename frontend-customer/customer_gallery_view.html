@@ -208,31 +208,18 @@
 
             currentBooking = booking;
 
-            const customerName =
-                booking.full_name ||
-                booking.customer?.full_name ||
-                "Customer";
-
-            const packageName =
-                booking.package_name ||
-                booking.package?.name ||
-                booking.package?.package_name ||
-                booking.session_type ||
-                booking.package_type ||
-                "Photography Package";
-
+            const customerName = booking.full_name || "Customer";
+            const packageName = booking.session_type || "Photography Package";
             const sessionDate = booking.booking_date
                 ? formatDate(booking.booking_date)
-                : booking.event_date
-                    ? formatDate(booking.event_date)
-                    : "Date unavailable";
+                : "Date unavailable";
+
             if (galleryTitle) {
                 galleryTitle.textContent = `${customerName}'s Gallery`;
             }
 
             if (gallerySubtitle) {
-                gallerySubtitle.textContent =
-                    `${packageName} • ${sessionDate}`;
+                gallerySubtitle.textContent = `${packageName} • ${sessionDate}`;
             }
 
             if (userName) {
@@ -279,13 +266,14 @@
             return await fetchBooking(bookingId);
         }
 
+
         async function fetchBooking(bookingId) {
             try {
                 console.log("GALLERY: Loading booking:", bookingId);
 
                 const { data: booking, error } = await supabaseClient
                     .from("bookings")
-                    .select("*")
+                    .select("id, full_name, email, booking_date, booking_time, session_type, status")
                     .eq("id", bookingId)
                     .maybeSingle();
 
@@ -302,22 +290,20 @@
                     return false;
                 }
 
-                // Diagnostic: inspect the actual booking field names.
-                console.log(
-                    "GALLERY: Available booking columns:",
-                    Object.keys(booking)
-                );
-
-                console.log("GALLERY: Booking record:", booking);
+                // Use session_type as the package/session label.
+                booking.package_name = booking.session_type || "Photography Package";
 
                 displayClientInformation(booking);
+
+                console.log("GALLERY: Booking information loaded:", booking);
                 return true;
 
             } catch (error) {
-                console.error("GALLERY: Failed to retrieve booking:", error);
+                console.error("GALLERY: Error loading booking:", error);
                 return false;
             }
         }
+
 
         async function loadRepositoryPhotos() {
 
