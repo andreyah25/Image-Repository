@@ -41,15 +41,38 @@ const corsOptions = {
     ],
     allowedHeaders: [
         "Content-Type",
-        "Authorization"
+        "Authorization",
+        "apikey",
+        "x-client-info"
     ],
-    credentials: false
+    credentials: false,
+    optionsSuccessStatus: 204
 };
 
+// CORS must run before API routes and other middleware.
 app.use(cors(corsOptions));
-app.options("/{*splat}", cors(corsOptions));
 
-app.use(express.json());
+// Explicitly finish preflight requests after CORS headers are set.
+app.use((req, res, next) => {
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    next();
+});
+
+// Preserve the PayMongo webhook raw body.
+app.use(express.json({
+    verify: (req, res, buffer) => {
+        if (
+            req.originalUrl.split("?")[0] ===
+            "/api/paymongo/webhook"
+        ) {
+            req.rawBody = Buffer.from(buffer);
+        }
+    }
+}));
+
 app.use((req, res, next) => {
     console.log(
         "REQUEST:",
@@ -62,17 +85,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static(path.join(__dirname, "..")));
-
-app.use(express.json({
-    verify: (req, res, buffer) => {
-        if (
-            req.originalUrl.split("?")[0] ===
-            "/api/paymongo/webhook"
-        ) {
-            req.rawBody = Buffer.from(buffer);
-        }
-    }
-}));
 
 const ADMIN_NOTIFICATION_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL;
 const PORT = process.env.PORT || 3000;
