@@ -1559,9 +1559,11 @@
                 let response;
 
                 try {
+                    const mlServiceUrl =
+                        "https://captured-ml-api.onrender.com";
 
                     response = await fetch(
-                        "http://127.0.0.1:8001/analyze",
+                        `${mlServiceUrl}/analyze`,
                         {
                             method: "POST",
                             headers: {
