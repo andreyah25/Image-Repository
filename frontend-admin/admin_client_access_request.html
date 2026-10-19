@@ -242,13 +242,11 @@
                 SUPABASE_URL,
                 SUPABASE_ANON_KEY
             )
-
             const SERVER_URL =
-                (window.location.hostname === "localhost" ||
-                    window.location.hostname === "127.0.0.1")
+                window.location.hostname === "localhost" ||
+                    window.location.hostname === "127.0.0.1"
                     ? "http://localhost:3000"
-                    : "https://captured-server.onrender.com";
-
+                    : "https://image-repository-1.onrender.com";
             let allBookedSessions = [];
             let allAccessRequests = [];
             let selectedMonth = "all";
