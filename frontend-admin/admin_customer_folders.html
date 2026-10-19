@@ -1499,22 +1499,22 @@
                 `${count || 0} photo${count === 1 ? "" : "s"}`;
 
         }
-        async function analyzePhoto(photoId, imageUrl) {
 
-            console.log("=================================");
-            console.log("STARTING ML ANALYSIS");
+        async function analyzePhoto(photoId, imageUrl) {
+            const ML_SERVICE_URL = "https://captured-ml-api.onrender.com";
+            const ML_TIMEOUT = 300000; // 5 minutes
+
+            const startedAt = performance.now();
+            let timeout;
+            let timedOut = false;
+
+            console.log("========== ML ANALYSIS STARTED ==========");
             console.log("Photo ID:", photoId);
-            console.log("Image URL:", imageUrl);
-            console.log("=================================");
+            console.log("ML service:", ML_SERVICE_URL);
 
             try {
-
-
-                console.log("Changing status to processing...");
-
-                const {
-                    error: processingError
-                } = await supabaseClient
+                // 1. Mark the existing photo as processing.
+                const { error: processingError } = await supabaseClient
                     .from("repository_photos")
                     .update({
                         processing_status: "processing"
@@ -1522,129 +1522,85 @@
                     .eq("id", photoId);
 
                 if (processingError) {
-
-                    console.error(
-                        "PROCESSING STATUS ERROR:",
-                        processingError
-                    );
-
                     throw processingError;
                 }
 
-                console.log(
-                    "Status changed to processing."
-                );
+                // 2. Send the original image URL to the deployed ML API.
+                const controller = new AbortController();
 
+                timeout = setTimeout(() => {
+                    timedOut = true;
+                    console.error("ML REQUEST TIMED OUT after 5 minutes.");
+                    controller.abort();
+                }, ML_TIMEOUT);
 
-
-                console.log(
-                    "Sending image to ML service..."
-                );
-
-                const controller =
-                    new AbortController();
-
-                const timeout =
-                    setTimeout(() => {
-
-                        console.error(
-                            "ML REQUEST TIMED OUT"
-                        );
-
-                        controller.abort();
-
-                    }, 120000);
-
-
-                let response;
+                let result;
 
                 try {
-                    const mlServiceUrl =
-                        "https://captured-ml-api.onrender.com";
+                    console.log("[ML] Sending request...");
 
-                    response = await fetch(
-                        `${mlServiceUrl}/analyze`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                image_url: imageUrl
-                            }),
-                            signal: controller.signal
-                        }
+                    const requestStartedAt = performance.now();
+
+                    const response = await fetch(`${ML_SERVICE_URL}/analyze`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            image_url: imageUrl
+                        }),
+                        signal: controller.signal
+                    });
+
+                    console.log(
+                        `[ML] Response received after ${((performance.now() - requestStartedAt) / 1000).toFixed(2)
+                        } seconds. HTTP:`,
+                        response.status
                     );
+
+                    const responseText = await response.text();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `ML API returned HTTP ${response.status}: ` +
+                            responseText.slice(0, 500)
+                        );
+                    }
+
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch {
+                        throw new Error("ML API returned an invalid JSON response.");
+                    }
 
                 } catch (fetchError) {
-
-                    console.error(
-                        "ML FETCH ERROR:",
-                        fetchError
-                    );
+                    if (timedOut || fetchError.name === "AbortError") {
+                        throw new Error(
+                            "ML analysis timed out. The original photo is saved; " +
+                            "you can retry analysis without uploading it again."
+                        );
+                    }
 
                     throw new Error(
-                        "Could not connect to ML service: " +
-                        fetchError.message
+                        "ML API request failed: " + fetchError.message
                     );
 
                 } finally {
-
                     clearTimeout(timeout);
-
                 }
 
-
-                console.log(
-                    "ML HTTP STATUS:",
-                    response.status
-                );
-
-
-                if (!response.ok) {
-
-                    const errorText =
-                        await response.text();
-
-                    console.error(
-                        "ML SERVICE RESPONSE:",
-                        errorText
-                    );
-
-                    throw new Error(
-                        `ML service returned HTTP ${response.status}: ${errorText}`
-                    );
-                }
-
-
-                console.log(
-                    "Reading ML response..."
-                );
-
-                const result =
-                    await response.json();
-
-
-                console.log("=================================");
-                console.log("ML RESULT:");
-                console.log(result);
-                console.log("=================================");
-
+                console.log("[ML] Result:", result);
 
                 if (!result || result.success !== true) {
-
                     throw new Error(
-                        result?.error ||
-                        "ML analysis failed."
+                        result?.error || "ML analysis did not succeed."
                     );
                 }
 
-
-                // YOLO object detection results
+                // 3. Save detected objects and any face data returned by the API.
                 const detectedObjects = Array.isArray(result.objects)
                     ? result.objects
                     : [];
-
 
                 const updateData = {
                     processing_status: "completed",
@@ -1652,165 +1608,90 @@
                     ml_processed_at: new Date().toISOString()
                 };
 
-                // Update face information only if the API returns it.
                 if (Array.isArray(result.faces)) {
                     updateData.detected_faces = result.faces;
-
                     updateData.face_count = Number(
                         result.face_count ?? result.faces.length
                     );
                 }
 
-                console.log("=================================");
-                console.log("UPDATING DATABASE WITH ML DATA");
-                console.log(JSON.stringify(updateData, null, 2));
-                console.log("=================================");
-
-                const {
-                    error: updateError
-                } = await supabaseClient
+                const { error: updateError } = await supabaseClient
                     .from("repository_photos")
                     .update(updateData)
                     .eq("id", photoId);
 
-
                 if (updateError) {
-
-                    console.error("=================================");
-                    console.error("SUPABASE UPDATE ERROR:");
-                    console.error(updateError);
-                    console.error("=================================");
-
-                    throw updateError;
+                    throw new Error(
+                        "ML succeeded, but saving the results failed: " +
+                        updateError.message
+                    );
                 }
 
-
-                console.log("DATABASE UPDATE REQUEST SUCCESS.");
-                console.log("Verifying saved ML data...");
-
-                const {
-                    data: verifiedPhoto,
-                    error: verifyError
-                } = await supabaseClient
-                    .from("repository_photos")
-                    .select(`
-                id,
-                processing_status,
-                face_count,
-                detected_objects,
-                detected_faces,
-                ml_processed_at
-            `)
-                    .eq("id", photoId)
-                    .maybeSingle();
-
+                // 4. Verify that the photo record was updated.
+                const { data: savedPhoto, error: verifyError } =
+                    await supabaseClient
+                        .from("repository_photos")
+                        .select(`
+                    id,
+                    processing_status,
+                    face_count,
+                    detected_objects,
+                    detected_faces,
+                    ml_processed_at
+                `)
+                        .eq("id", photoId)
+                        .maybeSingle();
 
                 if (verifyError) {
-
-                    console.error(
-                        "DATABASE VERIFICATION ERROR:",
-                        verifyError
-                    );
-
+                    throw verifyError;
                 }
-                console.log("=================================");
-                console.log("DATABASE VERIFICATION RESULT:");
-                console.log(verifiedPhoto);
-                console.log("=================================");
-                if (!verifiedPhoto) {
 
+                if (!savedPhoto || savedPhoto.processing_status !== "completed") {
                     throw new Error(
-                        "Photo was not found after ML update. Check repository_photos RLS policies."
+                        "Could not verify the saved ML results. " +
+                        "Check the repository_photos permissions and policies."
                     );
                 }
-                console.log(
-                    "================================="
-                );
 
-                console.log(
-                    "ML PROCESSING COMPLETED SUCCESSFULLY"
-                );
-
-                console.log(
-                    "Face count:",
-                    verifiedPhoto.face_count
-                );
-
-                console.log(
-                    "Objects:",
-                    verifiedPhoto.detected_objects
-                );
-
-                console.log(
-                    "Faces:",
-                    verifiedPhoto.detected_faces
-                );
-
-                console.log(
-                    "================================="
-                );
-
+                console.log("========== ML ANALYSIS COMPLETED ==========");
+                console.log("Total time:", (
+                    (performance.now() - startedAt) / 1000
+                ).toFixed(2), "seconds");
+                console.log("Detected objects:", savedPhoto.detected_objects);
 
                 return {
-
                     success: true,
-
-                    result: result,
-
-                    database: verifiedPhoto
-
+                    result,
+                    database: savedPhoto
                 };
 
-
             } catch (error) {
+                console.error("========== ML ANALYSIS FAILED ==========");
+                console.error("Photo ID:", photoId);
+                console.error("Reason:", error);
 
-                console.error(
-                    "================================="
-                );
-
-                console.error(
-                    "ML PROCESSING FAILED"
-                );
-
-                console.error(
-                    error
-                );
-
-                console.error(
-                    "================================="
-                );
-                const {
-                    error: failedError
-                } = await supabaseClient
+                // Do not delete the uploaded photo or its WebP copy.
+                const { error: failedError } = await supabaseClient
                     .from("repository_photos")
                     .update({
                         processing_status: "failed"
                     })
                     .eq("id", photoId);
 
-
                 if (failedError) {
-
                     console.error(
-                        "FAILED STATUS UPDATE ERROR:",
+                        "Could not update processing status:",
                         failedError
                     );
-
                 }
+
                 return {
-
                     success: false,
-
-                    error:
-                        error.name === "AbortError"
-                            ? "ML request timed out."
-                            : error.message
-
+                    error: error.message || "ML analysis failed."
                 };
-
             }
-
         }
+
         async function loadPhotos(repositoryId, searchQuery = "") {
 
             photoGrid.innerHTML = `
