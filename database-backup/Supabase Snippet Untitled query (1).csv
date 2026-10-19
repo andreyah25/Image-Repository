@@ -1,0 +1,123 @@
+schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check
+public,addons,Admins can delete addons,PERMISSIVE,{authenticated},DELETE,is_admin(),null
+public,addons,Admins can insert addons,PERMISSIVE,{authenticated},INSERT,null,is_admin()
+public,addons,Admins can update addons,PERMISSIVE,{authenticated},UPDATE,is_admin(),is_admin()
+public,addons,Admins can view all addons,PERMISSIVE,{authenticated},SELECT,is_admin(),null
+public,backdrops,Admins can delete backdrops,PERMISSIVE,{authenticated},DELETE,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text))))",null
+public,backdrops,Admins can insert backdrops,PERMISSIVE,{authenticated},INSERT,null,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text))))"
+public,backdrops,Admins can update backdrops,PERMISSIVE,{authenticated},UPDATE,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text))))","(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text))))"
+public,backdrops,Authenticated users can delete backdrops,PERMISSIVE,{authenticated},DELETE,(auth.uid() IS NOT NULL),null
+public,backdrops,Authenticated users can insert backdrops,PERMISSIVE,{authenticated},INSERT,null,(auth.uid() IS NOT NULL)
+public,backdrops,Authenticated users can update backdrops,PERMISSIVE,{authenticated},UPDATE,(auth.uid() IS NOT NULL),(auth.uid() IS NOT NULL)
+public,backdrops,Authenticated users can view backdrops,PERMISSIVE,{authenticated},SELECT,true,null
+public,backdrops,Public can view available backdrops,PERMISSIVE,"{anon,authenticated}",SELECT,(status = 'Available'::text),null
+public,backdrops,Public can view backdrops,PERMISSIVE,"{anon,authenticated}",SELECT,true,null
+public,bookings,Admins can update bookings,PERMISSIVE,{authenticated},UPDATE,true,true
+public,bookings,Admins can view all bookings,PERMISSIVE,{authenticated},SELECT,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid())))",null
+public,bookings,Authenticated users can create bookings,PERMISSIVE,{authenticated},INSERT,null,(auth.uid() = customer_id)
+public,bookings,Customers can create their own bookings,PERMISSIVE,{authenticated},INSERT,null,(customer_id = auth.uid())
+public,bookings,Customers can view their own bookings,PERMISSIVE,{authenticated},SELECT,(customer_id = auth.uid()),null
+public,bookings,Staff can view bookings,PERMISSIVE,{authenticated},SELECT,true,null
+public,customer_folders,Authenticated users can create customer folders,PERMISSIVE,{authenticated},INSERT,null,true
+public,customer_folders,Authenticated users can view customer folders,PERMISSIVE,{authenticated},SELECT,true,null
+public,customers,Customers can insert own profile,PERMISSIVE,{authenticated},INSERT,null,(auth.uid() = id)
+public,customers,Customers can update own profile,PERMISSIVE,{authenticated},UPDATE,(auth.uid() = id),(auth.uid() = id)
+public,customers,Customers can view own profile,PERMISSIVE,{authenticated},SELECT,(auth.uid() = id),null
+public,customers,Staff can view clients,PERMISSIVE,{authenticated},SELECT,true,null
+public,event_folders,Users can delete own event folders,PERMISSIVE,{public},DELETE,(auth.uid() = user_id),null
+public,event_folders,Users can insert own event folders,PERMISSIVE,{public},INSERT,null,(auth.uid() = user_id)
+public,event_folders,Users can update own event folders,PERMISSIVE,{public},UPDATE,(auth.uid() = user_id),(auth.uid() = user_id)
+public,event_folders,Users can view own event folders,PERMISSIVE,{public},SELECT,(auth.uid() = user_id),null
+public,folders,Staff can view folders,PERMISSIVE,{authenticated},SELECT,true,null
+public,gallery_access_requests,Allow customer gallery access requests,PERMISSIVE,{anon},INSERT,null,true
+public,gallery_access_requests,Customers can create their own access requests,PERMISSIVE,{authenticated},INSERT,null,(auth.uid() = customer_id)
+public,gallery_access_requests,Customers can view their own access requests,PERMISSIVE,{authenticated},SELECT,(auth.uid() = customer_id),null
+public,gallery_access_requests,Staff can update gallery access requests,PERMISSIVE,{authenticated},UPDATE,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid())))","(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid())))"
+public,gallery_access_requests,Staff can view gallery access requests,PERMISSIVE,{authenticated},SELECT,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid())))",null
+public,gallery_sessions,Allow gallery session insert,PERMISSIVE,"{anon,authenticated}",INSERT,null,true
+public,gallery_sessions,Allow gallery session update,PERMISSIVE,"{anon,authenticated}",UPDATE,true,true
+public,gallery_sessions,Allow staff to read gallery sessions,PERMISSIVE,{authenticated},SELECT,true,null
+public,notifications,Admins can update admin notifications,PERMISSIVE,{authenticated},UPDATE,(recipient = 'admin'::text),(recipient = 'admin'::text)
+public,notifications,Anyone can insert notifications,PERMISSIVE,{authenticated},INSERT,null,true
+public,notifications,Anyone can read notifications,PERMISSIVE,{authenticated},SELECT,true,null
+public,notifications,Authenticated can insert notifications,PERMISSIVE,{authenticated},INSERT,null,true
+public,notifications,Customers can update their notifications,PERMISSIVE,{authenticated},UPDATE,((customer_id = auth.uid()) AND (recipient = 'customer'::text)),((customer_id = auth.uid()) AND (recipient = 'customer'::text))
+public,notifications,Customers can update their own notifications,PERMISSIVE,{public},UPDATE,(auth.uid() = customer_id),(auth.uid() = customer_id)
+public,notifications,Customers can view their notifications,PERMISSIVE,{authenticated},SELECT,((customer_id = auth.uid()) AND (recipient = 'customer'::text)),null
+public,notifications,Enable read access for all users,PERMISSIVE,{public},SELECT,true,null
+public,otp_verifications,OTP Delete,PERMISSIVE,{public},DELETE,true,null
+public,otp_verifications,OTP Insert,PERMISSIVE,{public},INSERT,null,true
+public,otp_verifications,OTP Select,PERMISSIVE,{public},SELECT,true,null
+public,packages,Admins can delete packages,PERMISSIVE,{authenticated},DELETE,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text))))",null
+public,packages,Admins can insert packages,PERMISSIVE,{authenticated},INSERT,null,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text))))"
+public,packages,Admins can update packages,PERMISSIVE,{authenticated},UPDATE,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text))))","(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text))))"
+public,packages,Admins can view all packages,PERMISSIVE,{authenticated},SELECT,"(EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text))))",null
+public,packages,Anyone can view active packages,PERMISSIVE,{public},SELECT,(status = 'Active'::text),null
+public,packages,Public can view available packages,PERMISSIVE,"{anon,authenticated}",SELECT,(status = 'Available'::text),null
+public,photos,Staff can view photos,PERMISSIVE,{authenticated},SELECT,true,null
+public,repository_client_links,repository_links_authenticated_insert,PERMISSIVE,{authenticated},INSERT,null,(created_by = auth.uid())
+public,repository_client_links,repository_links_authenticated_select,PERMISSIVE,{authenticated},SELECT,true,null
+public,repository_photos,Staff can insert repository photos,PERMISSIVE,{authenticated},INSERT,null,true
+public,repository_photos,Staff can update repository photos,PERMISSIVE,{authenticated},UPDATE,true,true
+public,repository_photos,Staff can view repository photos,PERMISSIVE,{authenticated},SELECT,true,null
+public,repository_photos,repository_photos_authenticated_insert,PERMISSIVE,{authenticated},INSERT,null,(uploaded_by = auth.uid())
+public,repository_photos,repository_photos_authenticated_select,PERMISSIVE,{authenticated},SELECT,true,null
+public,staff_activity_logs,Authenticated users can view activity logs,PERMISSIVE,{authenticated},SELECT,true,null
+public,staff_activity_logs,Staff can insert own activity logs,PERMISSIVE,{authenticated},INSERT,null,(staff_id = auth.uid())
+public,staff_profiles,Admin can view all profiles,PERMISSIVE,{authenticated},SELECT,is_admin(),null
+public,staff_profiles,Users can update own profile,PERMISSIVE,{authenticated},UPDATE,(id = auth.uid()),(id = auth.uid())
+public,staff_profiles,Users can update their own staff profile,PERMISSIVE,{authenticated},UPDATE,(id = auth.uid()),(id = auth.uid())
+public,staff_profiles,Users can view own profile,PERMISSIVE,{authenticated},SELECT,(id = auth.uid()),null
+public,staff_profiles,Users can view their own staff profile,PERMISSIVE,{authenticated},SELECT,(id = auth.uid()),null
+public,staff_profiles,staff_profiles_insert_own,PERMISSIVE,{authenticated},INSERT,null,(auth.uid() = id)
+public,staff_profiles,staff_profiles_select_own,PERMISSIVE,{authenticated},SELECT,(auth.uid() = id),null
+public,staff_profiles,staff_profiles_update_own,PERMISSIVE,{authenticated},UPDATE,(auth.uid() = id),(auth.uid() = id)
+storage,objects,Authenticated users can update staff avatars,PERMISSIVE,{authenticated},UPDATE,(bucket_id = 'staff-avatars'::text),(bucket_id = 'staff-avatars'::text)
+storage,objects,Authenticated users can upload staff avatars,PERMISSIVE,{authenticated},INSERT,null,(bucket_id = 'staff-avatars'::text)
+storage,objects,Customers can delete own profile images,PERMISSIVE,{authenticated},DELETE,((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),null
+storage,objects,Customers can update own profile images,PERMISSIVE,{authenticated},UPDATE,((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,Customers can upload own profile images,PERMISSIVE,{authenticated},INSERT,null,((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,Customers can upload payment proofs,PERMISSIVE,{authenticated},INSERT,null,((bucket_id = 'payment-proofs'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,Customers can view own profile images,PERMISSIVE,{authenticated},SELECT,((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),null
+storage,objects,Delete Photos,PERMISSIVE,{public},DELETE,(bucket_id = 'repository-photos'::text),null
+storage,objects,TEST customers can update profile images,PERMISSIVE,{authenticated},UPDATE,(bucket_id = 'profile-images'::text),(bucket_id = 'profile-images'::text)
+storage,objects,TEST customers can upload profile images,PERMISSIVE,{authenticated},INSERT,null,(bucket_id = 'profile-images'::text)
+storage,objects,Upload Photos,PERMISSIVE,{authenticated},INSERT,null,(bucket_id = 'repository-photos'::text)
+storage,objects,Users can update own avatar,PERMISSIVE,{authenticated},UPDATE,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,Users can update their own avatar,PERMISSIVE,{authenticated},UPDATE,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,Users can upload own avatar,PERMISSIVE,{authenticated},INSERT,null,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,Users can upload their own avatar,PERMISSIVE,{authenticated},INSERT,null,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,Users can view own avatar,PERMISSIVE,{authenticated},SELECT,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),null
+storage,objects,client_photos_authenticated_delete,PERMISSIVE,{authenticated},DELETE,(bucket_id = 'client-photos'::text),null
+storage,objects,client_photos_authenticated_insert,PERMISSIVE,{authenticated},INSERT,null,(bucket_id = 'client-photos'::text)
+storage,objects,client_photos_authenticated_select,PERMISSIVE,{authenticated},SELECT,(bucket_id = 'client-photos'::text),null
+storage,objects,staff avatars delete,PERMISSIVE,{authenticated},DELETE,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),null
+storage,objects,staff avatars insert,PERMISSIVE,{authenticated},INSERT,null,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))
+storage,objects,staff avatars select,PERMISSIVE,{authenticated},SELECT,(bucket_id = 'staff-avatars'::text),null
+storage,objects,staff avatars update,PERMISSIVE,{authenticated},UPDATE,((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)),((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))

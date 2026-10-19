@@ -13,6 +13,7 @@ const sharp = require("sharp");
 
 
 const app = express();
+
 const allowedOrigins = [
     "https://captured-photo-studio.onrender.com",
     "https://captured-admin-studio.onrender.com",
@@ -23,16 +24,10 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-
-        console.error("CORS blocked origin:", origin);
-        return callback(new Error("Not allowed by CORS"));
-    },
+    origin: allowedOrigins,
     methods: [
         "GET",
+        "HEAD",
         "POST",
         "PUT",
         "PATCH",
@@ -40,26 +35,20 @@ const corsOptions = {
         "OPTIONS"
     ],
     allowedHeaders: [
-        "Content-Type",
+        "Accept",
         "Authorization",
+        "Content-Type",
         "apikey",
-        "x-client-info"
+        "x-client-info",
+        "x-supabase-api-version"
     ],
     credentials: false,
     optionsSuccessStatus: 204
 };
 
-// CORS must run before API routes and other middleware.
+// Register CORS before API routes and other middleware.
+// This also handles OPTIONS preflight requests.
 app.use(cors(corsOptions));
-
-// Explicitly finish preflight requests after CORS headers are set.
-app.use((req, res, next) => {
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
-    }
-
-    next();
-});
 
 // Preserve the PayMongo webhook raw body.
 app.use(express.json({
@@ -85,6 +74,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static(path.join(__dirname, "..")));
+
 
 const ADMIN_NOTIFICATION_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL;
 const PORT = process.env.PORT || 3000;

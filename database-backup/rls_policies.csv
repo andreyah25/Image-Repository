@@ -1,0 +1,123 @@
+policy_sql
+"CREATE POLICY ""Admins can delete addons"" ON public.addons AS permissive FOR delete TO authenticated USING (is_admin());"
+"CREATE POLICY ""Admins can insert addons"" ON public.addons AS permissive FOR insert TO authenticated WITH CHECK (is_admin());"
+"CREATE POLICY ""Admins can update addons"" ON public.addons AS permissive FOR update TO authenticated USING (is_admin()) WITH CHECK (is_admin());"
+"CREATE POLICY ""Admins can view all addons"" ON public.addons AS permissive FOR select TO authenticated USING (is_admin());"
+"CREATE POLICY ""Admins can delete backdrops"" ON public.backdrops AS permissive FOR delete TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text)))));"
+"CREATE POLICY ""Admins can insert backdrops"" ON public.backdrops AS permissive FOR insert TO authenticated WITH CHECK ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text)))));"
+"CREATE POLICY ""Admins can update backdrops"" ON public.backdrops AS permissive FOR update TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (lower(staff_profiles.role) = 'admin'::text) AND (lower(staff_profiles.status) = 'active'::text)))));"
+"CREATE POLICY ""Authenticated users can delete backdrops"" ON public.backdrops AS permissive FOR delete TO authenticated USING ((auth.uid() IS NOT NULL));"
+"CREATE POLICY ""Authenticated users can insert backdrops"" ON public.backdrops AS permissive FOR insert TO authenticated WITH CHECK ((auth.uid() IS NOT NULL));"
+"CREATE POLICY ""Authenticated users can update backdrops"" ON public.backdrops AS permissive FOR update TO authenticated USING ((auth.uid() IS NOT NULL)) WITH CHECK ((auth.uid() IS NOT NULL));"
+"CREATE POLICY ""Authenticated users can view backdrops"" ON public.backdrops AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Public can view available backdrops"" ON public.backdrops AS permissive FOR select TO anon, authenticated USING ((status = 'Available'::text));"
+"CREATE POLICY ""Public can view backdrops"" ON public.backdrops AS permissive FOR select TO anon, authenticated USING (true);"
+"CREATE POLICY ""Admins can update bookings"" ON public.bookings AS permissive FOR update TO authenticated USING (true) WITH CHECK (true);"
+"CREATE POLICY ""Admins can view all bookings"" ON public.bookings AS permissive FOR select TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid()))));"
+"CREATE POLICY ""Authenticated users can create bookings"" ON public.bookings AS permissive FOR insert TO authenticated WITH CHECK ((auth.uid() = customer_id));"
+"CREATE POLICY ""Customers can create their own bookings"" ON public.bookings AS permissive FOR insert TO authenticated WITH CHECK ((customer_id = auth.uid()));"
+"CREATE POLICY ""Customers can view their own bookings"" ON public.bookings AS permissive FOR select TO authenticated USING ((customer_id = auth.uid()));"
+"CREATE POLICY ""Staff can view bookings"" ON public.bookings AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Authenticated users can create customer folders"" ON public.customer_folders AS permissive FOR insert TO authenticated WITH CHECK (true);"
+"CREATE POLICY ""Authenticated users can view customer folders"" ON public.customer_folders AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Customers can insert own profile"" ON public.customers AS permissive FOR insert TO authenticated WITH CHECK ((auth.uid() = id));"
+"CREATE POLICY ""Customers can update own profile"" ON public.customers AS permissive FOR update TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));"
+"CREATE POLICY ""Customers can view own profile"" ON public.customers AS permissive FOR select TO authenticated USING ((auth.uid() = id));"
+"CREATE POLICY ""Staff can view clients"" ON public.customers AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Users can delete own event folders"" ON public.event_folders AS permissive FOR delete TO public USING ((auth.uid() = user_id));"
+"CREATE POLICY ""Users can insert own event folders"" ON public.event_folders AS permissive FOR insert TO public WITH CHECK ((auth.uid() = user_id));"
+"CREATE POLICY ""Users can update own event folders"" ON public.event_folders AS permissive FOR update TO public USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));"
+"CREATE POLICY ""Users can view own event folders"" ON public.event_folders AS permissive FOR select TO public USING ((auth.uid() = user_id));"
+"CREATE POLICY ""Staff can view folders"" ON public.folders AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Allow customer gallery access requests"" ON public.gallery_access_requests AS permissive FOR insert TO anon WITH CHECK (true);"
+"CREATE POLICY ""Customers can create their own access requests"" ON public.gallery_access_requests AS permissive FOR insert TO authenticated WITH CHECK ((auth.uid() = customer_id));"
+"CREATE POLICY ""Customers can view their own access requests"" ON public.gallery_access_requests AS permissive FOR select TO authenticated USING ((auth.uid() = customer_id));"
+"CREATE POLICY ""Staff can update gallery access requests"" ON public.gallery_access_requests AS permissive FOR update TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid())))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid()))));"
+"CREATE POLICY ""Staff can view gallery access requests"" ON public.gallery_access_requests AS permissive FOR select TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE (staff_profiles.id = auth.uid()))));"
+"CREATE POLICY ""Allow gallery session insert"" ON public.gallery_sessions AS permissive FOR insert TO anon, authenticated WITH CHECK (true);"
+"CREATE POLICY ""Allow gallery session update"" ON public.gallery_sessions AS permissive FOR update TO anon, authenticated USING (true) WITH CHECK (true);"
+"CREATE POLICY ""Allow staff to read gallery sessions"" ON public.gallery_sessions AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Admins can update admin notifications"" ON public.notifications AS permissive FOR update TO authenticated USING ((recipient = 'admin'::text)) WITH CHECK ((recipient = 'admin'::text));"
+"CREATE POLICY ""Anyone can insert notifications"" ON public.notifications AS permissive FOR insert TO authenticated WITH CHECK (true);"
+"CREATE POLICY ""Anyone can read notifications"" ON public.notifications AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Authenticated can insert notifications"" ON public.notifications AS permissive FOR insert TO authenticated WITH CHECK (true);"
+"CREATE POLICY ""Customers can update their notifications"" ON public.notifications AS permissive FOR update TO authenticated USING (((customer_id = auth.uid()) AND (recipient = 'customer'::text))) WITH CHECK (((customer_id = auth.uid()) AND (recipient = 'customer'::text)));"
+"CREATE POLICY ""Customers can update their own notifications"" ON public.notifications AS permissive FOR update TO public USING ((auth.uid() = customer_id)) WITH CHECK ((auth.uid() = customer_id));"
+"CREATE POLICY ""Customers can view their notifications"" ON public.notifications AS permissive FOR select TO authenticated USING (((customer_id = auth.uid()) AND (recipient = 'customer'::text)));"
+"CREATE POLICY ""Enable read access for all users"" ON public.notifications AS permissive FOR select TO public USING (true);"
+"CREATE POLICY ""OTP Delete"" ON public.otp_verifications AS permissive FOR delete TO public USING (true);"
+"CREATE POLICY ""OTP Insert"" ON public.otp_verifications AS permissive FOR insert TO public WITH CHECK (true);"
+"CREATE POLICY ""OTP Select"" ON public.otp_verifications AS permissive FOR select TO public USING (true);"
+"CREATE POLICY ""Admins can delete packages"" ON public.packages AS permissive FOR delete TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text)))));"
+"CREATE POLICY ""Admins can insert packages"" ON public.packages AS permissive FOR insert TO authenticated WITH CHECK ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text)))));"
+"CREATE POLICY ""Admins can update packages"" ON public.packages AS permissive FOR update TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text)))));"
+"CREATE POLICY ""Admins can view all packages"" ON public.packages AS permissive FOR select TO authenticated USING ((EXISTS ( SELECT 1
+   FROM staff_profiles
+  WHERE ((staff_profiles.id = auth.uid()) AND (staff_profiles.role = 'admin'::text) AND (staff_profiles.status = 'Active'::text)))));"
+"CREATE POLICY ""Anyone can view active packages"" ON public.packages AS permissive FOR select TO public USING ((status = 'Active'::text));"
+"CREATE POLICY ""Public can view available packages"" ON public.packages AS permissive FOR select TO anon, authenticated USING ((status = 'Available'::text));"
+"CREATE POLICY ""Staff can view photos"" ON public.photos AS permissive FOR select TO authenticated USING (true);"
+CREATE POLICY repository_links_authenticated_insert ON public.repository_client_links AS permissive FOR insert TO authenticated WITH CHECK ((created_by = auth.uid()));
+CREATE POLICY repository_links_authenticated_select ON public.repository_client_links AS permissive FOR select TO authenticated USING (true);
+"CREATE POLICY ""Staff can insert repository photos"" ON public.repository_photos AS permissive FOR insert TO authenticated WITH CHECK (true);"
+"CREATE POLICY ""Staff can update repository photos"" ON public.repository_photos AS permissive FOR update TO authenticated USING (true) WITH CHECK (true);"
+"CREATE POLICY ""Staff can view repository photos"" ON public.repository_photos AS permissive FOR select TO authenticated USING (true);"
+CREATE POLICY repository_photos_authenticated_insert ON public.repository_photos AS permissive FOR insert TO authenticated WITH CHECK ((uploaded_by = auth.uid()));
+CREATE POLICY repository_photos_authenticated_select ON public.repository_photos AS permissive FOR select TO authenticated USING (true);
+"CREATE POLICY ""Authenticated users can view activity logs"" ON public.staff_activity_logs AS permissive FOR select TO authenticated USING (true);"
+"CREATE POLICY ""Staff can insert own activity logs"" ON public.staff_activity_logs AS permissive FOR insert TO authenticated WITH CHECK ((staff_id = auth.uid()));"
+"CREATE POLICY ""Admin can view all profiles"" ON public.staff_profiles AS permissive FOR select TO authenticated USING (is_admin());"
+"CREATE POLICY ""Users can update own profile"" ON public.staff_profiles AS permissive FOR update TO authenticated USING ((id = auth.uid())) WITH CHECK ((id = auth.uid()));"
+"CREATE POLICY ""Users can update their own staff profile"" ON public.staff_profiles AS permissive FOR update TO authenticated USING ((id = auth.uid())) WITH CHECK ((id = auth.uid()));"
+"CREATE POLICY ""Users can view own profile"" ON public.staff_profiles AS permissive FOR select TO authenticated USING ((id = auth.uid()));"
+"CREATE POLICY ""Users can view their own staff profile"" ON public.staff_profiles AS permissive FOR select TO authenticated USING ((id = auth.uid()));"
+CREATE POLICY staff_profiles_insert_own ON public.staff_profiles AS permissive FOR insert TO authenticated WITH CHECK ((auth.uid() = id));
+CREATE POLICY staff_profiles_select_own ON public.staff_profiles AS permissive FOR select TO authenticated USING ((auth.uid() = id));
+CREATE POLICY staff_profiles_update_own ON public.staff_profiles AS permissive FOR update TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));
+"CREATE POLICY ""Authenticated users can update staff avatars"" ON storage.objects AS permissive FOR update TO authenticated USING ((bucket_id = 'staff-avatars'::text)) WITH CHECK ((bucket_id = 'staff-avatars'::text));"
+"CREATE POLICY ""Authenticated users can upload staff avatars"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK ((bucket_id = 'staff-avatars'::text));"
+"CREATE POLICY ""Customers can delete own profile images"" ON storage.objects AS permissive FOR delete TO authenticated USING (((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Customers can update own profile images"" ON storage.objects AS permissive FOR update TO authenticated USING (((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))) WITH CHECK (((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Customers can upload own profile images"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK (((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Customers can upload payment proofs"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK (((bucket_id = 'payment-proofs'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Customers can view own profile images"" ON storage.objects AS permissive FOR select TO authenticated USING (((bucket_id = 'profile-images'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Delete Photos"" ON storage.objects AS permissive FOR delete TO public USING ((bucket_id = 'repository-photos'::text));"
+"CREATE POLICY ""TEST customers can update profile images"" ON storage.objects AS permissive FOR update TO authenticated USING ((bucket_id = 'profile-images'::text)) WITH CHECK ((bucket_id = 'profile-images'::text));"
+"CREATE POLICY ""TEST customers can upload profile images"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK ((bucket_id = 'profile-images'::text));"
+"CREATE POLICY ""Upload Photos"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK ((bucket_id = 'repository-photos'::text));"
+"CREATE POLICY ""Users can update own avatar"" ON storage.objects AS permissive FOR update TO authenticated USING (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))) WITH CHECK (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Users can update their own avatar"" ON storage.objects AS permissive FOR update TO authenticated USING (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))) WITH CHECK (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Users can upload own avatar"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Users can upload their own avatar"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""Users can view own avatar"" ON storage.objects AS permissive FOR select TO authenticated USING (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+CREATE POLICY client_photos_authenticated_delete ON storage.objects AS permissive FOR delete TO authenticated USING ((bucket_id = 'client-photos'::text));
+CREATE POLICY client_photos_authenticated_insert ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK ((bucket_id = 'client-photos'::text));
+CREATE POLICY client_photos_authenticated_select ON storage.objects AS permissive FOR select TO authenticated USING ((bucket_id = 'client-photos'::text));
+"CREATE POLICY ""staff avatars delete"" ON storage.objects AS permissive FOR delete TO authenticated USING (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""staff avatars insert"" ON storage.objects AS permissive FOR insert TO authenticated WITH CHECK (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
+"CREATE POLICY ""staff avatars select"" ON storage.objects AS permissive FOR select TO authenticated USING ((bucket_id = 'staff-avatars'::text));"
+"CREATE POLICY ""staff avatars update"" ON storage.objects AS permissive FOR update TO authenticated USING (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))) WITH CHECK (((bucket_id = 'staff-avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text)));"
