@@ -377,16 +377,18 @@
             SUPABASE_ANON_KEY
         )
 
-
         const SERVER_URL =
             (window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1")
                 ? "http://localhost:3000"
-                :"https://image-repository-1.onrender.com";
-;
+                : "https://captured-server.onrender.com";
+
+        const CUSTOMER_URL = "https://captured-photo-studio.onrender.com";
+
         let allBookedSessions = [];
         let allAccessRequests = [];
         let selectedMonth = "all";
+
 
         function escapeHtml(value) {
             if (value === null || value === undefined) return "";
@@ -2105,8 +2107,7 @@
 
                 const repository = await createClientRepository(updatedBooking);
 
-                const galleryLink =
-                    "https://image-repository-1.onrender.com/gallery-requests";
+                const galleryLink = `${CUSTOMER_URL}/gallery-requests`;
                 const totalPrice =
                     Number(updatedBooking.total_price || 0);
 
