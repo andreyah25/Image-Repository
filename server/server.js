@@ -11,12 +11,11 @@ const { Resend } = require("resend");
 const { createClient } = require("@supabase/supabase-js");
 const sharp = require("sharp");
 
-
 const app = express();
 
 const allowedOrigins = [
-    "https://captured-photo-studio.onrender.com",
     "https://captured-admin-studio.onrender.com",
+    "https://captured-photo-studio.onrender.com",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5500",
@@ -24,7 +23,14 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        console.error("CORS blocked origin:", origin);
+        return callback(new Error("Not allowed by CORS"));
+    },
     methods: [
         "GET",
         "HEAD",
@@ -42,12 +48,10 @@ const corsOptions = {
         "x-client-info",
         "x-supabase-api-version"
     ],
-    credentials: false,
     optionsSuccessStatus: 204
 };
 
-// Register CORS before API routes and other middleware.
-// This also handles OPTIONS preflight requests.
+// IMPORTANT: CORS must run before your API routes.
 app.use(cors(corsOptions));
 
 // Preserve the PayMongo webhook raw body.
