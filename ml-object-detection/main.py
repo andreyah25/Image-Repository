@@ -25,10 +25,11 @@ app.add_middleware(
         "http://127.0.0.1:5500",
         "http://localhost:5500",
         "https://captured-photo-studio.onrender.com",
+        "https://captured-admin-studio.onrender.com",
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type"],
+    allow_headers=["*"],
 )
 # Load the pretrained model once when the service starts.
 # Load the trained Captured custom model once at startup.
