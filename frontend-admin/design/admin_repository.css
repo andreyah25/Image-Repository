@@ -1,0 +1,878 @@
+.repo-top-header-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.repo-top-header-block .page-header h1 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+}
+
+.page-header p {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 16px !important;
+    color: #666666 !important;
+    margin: 8px 0 0 0 !important;
+}
+
+.filter-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.filter-dropdown-wrapper .add-new-client-btn {
+    background-color: #639A88;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    height: 38px;
+    padding: 0 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.filter-dropdown-wrapper .add-new-client-btn:hover {
+    background-color: #528373;
+}
+
+.add-new-dropdown-box {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background-color: #ffffff;
+    width: 190px;
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    padding: 6px 0;
+}
+
+.add-new-dropdown-box.show {
+    display: flex;
+}
+
+.add-new-dropdown-box button {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #333333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.1s ease;
+}
+
+.add-new-dropdown-box button:hover {
+    background-color: #f5f5f5;
+    color: #1f2d2f;
+}
+
+.add-new-dropdown-box button i {
+    color: #777777;
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+.repo-sub-actions-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.repo-filter-selects-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.repo-select-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.repo-select-wrapper select {
+    width: 125px;
+    height: 36px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 0 26px 0 12px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #8c8c8c;
+    background-color: #ffffff;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.repo-select-wrapper select:hover {
+    background-color: #fcfcfc;
+}
+
+.repo-select-wrapper .select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8c8c8c;
+    font-size: 10px;
+    pointer-events: none;
+}
+
+.repo-sub-actions-container .client-actions-row {
+    display: block;
+}
+
+.repo-sub-actions-container .table-search-box {
+    position: relative;
+    width: 260px;
+}
+
+.repo-sub-actions-container .table-search-box input {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    padding: 0 35px 0 12px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #333333;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.repo-sub-actions-container .table-search-box i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999999;
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.repo-grid-card-panel {
+    padding: 24px !important;
+    min-height: 520px !important;
+}
+
+
+.repo-folders-grid-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    width: 100%;
+    padding: 20px 0;
+}
+
+
+/* ==============================
+   BASIC FOLDER CARD
+============================== */
+
+.folder-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 24px 20px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: none;
+    transform: none;
+    box-sizing: border-box;
+}
+
+
+/* ==============================
+   FOLDER HOVER
+   No movement / no animation
+============================== */
+
+.folder-card:hover {
+    background: #fafafa;
+    border-color: #d5d5d5;
+
+    /* NO MOVEMENT */
+    transform: none;
+
+    /* Simple shadow only */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ==============================
+   FOLDER ICON
+============================== */
+
+.folder-icon {
+    font-size: 48px;
+    color: #528373;
+    margin-bottom: 14px;
+}
+
+
+/* ==============================
+   FOLDER NAME
+============================== */
+
+.folder-card h3 {
+    margin: 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333333;
+    text-align: center;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ==============================
+   EMPTY REPOSITORY
+============================== */
+
+.empty-repo-message {
+    width: 100%;
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 0;
+    color: #888888;
+    font-size: 14px;
+}
+
+
+/* ==============================
+   REMOVE OLD FOLDER STYLES
+============================== */
+
+.folder-card-item {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: none;
+    transform: none;
+}
+
+.folder-card-item:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.empty-repo-message {
+    text-align: center;
+    color: #888888;
+    font-size: 14px;
+    padding: 60px 0;
+    grid-column: 1 / -1;
+}
+
+/* =========================================================
+   NOTIFICATION
+========================================================= */
+
+.notification-wrapper {
+    position: relative;
+}
+
+/* Update Modal Radius */
+.modal-card {
+    border-radius: 8px !important;
+}
+
+.modal-card .save-client-btn {
+    border-radius: 5px !important;
+}
+
+.modal-overlay,
+.modal-card {
+    transition: none !important;
+    animation: none !important;
+}
+
+.modal-overlay {
+    display: none;
+}
+
+.modal-overlay.show {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+/* Bell */
+
+.notification-btn {
+    position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    background: none;
+    border: none;
+
+    padding: 0;
+
+    color: #666666;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+}
+
+
+/* Simple hover */
+
+.notification-btn:hover {
+    background-color: #f5f5f5;
+    color: #1f2d2f;
+}
+
+
+/* Notification number */
+
+.notification-badge {
+    position: absolute;
+
+    top: 1px;
+    right: 0px;
+
+    min-width: 17px;
+    height: 17px;
+
+    padding: 0 4px;
+
+    background-color: #c94b4b;
+    color: #ffffff;
+
+    border-radius: 20px;
+
+    font-family: "DM Sans", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   NOTIFICATION DROPDOWN
+========================================================= */
+
+div.notification-wrapper,
+.notification-container {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+button.notification-btn,
+#notificationBtn {
+    position: relative !important;
+    background: transparent !important;
+    border: none !important;
+    color: #353535 !important;
+    font-size: 18px !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    transition: background 0.2s ease, color 0.2s ease !important;
+}
+
+button.notification-btn:hover,
+#notificationBtn:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #111111 !important;
+}
+
+span.notification-badge,
+#notificationCount {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    min-width: 17px !important;
+    height: 17px !important;
+    padding: 0 4px !important;
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid #ffffff !important;
+}
+
+.notification-dropdown,
+.notification-panel {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    width: 430px !important;
+    max-height: 480px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12) !important;
+    z-index: 10000 !important;
+    display: none;
+    overflow: hidden !important;
+}
+
+.notification-dropdown.show,
+.notification-panel.show {
+    display: block !important;
+}
+
+.notification-header {
+    height: 50px !important;
+    padding: 0 15px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+    background: #ffffff !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+}
+
+.notification-header h3,
+.notification-header strong {
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    color: #333333 !important;
+}
+
+.notification-header button {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #639A88 !important;
+    cursor: pointer !important;
+    transition: color 0.2s ease !important;
+}
+
+.notification-header button:hover {
+    color: #528373 !important;
+}
+
+#notificationList,
+.notification-list {
+    max-height: 430px !important;
+    overflow-y: auto !important;
+}
+
+/* Custom Scrollbar */
+#notificationList::-webkit-scrollbar,
+.notification-dropdown::-webkit-scrollbar {
+    width: 18px !important;
+}
+
+#notificationList::-webkit-scrollbar-track,
+.notification-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+}
+
+#notificationList::-webkit-scrollbar-thumb,
+.notification-dropdown::-webkit-scrollbar-thumb {
+    background-color: #888888 !important;
+    border-radius: 10px !important;
+    border: 3px solid #f1f1f1 !important;
+}
+
+#notificationList::-webkit-scrollbar-thumb:hover,
+.notification-dropdown::-webkit-scrollbar-thumb:hover {
+    background-color: #555555 !important;
+}
+
+#notificationList::-webkit-scrollbar-button,
+.notification-dropdown::-webkit-scrollbar-button {
+    display: block !important;
+    height: 14px !important;
+    background-color: #f1f1f1 !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+
+/* Individual Notification Items */
+.notification-item {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    background: #ffffff !important;
+}
+
+.notification-item:last-child {
+    border-bottom: none !important;
+}
+
+.notification-item:hover {
+    background: #f8f9fc !important;
+}
+
+.notification-item.unread {
+    background: #f0f7f4 !important;
+}
+
+.notification-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    background: rgba(53, 53, 53, 0.1) !important;
+    color: #353535 !important;
+    font-size: 16px !important;
+}
+
+.notification-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.notification-content h4 {
+    margin: 0 0 2px 0 !important;
+    color: #222222 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+.notification-content p,
+.notification-content .notification-message {
+    font-size: 12.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    color: #666666 !important;
+    margin: 0 0 4px 0 !important;
+}
+
+.notification-content small {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: #888888 !important;
+    font-size: 11.5px !important;
+}
+
+.notification-list-empty {
+    text-align: center !important;
+    padding: 30px 15px !important;
+    color: #888888 !important;
+    font-size: 13px !important;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 500px) {
+
+    .notification-dropdown {
+        position: fixed;
+
+        top: 65px;
+        left: 15px;
+        right: 15px;
+
+        width: auto;
+    }
+
+}
+
+/* Added Styles for Notification Icon Button */
+.notification-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    font-size: 20px;
+    color: #666666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.notification-btn:hover {
+    background-color: #f5f5f5;
+    color: #1f2d2f;
+}
+
+@media (max-width: 768px) {
+
+    .repo-folders-grid-panel {
+        grid-template-columns: repeat(auto-fill,
+                minmax(180px, 1fr));
+
+        gap: 15px;
+    }
+
+    .folder-card {
+        height: 145px;
+    }
+}
+
+
+.repo-photos-grid-panel {
+    display: none;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* Gallery heading */
+.search-results-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin: 0 0 4px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eeeeee;
+    box-sizing: border-box;
+}
+
+.search-results-header h3 {
+    margin: 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.search-results-header span {
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    color: #888888;
+}
+
+/* Consistent gallery columns */
+.repo-search-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 18px;
+    width: 100%;
+    padding: 20px 0;
+    box-sizing: border-box;
+}
+
+/* Each card occupies the same grid structure */
+.repo-search-photo-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.repo-search-photo-card:hover {
+    border-color: #d5d5d5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Fixed image frame: every photo gets the same display size */
+.repo-search-photo-image-wrapper {
+    width: 100%;
+    height: 220px;
+    flex: 0 0 220px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+}
+
+.repo-search-photo-card .repo-photo-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Keep filenames and details aligned below the image */
+.repo-search-photo-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    gap: 6px;
+    box-sizing: border-box;
+}
+
+.repo-search-photo-name {
+    margin: 0;
+    color: #333333;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.repo-search-photo-details {
+    margin: 0;
+    color: #888888;
+    font-family: "DM Sans", sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* Object tags */
+.repo-search-photo-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 2px;
+}
+
+.repo-search-photo-tags .photo-tag {
+    display: inline-block;
+    max-width: 100%;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: #edf5f1;
+    color: #477765;
+    font-family: "DM Sans", sans-serif;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+}
+
+/* Empty and loading states */
+.repo-search-empty {
+    grid-column: 1 / -1;
+    width: 100%;
+    padding: 60px 15px;
+    color: #888888;
+    text-align: center;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.repo-search-empty i {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 30px;
+}
+
+.repo-search-empty p {
+    margin: 0 0 8px;
+}
+
+/* Responsive gallery */
+@media (max-width: 1100px) {
+    .repo-search-gallery {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .repo-search-gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .repo-search-photo-image-wrapper {
+        height: 190px;
+        flex-basis: 190px;
+    }
+}
+
+@media (max-width: 480px) {
+    .repo-search-gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .repo-search-photo-image-wrapper {
+        height: 145px;
+        flex-basis: 145px;
+    }
+
+    .repo-search-photo-info {
+        padding: 9px;
+    }
+
+    .search-results-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

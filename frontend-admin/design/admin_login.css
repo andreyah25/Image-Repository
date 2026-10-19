@@ -1,0 +1,339 @@
+/* Clean Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --gradient-bg: linear-gradient(135deg, #dbeffe 0%, #fed7aa 25%, #fef08a 50%, #dcfce7 75%, #f3e8ff 100%);
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  min-height: 100vh;
+  background: var(--gradient-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ==========================================
+   OUTSIDE BRANDING
+========================================== */
+.logo-box {
+  width: 90px;
+  height: 90px;
+  background-image: url('/images/captured.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-bottom: 18px;
+}
+
+.brand-heading {
+  color: #353535;
+  font-size: 40px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.brand-subtext {
+  color: #555;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 35px;
+}
+
+/* ==========================================
+   UNIFIED WHITE CARD CONTAINER
+========================================== */
+.login-card-container {
+  width: 100%;
+  max-width: 480px;
+  background: transparent !important;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  animation: floatUp 0.5s ease;
+}
+
+/* Header Inside White Card */
+.form-header {
+  width: 100%;
+  background: #ffffff !important;
+  border-radius: 15px 15px 0 0;
+  padding: 45px 50px 0 50px;
+  text-align: center;
+  margin-bottom: 0 !important;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.03);
+  backdrop-filter: none !important;
+}
+
+.welcome-heading {
+  color: #353535;
+  font-size: 35px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  line-height: 1.1;
+}
+
+.welcome-subtext {
+  color: #353535;
+  font-size: 15px;
+  font-weight: 300;
+}
+
+/* Form Body Inside White Card */
+.login-form {
+  width: 100%;
+  background: #ffffff !important;
+  border-radius: 0 0 15px 15px;
+  padding: 30px 50px 45px 50px; /* Equalized bottom padding */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  backdrop-filter: none !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers child wrappers */
+}
+
+/* ==========================================
+   FORM CONTROLS & INPUTS
+========================================== */
+.input-group {
+  position: relative;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 0 8px;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: #111827;
+  font-family: "DM Sans", sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+.input-group input:focus {
+  border-bottom-color: #639a88;
+}
+
+.input-group label {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  color: #9ca3af;
+  font-size: 15px;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.input-group input:focus~label,
+.input-group input:not(:placeholder-shown)~label {
+  top: -12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.password-group {
+  margin-bottom: 8px !important; /* Overrides the 28px bottom margin from .input-group */
+}
+
+.password-group input {
+  padding-right: 35px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 15px;
+  transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+  color: #353535;
+}
+
+.forgot-password-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.forgot-link {
+  color: #6b7280;
+  text-decoration: underline;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  color: #639a88;
+}
+
+/* Buttons */
+.submit-login-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  background: #639a88;
+  color: #ffffff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.submit-login-btn:hover {
+  background: #528373;
+}
+
+.submit-login-btn:active {
+  transform: scale(0.98);
+}
+
+.form-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.form-divider::before,
+.form-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.form-divider::before {
+  margin-right: 18px;
+}
+
+.form-divider::after {
+  margin-left: 18px;
+}
+
+.google-login-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: "DM Sans", sans-serif;
+  color: #353535;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background 0.25s, border-color 0.25s;
+  margin-bottom: 0; /* Prevents bottom overflow spacing */
+}
+
+.google-login-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+.login-message {
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #e5b7b7;
+  border-radius: 4px;
+  color: #b42318;
+  background: #fff5f5;
+  font-size: 12px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.login-message[hidden] {
+  display: none;
+}
+
+.login-message.success {
+  border-color: #b7d9c0;
+  color: #216e39;
+  background: #f2fbf4;
+}
+
+.submit-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Animations & Responsive */
+@keyframes floatUp {
+  from {
+    opacity: 0;
+    transform: translateY(35px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .brand-heading {
+    font-size: 32px;
+  }
+
+  .brand-subtext {
+    font-size: 15px;
+  }
+
+  .form-header,
+  .login-form {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+  .welcome-heading {
+    font-size: 30px;
+  }
+}

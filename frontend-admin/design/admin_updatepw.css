@@ -1,0 +1,290 @@
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --gradient-bg: linear-gradient(
+        135deg,
+        #dbeffe 0%,
+        #fed7aa 25%,
+        #fef08a 50%,
+        #dcfce7 75%,
+        #f3e8ff 100%
+    );
+
+    --dark: #353535;
+    --muted: #777;
+    --green: #639a88;
+    --green-hover: #528373;
+}
+
+/* =========================================================
+   BODY
+========================================================= */
+
+body {
+    font-family: "DM Sans", sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    background: #f7f8f7;
+}
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.reset-container {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    background: #f7f8f7;
+}
+
+/* =========================================================
+   RESET PASSWORD CARD
+========================================================= */
+
+.reset-container {
+    position: relative;
+}
+
+/* Create the white floating card around the content */
+
+.reset-container > h1,
+.reset-container > p,
+.reset-container > form {
+    width: 100%;
+    max-width: 390px;
+
+    background: #ffffff;
+
+    padding-left: 35px;
+    padding-right: 35px;
+}
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+
+.reset-container > h1 {
+    padding-top: 35px;
+
+    padding-bottom: 8px;
+
+    margin: 0;
+
+    border-radius: 18px 18px 0 0;
+
+    color: #222;
+
+    font-size: 30px;
+
+    font-weight: 600;
+
+    letter-spacing: -0.4px;
+
+    line-height: 1.2;
+}
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.reset-container > p {
+    padding-top: 0;
+
+    padding-bottom: 25px;
+
+    margin: 0;
+
+    color: #777;
+
+    font-size: 14px;
+
+    font-weight: 300;
+
+    line-height: 1.5;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+#updatePasswordForm {
+    padding-top: 5px;
+
+    padding-bottom: 35px;
+
+    border-radius: 0 0 18px 18px;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.08),
+        0 3px 10px rgba(0, 0, 0, 0.04);
+
+    text-align: left;
+}
+
+/* =========================================================
+   FORM FIELD
+========================================================= */
+
+#updatePasswordForm > div {
+    width: 100%;
+
+    margin-bottom: 25px;
+}
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+#updatePasswordForm label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #555;
+
+    font-size: 13px;
+
+    font-weight: 400;
+}
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+#updatePasswordForm input {
+    width: 100%;
+
+    height: 50px;
+
+    padding: 0 15px;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    outline: none;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 14px;
+
+    color: #222;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#updatePasswordForm input:hover {
+    border-color: #c8c8c8;
+}
+
+#updatePasswordForm input:focus {
+    border-color: var(--green);
+
+    box-shadow:
+        0 0 0 3px rgba(99, 154, 136, 0.10);
+}
+
+/* =========================================================
+   UPDATE PASSWORD BUTTON
+========================================================= */
+
+#updatePasswordForm button {
+    width: 100%;
+
+    height: 48px;
+
+    margin-top: 5px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: var(--green);
+
+    color: #ffffff;
+
+    font-family: "DM Sans", sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#updatePasswordForm button:hover {
+    background: var(--green-hover);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 15px rgba(82, 131, 115, 0.20);
+}
+
+#updatePasswordForm button:active {
+    transform: scale(0.98);
+
+    box-shadow: none;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 500px) {
+
+    body {
+        overflow: auto;
+    }
+
+    .reset-container {
+        min-height: 100vh;
+
+        padding: 25px 15px;
+    }
+
+    .reset-container > h1,
+    .reset-container > p,
+    .reset-container > form {
+        max-width: 390px;
+
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+
+    .reset-container > h1 {
+        padding-top: 28px;
+
+        font-size: 26px;
+    }
+
+    #updatePasswordForm {
+        padding-bottom: 28px;
+    }
+}

@@ -126,115 +126,67 @@
 
             <div class="client-header-container">
 
-
                 <div class="page-header">
-
-                    <h1>
-                        Payments
-                    </h1>
-
-                    <p>
-                        Track and manage transaction records.
-                    </p>
-
+                    <h1>Payments</h1>
+                    <p>Track and manage transaction records.</p>
                 </div>
 
                 <div class="archive-tab-navigation">
                     <button type="button" class="archive-tab-btn active" data-payment-type="all">All Payments</button>
+
                     <button type="button" class="archive-tab-btn" data-payment-type="booking">All Booking
                         Payments</button>
+
                     <button type="button" class="archive-tab-btn" data-payment-type="gallery access">All Gallery Access
                         Payments</button>
                 </div>
 
                 <div class="client-actions-row">
+
+                    <!-- STATUS FILTER -->
                     <div class="filter-dropdown-wrapper">
-
                         <button class="table-filter-btn" id="statusFilterBtn" type="button">
-
-                            All status
-
+                            All Status
                             <i class="fa-solid fa-chevron-down"></i>
-
                         </button>
-
 
                         <div class="filter-dropdown-menu" id="statusDropdown">
-
-                            <a href="#" data-filter="fully paid">
-                                Fully Paid
-                            </a>
-
-
-                            <a href="#" data-filter="downpayment paid">
-                                Downpayment Paid
-                            </a>
+                            <a href="#" data-filter="all">All Status</a>
+                            <a href="#" data-filter="fully paid">Fully Paid</a>
+                            <a href="#" data-filter="downpayment paid">Downpayment Paid</a>
+                            <a href="#" data-filter="cancelled">Cancelled</a>
+                            <a href="#" data-filter="payment failed">Payment Failed</a>
 
                             <div class="dropdown-divider"></div>
 
-
-                            <a href="#" data-filter="all" class="clear-filter">
-                                Clear Filter
-                            </a>
-
+                            <a href="#" data-filter="all" class="clear-filter">Clear Filter</a>
                         </div>
-
                     </div>
 
+                    <!-- PAYMENT METHOD FILTER -->
                     <div class="filter-dropdown-wrapper">
-
                         <button class="table-filter-btn" id="methodFilterBtn" type="button">
-
-                            All payment methods
-
+                            All Payment Methods
                             <i class="fa-solid fa-chevron-down"></i>
-
                         </button>
 
-
                         <div class="filter-dropdown-menu" id="methodDropdown">
-
-                            <a href="#" data-filter="card">
-                                Credit Card
-                            </a>
-
-
-                            <a href="#" data-filter="gcash">
-                                GCash
-                            </a>
-
-
-                            <a href="#" data-filter="maya">
-                                Maya
-                            </a>
-
-                            <a href="#" data-filter="paypal">
-                                PayPal
-                            </a>
-
-
-                            <a href="#" data-filter="qrph">
-                                QR Ph
-                            </a>
-
+                            <a href="#" data-filter="card">Credit Card</a>
+                            <a href="#" data-filter="gcash">GCash</a>
+                            <a href="#" data-filter="maya">Maya</a>
+                            <a href="#" data-filter="paypal">PayPal</a>
+                            <a href="#" data-filter="qrph">QR Ph</a>
 
                             <div class="dropdown-divider"></div>
 
-
-                            <a href="#" data-filter="all" class="clear-filter">
-                                Clear Filter
-                            </a>
-
+                            <a href="#" data-filter="all" class="clear-filter">Clear Filter</a>
                         </div>
-
                     </div>
 
+                    <!-- SEARCH -->
                     <div class="table-search-box">
-
                         <input type="text" id="paymentSearchInput" placeholder="Search a client" autocomplete="off">
-
                         <i class="fa-solid fa-magnifying-glass"></i>
-
                     </div>
 
                 </div>
@@ -629,26 +581,30 @@
                     let paymentStatus = "Downpayment Paid";
                     let recordedAmount = downpayment;
 
-                    if (
-                        isExplicitlyFullyPaid ||
-                        isBalanceSettled ||
-                        isCompletedBooking
-                    ) {
-                        paymentStatus = "Fully Paid";
-                        recordedAmount = totalPrice;
-                    } else if (
+                    const isFailed =
                         databasePaymentStatus.includes("fail") ||
-                        databasePaymentStatus.includes("declin")
-                    ) {
-                        paymentStatus = "Payment Failed";
-                    } else if (
+                        databasePaymentStatus.includes("declin") ||
+                        databasePaymentStatus === "failed";
+
+                    const isCancelled =
                         databasePaymentStatus.includes("cancel") ||
                         databasePaymentStatus.includes("reject") ||
                         normalizedBookingStatus === "rejected" ||
-                        normalizedBookingStatus === "cancelled"
-                    ) {
+                        normalizedBookingStatus === "cancelled" ||
+                        normalizedBookingStatus === "canceled";
+
+                    if (isFailed) {
+                        paymentStatus = "Payment Failed";
+                    } else if (isCancelled) {
                         paymentStatus = "Cancelled";
+                    } else if (
+                        isExplicitlyFullyPaid ||
+                        isBalanceSettled
+                    ) {
+                        paymentStatus = "Fully Paid";
+                        recordedAmount = totalPrice;
                     }
+
 
 
                     let paymentMethod = booking.payment_method || "PayMongo";
@@ -966,47 +922,56 @@
                 [...allPayments];
 
 
-            if (
-                currentStatusFilter !== "all"
-            ) {
+            if (currentStatusFilter !== "all") {
+                payments = payments.filter(payment => {
+                    const status = String(payment.status || "")
+                        .trim()
+                        .toLowerCase();
 
-                payments =
-                    payments.filter(
-                        payment => {
+                    if (currentStatusFilter === "fully paid") {
+                        return ["fully paid", "fully_paid"].includes(status);
+                    }
 
-                            return String(
-                                payment.status || ""
-                            ).toLowerCase() ===
-                                currentStatusFilter
-                                    .toLowerCase();
+                    if (currentStatusFilter === "downpayment paid") {
+                        return ["downpayment paid", "downpayment_paid"].includes(status);
+                    }
 
-                        }
-                    );
+                    if (currentStatusFilter === "cancelled") {
+                        return ["cancelled", "canceled"].includes(status);
+                    }
 
+                    if (currentStatusFilter === "payment failed") {
+                        return ["payment failed", "failed"].includes(status);
+                    }
+
+                    return status === currentStatusFilter;
+                });
             }
 
-            if (
-                currentMethodFilter !== "all"
-            ) {
+            if (currentMethodFilter !== "all") {
+                payments = payments.filter(payment => {
+                    const method = String(payment.payment_method || "")
+                        .trim()
+                        .toLowerCase()
+                        .replace(/[\s_-]/g, "");
 
-                payments =
-                    payments.filter(
-                        payment => {
+                    const selectedMethod = currentMethodFilter
+                        .trim()
+                        .toLowerCase()
+                        .replace(/[\s_-]/g, "");
 
-                            const method =
-                                String(
-                                    payment.payment_method || ""
-                                ).toLowerCase();
+                    if (selectedMethod === "card") {
+                        return ["card", "creditcard"].includes(method);
+                    }
 
+                    if (selectedMethod === "qrph") {
+                        return ["qrph", "paymongo"].includes(method);
+                    }
 
-                            return method ===
-                                currentMethodFilter
-                                    .toLowerCase();
-
-                        }
-                    );
-
+                    return method === selectedMethod;
+                });
             }
+
 
             if (currentTypeFilter !== "all") {
                 payments = payments.filter(payment => {
@@ -1361,75 +1326,36 @@
                 );
 
         }
-        //status filter
+        // STATUS FILTER
         document
-            .querySelectorAll(
-                "#statusDropdown a[data-filter]"
-            )
+            .querySelectorAll("#statusDropdown a[data-filter]")
             .forEach(item => {
+                item.addEventListener("click", function (event) {
+                    event.preventDefault();
 
-                item.addEventListener(
-                    "click",
-                    function (event) {
+                    currentStatusFilter = this.dataset.filter
+                        .trim()
+                        .toLowerCase();
 
-                        event.preventDefault();
+                    const button = document.getElementById("statusFilterBtn");
 
+                    const selectedLabel = this.textContent.trim();
 
-                        currentStatusFilter =
-                            this.dataset.filter;
+                    button.innerHTML = `
+                ${escapeHtml(
+                        currentStatusFilter === "all"
+                            ? "All Status"
+                            : selectedLabel
+                    )}
+                <i class="fa-solid fa-chevron-down"></i>
+            `;
 
+                    document
+                        .getElementById("statusDropdown")
+                        .classList.remove("show");
 
-                        const button =
-                            document.getElementById(
-                                "statusFilterBtn"
-                            );
-
-
-                        if (
-                            currentStatusFilter === "all"
-                        ) {
-
-                            button.innerHTML = `
-
-                                All status
-
-                                <i
-                                    class="fa-solid fa-chevron-down"
-                                ></i>
-
-                            `;
-
-                        }
-
-                        else {
-
-                            button.innerHTML = `
-
-                                ${escapeHtml(
-                                this.textContent.trim()
-                            )}
-
-                                <i
-                                    class="fa-solid fa-chevron-down"
-                                ></i>
-
-                            `;
-
-                        }
-
-
-                        document
-                            .getElementById(
-                                "statusDropdown"
-                            )
-                            .classList.remove("show");
-
-
-                        renderPayments();
-
-                    }
-                );
-
+                    renderPayments();
+                });
             });
 
         document.querySelectorAll(".archive-tab-btn[data-payment-type]").forEach(button => {

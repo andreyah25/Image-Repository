@@ -1,0 +1,725 @@
+/* --- Direct Google Font Import (First Priority) --- */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+/* --- Reset Rules --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, input, button, select, textarea, p, h1, h2, h3, h4, h5, h6, a, span, label {
+    font-family: 'DM Sans', sans-serif !important;
+}
+
+body {
+    background: #f6f6f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Top Header Navigation --- */
+.top-navbar {
+    height: 70px;
+    background: linear-gradient(
+        135deg, 
+        #dbeffe 0%,   /* Light Sky Blue */
+        #fed7aa 25%,   /* Soft Peach */
+        #fef08a 50%,   /* Pastel Yellow / Cream */
+        #dcfce7 75%,   /* Pale Mint Green */
+        #f3e8ff 100%   /* Light Lavender */
+    );
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 100;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.logo-img {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 4px;
+}
+
+.logo-box {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    display: block;
+    border-radius: 6px;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Header User Name Styling */
+.top-navbar .navbar-right #userName {
+    color: #353535;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* --- Main Dashboard Body Frame Layout --- */
+.dashboard-wrapper {
+    display: flex;
+    flex: 1;
+    margin-top: 70px; /* Offset for fixed header */
+    min-height: calc(100vh - 70px);
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: 230px;
+    background: white;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 25px 18px;
+    position: fixed;
+    top: 70px;
+    bottom: 0;
+    left: 0;
+    z-index: 90;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #444;
+    font-size: 14px;
+    padding: 12px 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar a:hover {
+    background: #f4f4f4;
+}
+
+.sidebar a.active {
+    background: #639A88;
+    color: #ffffff;
+}
+
+.sidebar a.active:hover {
+    background: #528373;
+}
+
+/* Red Logout Button Overrides */
+.sidebar .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1.5px solid #dc2626 !important;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.sidebar .logout-btn,
+.sidebar .logout-btn span,
+.sidebar .logout-btn i.logout-icon {
+    color: #dc2626 !important; 
+}
+
+.sidebar .logout-btn i.logout-icon {
+    font-size: 16px;
+    display: inline-block;
+    line-height: 1;
+}
+
+.sidebar .logout-btn:hover {
+    background: #fff3f3 !important;
+}
+
+/* --- Center Content Area --- */
+.content {
+    flex: 1;
+    padding: 40px;
+    margin-left: 230px;
+    min-height: calc(100vh - 70px);
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    gap: 35px;
+}
+
+/* --- MAXIMUM SPECIFICITY FIX FOR CLIENT NAME INSIDE GALLERY CONTENT --- */
+main.content .gallery-header #galleryTitle,
+.dashboard-wrapper .content .gallery-header #galleryTitle,
+h1#galleryTitle {
+    font-size: 48px;
+    font-weight: 400;
+    color: #333;
+}
+
+main.content .gallery-header #gallerySubtitle,
+.dashboard-wrapper .content .gallery-header #gallerySubtitle,
+p#gallerySubtitle {
+    color: #888888 !important;
+    font-size: 15px !important;
+    margin: 0 !important;
+}
+.btn-download-all {
+    padding: 13px 24px;
+    border-radius: 5px;
+    background: #B39EB5;
+    color: white;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.btn-download-all:hover {
+    background: #9D86A0;
+}
+/* Grid Layout */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    width: 100%;
+    flex: 1;
+}
+
+/* Empty Gallery / Loading Container */
+.gallery-loading {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #888;
+    margin: auto 0;
+}
+
+.gallery-loading i {
+    font-size: 40px;
+    margin-bottom: 16px;
+    color: #b0b0b0;
+}
+
+.gallery-loading p {
+    font-size: 17px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.gallery-loading small {
+    font-size: 14px;
+    color: #888;
+}
+
+/* Photo Card Styling */
+.photo-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f3f3f3;
+    aspect-ratio: 1 / 1;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.photo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 35px rgba(0,0,0,.12);
+}
+
+.photo-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: .45s;
+}
+
+.individual-download-btn {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #B39EB5;
+    z-index: 5;
+    text-decoration: none;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+    transition: 0.25s;
+    background: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.individual-download-btn:hover {
+    transform: scale(1.1);
+    background: #B39EB5;
+    color: #ffffff;
+}
+
+
+/* Pagination Bar */
+.gallery-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 0;
+}
+
+.gallery-pagination a,
+.gallery-pagination span {
+    font-size: 16px;
+    color: #8c8c8c;
+    text-decoration: none;
+    font-weight: 500;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.15s, background-color 0.15s;
+}
+
+.gallery-pagination a:hover {
+    color: #333333;
+    background-color: #f5f5f5;
+}
+
+.gallery-pagination a.active {
+    color: #333333 !important;
+    font-weight: 700;
+    background-color: transparent !important;
+}
+
+.gallery-pagination .page-arrow {
+    font-size: 14px;
+    color: #555555;
+}
+
+.gallery-pagination .page-dots {
+    cursor: default;
+    color: #8c8c8c;
+}
+
+/* Responsive Overrides */
+@media (max-width: 900px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+        margin-top: 70px;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+        left: 0;
+        border-right: none;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 15px 25px;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .sidebar nav {
+        flex-direction: row;
+        justify-content: space-around;
+        width: auto;
+        flex: 1;
+    }
+
+    .sidebar a {
+        padding: 10px 14px;
+    }
+
+    .sidebar .logout-btn {
+        width: auto;
+        padding: 10px 20px;
+    }
+
+    .content {
+        margin-left: 0;
+        padding: 30px 20px;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .sidebar {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .sidebar nav {
+        width: 100%;
+        gap: 4px;
+    }
+
+    .sidebar a {
+        font-size: 13px;
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .sidebar .logout-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .gallery-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 25px;
+    }
+    
+    .btn-download-all {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   PAYMENT & MODAL SYSTEM (SEPARATED & CONSOLIDATED)
+========================================================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; 
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.payment-modal-card {
+    background-color: #ffffff;
+    width: calc(100% - 30px);
+    max-width: 440px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .payment-modal-card {
+    transform: scale(1);
+}
+
+.modal-header {
+    background-color: #639A88;
+    color: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.modal-card-icon {
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    color: #ffffff;
+}
+
+.modal-body {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+}
+
+.modal-prompt-text {
+    font-size: 13.5px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #555555;
+    margin-bottom: 0;
+}
+
+/* Payment Summary Box Styling */
+.modal-summary-box {
+    background: #f4f5f7;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: left;
+}
+
+.modal-summary-box h4 {
+    margin: 0 0 12px 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.summary-row strong {
+    color: #222;
+}
+
+.summary-row.total-row {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px stroke #e0e0e0;
+}
+
+.summary-row .due-amount {
+    color: #639A88;
+    font-size: 14px;
+}
+
+/* Form Groups and Select Inputs */
+.modal-form-group {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-form-group label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-select-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.btn-payment-method:hover {
+    border-color: #639A88 !important;
+    background-color: #f7faf9 !important;
+    transform: translateY(-1px);
+}
+
+.modal-text-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 13px;
+}
+
+.modal-file-input {
+    font-size: 12px;
+}
+
+/* QR Display Container */
+.modal-qr-container {
+    padding: 10px;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-qr-container img {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Instruction Banners */
+.modal-info-banner {
+    background-color: #eef7f4;
+    border: 1px solid #c2e5d9;
+    border-radius: 5px;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    color: #2d6a54;
+    line-height: 1.4;
+}
+
+.modal-warning-banner {
+    background-color: #fff8e6;
+    border: 1px solid #ffe58f;
+    border-radius: 5px;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    color: #8a6d3b;
+    line-height: 1.4;
+}
+
+.modal-error-msg {
+    color: #d9534f;
+    font-size: 12px;
+    margin: 0;
+    display: none;
+    text-align: left;
+}
+
+/* Modal Actions Buttons */
+.modal-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.btn-modal-cancel,
+.btn-modal-proceed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    width: 165px;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 5px;
+    text-align: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.btn-modal-cancel {
+    background-color: #ffffff;
+    border: 1.5px solid #b8b8b8;
+    color: #353535;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-modal-cancel:hover {
+    background-color: #f7f9f9;
+    border-color: #1f2d2f;
+}
+
+.btn-modal-proceed {
+    background-color: #B39EB5;
+    color: #ffffff !important;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.btn-modal-proceed:hover {
+    background-color: #9D86A0;
+}
