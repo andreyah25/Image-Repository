@@ -24,8 +24,7 @@ logger = logging.getLogger("captured-ml")
 # --------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / "models" / "captured_yolo26s.pt"
-
+MODEL_PATH = BASE_DIR / "runs" / "detect" / "captured_yolo26n_v2" / "weights" / "best.pt"
 app = FastAPI(title="Captured Object Detection API")
 
 app.add_middleware(
@@ -43,10 +42,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
-
-# --------------------------------------------------
-# LOAD MODEL ONCE
-# --------------------------------------------------
 
 if not MODEL_PATH.exists():
     raise FileNotFoundError(
@@ -95,10 +90,6 @@ def analyze_image(request: AnalyzeRequest):
             )
 
         logger.info("ANALYZE STARTED")
-
-        # --------------------------------------------------
-        # DOWNLOAD IMAGE
-        # --------------------------------------------------
 
         download_started = time.perf_counter()
 
@@ -151,10 +142,6 @@ def analyze_image(request: AnalyzeRequest):
             len(image_bytes),
         )
 
-        # --------------------------------------------------
-        # DECODE AND PREPARE IMAGE
-        # --------------------------------------------------
-
         image_started = time.perf_counter()
 
         try:
@@ -178,10 +165,6 @@ def analyze_image(request: AnalyzeRequest):
             time.perf_counter() - image_started,
             image.size,
         )
-
-        # --------------------------------------------------
-        # YOLO INFERENCE
-        # --------------------------------------------------
 
         inference_started = time.perf_counter()
 
@@ -223,7 +206,7 @@ def analyze_image(request: AnalyzeRequest):
             "ANALYZE COMPLETED in %.2f seconds; objects=%d",
             total_time,
             len(objects),
-        )
+        ) 
 
         return {
             "success": True,
@@ -242,3 +225,4 @@ def analyze_image(request: AnalyzeRequest):
             status_code=500,
             detail=f"Image analysis failed: {type(exc).__name__}: {exc}",
         ) from exc
+  
