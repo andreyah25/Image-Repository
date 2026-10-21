@@ -23,9 +23,13 @@ logger = logging.getLogger("captured-ml")
 # --------------------------------------------------
 # APP CONFIGURATION
 # --------------------------------------------------
-
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / "runs" / "detect" / "captured_yolo26n_v2" / "weights" / "best.pt"
+
+MODEL_PATH = (
+    BASE_DIR
+    / "models"
+    / "captured_yolo26n_v2.pt"
+)
 app = FastAPI(title="Captured Object Detection API")
 
 app.add_middleware(
