@@ -171,49 +171,45 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Collapsed sidebar */
+
+
+/* COLLAPSED: icons only */
 .sidebar.collapsed {
     width: 70px;
-    padding-left: 10px;
-    padding-right: 10px;
+    min-width: 70px;
+    padding: 25px 10px;
 }
 
-/* Keep navigation centered */
 .sidebar.collapsed nav a {
+    display: flex;
     justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 12px 0;
     gap: 0;
-}
-
-/* Hide navigation text */
-.sidebar.collapsed nav a {
     font-size: 0;
 }
 
-/* Keep icons visible */
 .sidebar.collapsed nav a i {
+    display: inline-block;
     width: 18px;
     margin: 0;
     font-size: 15px;
 }
 
-/* Logout button */
 .sidebar.collapsed .logout-btn {
     justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 12px 0;
     gap: 0;
 }
 
-/* Hide "Log out" */
 .sidebar.collapsed .logout-btn span {
     display: none;
 }
 
-.sidebar.collapsed .logout-icon {
-    margin: 0;
+/* Keep toggle beside the icon rail */
+.dashboard-wrapper:has(.sidebar.collapsed) .sidebar-toggle {
+    left: 70px;
 }
+
 
 .sidebar-toggle {
     position: absolute;
@@ -1419,7 +1415,6 @@ i.fa-brands,
     width: 100%;
     min-height: 4px;
     border-radius: 6px 6px 2px 2px;
-    background: #639A88 !important;
     transition: height 0.5s ease, opacity 0.2s ease;
     cursor: pointer;
 }
@@ -2110,4 +2105,72 @@ i.fa-brands,
     font-size: 13.5px !important; /* <-- CHANGE THIS SIZE to make it smaller (e.g., 11px or 10px) */
     color: #888888 !important;   /* Optional: makes the color slightly softer */
     margin-top: 18px !important;
+}
+
+/* Booking Statistics summary layout */
+.analytics-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.analytics-summary-card {
+    min-width: 0;
+    padding: 14px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+}
+
+.analytics-summary-card span {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.analytics-summary-card strong {
+    display: block;
+    color: #334155;
+    font-size: 18px;
+    overflow-wrap: anywhere;
+}
+
+.bar-fill {
+    transition: height 0.3s ease, background-color 0.3s ease;
+}
+
+.bar-fill:hover {
+    filter: brightness(0.92);
+}
+
+@media (max-width: 700px) {
+    .analytics-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Booking Statistics color legend */
+.analytics-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+    margin: 0 0 16px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.analytics-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border-radius: 50%;
 }

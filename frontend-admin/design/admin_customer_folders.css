@@ -5,7 +5,7 @@
 }
 
 
-#foldersView .repo-top-header-block {
+#foldersView repo-top-header-block {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -209,10 +209,6 @@
 }
 
 
-/* =========================================================
-   CARD ACTIONS & BUTTONS
-   ========================================================= */
-
 #customerFoldersContainer .repository-client-card .quick-actions {
     display: flex;
     align-items: center;
@@ -398,18 +394,11 @@
     background: #f6f6f6 !important;
 }
 
-/* =========================================================
-   ADJUST WIDTH & PADDING FOR BACK TO FOLDERS BUTTON HERE
-   ========================================================= */
 
 .back-to-folders-btn {
     width: 140px !important;     /* Change this pixel value to make the button wider/narrower */
     min-width: 130px !important;
 }
-
-/* =========================================================
-   CLIENT GALLERY LINK
-   ========================================================= */
 
 .client-link-section {
     margin-bottom: 20px;
@@ -764,10 +753,6 @@
         font-size: 23px;
     }
 }
-/* =========================================================
-   PHOTO LIGHTBOX
-   ========================================================= */
-
 .photo-lightbox {
     position: fixed;
     inset: 0;
@@ -894,4 +879,84 @@
         top: 10px;
         right: 12px;
     }
+}
+.delete-photo-btn {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 6px;
+}
+
+.delete-photo-btn:hover {
+    color: #991b1b;
+}
+/* SEARCH RESULTS - MATCH REPOSITORY GALLERY DESIGN */
+#repoSearchGallery {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    width: 100% !important;
+    padding: 20px 0 !important;
+    box-sizing: border-box !important;
+}
+
+#repoSearchGallery .repo-search-photo-card {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+}
+
+#repoSearchGallery .repo-search-photo-image-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 280px !important;
+    flex: 0 0 280px !important;
+    overflow: hidden !important;
+    background: #f5f5f5 !important;
+}
+
+#repoSearchGallery .repo-photo-image {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+}
+
+#repoSearchGallery .repo-search-photo-info {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 12px !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+}
+
+#repoSearchGallery .repo-search-photo-name {
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+#repoSearchGallery .repo-search-photo-details {
+    margin: 0 !important;
+    font-size: 12px !important;
+    color: #888 !important;
 }

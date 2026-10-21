@@ -337,3 +337,25 @@ body {
     font-size: 30px;
   }
 }
+.submit-login-btn .login-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    vertical-align: middle;
+    animation: loginSpin 0.7s linear infinite;
+}
+
+@keyframes loginSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.submit-login-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
