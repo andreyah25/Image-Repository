@@ -2,7 +2,6 @@
 from pathlib import Path
 from io import BytesIO
 import logging
-import os
 import time
 
 import requests
@@ -11,7 +10,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 from ultralytics import YOLO
+import torch
 
+torch.set_num_threads(1)
 # --------------------------------------------------
 # LOGGING
 # --------------------------------------------------
@@ -77,7 +78,6 @@ def health():
 @app.post("/analyze")
 def analyze_image(request: AnalyzeRequest):
     started = time.perf_counter()
-    response = None
 
     try:
         image_url = str(request.image_url)
@@ -166,22 +166,32 @@ def analyze_image(request: AnalyzeRequest):
             image.size,
         )
 
+       
         inference_started = time.perf_counter()
 
-        logger.info("YOLO INFERENCE STARTED")
-
-        prediction = model.predict(
-            source=image,
-            conf=0.20,
-            imgsz=640,
-            verbose=False,
-            device="cpu",
-        )[0]
-
         logger.info(
-            "YOLO INFERENCE FINISHED in %.2f seconds",
-            time.perf_counter() - inference_started,
+            "YOLO INFERENCE STARTED; image_size=%s; imgsz=416",
+            image.size,
         )
+
+        try:
+            prediction = model.predict(
+                source=image,
+                conf=0.20,
+                imgsz=416,
+                verbose=False,
+                device="cpu",
+            )[0]
+
+            logger.info(
+                "YOLO INFERENCE FINISHED in %.2f seconds",
+                time.perf_counter() - inference_started,
+            )
+
+        except Exception:
+            logger.exception("YOLO INFERENCE FAILED")
+            raise
+
 
         objects = []
 
