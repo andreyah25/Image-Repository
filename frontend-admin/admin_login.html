@@ -247,7 +247,7 @@
           ? "http://localhost:3000"
           : "https://image-repository-1.onrender.com";
       submitButton.disabled = true;
-
+      submitButton.innerHTML = '<span class="login-spinner"></span>Processing Login...';
       try {
         const response = await fetch(`${SERVER_URL}/api/admin/login`, {
           method: "POST",
@@ -310,14 +310,16 @@
             .from("staff_activity_logs")
             .insert({
               staff_id: user.id,
-              staff_name: finalProfile.full_name,
+              staff_name: finalProfile.full_name || user.email,
               staff_email: user.email,
-              role: finalProfile.role,
+              role: finalProfile.role || "staff",
               action: "LOGIN"
             });
 
           if (activityError) {
             console.error("LOGIN ACTIVITY LOG ERROR:", activityError);
+          } else {
+            console.log("LOGIN ACTIVITY RECORDED");
           }
         } catch (activityError) {
           console.error("LOGIN ACTIVITY LOG FAILED:", activityError);
@@ -362,6 +364,7 @@
       } finally {
         if (!loginTimer) {
           submitButton.disabled = false;
+          submitButton.textContent = "Log in";
         }
       }
     });

@@ -31,6 +31,7 @@ app = FastAPI(title="Captured Object Detection API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://captured-ml-api.onrender.com",
         "https://captured-admin-studio.onrender.com",
         "https://captured-photo-studio.onrender.com",
         "http://localhost:5500",

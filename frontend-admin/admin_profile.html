@@ -849,7 +849,7 @@
         document.getElementById("logoutBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             await supabaseClient.auth.signOut();
-            window.location.href = "admin_login.html";
+            window.location.href = "/admin/login";
         });
 
         document.addEventListener("DOMContentLoaded", () => {

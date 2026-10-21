@@ -419,18 +419,8 @@
         </div>
 
     </div>
-
-    <!-- =========================
-     TOAST
-    ========================= -->
-
     <div id="toast" class="toast"></div>
-
-
-
     <script>
-
-
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
@@ -439,20 +429,9 @@
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         )
-
         let packages = [];
-
         let currentUser = null;
-
         let currentAdmin = null;
-
-
-
-        /* =========================================================
-           DEFAULT PACKAGES
-           Used only when the database is empty.
-        ========================================================= */
-
         const defaultPackages = [
 
             {
@@ -544,21 +523,10 @@
             }
 
         ];
-
-        /* =========================================================
-           TOAST
-        ========================================================= */
-
         function showToast(message, type = "success") {
-
-            const toast =
-                document.getElementById("toast");
-
+            const toast = document.getElementById("toast");
             toast.textContent = message;
-
-            toast.className =
-                `toast show ${type}`;
-
+            toast.className = `toast show ${type}`;
             setTimeout(() => {
 
                 toast.classList.remove("show");
@@ -566,52 +534,24 @@
             }, 3000);
 
         }
-
-
-
-        /* =========================================================
-           AUTHENTICATION
-        ========================================================= */
-
         async function checkAdminAccess() {
-
             try {
 
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth.getUser();
-
-
+                const {data,error} = await supabaseClient.auth.getUser();
                 if (error) {
-
                     console.error(
                         "Auth error:",
                         error
                     );
-
                     redirectToLogin();
-
                     return false;
-
                 }
-
-
                 const user = data.user;
-
-
                 if (!user) {
-
                     redirectToLogin();
-
                     return false;
-
                 }
-
-
                 currentUser = user;
-
                 const {
                     data: staffProfile,
                     error: staffError
@@ -621,20 +561,16 @@
                         .select("*")
                         .eq("id", user.id)
                         .maybeSingle();
-
-
                 if (staffError) {
 
                     console.error(
                         "Staff profile error:",
                         staffError
                     );
-
                     alert(
                         "Unable to verify your admin account."
                     );
-
-                    redirectToLogin();
+                    reirectToLogin();
 
                     return false;
 
@@ -642,72 +578,26 @@
 
 
                 if (!staffProfile) {
-
-                    alert(
-                        "You are not registered as an administrator."
-                    );
-
+                    alert("You are not registered as an administrator.");
                     redirectToDashboard();
-
                     return false;
-
                 }
+                const allowedRoles = ["admin", "staff"];
 
-
-                /*
-                 * ADMIN ONLY
-                 */
-
-                if (
-                    String(staffProfile.role).toLowerCase()
-                    !== "admin"
+                if (!allowedRoles.includes(String(staffProfile.role || "").trim().toLowerCase())) {
+                    alert("Access denied. Only authorized admin or staff accounts can manage studio setup.");
+                    redirectToDashboard();
+                    return false;
+                }
+                if (staffProfile.status && String(staffProfile.status).toLowerCase() !== "active"
                 ) {
-
-                    alert(
-                        "Access denied. Only administrators can manage packages."
-                    );
-
+                    alert("Your admin account is not active.");
                     redirectToDashboard();
-
                     return false;
-
                 }
-
-
-                /*
-                 * ACTIVE ADMIN ONLY
-                 */
-
-                if (
-                    staffProfile.status &&
-                    String(staffProfile.status).toLowerCase()
-                    !== "active"
-                ) {
-
-                    alert(
-                        "Your admin account is not active."
-                    );
-
-                    redirectToDashboard();
-
-                    return false;
-
-                }
-
-
-                currentAdmin = staffProfile;
-
-
-                updateAdminHeader(
-                    staffProfile,
-                    user
-                );
-
-
+                currentAdmin = staffProfile; updateAdminHeader(staffProfile, user);
                 return true;
-
             }
-
             catch (error) {
 
                 console.error(
@@ -727,27 +617,9 @@
 
         }
 
-
-
-        /* =========================================================
-           ADMIN HEADER
-        ========================================================= */
-
-        function updateAdminHeader(
-            staffProfile,
-            user
-        ) {
-
-            const adminName =
-                document.getElementById("adminName");
-
-            const adminAvatar =
-                document.getElementById("adminAvatar");
-
-
-            /*
-             * Try common name fields.
-             */
+        function updateAdminHeader(staffProfile, user) {
+            const adminName = document.getElementById("adminName");
+            const adminAvatar = document.getElementById("adminAvatar");
 
             const name =
                 staffProfile.full_name ||
@@ -756,34 +628,36 @@
                 user.email ||
                 "Captured Admin";
 
-
             adminName.textContent = name;
 
-
-            /*
-             * If staff_profiles has avatar_url,
-             * use it.
-             */
-
-            const avatar =
+            const avatarUrl =
                 staffProfile.avatar_url ||
                 staffProfile.profile_image ||
-                staffProfile.image_url;
+                staffProfile.image_url ||
+                staffProfile.photo_url ||
+                staffProfile.profile_picture;
 
+            if (avatarUrl) {
+                adminAvatar.innerHTML = "";
 
-            if (avatar) {
+                const img = document.createElement("img");
+                img.src = avatarUrl;
+                img.alt = name + "'s profile picture";
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+                img.style.borderRadius = "50%";
 
-                adminAvatar.src = avatar;
+                img.onerror = () => {
+                    adminAvatar.innerHTML = '<i class="fa-solid fa-user"></i>';
+                };
 
+                adminAvatar.appendChild(img);
+            } else {
+                adminAvatar.innerHTML = '<i class="fa-solid fa-user"></i>';
             }
-
         }
 
-
-
-        /* =========================================================
-           LOAD PACKAGES
-        ========================================================= */
 
         async function loadPackages() {
 
@@ -2144,14 +2018,10 @@
                                 "packagePrice"
                             ).value
                         );
-
-
                     const duration =
                         document.getElementById(
                             "packageDuration"
                         ).value;
-
-
                     const description =
                         document.getElementById(
                             "packageDescription"
@@ -2175,7 +2045,6 @@
 
                     }
 
-
                     if (price < 0 || Number.isNaN(price)) {
 
                         showToast(
@@ -2186,8 +2055,6 @@
                         return;
 
                     }
-
-
                     saveButton.disabled = true;
 
                     saveButton.innerHTML = id
@@ -2196,12 +2063,6 @@
 
 
                     try {
-
-
-                        /* =========================
-                           UPDATE
-                        ========================= */
-
                         if (id) {
 
                             const {
@@ -2222,7 +2083,6 @@
                                             description,
 
                                         status: status
-
                                     })
                                     .eq(
                                         "id",
@@ -2248,38 +2108,21 @@
                                 return;
 
                             }
-
-
-                            /*
-                             * Update local display
-                             */
-
                             const index =
                                 packages.findIndex(
                                     item =>
                                         item.id === id
                                 );
-
-
                             if (index !== -1) {
 
                                 packages[index] =
                                     data;
-
                             }
-
-
                             showToast(
                                 "Package updated successfully."
                             );
 
                         }
-
-
-                        /* =========================
-                           ADD
-                        ========================= */
-
                         else {
 
                             const {
@@ -2300,12 +2143,9 @@
                                             description,
 
                                         status: status
-
                                     })
                                     .select()
                                     .single();
-
-
                             if (error) {
 
                                 console.error(
@@ -2318,26 +2158,18 @@
                                     + error.message,
                                     "error"
                                 );
-
                                 return;
-
                             }
-
-
                             packages.push(data);
 
 
                             showToast(
                                 "Package added successfully."
                             );
-
                         }
-
-
                         renderPackages();
 
                         closeModal();
-
                     }
 
                     catch (error) {
@@ -2365,13 +2197,6 @@
 
                 }
             );
-
-
-
-        /* =========================================================
-           DELETE PACKAGE
-        ========================================================= */
-
         async function deletePackage(id) {
 
             const packageItem =
@@ -2385,24 +2210,16 @@
                 return;
 
             }
-
-
             const confirmed =
                 confirm(
                     `Are you sure you want to delete "${packageItem.name}"?`
                 );
-
-
             if (!confirmed) {
 
                 return;
 
             }
-
-
             try {
-
-
                 const {
                     error
                 } =
@@ -2431,8 +2248,6 @@
                     return;
 
                 }
-
-
                 packages =
                     packages.filter(
                         item =>
@@ -2461,8 +2276,6 @@
             }
 
         }
-
-
         async function togglePackage(id) {
             console.log("TOGGLE PACKAGE CLICKED:", id);
 
@@ -2557,13 +2370,6 @@
                 );
 
         }
-
-
-
-        /* =========================================================
-           LOGOUT
-        ========================================================= */
-
         async function logout() {
 
             const confirmed =
@@ -2577,14 +2383,10 @@
                 return;
 
             }
-
-
             try {
 
                 await supabaseClient.auth.signOut();
-
             }
-
             catch (error) {
 
                 console.error(
@@ -2594,18 +2396,10 @@
 
             }
 
-
             window.location.href =
                 "admin_login.html";
 
         }
-
-
-
-        /* =========================================================
-           REDIRECT HELPERS
-        ========================================================= */
-
         function redirectToLogin() {
 
             window.location.href =
@@ -2619,13 +2413,6 @@
             window.location.href = "/admin/dashboard";
 
         }
-
-
-
-        /* =========================================================
-           CLOSE MODAL WHEN CLICKING OUTSIDE
-        ========================================================= */
-
         document
             .getElementById("packageModal")
             .addEventListener(
@@ -2686,10 +2473,6 @@
 
         async function initializePage() {
 
-            /*
-             * First verify login and admin role.
-             */
-
             const isAdmin =
                 await checkAdminAccess();
 
@@ -2700,16 +2483,9 @@
 
             }
 
-
-            /*
-             * Then load packages from Supabase.
-             */
-
             await loadPackages();
 
         }
-
-
         initializePage();
         window.switchTab = switchTab;
         window.openAddModal = openAddModal;

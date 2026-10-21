@@ -54,17 +54,14 @@
 
         <aside class="sidebar">
             <nav>
-
                 <a href="/admin/dashboard">
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
-
                 <a href="/admin/clients">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
-
                 <a href="/admin/repository" class="active">
                     <i class="fa-solid fa-book"></i>
                     Repository
@@ -74,12 +71,10 @@
                     <i class="fa-solid fa-credit-card"></i>
                     Payments
                 </a>
-
                 <a href="/admin/archives">
                     <i class="fa-solid fa-box-archive"></i>
                     Archives
                 </a>
-
                 <a href="/admin/packages">
                     <i class="fa-solid fa-sliders"></i>
                     Packages
@@ -88,57 +83,41 @@
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
-
                 <a href="/admin/settings">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
-
             </nav>
-
             <a href="/admin/login" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
             </a>
         </aside>
         <main class="content">
-
             <div id="foldersView">
-
                 <div class="repo-top-header-block">
-
                     <div class="page-header">
-
                         <h1>
                             Customer Folders
                         </h1>
-
                         <p>
                             Completed clients appear here.
                             Open a customer folder to upload and manage photos.
                         </p>
 
                     </div>
-
                 </div>
                 <div class="repo-actions-row">
                     <div class="table-search-box">
-
                         <input type="text" id="repoFolderSearchInput"
                             placeholder="Search an object, keywords or file name" autocomplete="off">
-
                         <i class="fa-solid fa-magnifying-glass"></i>
-
                     </div>
-
-
                 </div>
 
                 <div class="repo-view-container" id="customerFoldersContainer">
                 </div>
-
             </div>
-
             <div id="photosView" style="display:none;">
 
                 <div class="repo-top-header-block">
@@ -152,27 +131,15 @@
                         <p id="selectedCustomerDetails">
                             Loading customer information...
                         </p>
-
                     </div>
-
-
                     <div class="repository-actions">
-
                         <button type="button" class="add-new-client-btn" id="uploadFolderPhotosBtn">
-
                             <i class="fa-solid fa-cloud-arrow-up"></i>
-
                             Upload Photos
-
                         </button>
-
-
                         <button type="button" class="copy-client-link-btn" id="copyClientLinkBtn">
-
                             <i class="fa-regular fa-copy"></i>
-
                             Copy Client Link
-
                         </button>
 
                         <button class="back-to-folders-btn" id="backToFoldersBtn">
@@ -223,14 +190,7 @@
                     <div id="photoSearchInfo"></div>
 
                 </div>
-
-                <!-- UPLOAD STATUS -->
-
                 <div id="uploadStatus" class="upload-status"></div>
-
-
-
-                <!-- PHOTO GRID -->
 
                 <div class="repo-view-container" id="customerFolder">
 
@@ -925,8 +885,8 @@
 
         }
 
-        async function searchRepositoryPhotos(searchTerm) {
 
+        async function searchRepositoryPhotos(searchTerm) {
             const query = searchTerm.trim();
 
             if (!query) {
@@ -937,27 +897,12 @@
             customerFoldersContainer.innerHTML = `
         <div class="customer-folder-empty">
             <i class="fa-solid fa-spinner fa-spin"></i>
-
-            <div>
-                Searching photos...
-            </div>
-
-            <small>
-                Searching for "${escapeHTML(query)}"
-            </small>
+            <div>Searching photos...</div>
         </div>
     `;
 
             try {
-
-                const packageName =
-                    new URLSearchParams(window.location.search)
-                        .get("package");
-
-                const {
-                    data,
-                    error
-                } = await supabaseClient.rpc(
+                const { data, error } = await supabaseClient.rpc(
                     "search_all_repository_photos",
                     {
                         search_term: query,
@@ -965,66 +910,59 @@
                     }
                 );
 
-                if (error) {
+                if (error) throw error;
 
-                    console.error(
-                        "Global photo search error:",
-                        error
-                    );
+                const photos = await Promise.all(
+                    (data || []).map(async photo => {
+                        if (!photo.storage_path) {
+                            console.error(
+                                "Missing storage_path:",
+                                photo.original_name,
+                                photo
+                            );
 
-                    customerFoldersContainer.innerHTML = `
-                <div class="customer-folder-empty">
+                            return { ...photo, image_url: "" };
+                        }
 
-                    <i class="fa-solid fa-circle-exclamation"></i>
+                        const { data: signedData, error: signedError } =
+                            await supabaseClient.storage
+                                .from("client-photos")
+                                .createSignedUrl(photo.storage_path, 3600);
 
-                    <div>
-                        Could not search photos.
-                    </div>
+                        if (signedError) {
+                            console.error(
+                                "Global search signed URL error:",
+                                photo.original_name,
+                                signedError
+                            );
 
-                    <small>
-                        ${escapeHTML(error.message)}
-                    </small>
+                            return { ...photo, image_url: "" };
+                        }
 
-                </div>
-            `;
-
-                    return;
-                }
-
-                console.log(
-                    "Global photo search results:",
-                    data
+                        return {
+                            ...photo,
+                            image_url: signedData?.signedUrl || ""
+                        };
+                    })
                 );
 
-                renderGlobalSearchResults(
-                    data || [],
-                    query
-                );
+                console.log("Global photo search results:", photos);
+
+                renderGlobalSearchResults(photos, query);
 
             } catch (error) {
-
-                console.error(
-                    "Global photo search failed:",
-                    error
-                );
+                console.error("Global photo search failed:", error);
 
                 customerFoldersContainer.innerHTML = `
             <div class="customer-folder-empty">
-
                 <i class="fa-solid fa-circle-exclamation"></i>
-
-                <div>
-                    Search failed.
-                </div>
-
-                <small>
-                    ${escapeHTML(error.message)}
-                </small>
-
+                <div>Search failed.</div>
+                <small>${escapeHTML(error.message)}</small>
             </div>
         `;
             }
         }
+
         function renderGlobalSearchResults(photos, searchTerm) {
 
             customerFoldersContainer.innerHTML = "";
@@ -1501,7 +1439,8 @@
         }
 
         async function analyzePhoto(photoId, imageUrl) {
-            const ML_SERVICE_URL = "https://captured-ml-api.onrender.com";
+            // const ML_SERVICE_URL = "https://captured-ml-api.onrender.com";
+            const ML_SERVICE_URL = "http://localhost:8000";
             const ML_TIMEOUT = 300000; // 5 minutes
 
             const startedAt = performance.now();
@@ -1899,106 +1838,121 @@
             }
         );
 
-        function renderPhotos(
-            photos
-        ) {
 
+        function renderPhotos(photos) {
             photoGrid.innerHTML = "";
 
-
-            if (
-                !photos ||
-                photos.length === 0
-            ) {
-
+            if (!photos || photos.length === 0) {
                 photoGrid.innerHTML = `
-
             <div class="customer-folder-empty">
-
                 <i class="fa-regular fa-images"></i>
-
-                <div>
-                    No photos yet.
-                </div>
-
-                <small>
-                    Click "Upload Photos" to add photos.
-                </small>
-
+                <div>No photos yet.</div>
+                <small>Click "Upload Photos" to add photos.</small>
             </div>
-
         `;
-
                 return;
             }
 
+            photos.forEach((photo, index) => {
+                const card = document.createElement("div");
+                card.className = "customer-photo-card";
+                card.dataset.photoIndex = index;
 
-            photos.forEach(
-                (photo, index) => {
+                card.innerHTML = `
+            <div class="photo-processing-badge">
+                ${escapeHTML(photo.processing_status || "pending")}
+            </div>
 
-                    const card =
-                        document.createElement("div");
+            <img
+                src="${escapeHTML(photo.image_url || "")}"
+                alt="${escapeHTML(photo.original_name || "Customer photo")}"
+            >
 
-
-                    card.className =
-                        "customer-photo-card";
-                    card.dataset.photoIndex = index;
-
-                    card.innerHTML = `
-
-                <div
-                    class="photo-processing-badge"
-                >
-                    ${escapeHTML(
-                        photo.processing_status ||
-                        "pending"
-                    )}
+            <div class="photo-information">
+                <div class="photo-name">
+                    ${escapeHTML(photo.original_name || "Photo")}
                 </div>
 
-                <img
-                    src="${escapeHTML(
-                        photo.image_url || ""
-                    )}"
-                    alt="${escapeHTML(
-                        photo.original_name ||
-                        "Customer photo"
-                    )}"
-                >
-
-                <div class="photo-information">
-
-                    <div class="photo-name">
-
-                        ${escapeHTML(
-                        photo.original_name ||
-                        "Photo"
-                    )}
-
-                    </div>
-
-                    <div class="photo-status">
-
-                        ${escapeHTML(
-                        photo.processing_status ||
-                        "Pending processing"
-                    )}
-
-                    </div>
-
+                <div class="photo-status">
+                    ${escapeHTML(photo.processing_status || "Pending processing")}
                 </div>
 
-            `;
+                <button type="button" class="delete-photo-btn" title="Delete photo" aria-label="Delete photo">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+                card.querySelector(".delete-photo-btn").addEventListener("click", async event => {
+                    event.stopPropagation();
+                    await deletePhoto(photo);
+                });
+                photoGrid.appendChild(card);
+            });
+        }
+        async function deletePhoto(photo) {
+            if (!photo?.id || !selectedRepository?.id) {
+                alert("Unable to identify this photo.");
+                return;
+            }
 
-
-                    photoGrid.appendChild(
-                        card
-                    );
-
-                }
+            const confirmed = confirm(
+                `Permanently delete "${photo.original_name || "this photo"}"?`
             );
 
-        }
+            if (!confirmed) return;
 
+            try {
+                const storagePaths = [
+                    photo.storage_path,
+                    photo.compressed_storage_path
+                ].filter(Boolean);
+
+                let storageWarning = false;
+
+                if (storagePaths.length > 0) {
+                    const { error: storageError } = await supabaseClient
+                        .storage
+                        .from("client-photos")
+                        .remove(storagePaths);
+
+                    if (storageError) {
+                        console.error("Storage cleanup warning:", storageError);
+                        storageWarning = true;
+                    }
+                }
+
+                const { data: deletedRows, error: databaseError } =
+                    await supabaseClient
+                        .from("repository_photos")
+                        .delete()
+                        .eq("id", photo.id)
+                        .eq("repository_id", selectedRepository.id)
+                        .select("id");
+
+                if (databaseError) {
+                    throw databaseError;
+                }
+
+                if (!deletedRows || deletedRows.length === 0) {
+                    throw new Error(
+                        "The photo record was not deleted. Check your Supabase DELETE and SELECT policies."
+                    );
+                }
+
+                await loadPhotos(selectedRepository.id);
+
+                showUploadStatus(
+                    storageWarning
+                        ? "Photo record deleted, but a storage file may remain."
+                        : "Photo deleted successfully.",
+                    storageWarning
+                );
+
+            } catch (error) {
+                console.error("Delete photo error:", error);
+                alert(error.message || "Failed to delete photo.");
+            }
+        }
         function startPhotoUpload() {
 
             if (
@@ -2123,18 +2077,13 @@
             let notSmaller = 0;
             let compressionFailed = 0;
 
-            showUploadStatus(`Uploading ${files.length} photo(s)...`, false);
-
             for (let index = 0; index < files.length; index++) {
                 const file = files[index];
 
                 let compressedStoragePath = null;
 
-                showUploadStatus(
-                    `Uploading ${index + 1} of ${files.length}: ${file.name}`,
-                    false
-                );
-
+                uploadStatus.classList.remove("show", "error");
+                uploadStatus.textContent = "";
                 try {
                     if (!file.type.startsWith("image/")) {
                         throw new Error("File is not an image.");
@@ -2358,8 +2307,9 @@
             });
 
             showUploadStatus(
-                `Upload finished: ${uploaded} uploaded, ${compressed} WebP copy/copies created, ` +
-                `${notSmaller} not smaller, ${compressionFailed} compression issue(s), ${failed} upload failure(s).`,
+                failed === 0
+                    ? "Photos uploaded successfully."
+                    : `${uploaded} photo(s) uploaded successfully. ${failed} failed.`,
                 failed > 0
             );
         }
@@ -2411,34 +2361,15 @@
 
             }
         );
+        backToFoldersBtn.addEventListener("click", () => {
+            selectedClient = null;
+            selectedRepository = null;
 
+            photosView.style.display = "none";
+            foldersView.style.display = "block";
 
-        backToFoldersBtn.addEventListener(
-            "click",
-            async () => {
-
-                selectedClient =
-                    null;
-
-                selectedRepository =
-                    null;
-
-
-                photosView.style.display =
-                    "none";
-
-
-                foldersView.style.display =
-                    "grid";
-                window.location.href = "/admin/repository"
-
-                await loadCompletedClients();
-
-            }
-        );
-
-
-
+            loadCompletedClients();
+        });
         searchInput.addEventListener(
             "input",
             event => {
@@ -2478,34 +2409,21 @@
 
             }
         );
-        function showUploadStatus(
-            message,
-            isError
-        ) {
+        function showUploadStatus(message, isError) {
 
-            uploadStatus.textContent =
-                message;
-
-
-            uploadStatus.classList.add(
-                "show"
-            );
-
-
+            uploadStatus.textContent = message;
+            uploadStatus.classList.add("show");
             uploadStatus.classList.toggle(
                 "error",
                 Boolean(isError)
             );
 
         }
-
-
-
         function showFolderError(message) {
 
             customerFoldersContainer.innerHTML = `
 
-        <div class="customer-folder-empty">
+            <div class="customer-folder-empty">
 
             <i class="fa-solid fa-circle-exclamation"></i>
 
@@ -2514,57 +2432,29 @@
             </div>
 
         </div>
-
     `;
 
         }
-
-
-        function formatDate(
-            dateString
-        ) {
+        function formatDate(dateString) {
 
             if (!dateString) {
                 return "-";
             }
-
-
             const date =
                 new Date(
                     dateString + "T00:00:00"
                 );
-
-
-            if (
-                Number.isNaN(
-                    date.getTime()
-                )
+            if (Number.isNaN(date.getTime())
             ) {
-
                 return dateString;
-
             }
-
-
             return date.toLocaleDateString(
-                "en-US",
-                {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric"
-                }
+                "en-US", { month: "short", day: "numeric", year: "numeric" }
             );
 
         }
-
-
-        function escapeHTML(
-            value
-        ) {
-
-            return String(
-                value ?? ""
-            )
+        function escapeHTML(value) {
+            return String(value ?? "")
                 .replace(
                     /&/g,
                     "&amp;"
@@ -2585,33 +2475,20 @@
                     /'/g,
                     "&#039;"
                 );
-
         }
-
-
         logoutBtn.addEventListener(
             "click",
             async event => {
-
                 event.preventDefault();
-
-
                 await supabaseClient.auth.signOut();
-
-
                 window.location.href = "/admin/login";
-
             }
         );
-
         document.addEventListener("DOMContentLoaded", () => {
             const sidebar = document.querySelector(".sidebar");
             const sidebarToggle = document.getElementById("sidebarToggle");
-
             if (sidebarToggle && sidebar) {
                 const icon = sidebarToggle.querySelector("i");
-
-                // 1. Restore saved collapsed state from localStorage on page load
                 const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
                 if (isCollapsed) {
                     sidebar.classList.add("collapsed");
@@ -2620,14 +2497,10 @@
                         icon.classList.add("fa-chevron-right");
                     }
                 }
-
-                // 2. Toggle state and save preference to localStorage on click
                 sidebarToggle.addEventListener("click", () => {
                     sidebar.classList.toggle("collapsed");
                     const collapsed = sidebar.classList.contains("collapsed");
-
                     localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
-
                     if (icon) {
                         if (collapsed) {
                             icon.classList.remove("fa-bars");

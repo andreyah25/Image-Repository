@@ -228,10 +228,7 @@
                         </strong>
 
                     </div>
-
-
                     <div class="analytics-summary-card">
-
                         <span>
                             Busiest Month:
                         </span>
@@ -239,37 +236,46 @@
                         <strong id="busiestBookingMonth">
                             —
                         </strong>
+                    </div>
 
+                    <div class="analytics-summary-card">
+                        <span>Quietest Active Month:</span>
+                        <strong id="quietestBookingMonth">—</strong>
+                    </div>
+
+                    <div class="analytics-summary-card">
+                        <span>Active Months:</span>
+                        <strong id="activeBookingMonths">0 / 12</strong>
+                    </div>
+
+                    <div class="analytics-summary-card">
+                        <span>Busiest Month Share:</span>
+                        <strong id="busiestBookingShare">0%</strong>
                     </div>
 
                 </div>
 
-
-                <!-- CHART -->
+                <div class="analytics-legend">
+                    <span><i class="legend-dot" style="background:#d1d5db"></i> No bookings</span>
+                    <span><i class="legend-dot" style="background:#93c5fd"></i> Low</span>
+                    <span><i class="legend-dot" style="background:#6ee7b7"></i> Moderate</span>
+                    <span><i class="legend-dot" style="background:#fbbf24"></i> High</span>
+                    <span><i class="legend-dot" style="background:#f97316"></i> Peak</span>
+                </div>
 
                 <div class="chart-container">
-
                     <div class="y-axis" id="bookingYAxis">
                     </div>
                     <div class="chart-area" id="chartArea">
-
                         <div class="grid-lines" id="bookingGridLines">
                         </div>
-
-
                         <div class="bars-wrapper" id="barsWrapper">
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
             <div id="incomeReportModal" class="income-report-modal notification-booking-modal">
                 <div class="income-report-card notification-booking-card">
-
-                    <!-- HEADER -->
                     <div class="income-report-header notification-booking-header">
                         <div class="income-report-title-wrapper notification-booking-title">
                             <div class="income-report-icon notification-booking-icon">
@@ -313,7 +319,6 @@
                                     <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
                                 </div>
                             </div>
-
                             <!-- 2. Month Selector -->
                             <div class="income-field-group" id="incomeMonthGroup" style="width: 100%;">
                                 <label for="incomeReportMonth"
@@ -339,7 +344,6 @@
                                     <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
                                 </div>
                             </div>
-
                             <!-- 3. Year Selector -->
                             <div class="income-field-group" style="width: 100%;">
                                 <label for="incomeReportYear"
@@ -360,21 +364,17 @@
                             </div>
 
                         </div>
-
                         <h3 class="notification-section-title" style="margin-top: 25px;">
                             <i class="fa-solid fa-chart-pie"></i>
                             Report Results
                         </h3>
-
                         <div class="income-report-result" style="margin-top: 0;">
                             <p id="incomeReportPeriod">October 2026</p>
                             <h2 id="incomeReportAmount">₱0.00</h2>
                             <p id="incomeReportCount">0 completed bookings</p>
                             <p id="incomeReportMessage" role="status"></p>
                         </div>
-
                     </div>
-
                     <!-- FOOTER -->
                     <div class="income-report-footer notification-booking-footer income-report-export"
                         style="display: flex; gap: 10px; width: 100%;">
@@ -390,107 +390,73 @@
                             Export CSV
                         </button>
                     </div>
-
                 </div>
             </div>
             <div id="bookingModal" class="booking-modal">
 
                 <div class="booking-card">
                     <div class="booking-header">
-
                         <div class="booking-header-left">
-
                             <div class="booking-icon">
                                 <i class="fa-solid fa-calendar-check"></i>
                             </div>
-
                             <div>
                                 <h2 id="modalClient">
                                     Client Name
                                 </h2>
-
                                 <span id="modalStatus" class="booking-status">
                                     Confirmed
                                 </span>
                             </div>
-
                         </div>
-
                         <button type="button" class="close-booking-modal" aria-label="Close booking details">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
-
                     </div>
-
                     <div class="booking-body">
-
                         <!-- CUSTOMER INFORMATION -->
                         <h3 class="calendar-section-title">
                             <i class="fa-solid fa-user"></i>
                             Customer Information
                         </h3>
-
                         <div class="booking-info">
-
                             <!-- EMAIL -->
                             <div class="info-card">
-
                                 <i class="fa-solid fa-envelope"></i>
-
                                 <div>
                                     <label>Email</label>
                                     <span id="modalEmail">
                                         —
                                     </span>
                                 </div>
-
                             </div>
-
-
                             <!-- CONTACT -->
                             <div class="info-card">
-
                                 <i class="fa-solid fa-phone"></i>
-
                                 <div>
                                     <label>Contact Number</label>
                                     <span id="modalContact">
                                         —
                                     </span>
                                 </div>
-
                             </div>
-
                         </div>
-
-
                         <!-- BOOKING INFORMATION -->
                         <h3 class="calendar-section-title">
-
                             <i class="fa-solid fa-calendar-days"></i>
-
                             Booking Information
-
                         </h3>
-
                         <div class="booking-info">
-
                             <!-- PACKAGE -->
                             <div class="info-card">
-
                                 <i class="fa-solid fa-box"></i>
-
                                 <div>
                                     <label>Package</label>
-
                                     <span id="modalPackage">
                                         —
                                     </span>
                                 </div>
-
                             </div>
-
-
                             <!-- SESSION TYPE -->
                             <div class="info-card">
 
@@ -505,8 +471,6 @@
                                 </div>
 
                             </div>
-
-
                             <!-- DATE -->
                             <div class="info-card">
 
@@ -519,10 +483,7 @@
                                         —
                                     </span>
                                 </div>
-
                             </div>
-
-
                             <!-- TIME -->
                             <div class="info-card">
 
@@ -537,48 +498,32 @@
                                 </div>
 
                             </div>
-
-
                             <!-- DURATION -->
                             <div class="info-card">
-
                                 <i class="fa-solid fa-hourglass-half"></i>
-
                                 <div>
                                     <label>Duration</label>
-
                                     <span id="modalDuration">
                                         —
                                     </span>
                                 </div>
 
                             </div>
-
-
                             <!-- BACKDROP -->
                             <div class="info-card">
-
                                 <i class="fa-solid fa-image"></i>
-
                                 <div>
                                     <label>Backdrop</label>
-
                                     <span id="modalBackdrop">
                                         —
                                     </span>
                                 </div>
-
                             </div>
-
-
                             <!-- ADD-ONS -->
                             <div class="info-card">
-
                                 <i class="fa-solid fa-plus"></i>
-
                                 <div>
                                     <label>Add-ons</label>
-
                                     <span id="modalAddons">
                                         —
                                     </span>
@@ -1602,29 +1547,14 @@
                     });
         }
 
-        function renderBookingAnalytics(
-            monthlyBookings,
-            selectedYear
-        ) {
 
-            const barsWrapper =
-                document.getElementById("barsWrapper");
+        function renderBookingAnalytics(monthlyBookings, selectedYear) {
+            const barsWrapper = document.getElementById("barsWrapper");
+            const yAxis = document.getElementById("bookingYAxis");
+            const gridLines = document.getElementById("bookingGridLines");
 
-            const yAxis =
-                document.getElementById("bookingYAxis");
-
-            const gridLines =
-                document.getElementById("bookingGridLines");
-
-
-            if (
-                !barsWrapper ||
-                !yAxis ||
-                !gridLines
-            ) {
-                console.error(
-                    "Analytics chart elements not found."
-                );
+            if (!barsWrapper || !yAxis || !gridLines) {
+                console.error("Analytics chart elements not found.");
                 return;
             }
 
@@ -1632,369 +1562,194 @@
             yAxis.innerHTML = "";
             gridLines.innerHTML = "";
 
-            const maxBooking =
-                Math.max(
-                    ...monthlyBookings,
-                    0
-                );
-            let chartMax;
+            const monthNames = [
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            ];
 
-            if (maxBooking <= 5) {
+            const maxBooking = Math.max(...monthlyBookings, 0);
+            let chartMax = 5;
 
-                chartMax = 5;
+            if (maxBooking > 5) {
+                const magnitude = Math.pow(10, Math.floor(Math.log10(maxBooking)));
+                const normalized = maxBooking / magnitude;
 
+                const niceNumber = normalized <= 1 ? 1 :
+                    normalized <= 2 ? 2 :
+                        normalized <= 5 ? 5 : 10;
+
+                chartMax = niceNumber * magnitude;
             }
-            else {
 
-                const magnitude =
-                    Math.pow(
-                        10,
-                        Math.floor(
-                            Math.log10(maxBooking)
-                        )
-                    );
+            for (let i = 5; i >= 0; i--) {
+                const label = document.createElement("span");
+                label.textContent = Math.round((chartMax / 5) * i).toLocaleString();
+                yAxis.appendChild(label);
 
-                const normalized =
-                    maxBooking / magnitude;
-
-
-                let niceNumber;
-
-                if (normalized <= 1) {
-
-                    niceNumber = 1;
-
-                }
-                else if (normalized <= 2) {
-
-                    niceNumber = 2;
-
-                }
-                else if (normalized <= 5) {
-
-                    niceNumber = 5;
-
-                }
-                else {
-
-                    niceNumber = 10;
-
-                }
-
-
-                chartMax =
-                    niceNumber * magnitude;
-
+                const line = document.createElement("div");
+                line.className = "grid-line";
+                gridLines.appendChild(line);
             }
-            const steps = 5;
 
-            const stepValue =
-                chartMax / steps;
-            for (
-                let i = steps;
-                i >= 0;
-                i--
-            ) {
+            monthlyBookings.forEach((value, index) => {
+                const percentage = chartMax > 0 ? (value / chartMax) * 100 : 0;
+                const relativeAmount = maxBooking > 0 ? value / maxBooking : 0;
 
-                const value =
-                    Math.round(
-                        stepValue * i
-                    );
+                let barColor = "#d1d5db";
+                let volumeLabel = "No bookings";
 
-
-                const label =
-                    document.createElement(
-                        "span"
-                    );
-
-                label.textContent =
-                    value.toLocaleString();
-
-
-                yAxis.appendChild(
-                    label
-                );
-
-
-                const line =
-                    document.createElement(
-                        "div"
-                    );
-
-                line.className =
-                    "grid-line";
-
-
-                gridLines.appendChild(
-                    line
-                );
-
-            }
-            monthlyBookings.forEach(
-                (value, index) => {
-
-                    const percentage =
-                        chartMax > 0
-                            ? (
-                                value /
-                                chartMax
-                            ) * 100
-                            : 0;
-
-
-                    const column =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    column.className =
-                        "bar-column";
-
-
-                    column.innerHTML = `
-
-                <div class="bar-track">
-
-                    <div
-                        class="bar-fill"
-                        style="
-                            height: ${percentage}%;
-                        "
-                    >
-
-                        <span class="bar-value">
-                            ${value.toLocaleString()}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="bar-label">
-                    ${monthNames[index]}
-                </div>
-
-            `;
-
-
-                    barsWrapper.appendChild(
-                        column
-                    );
-
+                if (value > 0 && relativeAmount <= 0.25) {
+                    barColor = "#93c5fd";
+                    volumeLabel = "Low booking volume";
+                } else if (value > 0 && relativeAmount <= 0.50) {
+                    barColor = "#6ee7b7";
+                    volumeLabel = "Moderate booking volume";
+                } else if (value > 0 && relativeAmount <= 0.75) {
+                    barColor = "#fbbf24";
+                    volumeLabel = "High booking volume";
+                } else if (value > 0) {
+                    barColor = "#f97316";
+                    volumeLabel = "Peak booking volume";
                 }
-            );
-            const yearlyTotal =
-                monthlyBookings.reduce(
-                    (total, value) =>
-                        total + value,
-                    0
+
+                const column = document.createElement("div");
+                column.className = "bar-column";
+
+                const track = document.createElement("div");
+                track.className = "bar-track";
+
+                const fill = document.createElement("div");
+                fill.className = "bar-fill";
+                fill.style.height = `${percentage}%`;
+                fill.style.background = `${barColor}`;
+                fill.title = `${monthNames[index]} ${selectedYear}: ${value} bookings (${volumeLabel})`;
+                fill.setAttribute(
+                    "aria-label",
+                    `${monthNames[index]} ${selectedYear}: ${value} bookings, ${volumeLabel}`
                 );
 
+                const barValue = document.createElement("span");
+                barValue.className = "bar-value";
+                barValue.textContent = value.toLocaleString();
 
-            const yearlyTotalElement =
-                document.getElementById(
-                    "yearlyBookingTotal"
-                );
+                fill.appendChild(barValue);
+                track.appendChild(fill);
 
+                const monthLabel = document.createElement("div");
+                monthLabel.className = "bar-label";
+                monthLabel.textContent = monthNames[index];
 
-            if (yearlyTotalElement) {
+                column.appendChild(track);
+                column.appendChild(monthLabel);
+                barsWrapper.appendChild(column);
+            });
 
-                yearlyTotalElement.textContent =
-                    yearlyTotal.toLocaleString();
+            const yearlyTotal = monthlyBookings.reduce((total, value) => total + value, 0);
 
+            const totalElement = document.getElementById("yearlyBookingTotal");
+            if (totalElement) {
+                totalElement.textContent = yearlyTotal.toLocaleString();
             }
-            const average =
-                yearlyTotal / 12;
 
-
-            const averageElement =
-                document.getElementById(
-                    "averageMonthlyBookings"
-                );
-
-
+            const averageElement = document.getElementById("averageMonthlyBookings");
             if (averageElement) {
-
-                averageElement.textContent =
-                    average.toFixed(1);
-
+                averageElement.textContent = (yearlyTotal / 12).toFixed(1);
             }
-            const highest =
-                Math.max(
-                    ...monthlyBookings
-                );
 
+            const highest = Math.max(...monthlyBookings, 0);
+            const busiestIndex = monthlyBookings.indexOf(highest);
 
-            const busiestElement =
-                document.getElementById(
-                    "busiestBookingMonth"
-                );
-
-
+            const busiestElement = document.getElementById("busiestBookingMonth");
             if (busiestElement) {
-
-                if (highest === 0) {
-
-                    busiestElement.textContent =
-                        "—";
-
-                }
-                else {
-
-                    const busiestIndex =
-                        monthlyBookings.indexOf(
-                            highest
-                        );
-
-
-                    busiestElement.textContent =
-                        monthNames[
-                        busiestIndex
-                        ];
-
-                }
-
+                busiestElement.textContent = highest > 0
+                    ? `${monthNames[busiestIndex]} (${highest})`
+                    : "—";
             }
-            console.log(
-                `Analytics rendered for ${selectedYear}`,
-                {
-                    monthlyBookings,
-                    yearlyTotal,
-                    average,
-                    highestMonthlyBookings:
-                        maxBooking,
-                    chartMaximum:
-                        chartMax
-                }
-            );
 
+            const activeMonths = monthlyBookings.filter(value => value > 0).length;
+            const activeMonthsElement = document.getElementById("activeBookingMonths");
+
+            if (activeMonthsElement) {
+                activeMonthsElement.textContent = `${activeMonths} / 12`;
+            }
+
+            const quietestCandidates = monthlyBookings
+                .map((value, index) => ({ value, index }))
+                .filter(item => item.value > 0)
+                .sort((a, b) => a.value - b.value);
+
+            const quietestElement = document.getElementById("quietestBookingMonth");
+            if (quietestElement) {
+                quietestElement.textContent = quietestCandidates.length
+                    ? `${monthNames[quietestCandidates[0].index]} (${quietestCandidates[0].value})`
+                    : "—";
+            }
+
+            const shareElement = document.getElementById("busiestBookingShare");
+            if (shareElement) {
+                shareElement.textContent = yearlyTotal > 0
+                    ? `${((highest / yearlyTotal) * 100).toFixed(1)}%`
+                    : "0%";
+            }
+
+            console.log(`Analytics rendered for ${selectedYear}`, {
+                monthlyBookings,
+                yearlyTotal,
+                averageMonthlyBookings: yearlyTotal / 12,
+                activeMonths
+            });
         }
 
         async function loadAnalyticsYears() {
-
-            const {
-                data,
-                error
-            } = await supabaseClient
-
+            const { data, error } = await supabaseClient
                 .from("bookings")
-
                 .select("booking_date")
-
-                .eq("status", "Confirmed");
-
+                .in("status", ["Confirmed", "Completed"]);
 
             if (error) {
-
-                console.error(
-                    "Unable to load booking years:",
-                    error
-                );
-
+                console.error("Unable to load booking years:", error);
                 return;
-
             }
 
+            const currentYear = new Date().getFullYear();
 
-            const years =
-                new Set();
-
-
-            data.forEach(
-                booking => {
-
-                    if (!booking.booking_date) {
-                        return;
-                    }
-
-
-                    years.add(
-                        booking.booking_date.substring(0, 4)
-                    );
-
-                }
-            );
-
-
-            const currentYear =
-                String(
-                    new Date().getFullYear()
+            const bookingYears = (data || [])
+                .filter(booking => booking.booking_date)
+                .map(booking => Number(booking.booking_date.substring(0, 4)))
+                .filter(year =>
+                    Number.isInteger(year) &&
+                    year >= 1000 &&
+                    year <= currentYear
                 );
 
+            const earliestYear = bookingYears.length
+                ? Math.min(...bookingYears)
+                : currentYear;
 
-            years.add(currentYear);
+            const yearFilter = document.getElementById("yearFilter");
 
+            if (!yearFilter) return;
 
-            const sortedYears =
-                Array.from(years)
-                    .sort(
-                        (a, b) =>
-                            Number(b) -
-                            Number(a)
-                    );
-
-
-            const yearFilter =
-                document.getElementById(
-                    "yearFilter"
-                );
-
-
-            const previousYear =
-                yearFilter.value;
-
-
+            const previousYear = yearFilter.value;
             yearFilter.innerHTML = "";
 
+            for (let year = currentYear; year >= earliestYear; year--) {
+                const option = document.createElement("option");
+                option.value = String(year);
+                option.textContent = year === currentYear
+                    ? `This Year (${year})`
+                    : String(year);
 
-            sortedYears.forEach(
-                year => {
-
-                    const option =
-                        document.createElement(
-                            "option"
-                        );
-
-
-                    option.value =
-                        year;
-
-
-                    option.textContent =
-                        year === currentYear
-                            ? `This Year (${year})`
-                            : year;
-
-
-                    yearFilter.appendChild(
-                        option
-                    );
-
-                }
-            );
-
-            if (
-                sortedYears.includes(
-                    previousYear
-                )
-            ) {
-
-                yearFilter.value =
-                    previousYear;
-
+                yearFilter.appendChild(option);
             }
-            else {
 
-                yearFilter.value =
-                    currentYear;
+            yearFilter.value = [...yearFilter.options].some(
+                option => option.value === previousYear
+            )
+                ? previousYear
+                : String(currentYear);
 
-            }
-            await loadBookingAnalytics(
-                yearFilter.value
-            );
-
+            await loadBookingAnalytics(yearFilter.value);
         }
 
         let currentUser = null;

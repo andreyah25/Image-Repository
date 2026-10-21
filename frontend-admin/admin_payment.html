@@ -598,6 +598,7 @@
                     } else if (isCancelled) {
                         paymentStatus = "Cancelled";
                     } else if (
+                        isCompletedBooking ||
                         isExplicitlyFullyPaid ||
                         isBalanceSettled
                     ) {

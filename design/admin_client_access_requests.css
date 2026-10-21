@@ -110,7 +110,7 @@
 
 /* Table Container & Scrolling Setup */
 .ui-table-card-panel {
-    margin-top: -53px;
+    margin-top: 0;
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -779,24 +779,23 @@ span.notification-badge,
     justify-content: center;
     width: 100%;
     min-height: 38px;
-    margin: 0 0 15px;
+    margin-top: -33px;
+    margin-bottom: 22px;
     box-sizing: border-box;
 }
 
-/* Centered Access Request tabs */
 .access-request-tabs {
     display: flex;
     align-items: center;
-    justify-content: center; /* Centers the 3 buttons horizontally */
+    justify-content: center;
     gap: 12px;
     width: 100%;
-    margin-top: -117px;            
+    margin-top: 0;
     margin-bottom: 0;
     padding-bottom: 0;
     overflow: visible;
 }
 
-/* Simple tab design */
 .access-tab {
     position: relative;
     border: 1px solid #cdd5d2;
@@ -809,6 +808,10 @@ span.notification-badge,
     color: #353535;
     cursor: pointer;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
 }
 
 .access-tab:hover {
@@ -824,11 +827,29 @@ span.notification-badge,
     font-weight: 600;
 }
 
+.access-tab .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e9e7;
+    color: #444444;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+}
+
+.access-tab.active .tab-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
 /* Search box aligned right */
 .client-actions-row .table-search-box {
     position: absolute;
     right: 0;
-    top: 50%;
+    top: 140%;
     transform: translateY(-50%);
     width: 230px;
     margin: 0;

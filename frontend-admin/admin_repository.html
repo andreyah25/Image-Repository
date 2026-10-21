@@ -215,26 +215,17 @@
     </div>
     <div class="modal-overlay" id="createFolderModal">
         <div class="modal-card">
-
             <div class="modal-header">
                 <i class="fa-solid fa-folder-plus"></i>
                 <h2>Create Folder</h2>
             </div>
-
             <form id="newEventForm" class="modal-form">
-
                 <div class="form-field">
-
                     <input type="text" id="eventNameInput" placeholder="Event Name" required>
-
                 </div>
-
                 <button class="save-client-btn" type="submit">
-
                     Create Event
-
                 </button>
-
             </form>
         </div>
     </div>
@@ -395,9 +386,7 @@
                 <p>No notifications</p>
 
             </div>
-
         `;
-
                 notificationBadge.style.display = "none";
 
                 notificationCountText.textContent =
@@ -405,12 +394,6 @@
 
                 return;
             }
-
-
-            /* =====================================================
-               COUNT ONLY UNREAD NOTIFICATIONS
-            ===================================================== */
-
             const unreadNotifications =
                 notifications.filter(
                     notification => !notification.is_read
@@ -786,56 +769,39 @@
             ]);
         });
 
-        async function loadEvents() {
 
-            const {
-                data,
-                error
-            } = await supabaseClient
+        async function loadEvents() {
+            const { data, error } = await supabaseClient
                 .from("bookings")
-                .select(`
-            id,
-            session_type,
-            status,
-            is_archived
-        `)
+                .select("id, full_name, session_type, status, is_archived, booking_date")
                 .eq("status", "Completed")
                 .eq("is_archived", false);
 
             if (error) {
-
-                console.error(
-                    "Repository package loading error:",
-                    error
-                );
-
+                console.error("Repository package loading error:", error);
                 document.getElementById("foldersView").innerHTML = `
-            <div class="empty-repo-message">
-                Could not load repository.
-            </div>
+            <div class="empty-repo-message">Could not load repository.</div>
         `;
-
                 return;
             }
 
-            console.log("Completed bookings:", data);
+            const bookings = data || [];
 
             const uniquePackages = [
                 ...new Set(
-                    (data || [])
+                    bookings
                         .map(booking => booking.session_type)
                         .filter(Boolean)
                 )
-            ];
-
-            uniquePackages.sort((a, b) =>
-                a.localeCompare(b)
-            );
+            ].sort((a, b) => a.localeCompare(b));
 
             allFolders = uniquePackages;
+            window.repositoryBookings = bookings;
+
             populateRepositoryEventFilter(uniquePackages);
             renderPackageFolders(uniquePackages);
         }
+
 
         function populateRepositoryEventFilter(packages) {
             const select = document.getElementById("repoEventFilter");
@@ -977,6 +943,51 @@
             .addEventListener("change", scheduleRepositorySearch);
 
 
+        function searchCustomerFolders(query) {
+            const foldersView = document.getElementById("foldersView");
+            const searchTerm = query.toLowerCase().trim();
+            const bookings = window.repositoryBookings || [];
+
+            const matches = bookings.filter(booking => {
+                const customerName = (booking.full_name || "").toLowerCase();
+                const packageName = (booking.session_type || "").toLowerCase();
+
+                return customerName.includes(searchTerm) ||
+                    packageName.includes(searchTerm);
+            });
+
+            foldersView.innerHTML = "";
+
+            if (!matches.length) {
+                foldersView.innerHTML = `
+            <div class="empty-repo-message">
+                No matching customer folders found.
+            </div>
+        `;
+                return;
+            }
+
+            matches.forEach(booking => {
+                const card = document.createElement("div");
+                card.className = "folder-card repository-client-card";
+
+                card.innerHTML = `
+            <div class="folder-icon-wrapper">
+                <i class="fa-solid fa-folder folder-icon"></i>
+            </div>
+            <h3>${escapeHTML(booking.full_name || "Unnamed Customer")}</h3>
+            <p>${escapeHTML(booking.session_type || "Unknown Package")}</p>
+            <p>${escapeHTML(formatRepositoryDate(booking.booking_date))}</p>
+        `;
+
+                card.addEventListener("click", () => {
+                    window.location.href =
+                        `/admin/customer-folders?booking=${encodeURIComponent(booking.id)}`;
+                });
+
+                foldersView.appendChild(card);
+            });
+        }
 
         async function searchRepositoryPhotos() {
             const query = document
@@ -995,7 +1006,6 @@
             const foldersView = document.getElementById("foldersView");
             const photosView = document.getElementById("photosView");
 
-            // Show package folders when no search or filters are active.
             if (!query && !packageName && !tagName && sortBy === "newest") {
                 foldersView.style.display = "";
                 photosView.style.display = "none";
@@ -1003,16 +1013,22 @@
                 return;
             }
 
+            if (query && !tagName && sortBy === "newest") {
+                searchCustomerFolders(query);
+
+                foldersView.style.display = "";
+                photosView.style.display = "none";
+
+                const customerMatches = (window.repositoryBookings || []).some(booking =>
+                    (booking.full_name || "").toLowerCase().includes(query.toLowerCase()) ||
+                    (booking.session_type || "").toLowerCase().includes(query.toLowerCase())
+                );
+
+                if (customerMatches) return;
+            }
+
             foldersView.style.display = "none";
             photosView.style.display = "block";
-
-            // Show loading state BEFORE calling Supabase.
-            photosView.innerHTML = `
-        <div class="repo-search-empty">
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            <p>Searching repository photos...</p>
-        </div>
-    `;
 
             try {
                 console.log("Repository search:", {
@@ -1415,39 +1431,103 @@
 
         }
         function renderPhotos(photos) {
+            photoGrid.innerHTML = "";
 
-            const view =
-                document.getElementById("photosView");
-
-
-            view.innerHTML = "";
-
-
-            if (photos.length === 0) {
-
-                view.innerHTML = `
-        <div class="empty-repo-message">
-            No photos yet.
-        </div>`;
-
+            if (!photos || photos.length === 0) {
+                photoGrid.innerHTML = `
+            <div class="customer-folder-empty">
+                <i class="fa-regular fa-images"></i>
+                <div>No photos yet.</div>
+            </div>
+        `;
                 return;
             }
 
+            photos.forEach((photo, index) => {
+                const card = document.createElement("div");
+                card.className = "customer-photo-card";
+                card.dataset.photoIndex = index;
 
-            photos.forEach(photo => {
+                card.innerHTML = `
+            <div class="photo-processing-badge">
+                ${escapeHTML(photo.processing_status || "pending")}
+            </div>
 
-                view.innerHTML += `
+            <img
+                src="${escapeHTML(photo.image_url || "")}"
+                alt="${escapeHTML(photo.original_name || "Customer photo")}"
+            >
 
-        <div class="photo-card">
+            <div class="photo-information">
+                <div class="photo-name">
+                    ${escapeHTML(photo.original_name || "Photo")}
+                </div>
 
-            <img src="${photo.image_url}">
+                <div class="photo-status">
+                    ${escapeHTML(photo.processing_status || "Pending processing")}
+                </div>
 
-        </div>
-
+                <button type="button" class="delete-photo-btn">
+                    <i class="fa-solid fa-trash"></i>
+                    Delete
+                </button>
+            </div>
         `;
 
-            });
+                card.querySelector(".delete-photo-btn").addEventListener("click", async event => {
+                    event.stopPropagation();
+                    await deletePhoto(photo);
+                });
 
+                photoGrid.appendChild(card);
+            });
+        }
+        async function deletePhoto(photo) {
+            if (!photo || !photo.id || !photo.storage_path) {
+                alert("Could not identify this photo.");
+                return;
+            }
+
+            const confirmed = confirm(
+                `Delete "${photo.original_name || "this photo"}"?\n\nThis action cannot be undone.`
+            );
+
+            if (!confirmed) return;
+
+            try {
+                const { error: deleteRecordError } = await supabaseClient
+                    .from("repository_photos")
+                    .delete()
+                    .eq("id", photo.id)
+                    .eq("repository_id", selectedRepository.id);
+
+                if (deleteRecordError) throw deleteRecordError;
+
+                const storagePaths = [
+                    photo.storage_path,
+                    photo.compressed_storage_path
+                ].filter(Boolean);
+
+                const { error: storageError } = await supabaseClient
+                    .storage
+                    .from("client-photos")
+                    .remove(storagePaths);
+
+                if (storageError) {
+                    console.error("Photo storage cleanup failed:", storageError);
+                }
+
+                await loadPhotos(
+                    selectedRepository.id,
+                    customerPhotoSearchInput.value
+                );
+
+                alert("Photo deleted successfully.");
+
+            } catch (error) {
+                console.error("Delete photo error:", error);
+                alert("Could not delete the photo. Please check your permissions.");
+            }
         }
         document
 
@@ -1471,6 +1551,7 @@
             .getElementById("photoFilesUploader")
 
             .addEventListener("change", uploadPhotos);
+
         /*function renderEvents(packages) {
 
             const view =

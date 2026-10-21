@@ -67,7 +67,6 @@
 
 .confirm-btn:hover {
     background: #17633c;
-    transform: translateY(-1px);
 }
 
 .confirm-btn:active {
@@ -75,23 +74,20 @@
 }
 
 .reject-btn {
-    background: #d9534f;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 14px;
-    font-size: 13px;
+    background: #ffffff;
+    color: #a33434;
+    border: 1px solid #dca6a6;
+    padding: 8px 16px;      /* Matches booking-view-btn padding */
+    border-radius: 4px;     /* Matches booking-view-btn radius (4px) */
+    font-size: 13px;        /* Matches table action font size */
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.25s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    margin-left: 6px;       /* Spacing between buttons */
+    transition: 0.2s ease;
 }
 
 .reject-btn:hover {
-    background: #b63f3b;
-    transform: translateY(-1px);
+    background: #fbe8e8;
 }
 
 .reject-btn:active {
@@ -934,6 +930,26 @@ span.notification-badge,
     border: 1px solid #f6d365 !important;
 }
 
+span.status-badge.downpayment-paid,
+span.booking-status.downpayment-paid,
+span.payment-status-badge.downpayment-paid,
+span.payment-status.downpayment-paid,
+.status-badge.downpayment-paid,
+.booking-status.downpayment-paid,
+.payment-status-badge.downpayment-paid,
+.payment-status.downpayment-paid {
+    background-color: #E2F4EE !important; /* Soft mint / teal tint background */
+    color: #0F766E !important;             /* Deep, readable teal text */
+    border: 1px solid #5EEAD4 !important;  /* Bright aqua border */
+}
+
+.ui-data-grid .booking-status.downpayment-paid,
+.ui-data-grid span.booking-status[class*="downpayment"] {
+    background-color: #E2F4EE !important;
+    color: #0F766E !important;
+    border: 1px solid #5EEAD4 !important;
+}
+
 /* --- BOOKING STATUS BADGES --- */
 .status-badge.pending {
     background-color: #fff3cd;
@@ -1524,6 +1540,24 @@ body.payment-proof-modal-open {
     font-weight: 600;
 }
 
+.booking-status-tab .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e9e7;
+    color: #444444;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+}
+
+.booking-status-tab.active .tab-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
 #clientTable {
     width: 100%;
     border-collapse: separate;
@@ -1752,39 +1786,44 @@ AILED */
     cursor: not-allowed;
 }
 
+/*PENDING PAYMENT STATUS ACTIONS*/
+
 .confirm-btn {
-    background: #639A88;
-    color: #ffffff;
-
-    border: 1px solid #639A88;
-
-    padding: 6px 12px;
-
-    border-radius: 5px;
-
-    font-size: 12px;
+    background: #ffffff;       /* Neon-y green background tint */
+    color: #16A34A;           /* High-contrast neon green text */
+    border: 1px solid #4ADE80; /* Neon green border matching your confirmed status badges */
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
     font-weight: 600;
-
     cursor: pointer;
+    margin-left: 6px;
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 3px;
 }
 
 .confirm-btn:hover {
-    background: #4f8372;
+    background: #bbf7d0;       /* Slightly darker neon green on hover */
+    border-color: #22c55e;
 }
 .reject-btn {
     background: #ffffff;
     color: #a33434;
-
     border: 1px solid #dca6a6;
-
-    padding: 6px 12px;
-
-    border-radius: 5px;
-
-    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
     font-weight: 600;
-
     cursor: pointer;
+    margin-left: 6px;
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: -6px !important;
 }
 
 .reject-btn:hover {
@@ -2500,13 +2539,11 @@ AILED */
     inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
-
     display: none !important;
     align-items: center !important;
     justify-content: center !important;
-
-    background: rgba(0, 0, 0, 0.55) !important;
-
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
     z-index: 99999 !important;
 }
 
@@ -2516,21 +2553,94 @@ AILED */
 
 .simple-rejection-card {
     position: relative !important;
-
-    width: min(500px, calc(100% - 40px)) !important;
-    max-height: calc(100vh - 40px) !important;
-
+    width: 520px !important;
+    max-width: 92vw !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
     overflow-y: auto !important;
-
     background: #ffffff !important;
-    border-radius: 16px !important;
-
-    padding: 30px !important;
-
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
-
+    border-radius: 8px !important;
+    padding: 0 !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18) !important;
     z-index: 100000 !important;
 }
+
+#rejectionForm {
+    padding: 0 24px 24px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#rejectionModal h2 {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 20px 24px 16px !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+#rejectionModal p {
+    padding: 16px 24px 0 24px !important;
+    margin: 0 0 16px 0 !important;
+    color: #666 !important;
+    font-size: 13px !important;
+}
+
+#rejectionForm .form-field {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+    padding: 0 !important;
+}
+
+#rejectionModal select {
+    width: 100% !important;
+    height: 42px !important;
+    padding: 0 35px 0 12px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 5px !important;
+    background: #ffffff !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+}
+
+.simple-rejection-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    margin-top: 10px !important;
+    padding: 0 !important;
+}
+
+.rejection-cancel-btn,
+#cancelRejectionBtn {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+    padding: 10px 18px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.rejection-confirm-btn,
+#confirmRejectionBtn {
+    background: #c95c5c !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 10px 18px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
 /* =========================================================
    NO SHOW STATUS
    ========================================================= */
@@ -2550,18 +2660,17 @@ AILED */
     background: #ffffff;
     color: #756B4A;
     border: 1px solid #D8CFB5;
-    padding: 8px 14px;       /* Matches the booking-view-btn padding height */
-    border-radius: 4px;      /* Matches the booking-view-btn border-radius */
-    font-size: 13px;
+    padding: 8px 16px;      /* Matches reject-btn padding */
+    border-radius: 4px;     /* Matches reject-btn border-radius */
+    font-size: 13px;        /* Matches table action font size */
     font-weight: 600;
     cursor: pointer;
-    white-space: nowrap;
+    margin-left: 6px;       /* Spacing between buttons */
+    transition: 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: 0.2s ease;
-    margin-left: 3px;
 }
 
 .no-show-btn:hover {
@@ -2580,17 +2689,109 @@ AILED */
 
 #noShowModal {
     display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(4px);
-    z-index: 99999;
-    justify-content: center;
-    align-items: center;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 99999 !important;
 }
 
 #noShowModal.show {
     display: flex !important;
+}
+
+#noShowModal .simple-rejection-card {
+    position: relative !important;
+    width: 520px !important;
+    max-width: 92vw !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    background: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18) !important;
+    z-index: 100000 !important;
+}
+
+#noShowModal .modal-header {
+    background-color: #ffffff !important;
+    padding: 20px 24px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    border-bottom: 1px solid #eee !important;
+    justify-content: flex-start !important;
+}
+
+#noShowModal .modal-header h2 {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    margin: 0 !important;
+}
+
+#noShowModal p {
+    padding: 16px 24px 0 24px !important;
+    margin: 0 0 16px 0 !important;
+    color: #666 !important;
+    font-size: 13px !important;
+    line-height: 1.5;
+}
+
+#noShowForm {
+    padding: 0 24px 24px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#noShowForm .form-field {
+    width: 100% !important;
+    margin-bottom: 3px !important;
+    padding: 0 !important;
+}
+
+#noShowNote {
+    width: 100% !important;
+    min-height: 100px !important;
+    padding: 12px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    outline: none !important;
+    color: #374151 !important;
+    resize: vertical !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+}
+
+#noShowNote:focus {
+    border-color: #639A88 !important;
+}
+
+#confirmNoShowBtn {
+    background: #639A88 !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 10px 18px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: background 0.2s ease !important;
+}
+
+#confirmNoShowBtn:hover {
+    background: #528373 !important;
 }
 
 #noShowModal .booking-card {
@@ -2725,4 +2926,27 @@ AILED */
     #confirmNoShowBtn {
         width: 100%;
     }
+}
+
+/* Ensure the table cell containing the buttons behaves as a consistent flex container */
+.ui-data-grid td:last-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important; /* Uniform gap between all buttons in the action row */
+    white-space: nowrap !important;
+}
+
+/* Reset individual conflicting margins on all action buttons */
+.ui-data-grid td:last-child button,
+.ui-data-grid td:last-child .booking-view-btn,
+.ui-data-grid td:last-child .confirm-btn,
+.ui-data-grid td:last-child .reject-btn,
+.ui-data-grid td:last-child .complete-btn,
+.ui-data-grid td:last-child .no-show-btn,
+.ui-data-grid td:last-child .delete-rejected-btn {
+    margin: 0 !important; /* Removes custom offsets like negative margins */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
 }

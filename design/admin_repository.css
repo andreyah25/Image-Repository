@@ -187,11 +187,6 @@
     padding: 20px 0;
 }
 
-
-/* ==============================
-   BASIC FOLDER CARD
-============================== */
-
 .folder-card {
     background: #ffffff;
     border: 1px solid #e5e5e5;
@@ -207,13 +202,6 @@
     transform: none;
     box-sizing: border-box;
 }
-
-
-/* ==============================
-   FOLDER HOVER
-   No movement / no animation
-============================== */
-
 .folder-card:hover {
     background: #fafafa;
     border-color: #d5d5d5;
@@ -224,12 +212,6 @@
     /* Simple shadow only */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
-
-
-/* ==============================
-   FOLDER ICON
-============================== */
-
 .folder-icon {
     font-size: 48px;
     color: #528373;

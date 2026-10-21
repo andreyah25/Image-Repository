@@ -130,23 +130,23 @@
                     <div class="booking-status-buttons">
 
                         <button type="button" class="booking-status-tab active" data-status="all">
-                            All
+                            All <span class="tab-count" id="count-all">0</span>
                         </button>
 
                         <button type="button" class="booking-status-tab" data-status="completed">
-                            Completed
+                            Completed <span class="tab-count" id="count-completed">0</span>
                         </button>
 
                         <button type="button" class="booking-status-tab" data-status="pending">
-                            Pending
+                            Pending <span class="tab-count" id="count-pending">0</span>
                         </button>
 
                         <button type="button" class="booking-status-tab" data-status="rejected">
-                            Rejected
+                            Rejected <span class="tab-count" id="count-rejected">0</span>
                         </button>
 
                         <button type="button" class="booking-status-tab" data-status="upcoming">
-                            Upcoming
+                            Upcoming <span class="tab-count" id="count-upcoming">0</span>
                         </button>
 
                     </div>
@@ -260,10 +260,6 @@
 
         <div class="booking-details-card">
 
-            <button type="button" class="booking-details-close" id="closeBookingDetailsModal">
-                &times;
-            </button>
-
             <div class="booking-details-header">
 
                 <div>
@@ -337,34 +333,26 @@
 
     <div class="simple-rejection-modal" id="noShowModal">
         <div class="simple-rejection-card">
-            <h2>Mark Booking as No Show</h2>
-
-            <p>
-                The client did not attend the scheduled session.
-                Please provide an admin note.
-            </p>
+            <div class="modal-header">
+                <h2>Mark Booking as No Show</h2>
+            </div>
+            <p>The client did not attend the scheduled session. Provide an <strong>admin note</strong>:</p>
 
             <form id="noShowForm">
-
                 <div class="form-field">
                     <textarea id="noShowNote" placeholder="Enter reason or additional notes..." rows="4"
                         required></textarea>
                 </div>
 
                 <div class="simple-rejection-actions">
-                    <button type="button" id="cancelNoShowBtn">
-                        Cancel
-                    </button>
-
-                    <button type="submit" id="confirmNoShowBtn">
-                        Mark as No Show
-                    </button>
+                    <button type="button" class="rejection-cancel-btn" id="cancelNoShowBtn">Cancel</button>
+                    <button type="submit" class="rejection-confirm-btn" id="confirmNoShowBtn">Mark as No Show</button>
                 </div>
-
             </form>
-
         </div>
     </div>
+
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
 
@@ -723,6 +711,13 @@
                     allBookedSessions.length
                 );
 
+                updateBookingTabCounts();
+
+                console.log(
+                    "Bookings loaded successfully:",
+                    allBookedSessions.length
+                );
+
                 // Your existing renderer reads from allBookedSessions.
                 renderBookedSessions();
 
@@ -746,9 +741,49 @@
                         error.message || "Unable to load bookings."
                     );
                 }
+
+            }
+
+        }
+        function updateBookingTabCounts() {
+            // 1. Filter by the currently selected month first (if any month filter is active)
+            let baseBookings = [...allBookedSessions];
+
+            if (selectedMonth !== "all") {
+                baseBookings = baseBookings.filter(booking => {
+                    if (!booking.booking_date) return false;
+                    const month = Number(String(booking.booking_date).substring(5, 7));
+                    return month === Number(selectedMonth);
+                });
+            }
+
+            // 2. Calculate counts based on your existing tab filtering rules
+            const counts = {
+                all: baseBookings.length,
+                completed: baseBookings.filter(b => String(b.status || "").trim().toLowerCase() === "completed").length,
+                pending: baseBookings.filter(b => isBookingPending(b.status)).length,
+                rejected: baseBookings.filter(b => {
+                    const status = String(b.status || "").trim().toLowerCase();
+                    return status === "rejected" || status === "cancelled";
+                }).length,
+                upcoming: baseBookings.filter(b => {
+                    const status = String(b.status || "").trim().toLowerCase();
+                    if (status !== "confirmed" || !b.booking_date) return false;
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const bookingDate = new Date(`${b.booking_date}T00:00:00`);
+                    return !Number.isNaN(bookingDate.getTime()) && bookingDate >= today;
+                }).length
+            };
+
+            // 3. Update the HTML elements
+            for (const [status, count] of Object.entries(counts)) {
+                const badge = document.getElementById(`count-${status}`);
+                if (badge) {
+                    badge.textContent = count;
+                }
             }
         }
-
 
 
         function renderBookedSessions() {

@@ -1349,8 +1349,8 @@
                         .from("staff_activity_logs")
                         .insert({
                             staff_id: session.user.id,
-                            staff_name: profile?.full_name || session.user.email,
-                            staff_email: session.user.email,
+                            staff_name: profile?.full_name || session.user.email || "Unknown",
+                            staff_email: session.user.email || "",
                             role: profile?.role || "staff",
                             action: "LOGOUT"
                         });
