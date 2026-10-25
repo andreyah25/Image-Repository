@@ -53,7 +53,7 @@ const corsOptions = {
 
 // IMPORTANT: CORS must run before your API routes.
 app.use(cors(corsOptions));
-
+app.options(/.*/, cors(corsOptions));
 // Preserve the PayMongo webhook raw body.
 app.use(express.json({
     verify: (req, res, buffer) => {
