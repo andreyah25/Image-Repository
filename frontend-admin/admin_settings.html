@@ -715,19 +715,17 @@
                         return;
                     }
 
-                    const response = await fetch(
-                        `${SERVER_URL}/api/admin/staff/presence`,
-                        {
-                            method: "GET",
+                    const response = await fetch(`${SERVER_URL}/api/admin/staff`, {
+                        method: "GET",
 
-                            headers: {
-                                "Authorization":
-                                    `Bearer ${session.access_token}`,
+                        headers: {
+                            "Authorization":
+                                `Bearer ${session.access_token}`,
 
-                                "Content-Type":
-                                    "application/json"
-                            }
+                            "Content-Type":
+                                "application/json"
                         }
+                    }
                     );
 
                     const result = await response.json();
@@ -1043,18 +1041,18 @@
 
 
                     const response = await fetch(
-                        `${SERVER_URL}/api/admin/staff/${"${staffId}"}/signout`,
+                        `${SERVER_URL}/api/admin/staff/${staffId}/signout`,
                         {
-                            method: "POST",
+                        method: "POST",
 
-                            headers: {
-                                "Authorization":
-                                    `Bearer ${session.access_token}`,
+                        headers: {
+                            "Authorization":
+                                `Bearer ${session.access_token}`,
 
-                                "Content-Type":
-                                    "application/json"
-                            }
+                            "Content-Type":
+                                "application/json"
                         }
+                    }
                     );
 
 
@@ -1154,7 +1152,7 @@
                         );
 
                         window.location.href =
-                            "admin_login.html";
+                            "/admin/login";
                     }
 
                 } catch (error) {
@@ -1202,7 +1200,7 @@
                         );
 
                         window.location.href =
-                            "admin_login.html";
+                            "/admin/login";
 
                         return;
 
@@ -1371,7 +1369,7 @@
             window.addEventListener("load", async () => {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (!session) {
-                    window.location.href = "admin_login.html";
+                    window.location.href = "/admin/login";
                     return;
                 }
 
@@ -1422,7 +1420,7 @@
                     await supabaseClient.auth.signOut();
 
                     window.location.href =
-                        "admin_login.html";
+                        "/admin/login";
 
                     return;
                 }
