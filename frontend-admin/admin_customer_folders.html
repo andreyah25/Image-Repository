@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/design/admin_client.css">
     <link rel="stylesheet" href="/design/admin_repository.css">
 
-    <link rel="stylesheet" href="/design/admin_customer_folders.css">
+    <link rel="stylesheet" href="/frontend-admin/design/admin_customer_folders.css">
 </head>
 
 
@@ -1439,8 +1439,8 @@
         }
 
         async function analyzePhoto(photoId, imageUrl) {
-            const ML_SERVICE_URL = "https://captured-ml-api.onrender.com";
-            //const ML_SERVICE_URL = "http://localhost:8000";
+            //const ML_SERVICE_URL = "https://captured-ml-api.onrender.com";
+            const ML_SERVICE_URL = "http://localhost:8000";
             const ML_TIMEOUT = 300000; // 5 minutes
 
             const startedAt = performance.now();

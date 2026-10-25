@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <link rel="stylesheet" href="/design/admin_dashboard.css">
-    <link rel="stylesheet" href="/design/admin_settings.css">
+    <link rel="stylesheet" href="/frontend-admin/design/admin_dashboard.css">
+    <link rel="stylesheet" href="/frontend-admin/design/admin_settings.css">
 </head>
 
 <script>
@@ -279,6 +279,10 @@
             const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
             const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
 
+            const SERVER_URL = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+                ? "http://localhost:3000"
+                : "https://captured-server.onrender.com";
+
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             document
@@ -336,7 +340,7 @@
                         }
 
                         const response = await fetch(
-                            "http://localhost:3000/api/admin/staff/create",
+                            `${SERVER_URL}/api/admin/staff/create`,
                             {
                                 method: "POST",
 
@@ -629,7 +633,7 @@
                     }
 
                     const response = await fetch(
-                        "http://localhost:3000/api/admin/staff/presence",
+                        `${SERVER_URL}/api/admin/staff/presence`,
                         {
                             method: "POST",
 
@@ -712,7 +716,7 @@
                     }
 
                     const response = await fetch(
-                        "http://localhost:3000/api/admin/staff",
+                        `${SERVER_URL}/api/admin/staff/presence`,
                         {
                             method: "GET",
 
@@ -1039,7 +1043,7 @@
 
 
                     const response = await fetch(
-                        `http://localhost:3000/api/admin/staff/${staffId}/signout`,
+                        `${SERVER_URL}/api/admin/staff/${"${staffId}"}/signout`,
                         {
                             method: "POST",
 
@@ -1203,10 +1207,8 @@
                         return;
 
                     }
-
-
                     const response = await fetch(
-                        `http://localhost:3000/api/admin/staff/${staffId}`,
+                        `${SERVER_URL}/api/admin/staff/${staffId}`,
                         {
                             method: "DELETE",
 
@@ -1225,34 +1227,20 @@
                         await response.json();
 
 
-                    console.log(
-                        "DELETE STAFF RESPONSE:",
-                        result
-                    );
-
-
+                    //console.log( "DELETE STAFF RESPONSE:",result);
                     if (!response.ok || !result.success) {
 
                         alert(
                             result.error ||
                             "Failed to delete staff account."
                         );
-
                         return;
-
                     }
-
-
                     alert(
                         "Staff account deleted successfully."
                     );
-
-
                     await fetchStaffList();
-
-
                 } catch (error) {
-
                     console.error(
                         "DELETE STAFF ERROR:",
                         error
@@ -1319,9 +1307,6 @@
                 alert("Password updated successfully!");
                 document.getElementById("changePasswordForm").reset();
             });
-            /* =========================================================
-               LOGOUT ACTIVITY RECORD
-            ========================================================= */
 
             document.getElementById("logoutBtn").addEventListener("click", async (e) => {
                 e.preventDefault();

@@ -89,6 +89,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
 
+
 // Booking webhook secret
 const PAYMONGO_BOOKING_WEBHOOK_SECRET =
     process.env.PAYMONGO_BOOKING_WEBHOOK_SECRET;
@@ -2442,6 +2443,26 @@ app.post(
                 signOutTime
             );
 
+const { error: activityError } = await supabaseAdmin
+    .from("staff_activity_logs")
+    .insert({
+        staff_id: targetStaff.id,
+        staff_name: targetStaff.full_name || targetStaff.email,
+        staff_email: targetStaff.email,
+        role: targetStaff.role || "staff",
+        action: "LOGOUT",
+        details: {
+            reason: "FORCED_SIGNOUT",
+            initiated_by: req.authUser.id
+        }
+    });
+
+if (activityError) {
+    console.error("FORCED LOGOUT ACTIVITY ERROR:", activityError);
+} else {
+    console.log("FORCED LOGOUT ACTIVITY RECORDED:", targetStaff.email);
+}
+
             console.log("======================================");
 
             return res.json({
@@ -2646,7 +2667,7 @@ app.post("/send-booking-confirmation", async (req, res) => {
                 });
             }
 
-            console.log("BOOKING CONFIRMATION RECIPIENT:", recipientEmail);
+           // console.log("BOOKING CONFIRMATION RECIPIENT:", recipientEmail);
             
             const safeGalleryLink = galleryLink
                 ? escapeHtml(galleryLink)
@@ -2688,9 +2709,10 @@ app.post("/send-booking-confirmation", async (req, res) => {
                     </p>
 
                     <p>
-                        Your booking request has been confirmed by Captured Photography Studio.
+                        Your booking request has been confirmed by Captured Photography Studio. 
                     </p>
-
+                    <p>
+                        We're excited to capture your special moments and make your photography experience memorable.                    </p>
                     <div style="background:#f6f8f7;padding:20px;border-radius:10px;margin:20px 0;">
                         <p><strong>Booking ID:</strong> ${escapeHtml(bookingId) || "-"}</p>
                         <p><strong>Session:</strong> ${escapeHtml(sessionType) || "-"}</p>

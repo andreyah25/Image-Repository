@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/design/admin_dashboard.css">
-    <link rel="stylesheet" href="/design/admin_client_list.css">
-    <link rel="stylesheet" href="/design/admin_repository.css">
-    <link rel="stylesheet" href="/design/admin_archives.css?v=1.4">
+    <link rel="stylesheet" href="/frontend-admin/design/admin_dashboard.css">
+    <link rel="stylesheet" href="/frontend-admin/design/admin_client_list.css">
+    <link rel="stylesheet" href="/frontend-admin/design/admin_repository.css">
+    <link rel="stylesheet" href="/frontend-admin/design/admin_archives.css?v=1.4">
 </head>
 
 <script>
@@ -254,17 +254,14 @@
                                 alt="${escapeHtml(photo.original_name || "Archived photo")}"
                                 loading="lazy"
                                 onerror="this.style.display='none'; this.nextElementSibling.nextElementSibling.textContent='Photo could not be loaded'; console.error('Archived photo failed to load:', this.src);"
-                            >
-                        `
-                                : ""
+                            > `: ""
                             }
 
                 <span title="${escapeHtml(photo.original_name || "Photo")}">
                     ${escapeHtml(photo.original_name || "Photo")}
                 </span>
 
-<small>${photo.compressed_storage_path ? "WebP Compressed" : "Original"}</small>            </div>
-        `;
+                    <small>${photo.archive_image_is_compressed ? "WebP Compressed" : "Original"}</small>        `;
                     }).join("")
                     : "";
 
@@ -436,7 +433,9 @@
             }
 
         });
-
+        async function runArchiveAndCompression(session) {
+            await archiveCompletedBookings();
+        }
         async function restoreArchiveItem(item) {
             const restorePhotos = async (repositoryId) => {
                 const { error } = await supabaseClient
@@ -679,94 +678,44 @@
             throw new Error("Unknown archive category: " + item.category);
         }
 
+
         async function archiveCompletedBookings() {
+            const cutoffDate = new Date();
+            cutoffDate.setMonth(cutoffDate.getMonth() - 2);
 
-            const twoWeeksAgo = new Date();
-            twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-            const archiveCutoffDate = twoWeeksAgo.toISOString().split("T")[0];
+            const cutoffTimestamp = cutoffDate.toISOString();
 
-            console.log("Checking for records ready to archive (older than 2 weeks)...", archiveCutoffDate);
-
-
-
-            const {
-                data: bookings,
-                error: bookingFetchError
-            } = await supabaseClient
+            const { data: bookings, error } = await supabaseClient
                 .from("bookings")
-                .select("id, full_name, booking_date, status, is_archived")
+                .select("id, full_name, booking_date, completed_at, status, is_archived")
                 .eq("status", "Completed")
                 .eq("is_archived", false)
-                .lte("booking_date", archiveCutoffDate);
+                .not("completed_at", "is", null)
+                .lte("completed_at", cutoffTimestamp);
 
-            if (bookingFetchError) {
+            if (error) throw error;
 
-                console.error(
-                    "Error finding bookings ready for archive:",
-                    bookingFetchError
-                );
-
-                throw bookingFetchError;
-            }
-
-            if (!bookings || bookings.length === 0) {
-
-                console.log(
-                    "No completed bookings older than 2 weeks are ready to be archived."
-                );
-
-                return;
-            }
-
-
-            console.log(
-                `${bookings.length} booking(s) older than 2 weeks ready to be archived.`
-            );
-
-
-
-            for (const booking of bookings) {
-
-                const archiveTime =
-                    new Date().toISOString();
-
-
-                console.log(
-                    `Archiving customer: ${booking.full_name}`
-                );
-
-
-
-                const {
-                    data: folders,
-                    error: folderFetchError
-                } = await supabaseClient
-                    .from("repository_client_links")
-                    .select("id, booking_id, is_archived")
-                    .eq("booking_id", booking.id);
-
-                if (folderFetchError) {
-
-                    console.error(
-                        `Error finding folders for ${booking.full_name}:`,
-                        folderFetchError
-                    );
-
-                    throw folderFetchError;
+            for (const booking of bookings || []) {
+                if (
+                    booking.status !== "Completed" ||
+                    booking.is_archived !== false ||
+                    !booking.completed_at ||
+                    new Date(booking.completed_at) > cutoffDate
+                ) {
+                    continue;
                 }
 
+                const archiveTime = new Date().toISOString();
 
-                /*
-                 ========================================================
-                 2B. ARCHIVE ALL PHOTOS INSIDE CUSTOMER FOLDERS
-                 ========================================================
-                */
+                const { data: folders, error: folderError } = await supabaseClient
+                    .from("repository_client_links")
+                    .select("id")
+                    .eq("booking_id", booking.id);
 
-                for (const folder of (folders || [])) {
+                if (folderError) throw folderError;
 
-                    const {
-                        error: photoArchiveError
-                    } = await supabaseClient
+                for (const folder of folders || []) {
+                    const { error: photoError } = await supabaseClient
                         .from("repository_photos")
                         .update({
                             is_archived: true,
@@ -775,27 +724,9 @@
                         .eq("repository_id", folder.id)
                         .eq("is_archived", false);
 
-                    if (photoArchiveError) {
+                    if (photoError) throw photoError;
 
-                        console.error(
-                            `Error archiving photos in folder ${folder.id}:`,
-                            photoArchiveError
-                        );
-
-                        throw photoArchiveError;
-                    }
-
-
-
-                    /*
-                     ====================================================
-                     2C. ARCHIVE THE FOLDER
-                     ====================================================
-                    */
-
-                    const {
-                        error: folderArchiveError
-                    } = await supabaseClient
+                    const { error: folderArchiveError } = await supabaseClient
                         .from("repository_client_links")
                         .update({
                             is_archived: true,
@@ -804,97 +735,48 @@
                         .eq("id", folder.id)
                         .eq("is_archived", false);
 
-                    if (folderArchiveError) {
-
-                        console.error(
-                            `Error archiving folder ${folder.id}:`,
-                            folderArchiveError
-                        );
-
-                        throw folderArchiveError;
-                    }
-
+                    if (folderArchiveError) throw folderArchiveError;
                 }
 
-
-                /*
-                 ========================================================
-                 3. ARCHIVE THE CUSTOMER / BOOKING
-                 ========================================================
-                */
-
-                const {
-                    error: bookingArchiveError
-                } = await supabaseClient
+                const { error: bookingError } = await supabaseClient
                     .from("bookings")
                     .update({
                         is_archived: true,
                         archived_at: archiveTime
                     })
                     .eq("id", booking.id)
-                    .eq("is_archived", false);
+                    .eq("status", "Completed")
+                    .eq("is_archived", false)
+                    .lte("completed_at", cutoffTimestamp);
 
-                if (bookingArchiveError) {
-
-                    console.error(
-                        `Error archiving customer ${booking.full_name}:`,
-                        bookingArchiveError
-                    );
-
-                    throw bookingArchiveError;
-                }
-
-                console.log(
-                    `Successfully archived: ${booking.full_name}`
-                );
-
+                if (bookingError) throw bookingError;
             }
-
-
-            console.log(
-                "Finished archiving customers, folders, and photos."
-            );
         }
 
+        async function archiveFoldersOlderThanTwoMonths() {
+            const cutoffDate = new Date();
+            cutoffDate.setMonth(cutoffDate.getMonth() - 2);
 
-        async function archiveFoldersOlderThanOneWeek() {
-            // TESTING ONLY: Archive folders created at least 7 days ago.
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            const cutoff = cutoffDate.toISOString();
 
-            const cutoffDate = sevenDaysAgo.toISOString();
+            console.log("Checking folders older than 2 months...", cutoff);
 
-            console.log("Checking repository folders older than 7 days...");
-            console.log("Archive cutoff:", cutoffDate);
-
-            // Find unarchived folders created 7 or more days ago.
-            const {
-                data: folders,
-                error: folderFetchError
-            } = await supabaseClient
+            const { data: folders, error: folderFetchError } = await supabaseClient
                 .from("repository_client_links")
                 .select("id, booking_id, created_at, is_archived")
                 .eq("is_archived", false)
-                .lte("created_at", cutoffDate);
+                .lte("created_at", cutoff);
 
-            if (folderFetchError) {
-                console.error("Error finding folders to archive:", folderFetchError);
-                throw folderFetchError;
-            }
+            if (folderFetchError) throw folderFetchError;
 
             if (!folders || folders.length === 0) {
-                console.log("No unarchived folders are at least 7 days old.");
+                console.log("No folders are ready to be archived.");
                 return;
             }
-
-            console.log(`${folders.length} folder(s) are ready for archiving.`);
 
             for (const folder of folders) {
                 const archiveTime = new Date().toISOString();
 
-                console.log(`Archiving folder ID: ${folder.id}`);
-
-                // 1. Archive all photos belonging to this folder.
                 const { error: photoArchiveError } = await supabaseClient
                     .from("repository_photos")
                     .update({
@@ -904,15 +786,8 @@
                     .eq("repository_id", folder.id)
                     .eq("is_archived", false);
 
-                if (photoArchiveError) {
-                    console.error(
-                        `Failed to archive photos for folder ${folder.id}:`,
-                        photoArchiveError
-                    );
-                    throw photoArchiveError;
-                }
+                if (photoArchiveError) throw photoArchiveError;
 
-                // 2. Archive the folder itself.
                 const { error: folderArchiveError } = await supabaseClient
                     .from("repository_client_links")
                     .update({
@@ -922,271 +797,178 @@
                     .eq("id", folder.id)
                     .eq("is_archived", false);
 
-                if (folderArchiveError) {
-                    console.error(
-                        `Failed to archive folder ${folder.id}:`,
-                        folderArchiveError
-                    );
-                    throw folderArchiveError;
-                }
+                if (folderArchiveError) throw folderArchiveError;
 
-                console.log(`Successfully archived folder ${folder.id}.`);
+                console.log(`Archived folder: ${folder.id}`);
             }
 
-            console.log("Finished 7-day folder archiving.");
+            console.log("Two-month folder archive check finished.");
         }
-
-
 
         async function loadArchivedItems() {
-            const tbody = document.getElementById("archiveTableBody");
-
             archiveItems = [];
 
-            if (tbody) {
-                tbody.innerHTML = `
-            <tr>
-                <td colspan="4" style="text-align:center;padding:30px;">
-                    Loading archived folders and photos...
-                </td>
-            </tr>
-        `;
+            const { data: bookings, error: bookingsError } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .eq("is_archived", true);
+
+            if (bookingsError) throw bookingsError;
+
+            const { data: folders, error: foldersError } = await supabaseClient
+                .from("repository_client_links")
+                .select("*");
+
+            if (foldersError) throw foldersError;
+
+            const { data: allPhotos, error: photosError } = await supabaseClient
+                .from("repository_photos")
+                .select("*");
+
+            if (photosError) throw photosError;
+
+            const bookingMap = new Map(
+                (bookings || []).map(booking => [String(booking.id), booking])
+            );
+
+            const photosByFolder = new Map();
+
+            for (const photo of allPhotos || []) {
+                const folderId = String(photo.repository_id);
+
+                if (!photosByFolder.has(folderId)) {
+                    photosByFolder.set(folderId, []);
+                }
+
+                photosByFolder.get(folderId).push(photo);
             }
 
-            try {
-                // 1. Load bookings independently; no nested relationship required.
-                const { data: bookings, error: bookingError } = await supabaseClient
-                    .from("bookings")
-                    .select("id, full_name, email, session_type, booking_date, status, is_archived, archived_at");
 
-                if (bookingError) throw new Error("Bookings query: " + bookingError.message);
+            async function addImageUrl(photo) {
+                photo.archive_image_url = "";
+                photo.archive_image_is_compressed = false;
 
-                const bookingMap = new Map(
-                    (bookings || []).map(booking => [String(booking.id), booking])
+                const paths = [
+                    photo.compressed_storage_path,
+                    photo.storage_path
+                ].filter(Boolean);
+
+                for (const path of [...new Set(paths)]) {
+                    const { data, error } = await supabaseClient.storage
+                        .from("client-photos")
+                        .createSignedUrl(path, 3600);
+
+                    if (!error && data?.signedUrl) {
+                        photo.archive_image_url = data.signedUrl;
+                        photo.archive_image_is_compressed =
+                            path === photo.compressed_storage_path;
+                        return;
+                    }
+
+                    console.warn("Could not create archive image URL:", {
+                        photoId: photo.id,
+                        path,
+                        message: error?.message
+                    });
+                }
+            }
+
+
+            for (const booking of bookings || []) {
+                const bookingFolders = (folders || []).filter(
+                    folder => String(folder.booking_id) === String(booking.id)
                 );
 
-                // Show archived customers.
-                for (const booking of bookings || []) {
-                    if (booking.is_archived !== true) continue;
-
-                    const archivedDate = booking.archived_at
-                        ? new Date(booking.archived_at)
-                        : null;
-
-                    archiveItems.push({
-                        id: booking.id,
-                        category: "customer",
-                        title: booking.full_name || "Unknown Client",
-                        email: booking.email || "",
-                        sessionType: booking.session_type || "Unspecified",
-                        subtext: booking.email || booking.session_type || "Archived customer",
-                        bookingDate: booking.booking_date || "",
-                        archivedDate: booking.archived_at || "",
-                        date: archivedDate && !Number.isNaN(archivedDate.getTime())
-                            ? archivedDate.toLocaleDateString()
-                            : "-",
-                        time: archivedDate && !Number.isNaN(archivedDate.getTime())
-                            ? archivedDate.toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            })
-                            : "-"
-                    });
-                }
-
-                // 2. Fetch folders without a nested bookings relationship.
-                const { data: folders, error: folderError } = await supabaseClient
-                    .from("repository_client_links")
-                    .select("id, booking_id, is_archived, archived_at");
-
-                if (folderError) throw new Error("Folders query: " + folderError.message);
-
-                // 3. Fetch photos for each folder.
-                for (const folder of folders || []) {
-                    const { data: photos, error: photoError } = await supabaseClient
-                        .from("repository_photos")
-                        .select(`
-                    id,
-                    repository_id,
-                    booking_id,
-                    original_name,
-                    storage_path,
-                    image_url,
-                    is_archived,
-                    archived_at,
-                    compressed_storage_path,
-                    compressed_file_size,
-                    compressed_size_bytes,
-                    compression_format,
-                    compression_status
-                `)
-                        .eq("repository_id", folder.id);
-
-                    if (photoError) {
-                        throw new Error(
-                            `Photos query for folder ${folder.id}: ${photoError.message}`
-                        );
-                    }
-
-                    const folderPhotos = photos || [];
-
-                    // Generate temporary URLs for original photos in the private bucket.
-
-                    for (const photo of folderPhotos) {
-                        const preferredPath =
-                            photo.compressed_storage_path || photo.storage_path;
-
-                        if (preferredPath) {
-                            const { data, error } = await supabaseClient.storage
-                                .from("repository-photos")
-                                .createSignedUrl(preferredPath, 3600);
-
-                            if (error) {
-                                console.error(
-                                    "Could not create photo URL:",
-                                    photo.original_name,
-                                    error.message
-                                );
-                                photo.archive_image_url = "";
-                            } else {
-                                photo.archive_image_url = data.signedUrl;
-                            }
-                        } else {
-                            photo.archive_image_url = photo.image_url || "";
-                        }
-                    }
-
-
-                    const booking = bookingMap.get(String(folder.booking_id));
-
-                    // A folder belongs in Archives if the folder itself is archived,
-                    // its booking is archived, or at least one of its photos is archived.
-                    const shouldDisplay =
-                        folder.is_archived === true ||
-                        booking?.is_archived === true ||
-                        folderPhotos.some(photo => photo.is_archived === true);
-
-                    if (!shouldDisplay) continue;
-
-                    const archiveDate =
-                        folder.archived_at ||
-                        booking?.archived_at ||
-                        folderPhotos.find(photo => photo.archived_at)?.archived_at ||
-                        null;
-
-                    const parsedDate = archiveDate ? new Date(archiveDate) : null;
-
-                    archiveItems.push({
-                        id: folder.id,
-                        category: "folder",
-                        title: booking?.full_name || "Customer Repository Folder",
-                        email: booking?.email || "",
-                        sessionType: booking?.session_type || "Folder",
-                        subtext: `${folderPhotos.length} photo(s) in this folder`,
-                        bookingId: folder.booking_id,
-                        repositoryId: folder.id,
-                        photos: folderPhotos,
-                        archivedDate: archiveDate || "",
-                        date: parsedDate && !Number.isNaN(parsedDate.getTime())
-                            ? parsedDate.toLocaleDateString()
-                            : "-",
-                        time: parsedDate && !Number.isNaN(parsedDate.getTime())
-                            ? parsedDate.toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            })
-                            : "-"
-                    });
-                }
-
-                console.log("Archive loading completed:", {
-                    bookingsFound: (bookings || []).length,
-                    archivedCustomers: archiveItems.filter(x => x.category === "customer").length,
-                    foldersFound: (folders || []).length,
-                    displayedFolders: archiveItems.filter(x => x.category === "folder").length,
-                    displayedFoldersWithPhotos: archiveItems.filter(
-                        x => x.category === "folder" && x.photos.length > 0
-                    ).length
+                archiveItems.push({
+                    id: booking.id,
+                    category: "customer",
+                    title: booking.full_name || "Unknown Customer",
+                    subtext: booking.email || "",
+                    email: booking.email || "",
+                    sessionType: booking.session_type || "",
+                    bookingDate: booking.booking_date || "",
+                    bookingId: booking.id,
+                    repositoryId: "",
+                    archivedDate: booking.archived_at || "",
+                    date: (booking.archived_at || booking.booking_date || "").split("T")[0],
+                    time: booking.archived_at
+                        ? new Date(booking.archived_at).toLocaleTimeString()
+                        : "",
+                    photos: bookingFolders.flatMap(folder =>
+                        photosByFolder.get(String(folder.id)) || []
+                    )
                 });
+            }
 
-            } catch (error) {
-                console.error("Failed to load Archives:", error);
+            for (const folder of folders || []) {
+                const booking = folder.booking_id
+                    ? bookingMap.get(String(folder.booking_id))
+                    : null;
 
-                if (tbody) {
-                    tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" style="text-align:center;padding:30px;color:#b91c1c;">
-                        <strong>Could not load Archives.</strong>
-                        <p>${escapeHtml(error.message || String(error))}</p>
-                        <p>Open the browser console for details.</p>
-                    </td>
-                </tr>
-            `;
+                const folderPhotos = photosByFolder.get(String(folder.id)) || [];
+
+                const hasArchivedPhotos = folderPhotos.some(
+                    photo => photo.is_archived === true
+                );
+                if (folder.is_archived !== true && !booking) {
+                    continue;
                 }
 
-                throw error;
+                for (const photo of folderPhotos) {
+                    await addImageUrl(photo);
+                }
+
+                const archivedAt =
+                    folder.archived_at ||
+                    booking?.archived_at ||
+                    folderPhotos.find(photo => photo.archived_at)?.archived_at ||
+                    folder.created_at ||
+                    "";
+
+                archiveItems.push({
+                    id: folder.id,
+                    category: "folder",
+                    title:
+                        folder.folder_name ||
+                        folder.client_name ||
+                        folder.full_name ||
+                        booking?.full_name ||
+                        "Customer Folder",
+                    subtext: booking?.email || folder.email || "",
+                    email: booking?.email || folder.email || "",
+                    sessionType: booking?.session_type || folder.session_type || "",
+                    bookingDate: booking?.booking_date || "",
+                    bookingId: folder.booking_id || "",
+                    repositoryId: folder.id,
+                    archivedDate: archivedAt,
+                    date: archivedAt ? archivedAt.split("T")[0] : "-",
+                    time: archivedAt && archivedAt.includes("T")
+                        ? new Date(archivedAt).toLocaleTimeString()
+                        : "",
+                    photos: folderPhotos.filter(
+                        photo =>
+                            photo.is_archived === true ||
+                            folder.is_archived === true ||
+                            Boolean(booking)
+                    )
+                });
             }
         }
-
 
         function initializeArchiveTabs() {
+            document.querySelectorAll(".archive-tab-btn").forEach(button => {
+                button.addEventListener("click", () => {
+                    document.querySelectorAll(".archive-tab-btn").forEach(tab => {
+                        tab.classList.remove("active");
+                    });
 
-            const tabButtons =
-                document.querySelectorAll(
-                    ".archive-tab-btn"
-                );
-
-
-            tabButtons.forEach(button => {
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        /*
-                         * Remove active state
-                         * from every tab.
-                         */
-
-                        tabButtons.forEach(tab => {
-
-                            tab.classList.remove(
-                                "active"
-                            );
-
-                        });
-
-
-                        /*
-                         * Activate clicked tab.
-                         */
-
-                        button.classList.add(
-                            "active"
-                        );
-
-
-                        /*
-                         * Get selected category.
-                         */
-
-                        currentFilter =
-                            button.dataset.filter ||
-                            "all";
-
-
-                        /*
-                         * Re-render table.
-                         */
-
-                        renderArchiveTable();
-
-                    }
-                );
-
+                    button.classList.add("active");
+                    currentFilter = button.dataset.filter || "all";
+                    renderArchiveTable();
+                });
             });
-
         }
+
         function populatePackageFilter() {
 
             const packageFilter =
