@@ -153,6 +153,13 @@ app.get("/admin/forgot-password", (req, res) => {
     );
 });
 
+app.get("/admin/update-password", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-admin", "admin_updatepw.html")
+    );
+});
+
+
 app.get("/admin/verification", (req, res) => {
     res.sendFile(
         path.join(__dirname, "..", "frontend-admin", "verification_code.html")

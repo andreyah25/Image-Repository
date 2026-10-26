@@ -94,8 +94,9 @@
                 const { error } =
                     await supabaseClient.auth.resetPasswordForEmail(email, {
                         redirectTo:
-                            "http://127.0.0.1:5500/frontend-admin/admin_updatepw.html"
+                            "https://captured-admin-studio.onrender.com/admin/update-password"
                     });
+
 
                 if (error) {
                     console.error(error);
