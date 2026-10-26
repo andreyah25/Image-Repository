@@ -203,6 +203,70 @@
                     </div>
                 </div>
 
+
+                <div class="settings-card activity-logs-card" id="activityLogsCard">
+                    <div class="card-header-with-icon header-with-action">
+                        <div class="header-left">
+                            <div class="header-icon-circle">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <h2>Activity Logs</h2>
+                                <p>Search and review staff login and logout records.</p>
+                            </div>
+                        </div>
+
+                        <button type="button" id="refreshActivityLogsBtn" class="btn-dark">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div class="activity-log-filters">
+                        <input type="text" id="activitySearchInput" placeholder="Search name, email, or action...">
+
+                        <select id="activityActionFilter">
+                            <option value="">All Actions</option>
+                            <option value="LOGIN">Login</option>
+                            <option value="LOGOUT">Logout</option>
+                        </select>
+
+                        <div class="activity-date-filter">
+                            <label for="activityStartDate">Start Date</label>
+                            <input type="date" id="activityStartDate">
+                        </div>
+
+                        <div class="activity-date-filter">
+                            <label for="activityEndDate">End Date</label>
+                            <input type="date" id="activityEndDate">
+                        </div>
+
+                        <button type="button" id="clearActivityFiltersBtn" class="btn-dark">
+                            Clear Filters
+                        </button>
+                    </div>
+
+                    <div class="activity-log-table-wrapper">
+                        <table class="staff-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Action</th>
+                                    <th>Date &amp; Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityLogTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 30px;">
+                                        Activity records will appear here.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
 
         </main>
@@ -234,43 +298,7 @@
                     </table>
                 </div>
 
-                <div style="margin-top:35px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                        <div>
-                            <h3 style="margin:0; font-size:20px; font-weight: 500; color: #353535;">Staff Login Activity
-                            </h3>
-                            <p style="margin:5px 0 0;color:#888;font-size:13px;">
-                                Records of staff and administrator login and logout activity.
-                            </p>
-                        </div>
 
-                        <button type="button" id="refreshActivityLogsBtn" class="btn-dark btn-with-icon">
-                            <i class="fa-solid fa-rotate"></i>
-                            Refresh
-                        </button>
-                    </div>
-
-                    <div class="activity-log-table-wrapper">
-                        <table class="staff-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Action</th>
-                                    <th>Date & Time</th>
-                                </tr>
-                            </thead>
-                        </table>
-
-                        <!-- Scrollbar starts here below the green header -->
-                        <div class="table-scroll-body">
-                            <table class="staff-table">
-                                <tbody id="activityLogTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -284,6 +312,70 @@
                 : "https://image-repository-1.onrender.com";
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const activitySearchInput = document.getElementById("activitySearchInput");
+            const activityActionFilter = document.getElementById("activityActionFilter");
+            const activityStartDate = document.getElementById("activityStartDate");
+            const activityEndDate = document.getElementById("activityEndDate");
+            const clearActivityFiltersBtn = document.getElementById("clearActivityFiltersBtn");
+
+            function applyActivityLogFilters() {
+                const search = activitySearchInput.value.trim().toLowerCase();
+                const action = activityActionFilter.value.toUpperCase();
+                const startDate = activityStartDate.value;
+                const endDate = activityEndDate.value;
+
+                document.querySelectorAll("#activityLogTableBody tr").forEach(row => {
+                    const cells = row.querySelectorAll("td");
+
+                    if (cells.length < 5) {
+                        return;
+                    }
+
+                    const name = cells[0].textContent.toLowerCase();
+                    const email = cells[1].textContent.toLowerCase();
+                    const rowAction = cells[3].textContent.trim().toUpperCase();
+                    const dateText = cells[4].textContent.trim();
+                    const rowDate = new Date(dateText);
+
+                    const matchesSearch =
+                        !search ||
+                        name.includes(search) ||
+                        email.includes(search) ||
+                        rowAction.toLowerCase().includes(search);
+
+                    const matchesAction =
+                        !action || rowAction.includes(action);
+
+                    const matchesStart =
+                        !startDate ||
+                        (!Number.isNaN(rowDate.getTime()) &&
+                            rowDate >= new Date(`${startDate}T00:00:00`));
+
+                    const matchesEnd =
+                        !endDate ||
+                        (!Number.isNaN(rowDate.getTime()) &&
+                            rowDate <= new Date(`${endDate}T23:59:59.999`));
+
+                    row.style.display =
+                        matchesSearch && matchesAction && matchesStart && matchesEnd
+                            ? ""
+                            : "none";
+                });
+            }
+
+            activitySearchInput.addEventListener("input", applyActivityLogFilters);
+            activityActionFilter.addEventListener("change", applyActivityLogFilters);
+            activityStartDate.addEventListener("change", applyActivityLogFilters);
+            activityEndDate.addEventListener("change", applyActivityLogFilters);
+
+            clearActivityFiltersBtn.addEventListener("click", () => {
+                activitySearchInput.value = "";
+                activityActionFilter.value = "";
+                activityStartDate.value = "";
+                activityEndDate.value = "";
+                applyActivityLogFilters();
+            });
 
             document
                 .getElementById("staffManagementForm")
@@ -1043,16 +1135,16 @@
                     const response = await fetch(
                         `${SERVER_URL}/api/admin/staff/${staffId}/signout`,
                         {
-                        method: "POST",
+                            method: "POST",
 
-                        headers: {
-                            "Authorization":
-                                `Bearer ${session.access_token}`,
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${session.access_token}`,
 
-                            "Content-Type":
-                                "application/json"
+                                "Content-Type":
+                                    "application/json"
+                            }
                         }
-                    }
                     );
 
 
@@ -1429,15 +1521,23 @@
                 if (profile.avatar_url) {
                     document.getElementById("userAvatar").src = profile.avatar_url;
                 }
+
                 const staffManagementCard =
                     document.getElementById("staffManagementCard");
 
-                if (
-                    profile.role !== "admin" &&
-                    staffManagementCard
-                ) {
-                    staffManagementCard.style.display = "none";
+                const activityLogsCard =
+                    document.getElementById("activityLogsCard");
+
+                if (profile.role !== "admin") {
+                    if (staffManagementCard) {
+                        staffManagementCard.style.display = "none";
+                    }
+
+                    if (activityLogsCard) {
+                        activityLogsCard.style.display = "none";
+                    }
                 }
+
                 // Start staff online presence
                 await startStaffPresence();
 
