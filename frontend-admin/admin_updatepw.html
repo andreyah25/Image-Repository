@@ -71,76 +71,14 @@
         );
 
 
-        const form = document.getElementById("updatePasswordForm");
-        const button = form.querySelector("button");
+        const form =
+            document.getElementById("updatePasswordForm");
 
-        async function initializeRecoverySession() {
-            const url = new URL(window.location.href);
-            const code = url.searchParams.get("code");
-            const hashParams = new URLSearchParams(
-                url.hash.substring(1)
-            );
-
-            if (code) {
-                const { error } =
-                    await supabaseClient.auth.exchangeCodeForSession(code);
-
-                if (error) {
-                    throw error;
-                }
-
-                window.history.replaceState(
-                    {},
-                    document.title,
-                    url.pathname
-                );
-
-                return;
-            }
-
-            if (
-                hashParams.get("type") === "recovery" &&
-                hashParams.get("access_token") &&
-                hashParams.get("refresh_token")
-            ) {
-                const { error } =
-                    await supabaseClient.auth.setSession({
-                        access_token: hashParams.get("access_token"),
-                        refresh_token: hashParams.get("refresh_token")
-                    });
-
-                if (error) {
-                    throw error;
-                }
-
-                window.history.replaceState(
-                    {},
-                    document.title,
-                    url.pathname
-                );
-
-                return;
-            }
-
-            const { data, error } =
-                await supabaseClient.auth.getSession();
-
-            if (error || !data.session) {
-                throw new Error(
-                    "Your password reset link is invalid or expired. Please request a new one."
-                );
-            }
-        }
-
-        let recoveryReady = false;
 
         form.addEventListener("submit", async (event) => {
+
             event.preventDefault();
 
-            if (!recoveryReady) {
-                alert("Your password reset session is not ready. Please reopen the reset link from your email.");
-                return;
-            }
 
             const password =
                 document.getElementById("newPassword").value;
@@ -148,51 +86,59 @@
             const confirmPassword =
                 document.getElementById("confirmPassword").value;
 
+
+            // Check if passwords match
             if (password !== confirmPassword) {
+
                 alert("Passwords do not match.");
+
                 return;
             }
 
+
+            // Check minimum length
             if (password.length < 6) {
+
                 alert("Password must be at least 6 characters.");
+
                 return;
             }
 
-            button.disabled = true;
-            button.textContent = "Updating...";
 
             try {
+
                 const { error } =
                     await supabaseClient.auth.updateUser({
                         password: password
                     });
 
+
                 if (error) {
-                    throw error;
+
+                    console.error("Password update error:", error);
+
+                    alert(error.message);
+
+                    return;
                 }
 
-                alert("Password updated successfully!");
 
-                await supabaseClient.auth.signOut();
-
+                alert(
+                    "Password updated successfully!"
+                );
                 window.location.href = "/admin/login";
             } catch (error) {
-                console.error("Password update error:", error);
-                alert(error.message || "Something went wrong. Please try again.");
-                button.disabled = false;
-                button.textContent = "Update Password";
+
+                console.error("Unexpected error:", error);
+
+                alert(
+                    "Something went wrong. Please try again."
+                );
+
             }
+
         });
 
-        initializeRecoverySession()
-            .then(() => {
-                recoveryReady = true;
-            })
-            .catch((error) => {
-                console.error("Recovery session error:", error);
-                alert(error.message || "Invalid or expired reset link. Please request a new one.");
-                form.querySelector("button").disabled = true;
-            });
     </script>
 
 </body>
