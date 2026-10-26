@@ -71,74 +71,116 @@
         );
 
 
-        const form =
-            document.getElementById("updatePasswordForm");
+        const form = document.getElementById("updatePasswordForm");
+        const button = form.querySelector('button[type="submit"]');
 
+        let recoveryReady = false;
 
-        form.addEventListener("submit", async (event) => {
+        async function initializeRecovery() {
+            const hash = new URLSearchParams(
+                window.location.hash.substring(1)
+            );
 
-            event.preventDefault();
+            const params = new URLSearchParams(window.location.search);
 
+            const errorCode = hash.get("error_code") || params.get("error_code");
+            const errorDescription = hash.get("error_description") || params.get("error_description");
 
-            const password =
-                document.getElementById("newPassword").value;
-
-            const confirmPassword =
-                document.getElementById("confirmPassword").value;
-
-
-            // Check if passwords match
-            if (password !== confirmPassword) {
-
-                alert("Passwords do not match.");
-
+            if (errorCode) {
+                alert(errorDescription || "The reset link is invalid or expired.");
+                window.location.replace("/admin/forgot-password");
                 return;
             }
 
+            const accessToken = hash.get("access_token");
+            const refreshToken = hash.get("refresh_token");
+            const tokenHash = params.get("token_hash");
+            const type = hash.get("type") || params.get("type");
 
-            // Check minimum length
-            if (password.length < 6) {
-
-                alert("Password must be at least 6 characters.");
-
-                return;
-            }
-
-
-            try {
-
-                const { error } =
-                    await supabaseClient.auth.updateUser({
-                        password: password
-                    });
-
+            if (accessToken && refreshToken && type === "recovery") {
+                const { error } = await supabaseClient.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
 
                 if (error) {
+                    alert("The reset link is invalid or expired.");
+                    return;
+                }
+            } else if (tokenHash && type === "recovery") {
+                const { error } = await supabaseClient.auth.verifyOtp({
+                    token_hash: tokenHash,
+                    type: "recovery"
+                });
 
-                    console.error("Password update error:", error);
+                if (error) {
+                    alert("The reset link is invalid or expired.");
+                    return;
+                }
+            }
 
+            const { data, error } = await supabaseClient.auth.getSession();
+
+            if (error || !data.session) {
+                alert("Please request a new password reset link.");
+                window.location.replace("/admin/forgot-password");
+                return;
+            }
+
+            recoveryReady = true;
+            history.replaceState(null, "", window.location.pathname);
+        }
+
+        initializeRecovery().catch(error => {
+            console.error("Recovery initialization error:", error);
+            alert("Unable to verify the reset link. Please request a new one.");
+        });
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+
+            if (!recoveryReady) {
+                alert("Please wait while the reset link is verified.");
+                return;
+            }
+
+            const password = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            if (password.length < 6) {
+                alert("Password must be at least 6 characters.");
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Updating...";
+
+            try {
+                const { error } = await supabaseClient.auth.updateUser({
+                    password
+                });
+
+                if (error) {
                     alert(error.message);
-
                     return;
                 }
 
-
-                alert(
-                    "Password updated successfully!"
-                );
-                window.location.href = "/admin/login";
+                alert("Password updated successfully!");
+                await supabaseClient.auth.signOut();
+                window.location.replace("/admin/login");
             } catch (error) {
-
-                console.error("Unexpected error:", error);
-
-                alert(
-                    "Something went wrong. Please try again."
-                );
-
+                console.error("Password update error:", error);
+                alert("Something went wrong. Please try again.");
+            } finally {
+                button.disabled = false;
+                button.textContent = "Update Password";
             }
-
         });
-
     </script>
 
 </body>
