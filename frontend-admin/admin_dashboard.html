@@ -175,6 +175,58 @@
             </h3>
 
             <div id="calendar"></div>
+
+            <!-- Blocked Date Modal -->
+            <div id="blockedDateModal" class="blocked-date-modal">
+                <div class="blocked-date-card">
+                    <div class="blocked-date-header">
+                        <div>
+                            <h2 id="blockedDateModalTitle">Manage Unavailable Date</h2>
+                            <p>Set a date when the studio cannot accept bookings.</p>
+                        </div>
+                        <button type="button" id="closeBlockedDateModal" class="blocked-date-close"
+                            aria-label="Close">&times;</button>
+                    </div>
+
+                    <form id="blockedDateForm">
+                        <div class="blocked-date-field">
+                            <label for="blockedDateInput">Date</label>
+                            <input type="date" id="blockedDateInput" required>
+                        </div>
+
+                        <div class="blocked-date-field">
+                            <label for="blockedDateReason">Reason</label>
+                            <select id="blockedDateReason" required>
+                                <option value="Closed Day">Closed Day</option>
+                                <option value="Busy Day">Busy Day</option>
+                                <option value="Fully Booked">Fully Booked</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Private Event">Private Event</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="blocked-date-field" id="blockedDateCustomReasonGroup" style="display:none;">
+                            <label for="blockedDateCustomReason">Custom reason</label>
+                            <input type="text" id="blockedDateCustomReason" placeholder="Enter reason" maxlength="120">
+                        </div>
+
+                        <p id="blockedDateModalMessage" role="status"></p>
+
+                        <div class="blocked-date-actions">
+                            <button type="button" id="unblockDateButton" class="blocked-date-unblock"
+                                style="display:none;">
+                                Unblock Date
+                            </button>
+                            <button type="button" id="cancelBlockedDateButton"
+                                class="blocked-date-cancel">Cancel</button>
+                            <button type="submit" id="saveBlockedDateButton" class="blocked-date-save">Save
+                                Date</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <h2 class="section-title">
                 Booking Statistics
             </h2>
@@ -2433,20 +2485,274 @@
                     timestampExpired
                 );
             });
-
-            expiredElement.textContent =
-                expiredRecords.length.toLocaleString();
-
-            console.log("==========================================");
-            console.log(
-                "TOTAL EXPIRED GALLERY ACCESS RECORDS:",
-                expiredRecords.length
-            );
-            console.table(expiredRecords);
-            console.log("==========================================");
         }
 
 
+        async function getBlockedDateEvents() {
+            const { data, error } = await supabaseClient
+                .from("blocked_dates")
+                .select("id, blocked_date, reason");
+
+            if (error) {
+                console.error("Unable to load blocked dates:", error);
+                throw error;
+            }
+
+            return (data || []).map(item => ({
+                id: "blocked-" + item.id,
+                title: "CLOSED · " + (item.reason || "Closed Day"),
+                start: item.blocked_date,
+                allDay: true,
+                backgroundColor: "#dc2626",
+                borderColor: "#b91c1c",
+                textColor: "#ffffff",
+                extendedProps: {
+                    isBlockedDate: true,
+                    blockedDateId: item.id,
+                    blockedDate: item.blocked_date,
+                    blockedReason: item.reason
+                }
+            }));
+        }
+
+
+        let editingBlockedDateId = null;
+
+        const blockedDateModal =
+            document.getElementById("blockedDateModal");
+
+        const blockedDateForm =
+            document.getElementById("blockedDateForm");
+
+        const blockedDateInput =
+            document.getElementById("blockedDateInput");
+
+        const blockedDateReason =
+            document.getElementById("blockedDateReason");
+
+        const blockedDateCustomReason =
+            document.getElementById("blockedDateCustomReason");
+
+        const blockedDateCustomReasonGroup =
+            document.getElementById("blockedDateCustomReasonGroup");
+
+        const blockedDateModalMessage =
+            document.getElementById("blockedDateModalMessage");
+
+        function closeBlockedDateModal() {
+            blockedDateModal.classList.remove("show");
+            blockedDateForm.reset();
+            editingBlockedDateId = null;
+            blockedDateModalMessage.textContent = "";
+            blockedDateCustomReasonGroup.style.display = "none";
+        }
+
+        async function manageBlockedDate(dateString) {
+            try {
+                const { data: existing, error } = await supabaseClient
+                    .from("blocked_dates")
+                    .select("id, blocked_date, reason")
+                    .eq("blocked_date", dateString)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                editingBlockedDateId = existing ? existing.id : null;
+
+                blockedDateInput.value = dateString;
+                blockedDateModalMessage.textContent = "";
+
+                document.getElementById("blockedDateModalTitle").textContent =
+                    existing ? "Edit Unavailable Date" : "Block a Date";
+
+                document.getElementById("saveBlockedDateButton").textContent =
+                    existing ? "Save Changes" : "Block Date";
+
+                document.getElementById("unblockDateButton").style.display =
+                    existing ? "inline-block" : "none";
+
+                const presetReasons = [
+                    "Closed Day",
+                    "Busy Day",
+                    "Fully Booked",
+                    "Maintenance",
+                    "Private Event",
+                    "Other"
+                ];
+
+                if (existing) {
+                    const reason = existing.reason || "Closed Day";
+
+                    if (presetReasons.includes(reason)) {
+                        blockedDateReason.value = reason;
+                        blockedDateCustomReason.value = "";
+                    } else {
+                        blockedDateReason.value = "Other";
+                        blockedDateCustomReason.value = reason;
+                    }
+                } else {
+                    blockedDateReason.value = "Closed Day";
+                    blockedDateCustomReason.value = "";
+                }
+
+                blockedDateCustomReasonGroup.style.display =
+                    blockedDateReason.value === "Other" ? "flex" : "none";
+
+                blockedDateModal.classList.add("show");
+
+            } catch (error) {
+                console.error("Unable to open blocked-date modal:", error);
+                alert("Unable to load this date. Please try again.");
+            }
+        }
+
+        blockedDateReason.addEventListener("change", () => {
+            const showCustom = blockedDateReason.value === "Other";
+
+            blockedDateCustomReasonGroup.style.display =
+                showCustom ? "flex" : "none";
+
+            if (!showCustom) {
+                blockedDateCustomReason.value = "";
+            }
+        });
+
+        document.getElementById("closeBlockedDateModal")
+            .addEventListener("click", closeBlockedDateModal);
+
+        document.getElementById("cancelBlockedDateButton")
+            .addEventListener("click", closeBlockedDateModal);
+
+        blockedDateModal.addEventListener("click", event => {
+            if (event.target === blockedDateModal) {
+                closeBlockedDateModal();
+            }
+        });
+
+        document.addEventListener("keydown", event => {
+            if (
+                event.key === "Escape" &&
+                blockedDateModal.classList.contains("show")
+            ) {
+                closeBlockedDateModal();
+            }
+        });
+
+        blockedDateForm.addEventListener("submit", async event => {
+            event.preventDefault();
+
+            const newDate = blockedDateInput.value;
+
+            const reason = blockedDateReason.value === "Other"
+                ? blockedDateCustomReason.value.trim()
+                : blockedDateReason.value;
+
+            if (!newDate || !reason) {
+                blockedDateModalMessage.textContent =
+                    "Please select a date and enter a reason.";
+                return;
+            }
+
+            const saveButton =
+                document.getElementById("saveBlockedDateButton");
+
+            saveButton.disabled = true;
+            blockedDateModalMessage.style.color = "#6b7280";
+            blockedDateModalMessage.textContent = "Saving...";
+
+            try {
+                let result;
+
+                if (editingBlockedDateId !== null) {
+                    result = await supabaseClient
+                        .from("blocked_dates")
+                        .update({
+                            blocked_date: newDate,
+                            reason: reason
+                        })
+                        .eq("id", editingBlockedDateId);
+                } else {
+                    result = await supabaseClient
+                        .from("blocked_dates")
+                        .insert({
+                            blocked_date: newDate,
+                            reason: reason
+                        });
+                }
+
+                if (result.error) throw result.error;
+
+                closeBlockedDateModal();
+                await refreshBlockedDateEvents();
+
+            } catch (error) {
+                console.error("Save blocked date error:", error);
+
+                blockedDateModalMessage.style.color = "#dc2626";
+                blockedDateModalMessage.textContent =
+                    error.code === "23505"
+                        ? "That date is already blocked. Choose another date."
+                        : "Unable to save. Check Supabase permissions and try again.";
+
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+
+        document.getElementById("unblockDateButton")
+            .addEventListener("click", async () => {
+                if (editingBlockedDateId === null) return;
+
+                const unblockButton =
+                    document.getElementById("unblockDateButton");
+
+                unblockButton.disabled = true;
+
+                try {
+                    const { error } = await supabaseClient
+                        .from("blocked_dates")
+                        .delete()
+                        .eq("id", editingBlockedDateId);
+
+                    if (error) throw error;
+
+                    closeBlockedDateModal();
+                    await refreshBlockedDateEvents();
+
+                } catch (error) {
+                    console.error("Unblock date error:", error);
+
+                    blockedDateModalMessage.style.color = "#dc2626";
+                    blockedDateModalMessage.textContent =
+                        "Unable to unblock this date. Please try again.";
+
+                } finally {
+                    unblockButton.disabled = false;
+                }
+            });
+
+        async function refreshBlockedDateEvents() {
+            if (!calendarInstance) {
+                await loadBookingCalendar();
+                return;
+            }
+
+            const blockedEvents = await getBlockedDateEvents();
+
+            // Remove ONLY blocked-date events.
+            // Keep all existing customer booking events on the calendar.
+            calendarInstance.getEvents().forEach(event => {
+                if (event.extendedProps.isBlockedDate) {
+                    event.remove();
+                }
+            });
+
+            blockedEvents.forEach(event => {
+                calendarInstance.addEvent(event);
+            });
+
+            calendarInstance.render();
+        }
 
         async function loadBookingCalendar() {
 
@@ -2538,7 +2844,7 @@
             }
 
 
-            const events = data.map(
+            const bookingEvents = data.map(
                 booking => {
 
                     const totalPrice =
@@ -2645,7 +2951,12 @@
                 }
             );
 
+            const blockedEvents = await getBlockedDateEvents();
 
+            const events = [
+                ...bookingEvents,
+                ...blockedEvents
+            ];
             calendarInstance =
                 new FullCalendar.Calendar(
                     document.getElementById("calendar"),
@@ -2658,7 +2969,9 @@
 
                         events:
                             events,
-
+                        dateClick(info) {
+                            manageBlockedDate(info.dateStr);
+                        },
                         headerToolbar: {
                             left:
                                 "prev,next today",
@@ -2672,15 +2985,18 @@
 
                         eventColor:
                             "#5C3BFE",
-
-                        // 👇 ADDED HERE TO FIX OVERLAPPING & EVENT DURATION 👇
                         slotEventOverlap: false,
 
                         defaultTimedEventDuration: "00:45:00",
 
 
                         eventClick(info) {
-
+                            if (info.event.extendedProps.isBlockedDate) {
+                                manageBlockedDate(
+                                    info.event.extendedProps.blockedDate
+                                );
+                                return;
+                            }
                             const props =
                                 info.event.extendedProps;
 
@@ -3049,10 +3365,15 @@
 
                 };
             }
-            const events =
-                (data || []).map(
-                    createCalendarEvent
-                );
+            const bookingEvents =
+                (data || []).map(createCalendarEvent);
+
+            const blockedEvents = await getBlockedDateEvents();
+
+            const events = [
+                ...bookingEvents,
+                ...blockedEvents
+            ];
 
             calendarInstance.removeAllEvents();
             events.forEach(event => {
@@ -3153,13 +3474,27 @@
 
         let notificationChannel = null;
 
-        notificationTrigger.addEventListener("click", function (e) {
 
+        notificationTrigger.addEventListener("click", async function (e) {
             e.stopPropagation();
 
             notificationPanel.classList.toggle("show");
 
+            if (notificationPanel.classList.contains("show")) {
+                const { error } = await supabaseClient
+                    .from("notifications")
+                    .update({ is_read: true })
+                    .eq("recipient", "admin")
+                    .eq("is_read", false);
+
+                if (error) {
+                    console.error("Unable to mark notifications read:", error);
+                }
+
+                await loadNotifications();
+            }
         });
+
 
 
         notificationPanel.addEventListener("click", function (e) {
@@ -3276,155 +3611,33 @@
                 .trim();
         }
 
+
         async function loadNotifications() {
-            if (!currentUser) {
-                console.warn("Cannot load notifications: no current user.");
-                return;
-            }
-
             try {
-                console.log("Loading notifications from database...");
-
-                const {
-                    data: notificationRows,
-                    error: notificationError
-                } = await supabaseClient
+                const { data, error } = await supabaseClient
                     .from("notifications")
                     .select("*")
-                    .order("created_at", { ascending: false })
-                    .limit(15);
+                    .eq("recipient", "admin")
+                    .order("created_at", { ascending: false });
 
-                if (notificationError) {
-                    console.error("LOAD NOTIFICATIONS ERROR:", notificationError);
-                    notificationList.innerHTML = `
-        <div class="notification-empty">
-            Unable to load notifications
-        </div>
-    `;
-                    return;
-                }
+                if (error) throw error;
 
-                notifications = [];
-
-                for (const notificationRow of notificationRows || []) {
-                    const rawType = (notificationRow.type || "").toLowerCase();
-                    const rawTitle = (notificationRow.title || "").toLowerCase();
-                    let message = notificationRow.message || "";
-
-                    // Filter out the specific gallery approval notification message requested to be removed
-                    if (message.includes("Your gallery access request has been approved") ||
-                        message.includes("Your gallery link is available for 7 days")) {
-                        continue;
-                    }
-
-                    const isBooking = rawType === "booking" || rawTitle.includes("new customer booking");
-                    const isGallery = rawType === "gallery_access" || rawType === "gallery" || rawTitle.includes("gallery access");
-
-                    if (!isBooking && !isGallery) {
-                        continue;
-                    }
-
-                    if (isGallery) {
-                        message = cleanGalleryMessage(message);
-                    }
-
-                    let booking = null;
-
-                    if (notificationRow.booking_id) {
-                        const { data: bookingData, error: bookingError } =
-                            await supabaseClient
-                                .from("bookings")
-                                .select("*")
-                                .eq("id", notificationRow.booking_id)
-                                .maybeSingle();
-
-                        if (bookingError) {
-                            console.error(
-                                "Failed to load notification booking:",
-                                bookingError
-                            );
-                        }
-
-                        booking = bookingData || null;
-                    }
-                    if (isBooking) {
-                        const bookingStatus = String(booking?.status || "").toLowerCase();
-
-                        if (booking && bookingStatus !== "pending") {
-                            continue;
-                        }
-                    }
-
-                    const notification = {
-                        id: String(notificationRow.id),
-                        type: isBooking ? "booking" : "gallery_access",
-                        title: isBooking
-                            ? "New Customer Booking"
-                            : "New Gallery Access Request",
-                        message: message,
-                        date: notificationRow.created_at ||
-                            booking?.created_at ||
-                            new Date().toISOString(),
-                        unread: notificationRow.is_read !== true,
-                        booking: booking,
-                        databaseId: notificationRow.id
-                    };
-                    if (readNotificationIds.has(getNotificationReadKey(notification))) {
-                        notification.unread = false;
-                    }
-                    notifications.push(notification);
-                }
-
-
-                // Load ALL existing bookings that still need admin confirmation.
-                const {
-                    data: pendingBookings,
-                    error: pendingBookingsError
-                } = await supabaseClient
-                    .from("bookings")
-                    .select("*")
-                    .ilike("status", "pending")
-                    .order("created_at", { ascending: false })
-                    .limit(100);
-
-                if (pendingBookingsError) {
-                    console.error(
-                        "Failed to load pending bookings:",
-                        pendingBookingsError
-                    );
-                } else {
-                    for (const booking of pendingBookings || []) {
-                        const notification =
-                            createBookingNotification(booking);
-
-                        if (!notification) continue;
-
-                        // Avoid duplicates if a database notification
-                        // already exists for this booking.
-                        const alreadyExists = notifications.some(item =>
-                            String(item.booking?.id) ===
-                            String(booking.id)
-                        );
-
-                        if (!alreadyExists) {
-                            notifications.push(notification);
-                        }
-                    }
-                }
-
-                // Show newest booking notifications first.
-                notifications.sort(
-                    (a, b) =>
-                        new Date(b.date).getTime() -
-                        new Date(a.date).getTime()
-                );
-
-                notifications = notifications.slice(0, 100);
+                notifications = (data || []).map(row => ({
+                    id: String(row.id),
+                    databaseId: row.id,
+                    bookingId: row.booking_id || null,
+                    type: row.type || "",
+                    title: row.title || "",
+                    message: row.message || "",
+                    link: row.link || null,
+                    date: row.created_at,
+                    unread: !row.is_read,
+                    booking: null
+                }));
 
                 renderNotifications();
-
             } catch (error) {
-                console.error("Notification loading failed:", error);
+                console.error("Notification loading error:", error);
             }
         }
 
@@ -3534,11 +3747,6 @@
                     return value.join(", ");
 
                 }
-
-
-                /*
-                Handle JSON string just in case
-                */
 
                 if (
                     typeof value === "string" &&
@@ -3994,115 +4202,110 @@
                 "show"
             );
 
-
-            console.log(
-                "Booking notification modal opened:",
-                booking
-            );
-
         }
 
         async function handleNotificationClick(notification, item) {
             if (!notification) return;
 
-            // Mark this notification and its related booking as read.
-            notification.unread = false;
+            const bookingId = notification.bookingId;
 
-            const readKey = getNotificationReadKey(notification);
-            readNotificationIds.add(readKey);
-            saveReadNotifications();
-
-            if (item) {
-                item.classList.remove("unread");
-            }
-
-            updateNotificationBadge();
-
-            // Persist the read state in Supabase when a database row exists.
-            if (notification.databaseId != null) {
+            if (notification.databaseId) {
                 const { error } = await supabaseClient
                     .from("notifications")
                     .update({ is_read: true })
                     .eq("id", notification.databaseId);
 
                 if (error) {
-                    console.error(
-                        "Failed to save notification read status:",
-                        error
-                    );
+                    console.error("Unable to mark notification read:", error);
+                } else {
+                    notification.unread = false;
+                    item?.classList.remove("unread");
+                    updateNotificationBadge();
                 }
             }
 
             notificationPanel.classList.remove("show");
 
-            if (
-                (
-                    notification.type === "booking" ||
-                    notification.type === "gallery_access"
-                ) &&
-                notification.booking?.id
-            ) {
-                await openNotificationBooking(notification);
+            if (!bookingId) return;
+
+            const { data: booking, error } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .eq("id", bookingId)
+                .maybeSingle();
+
+            if (error || !booking) {
+                console.error("Booking not found:", error);
+                return;
             }
 
-            updateNotificationBadge();
+            await openNotificationBooking({
+                ...notification,
+                type: "booking",
+                booking
+            });
         }
-
 
         function renderNotifications() {
             notificationList.innerHTML = "";
 
-            if (!notifications || notifications.length === 0) {
+            if (!notifications.length) {
                 notificationList.innerHTML = `
             <div class="notification-empty">
                 No notifications
-            </div>
-        `;
+            </div>`;
                 updateNotificationBadge();
                 return;
             }
 
-            notifications.forEach(function (notification) {
+            notifications.forEach(notification => {
                 const item = document.createElement("div");
-                item.className = "notification-item";
 
-                if (notification.unread) {
-                    item.classList.add("unread");
-                }
+                item.className =
+                    "notification-item" +
+                    (notification.unread ? " unread" : "");
 
-                let icon = "fa-bell";
-                if (notification.type === "booking") {
-                    icon = "fa-calendar-check";
-                } else if (notification.type === "gallery_access") {
-                    icon = "fa-image";
-                }
-
-                // Handle text display safely without showing escaped link tags
-                const formattedMessage = notification.type === "gallery_access"
-                    ? cleanGalleryMessage(notification.message)
-                    : escapeNotificationHTML(notification.message);
+                const title = escapeNotificationHTML(notification.title);
+                const message = escapeNotificationHTML(notification.message);
+                const date = notification.date
+                    ? new Date(notification.date).toLocaleString()
+                    : "";
 
                 item.innerHTML = `
             <div class="notification-icon">
-                <i class="fa-solid ${icon}"></i>
+                <i class="fa-solid fa-circle-check"></i>
             </div>
-
             <div class="notification-content">
-                <p class="notification-title">
-                    ${escapeNotificationHTML(notification.title)}
-                </p>
-
-                <p class="notification-message">
-                    ${formattedMessage}
-                </p>
-
-                <div class="notification-time">
-                    ${formatNotificationDate(notification.date)}
-                </div>
+                <h4>${title}</h4>
+                <p class="notification-message">${message}</p>
+                ${notification.link ? `
+                    <a class="notification-link"
+                       href="#">
+                        <i class="fa-solid fa-images"></i>
+                        Open My Gallery
+                    </a>` : ""}
+                <small>${date}</small>
             </div>
         `;
 
-                item.addEventListener("click", function () {
+                const link = item.querySelector(".notification-link");
+
+                if (link) {
+                    link.addEventListener("click", event => {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        const url = new URL(
+                            notification.link,
+                            window.location.origin
+                        );
+
+                        if (!["http:", "https:"].includes(url.protocol)) return;
+                        window.location.href = url.href;
+                    });
+                }
+
+                item.addEventListener("click", () => {
                     handleNotificationClick(notification, item);
                 });
 
@@ -4111,6 +4314,7 @@
 
             updateNotificationBadge();
         }
+
 
         function updateNotificationBadge() {
             const unreadCount = notifications.filter(
@@ -4215,18 +4419,20 @@
             }
         );
 
+
         notificationBookingProcess.addEventListener("click", function () {
-            if (!selectedNotificationBooking?.id) {
-                console.error("No booking selected for processing.");
+            const bookingId = selectedNotificationBooking?.id;
+
+            if (!bookingId) {
+                console.error("No booking selected.");
                 return;
             }
-
-            const bookingId = selectedNotificationBooking.id;
 
             window.location.href =
                 "/admin/clients?tab=pending&booking_id=" +
                 encodeURIComponent(String(bookingId));
         });
+
         function handleNotificationBookingRedirect() {
             const params = new URLSearchParams(window.location.search);
 

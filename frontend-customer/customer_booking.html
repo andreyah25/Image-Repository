@@ -1387,7 +1387,67 @@
             const dateInput = document.getElementById("bookingDate");
             const timeSelect = document.getElementById("bookingTime");
             const message = document.getElementById("bookingAvailabilityMessage");
+            // Check whether the selected date is blocked by the admin.
+            if (dateInput && timeSelect && dateInput.value) {
+                const selectedDate = dateInput.value;
 
+                timeSelect.disabled = true;
+                timeSelect.innerHTML =
+                    '<option value="">Checking date availability...</option>';
+
+                if (message) {
+                    message.textContent = "Checking date availability...";
+                }
+
+                try {
+                    const { data: blockedDate, error } = await supabaseClient
+                        .from("blocked_dates")
+                        .select("blocked_date, reason")
+                        .eq("blocked_date", selectedDate)
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (blockedDate) {
+                        timeSelect.innerHTML =
+                            '<option value="">Date unavailable</option>';
+
+                        timeSelect.disabled = true;
+
+                        if (message) {
+                            message.textContent =
+                                "UNAVAILABLE — " +
+                                blockedDate.reason +
+                                ". Please select another date.";
+                            message.style.color = "#dc2626";
+                            message.style.fontWeight = "600";
+                        }
+
+                        return;
+                    }
+
+                    if (message) {
+                        message.style.color = "";
+                        message.style.fontWeight = "";
+                    }
+
+                } catch (error) {
+                    console.error("Blocked-date check failed:", error);
+
+                    timeSelect.innerHTML =
+                        '<option value="">Unable to verify date</option>';
+
+                    timeSelect.disabled = true;
+
+                    if (message) {
+                        message.textContent =
+                            "We cannot verify this date right now. Please try again.";
+                        message.style.color = "#dc2626";
+                    }
+
+                    return;
+                }
+            }
             if (!dateInput || !timeSelect) {
                 console.error("Booking date or time element not found.");
                 return;
@@ -1531,10 +1591,6 @@
 
                     return;
                 }
-
-                // -----------------------------------------------------
-                // REMOVE CANCELLED / REJECTED BOOKINGS
-                // -----------------------------------------------------
 
                 const activeBookings =
                     (existingBookings || []).filter(booking => {
@@ -3503,7 +3559,6 @@
                 }
 
                 if (paymentMethod !== "PayMongo") {
-
                     alert(
                         "Please select PayMongo as your payment method."
                     );
@@ -3511,13 +3566,67 @@
                     return;
                 }
 
+                // PASTE THE FINAL CHECK BLOCK HERE
+                // FINAL CHECK: Prevent booking a date blocked by the admin.
+                const {
+                    data: finalBlockedDate,
+                    error: finalBlockedDateError
+                } = await supabaseClient
+                    .from("blocked_dates")
+                    .select("blocked_date, reason")
+                    .eq("blocked_date", date)
+                    .maybeSingle();
+
+                if (finalBlockedDateError) {
+                    console.error(
+                        "Final blocked-date verification failed:",
+                        finalBlockedDateError
+                    );
+
+                    alert(
+                        "We cannot verify this date right now. " +
+                        "Please try again."
+                    );
+
+                    return;
+                }
+
+                if (finalBlockedDate) {
+                    alert(
+                        "This date is unavailable: " +
+                        finalBlockedDate.reason +
+                        ". Please select another date."
+                    );
+
+                    document.getElementById("bookingDate").value = "";
+
+                    document.getElementById("bookingTime").innerHTML =
+                        '<option value="">Select a date first</option>';
+
+                    document.getElementById("bookingTime").disabled = true;
+
+                    const availabilityMessage =
+                        document.getElementById("bookingAvailabilityMessage");
+
+                    if (availabilityMessage) {
+                        availabilityMessage.textContent =
+                            "UNAVAILABLE — " +
+                            finalBlockedDate.reason +
+                            ". Please select another date.";
+
+                        availabilityMessage.style.color = "#dc2626";
+                    }
+
+                    return;
+                }
+
+                // KEEP YOUR EXISTING CODE BELOW
                 submitButton.disabled = true;
 
                 submitButton.innerHTML = `
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        Checking availability...
-                    `;
-
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    Checking availability...
+`;
 
                 const {
                     data: existingBookings,
@@ -3535,8 +3644,6 @@
         addons
     `)
                     .eq("booking_date", date);
-
-
                 if (availabilityError) {
 
                     console.error(
