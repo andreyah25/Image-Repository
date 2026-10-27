@@ -2467,3 +2467,157 @@ i.fa-brands,
         min-width: 0;
     }
 }
+.blocked-date-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.58);
+    align-items: center;
+    justify-content: center;
+}
+
+.blocked-date-modal.show {
+    display: flex;
+}
+
+.blocked-date-card {
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 26px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+    font-family: 'DM Sans', sans-serif;
+}
+
+.blocked-date-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.blocked-date-header h2 {
+    margin: 0 0 7px;
+    color: #1f2937;
+    font-size: 21px;
+}
+
+.blocked-date-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.blocked-date-close {
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+    font-size: 29px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.blocked-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.blocked-date-field label {
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.blocked-date-field input,
+.blocked-date-field select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    background: #fff;
+    color: #1f2937;
+    font: inherit;
+    box-sizing: border-box;
+}
+
+.blocked-date-field input:focus,
+.blocked-date-field select:focus {
+    outline: 2px solid #639a88;
+    outline-offset: 1px;
+    border-color: #639a88;
+}
+
+#blockedDateModalMessage {
+    min-height: 18px;
+    margin: 0 0 12px;
+    color: #dc2626;
+    font-size: 13px;
+}
+
+.blocked-date-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 12px;
+}
+
+.blocked-date-actions button {
+    min-height: 40px;
+    padding: 10px 15px;
+    border: 0;
+    border-radius: 9px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.blocked-date-save {
+    background: #639a88;
+    color: white;
+}
+
+.blocked-date-save:hover {
+    background: #528373;
+}
+
+.blocked-date-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.blocked-date-unblock {
+    margin-right: auto;
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.blocked-date-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .blocked-date-card {
+        padding: 20px;
+    }
+
+    .blocked-date-actions {
+        justify-content: stretch;
+    }
+
+    .blocked-date-actions button {
+        flex: 1;
+    }
+}
