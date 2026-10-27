@@ -133,23 +133,6 @@
                     <h1>Repository</h1>
                     <p>Organize and organize folders and images stored in your workspace.</p>
                 </div>
-
-                <div class="filter-dropdown-wrapper">
-                    <button class="add-new-client-btn" id="addNewDropdownTrigger">
-                        <i class="fa-solid fa-plus"></i>
-                        Add New
-                    </button>
-                    <div class="add-new-dropdown-box" id="addNewDropdownMenu">
-                        <button id="uploadPhotosActionOption">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Upload Photos</span>
-                        </button>
-                        <button id="createFolderActionOption">
-                            <i class="fa-regular fa-folder"></i>
-                            <span>Create New Events</span>
-                        </button>
-                    </div>
-                </div>
             </div>
 
 
@@ -157,15 +140,8 @@
                 <div class="repo-filter-selects-group">
 
                     <div class="repo-select-wrapper">
-                        <select id="repoTagFilter" aria-label="Filter by detected tag">
-                            <option value="">All tags</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down select-arrow"></i>
-                    </div>
-
-                    <div class="repo-select-wrapper">
                         <select id="repoEventFilter" aria-label="Filter by event">
-                            <option value="">All events</option>
+                            <option value="">All packages</option>
                         </select>
                         <i class="fa-solid fa-chevron-down select-arrow"></i>
                     </div>
@@ -212,22 +188,6 @@
             </div>
 
         </main>
-    </div>
-    <div class="modal-overlay" id="createFolderModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <i class="fa-solid fa-folder-plus"></i>
-                <h2>Create Folder</h2>
-            </div>
-            <form id="newEventForm" class="modal-form">
-                <div class="form-field">
-                    <input type="text" id="eventNameInput" placeholder="Event Name" required>
-                </div>
-                <button class="save-client-btn" type="submit">
-                    Create Event
-                </button>
-            </form>
-        </div>
     </div>
     <input type="file" id="photoFilesUploader" multiple accept="image/*" style="display: none;">
 
@@ -679,31 +639,6 @@
             );
 
         }
-        const createFolderModal =
-            document.getElementById("createFolderModal");
-
-        document
-            .getElementById("createFolderActionOption")
-            .addEventListener("click", (e) => {
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                addNewMenu.classList.remove("show");
-
-                createFolderModal.classList.add("show");
-
-            });
-
-        createFolderModal.onclick = (e) => {
-
-            if (e.target === createFolderModal) {
-
-                createFolderModal.classList.remove("show");
-
-            }
-
-        };
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcmNiZWFiZHZ4ZGVubW5neHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTAxMTgsImV4cCI6MjA5ODg4NjExOH0.SS0BKTXRBiu1Cclr_1ZRvte4UNnevinwqJAKOX9tLvw";
@@ -715,22 +650,6 @@
         let currentUser = null;
         let selectedFolderId = null;
         let allFolders = [];
-        const addNewBtn = document.getElementById("addNewDropdownTrigger");
-        const addNewMenu = document.getElementById("addNewDropdownMenu");
-
-        addNewBtn.addEventListener("click", (e) => {
-
-            e.stopPropagation();
-
-            addNewMenu.classList.toggle("show");
-
-        });
-
-        document.addEventListener("click", () => {
-
-            addNewMenu.classList.remove("show");
-
-        });
         window.addEventListener("load", async () => {
 
             const {
@@ -933,11 +852,6 @@
         document
             .getElementById("repoEventFilter")
             .addEventListener("change", scheduleRepositorySearch);
-
-        document
-            .getElementById("repoTagFilter")
-            .addEventListener("change", scheduleRepositorySearch);
-
         document
             .getElementById("repoSortFilter")
             .addEventListener("change", scheduleRepositorySearch);
@@ -989,31 +903,35 @@
             });
         }
 
+
         async function searchRepositoryPhotos() {
-            const query = document
-                .getElementById("repoFolderSearchInput")
-                .value.trim();
+            const searchInput = document.getElementById("repoFolderSearchInput");
+            const eventFilter = document.getElementById("repoEventFilter");
+            const sortFilter = document.getElementById("repoSortFilter");
 
-            const packageName =
-                document.getElementById("repoEventFilter").value;
+            if (!searchInput || !eventFilter || !sortFilter) {
+                return;
+            }
 
-            const tagName =
-                document.getElementById("repoTagFilter").value;
-
-            const sortBy =
-                document.getElementById("repoSortFilter").value;
+            const query = searchInput.value.trim();
+            const packageName = eventFilter.value;
+            const sortBy = sortFilter.value;
 
             const foldersView = document.getElementById("foldersView");
             const photosView = document.getElementById("photosView");
 
-            if (!query && !packageName && !tagName && sortBy === "newest") {
+            if (!foldersView || !photosView) {
+                return;
+            }
+
+            if (!query && !packageName && sortBy === "newest") {
                 foldersView.style.display = "";
                 photosView.style.display = "none";
                 renderPackageFolders(allFolders);
                 return;
             }
 
-            if (query && !tagName && sortBy === "newest") {
+            if (query && sortBy === "newest") {
                 searchCustomerFolders(query);
 
                 foldersView.style.display = "";
@@ -1024,26 +942,21 @@
                     (booking.session_type || "").toLowerCase().includes(query.toLowerCase())
                 );
 
-                if (customerMatches) return;
+                if (customerMatches && !packageName) {
+                    return;
+                }
             }
 
             foldersView.style.display = "none";
             photosView.style.display = "block";
 
             try {
-                console.log("Repository search:", {
-                    query,
-                    packageName,
-                    tagName,
-                    sortBy
-                });
-
                 const { data, error } = await supabaseClient.rpc(
                     "search_repository_smart",
                     {
                         search_term: query || null,
                         package_name: packageName || null,
-                        tag_name: tagName || null,
+                        tag_name: null,
                         sort_by: sortBy || "newest"
                     }
                 );
@@ -1052,17 +965,9 @@
                     throw error;
                 }
 
-                console.log("Search RPC results:", data);
-
-                // Sign images from the bucket used by your uploadPhotos() function.
                 const photos = await Promise.all(
                     (data || []).map(async photo => {
                         if (!photo.storage_path) {
-                            console.warn(
-                                "Search result has no storage_path:",
-                                photo
-                            );
-
                             return { ...photo, image_url: "" };
                         }
 
@@ -1072,12 +977,7 @@
                                 .createSignedUrl(photo.storage_path, 3600);
 
                         if (signedError) {
-                            console.error(
-                                "Could not create signed URL:",
-                                photo.original_name,
-                                signedError
-                            );
-
+                            console.error("Could not create signed URL:", signedError);
                             return { ...photo, image_url: "" };
                         }
 
@@ -1090,7 +990,7 @@
 
                 renderGlobalSearchResults(
                     photos,
-                    query || tagName || packageName || "all photos"
+                    query || packageName || "all photos"
                 );
 
             } catch (error) {
@@ -1105,7 +1005,6 @@
         `;
             }
         }
-
 
 
         function renderGlobalSearchResults(photos, searchTerm) {

@@ -2174,3 +2174,296 @@ i.fa-brands,
     flex-shrink: 0;
     border-radius: 50%;
 }
+
+/* INCOME REPORT MODAL */
+
+#incomeReportModal.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+    pointer-events: none;
+}
+
+#incomeReportModal.modal.show {
+    display: flex;
+    pointer-events: auto;
+}
+
+#incomeReportModal .modal-content {
+    position: relative;
+    z-index: 100001;
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+}
+
+#incomeReportModal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+#incomeReportModal .modal-header h2 {
+    margin: 0;
+    color: #353535;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+#incomeReportModal .close-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+#incomeReportModal .close-modal:hover {
+    color: #111827;
+}
+
+#incomeReportModal .income-report-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: end;
+    gap: 14px;
+    padding: 20px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#incomeReportModal .form-group {
+    min-width: 0;
+    margin: 0;
+}
+
+#incomeReportModal .form-group label {
+    display: block;
+    margin: 0 0 7px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#incomeReportModal .form-group select,
+#incomeReportModal .form-group input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    outline: none;
+    background: #ffffff;
+    color: #353535;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+}
+
+#incomeReportModal .form-group select:focus,
+#incomeReportModal .form-group input:focus {
+    border-color: #639A88;
+    box-shadow: 0 0 0 2px rgba(99, 154, 136, 0.14);
+}
+
+#incomeReportModal .income-report-summary {
+    padding: 22px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+#incomeReportModal #incomeReportPeriod {
+    margin: 0 0 18px;
+    color: #353535;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+#incomeReportModal .income-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+#incomeReportModal .income-summary-card {
+    min-width: 0;
+    padding: 18px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f8f9fc;
+}
+
+#incomeReportModal .income-summary-card span {
+    display: block;
+    margin-bottom: 10px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+#incomeReportModal .income-summary-card h3 {
+    margin: 0;
+    color: #353535;
+    font-size: clamp(17px, 2.2vw, 24px);
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+#incomeReportModal .income-summary-card:last-child {
+    background: #eaf3ef;
+    border-color: #d5e6de;
+}
+
+#incomeReportModal .income-summary-card:last-child h3 {
+    color: #416f60;
+}
+
+#incomeReportModal #incomeReportCount {
+    margin: 0 0 10px;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+#incomeReportModal #incomeReportMessage {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px !important;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+#incomeReportModal .income-report-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+#incomeReportModal .income-report-actions button {
+    min-width: 130px;
+    padding: 11px 16px;
+    border: 1px solid #639A88;
+    border-radius: 5px;
+    background: #639A88;
+    color: #ffffff;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#incomeReportModal .income-report-actions button:hover:not(:disabled) {
+    background: #528373;
+    border-color: #528373;
+}
+
+#incomeReportModal .income-report-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#incomeReportModal #incomeReportMonthGroup[style*="display: none"] {
+    display: none !important;
+}
+
+#totalIncomeCard {
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#totalIncomeCard:focus-visible {
+    outline: 2px solid #639A88;
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    #incomeReportModal.modal {
+        padding: 10px;
+        align-items: center;
+    }
+
+    #incomeReportModal .modal-content {
+        max-height: 94vh;
+    }
+
+    #incomeReportModal .modal-header {
+        padding: 16px 18px;
+    }
+
+    #incomeReportModal .modal-header h2 {
+        font-size: 19px;
+    }
+
+    #incomeReportModal .income-report-filters {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 16px 18px;
+    }
+
+    #incomeReportModal .income-report-filters .form-group:first-child {
+        grid-column: 1 / -1;
+    }
+
+    #incomeReportModal .income-report-summary {
+        padding: 18px;
+    }
+
+    #incomeReportModal .income-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    #incomeReportModal .income-summary-card {
+        padding: 14px;
+    }
+
+    #incomeReportModal .income-summary-card h3 {
+        font-size: 21px;
+    }
+
+    #incomeReportModal .income-report-actions {
+        padding: 14px 18px;
+    }
+
+    #incomeReportModal .income-report-actions button {
+        flex: 1;
+        min-width: 0;
+    }
+}

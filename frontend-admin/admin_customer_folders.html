@@ -171,25 +171,7 @@
                     </div>
 
                 </div>
-                <div class="repository-photo-search">
-
-                    <div class="table-search-box">
-
-                        <input type="text" id="repositorySearch" placeholder="Search an object, keywords or file name"
-                            autocomplete="off">
-
-                        <i class="fa-solid fa-magnifying-glass"></i>
-
-                        <button type="button" id="clearPhotoSearch" style="display:none;"
-                            aria-label="Clear photo search">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-
-                    </div>
-
-                    <div id="photoSearchInfo"></div>
-
-                </div>
+            
                 <div id="uploadStatus" class="upload-status"></div>
 
                 <div class="repo-view-container" id="customerFolder">
@@ -430,14 +412,6 @@
 
         const photoGrid =
             document.getElementById("photoGrid");
-        const customerPhotoSearchInput =
-            document.getElementById("repositorySearch");
-
-        const clearPhotoSearch =
-            document.getElementById("clearPhotoSearch");
-
-        const photoSearchInfo =
-            document.getElementById("photoSearchInfo");
 
         const photoFilesUploader =
             document.getElementById("photoFilesUploader");
@@ -469,9 +443,7 @@
         const logoutBtn =
             document.getElementById("logoutBtn");
 
-        const repositorySearch =
-            document.getElementById("repositorySearch");
-
+    
         let searchTimeout;
 
         window.addEventListener("load", async () => {
@@ -807,12 +779,6 @@
 
                         }
                     );
-
-
-                    /* -----------------------------------------
-                       OPEN BUTTON
-                    ----------------------------------------- */
-
                     card
                         .querySelector(
                             ".open-client-btn"
@@ -827,11 +793,6 @@
 
                             }
                         );
-
-
-                    /* -----------------------------------------
-                       COPY LINK BUTTON
-                    ----------------------------------------- */
 
                     card
                         .querySelector(
@@ -979,7 +940,7 @@
                 </div>
 
                 <small>
-                    No photos matched
+                    No photos matched.
                     "<strong>${escapeHTML(searchTerm)}</strong>"
                 </small>
 
@@ -1119,13 +1080,6 @@
             </div>
 
         `;
-
-
-                /*
-                 * Clicking the photo opens the
-                 * customer's folder.
-                 */
-
                 card.addEventListener(
                     "click",
                     async () => {
@@ -1176,12 +1130,7 @@
                 selectedRepository =
                     await getOrCreateRepository(
                         client
-                    );
-                customerPhotoSearchInput.value = "";
-
-                clearPhotoSearch.style.display = "none";
-
-                photoSearchInfo.textContent = "";
+            )
 
                 selectedCustomerName.textContent =
                     client.full_name ||
@@ -1768,23 +1717,6 @@
                 );
 
                 renderPhotos(photoResults);
-                if (query) {
-
-                    photoSearchInfo.textContent =
-                        `${photoResults.length} photo${photoResults.length === 1
-                            ? ""
-                            : "s"
-                        } found for "${query}"`;
-
-                } else {
-
-                    photoSearchInfo.textContent =
-                        `${photoResults.length} photo${photoResults.length === 1
-                            ? ""
-                            : "s"
-                        }`;
-
-                }
 
             } catch (error) {
 
@@ -1814,30 +1746,6 @@
             }
 
         }
-
-        clearPhotoSearch.addEventListener(
-            "click",
-            async () => {
-
-                customerPhotoSearchInput.value = "";
-
-                clearPhotoSearch.style.display =
-                    "none";
-
-                if (!selectedRepository) {
-                    return;
-                }
-
-                await loadPhotos(
-                    selectedRepository.id,
-                    ""
-                );
-
-                customerPhotoSearchInput.focus();
-
-            }
-        );
-
 
         function renderPhotos(photos) {
             photoGrid.innerHTML = "";
