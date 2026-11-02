@@ -176,7 +176,19 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+        function formatArchiveDate(dateValue) {
+            if (!dateValue) return "-";
 
+            const date = new Date(dateValue);
+
+            if (isNaN(date.getTime())) return "-";
+
+            return date.toLocaleDateString("en-PH", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+        }
         function renderArchiveTable() {
             const tbody = document.getElementById("archiveTableBody");
             const searchInput = document.getElementById("archiveSearchInput");
@@ -243,25 +255,32 @@
 
                 const folderPhotos = item.category === "folder"
                     ? (item.photos || []).map(photo => {
-                        const originalImageUrl = photo.archive_image_url || "";
+                        const imageUrl = photo.archive_image_url || "";
 
                         return `
             <div class="archived-photo-item">
-                ${originalImageUrl
-                                ? `
-                            <img
-                                src="${escapeHtml(originalImageUrl)}"
-                                alt="${escapeHtml(photo.original_name || "Archived photo")}"
-                                loading="lazy"
-                                onerror="this.style.display='none'; this.nextElementSibling.nextElementSibling.textContent='Photo could not be loaded'; console.error('Archived photo failed to load:', this.src);"
-                            > `: ""
-                            }
+                ${imageUrl ? `
+                    <img
+                        src="${escapeHtml(imageUrl)}"
+                        alt="${escapeHtml(photo.original_name || "Archived photo")}"
+                        loading="lazy"
+                        onerror="this.style.display='none';"
+                    >
+                ` : `
+                    <div class="archive-image-placeholder">
+                        Photo unavailable
+                    </div>
+                `}
 
                 <span title="${escapeHtml(photo.original_name || "Photo")}">
                     ${escapeHtml(photo.original_name || "Photo")}
                 </span>
 
-                    <small>${photo.archive_image_is_compressed ? "WebP Compressed" : "Original"}</small>        `;
+                <small>
+                    ${photo.archive_image_is_compressed ? "WebP" : "Original"}
+                </small>
+            </div>
+        `;
                     }).join("")
                     : "";
 
@@ -434,7 +453,11 @@
 
         });
         async function runArchiveAndCompression(session) {
+            // Archive completed bookings after 14 days.
             await archiveCompletedBookings();
+
+            // Permanently delete archived records after 45 days.
+            await purgeExpiredArchives();
         }
         async function restoreArchiveItem(item) {
             const restorePhotos = async (repositoryId) => {
@@ -551,7 +574,7 @@
 
         async function permanentlyDeleteArchiveItem(item) {
             // IMPORTANT: Match this to the bucket used by your upload process.
-            const PHOTO_BUCKET = "repository-photos";
+            const PHOTO_BUCKET = "client-photos";
             async function fetchPhotos(repositoryId) {
                 const { data, error } = await supabaseClient
                     .from("repository_photos")
@@ -679,15 +702,85 @@
         }
 
 
+        async function purgeExpiredArchives() {
+            const cutoffDate = new Date(
+                Date.now() - 45 * 24 * 60 * 60 * 1000
+            ).toISOString();
+
+            console.log("Checking archives older than 45 days...");
+
+            // 1. Permanently delete archived customers older than 45 days.
+            const { data: expiredBookings, error: bookingError } =
+                await supabaseClient
+                    .from("bookings")
+                    .select("id, archived_at")
+                    .eq("is_archived", true)
+                    .not("archived_at", "is", null)
+                    .lte("archived_at", cutoffDate);
+
+            if (bookingError) throw bookingError;
+
+            for (const booking of expiredBookings || []) {
+                console.log("Permanently deleting expired customer:", booking.id);
+
+                await permanentlyDeleteArchiveItem({
+                    id: booking.id,
+                    category: "customer"
+                });
+            }
+
+            // 2. Re-fetch folders after deleting expired customers.
+            const { data: expiredFolders, error: folderError } =
+                await supabaseClient
+                    .from("repository_client_links")
+                    .select("id, archived_at")
+                    .eq("is_archived", true)
+                    .not("archived_at", "is", null)
+                    .lte("archived_at", cutoffDate);
+
+            if (folderError) throw folderError;
+
+            for (const folder of expiredFolders || []) {
+                console.log("Permanently deleting expired folder:", folder.id);
+
+                await permanentlyDeleteArchiveItem({
+                    id: folder.id,
+                    category: "folder"
+                });
+            }
+
+            // 3. Delete individually archived photos that remain.
+            const { data: expiredPhotos, error: photoError } =
+                await supabaseClient
+                    .from("repository_photos")
+                    .select("id, archived_at")
+                    .eq("is_archived", true)
+                    .not("archived_at", "is", null)
+                    .lte("archived_at", cutoffDate);
+
+            if (photoError) throw photoError;
+
+            for (const photo of expiredPhotos || []) {
+                console.log("Permanently deleting expired photo:", photo.id);
+
+                await permanentlyDeleteArchiveItem({
+                    id: photo.id,
+                    category: "photo"
+                });
+            }
+
+            console.log("45-day archive cleanup completed.");
+        }
+
         async function archiveCompletedBookings() {
-            const cutoffDate = new Date();
-            cutoffDate.setMonth(cutoffDate.getMonth() - 2);
+            const cutoffTimestamp = new Date(
+                Date.now() - 14 * 24 * 60 * 60 * 1000
+            ).toISOString();
 
-            const cutoffTimestamp = cutoffDate.toISOString();
-
+            // Only bookings completed at least 14 days ago.
             const { data: bookings, error } = await supabaseClient
                 .from("bookings")
-                .select("id, full_name, booking_date, completed_at, status, is_archived")
+                .select("id, full_name, completed_at, status, is_archived")
                 .eq("status", "Completed")
                 .eq("is_archived", false)
                 .not("completed_at", "is", null)
@@ -696,24 +789,18 @@
             if (error) throw error;
 
             for (const booking of bookings || []) {
-                if (
-                    booking.status !== "Completed" ||
-                    booking.is_archived !== false ||
-                    !booking.completed_at ||
-                    new Date(booking.completed_at) > cutoffDate
-                ) {
-                    continue;
-                }
-
                 const archiveTime = new Date().toISOString();
 
-                const { data: folders, error: folderError } = await supabaseClient
-                    .from("repository_client_links")
-                    .select("id")
-                    .eq("booking_id", booking.id);
+                // Find only the folders belonging to this booking.
+                const { data: folders, error: folderError } =
+                    await supabaseClient
+                        .from("repository_client_links")
+                        .select("id")
+                        .eq("booking_id", booking.id);
 
                 if (folderError) throw folderError;
 
+                // Archive the customer's photos and folders.
                 for (const folder of folders || []) {
                     const { error: photoError } = await supabaseClient
                         .from("repository_photos")
@@ -726,36 +813,54 @@
 
                     if (photoError) throw photoError;
 
-                    const { error: folderArchiveError } = await supabaseClient
-                        .from("repository_client_links")
-                        .update({
-                            is_archived: true,
-                            archived_at: archiveTime
-                        })
-                        .eq("id", folder.id)
-                        .eq("is_archived", false);
+                    const { error: folderArchiveError } =
+                        await supabaseClient
+                            .from("repository_client_links")
+                            .update({
+                                is_archived: true,
+                                archived_at: archiveTime
+                            })
+                            .eq("id", folder.id)
+                            .eq("is_archived", false);
 
                     if (folderArchiveError) throw folderArchiveError;
                 }
 
-                const { error: bookingError } = await supabaseClient
-                    .from("bookings")
-                    .update({
-                        is_archived: true,
-                        archived_at: archiveTime
-                    })
-                    .eq("id", booking.id)
-                    .eq("status", "Completed")
-                    .eq("is_archived", false)
-                    .lte("completed_at", cutoffTimestamp);
+                // Archive the completed booking itself.
+                const { data: updatedBookings, error: bookingError } =
+                    await supabaseClient
+                        .from("bookings")
+                        .update({
+                            is_archived: true,
+                            archived_at: archiveTime
+                        })
+                        .eq("id", booking.id)
+                        .eq("status", "Completed")
+                        .eq("is_archived", false)
+                        .lte("completed_at", cutoffTimestamp)
+                        .select("id");
 
                 if (bookingError) throw bookingError;
+
+                if (!updatedBookings?.length) {
+                    console.warn(
+                        "Booking was not archived; eligibility changed:",
+                        booking.id
+                    );
+                    continue;
+                }
+
+                console.log(
+                    "Archived completed booking:",
+                    booking.full_name,
+                    booking.id
+                );
             }
         }
 
-        async function archiveFoldersOlderThanTwoMonths() {
+        /*async function archiveFoldersOlderThanTwoMonths() {
             const cutoffDate = new Date();
-            cutoffDate.setMonth(cutoffDate.getMonth() - 2);
+            cutoffDate.setDate(cutoffDate.getMonth() - 14);
 
             const cutoff = cutoffDate.toISOString();
 
@@ -804,7 +909,7 @@
 
             console.log("Two-month folder archive check finished.");
         }
-
+*/
         async function loadArchivedItems() {
             archiveItems = [];
 
@@ -910,7 +1015,7 @@
                 const hasArchivedPhotos = folderPhotos.some(
                     photo => photo.is_archived === true
                 );
-                if (folder.is_archived !== true && !booking) {
+                if (folder.is_archived !== true) {
                     continue;
                 }
 
@@ -946,10 +1051,7 @@
                         ? new Date(archivedAt).toLocaleTimeString()
                         : "",
                     photos: folderPhotos.filter(
-                        photo =>
-                            photo.is_archived === true ||
-                            folder.is_archived === true ||
-                            Boolean(booking)
+                        photo => photo.is_archived === true
                     )
                 });
             }

@@ -1011,6 +1011,61 @@
 
         incomeReportMonth.value = String(currentIncomeDate.getMonth() + 1);
         incomeReportYear.value = String(currentIncomeDate.getFullYear());
+        function formatDashboardBookingTimeRange(startTime, durationMinutes, explicitEndTime = null) {
+            if (!startTime) return "Not specified";
+
+            function formatTime(value) {
+                const parts = String(value).trim().split(":");
+                const hours = Number(parts[0]);
+                const minutes = Number(parts[1]);
+
+                if (
+                    !Number.isInteger(hours) ||
+                    !Number.isInteger(minutes) ||
+                    hours < 0 || hours > 23 ||
+                    minutes < 0 || minutes > 59
+                ) {
+                    return null;
+                }
+
+                const period = hours >= 12 ? "PM" : "AM";
+                const hour12 = hours % 12 || 12;
+
+                return `${hour12}:${String(minutes).padStart(2, "0")} ${period}`;
+            }
+
+            const formattedStart = formatTime(startTime);
+            if (!formattedStart) return "Not specified";
+
+            if (explicitEndTime) {
+                const formattedEnd = formatTime(explicitEndTime);
+                if (formattedEnd) {
+                    return `${formattedStart} – ${formattedEnd}`;
+                }
+            }
+
+            const duration = Number(durationMinutes);
+
+            if (!Number.isFinite(duration) || duration <= 0) {
+                return formattedStart;
+            }
+
+            const [hours, minutes] = String(startTime).split(":").map(Number);
+            const endTotalMinutes = hours * 60 + minutes + duration;
+
+            if (endTotalMinutes >= 1440) {
+                return formattedStart;
+            }
+
+            const endHours = Math.floor(endTotalMinutes / 60);
+            const endMinutes = endTotalMinutes % 60;
+
+            const endTime =
+                `${String(endHours).padStart(2, "0")}:` +
+                `${String(endMinutes).padStart(2, "0")}`;
+
+            return `${formattedStart} – ${formatTime(endTime)}`;
+        }
         const formatPHP = amount =>
             new Intl.NumberFormat("en-PH", {
                 style: "currency",
@@ -1297,10 +1352,9 @@
                         payment_status,
                         paid_at
                     `)
-                .eq("payment_required", true)
+
                 .eq("payment_confirmed", true)
                 .ilike("payment_status", "paid")
-                .gte("request_number", 2)
                 .not("paid_at", "is", null)
                 .order("paid_at", { ascending: true });
 
@@ -1333,7 +1387,10 @@
                 fetchAllIncomeRows(bookingQuery),
                 fetchAllIncomeRows(galleryQuery)
             ]);
-
+            console.table({
+                fetchedPaidGalleryRequests: galleryPayments.length,
+                assumedGalleryAccessFee: GALLERY_ACCESS_FEE
+            });
             const bookingRecords = [];
             const galleryRecords = [];
 
@@ -1365,19 +1422,22 @@
                     amount
                 });
             }
+            const countedGalleryRequests = new Set();
 
             for (const payment of galleryPayments) {
+                if (!payment.id || countedGalleryRequests.has(payment.id)) {
+                    continue;
+                }
+
                 if (
                     payment.payment_confirmed !== true ||
-                    String(payment.payment_status || "")
-                        .trim()
-                        .toLowerCase() !== "paid" ||
-                    payment.payment_required !== true ||
-                    Number(payment.request_number || 0) < 2 ||
+                    String(payment.payment_status || "").toLowerCase() !== "paid" ||
                     !payment.paid_at
                 ) {
                     continue;
                 }
+
+                countedGalleryRequests.add(payment.id);
 
                 galleryIncome += GALLERY_ACCESS_FEE;
 
@@ -1385,13 +1445,13 @@
                     id: payment.id,
                     date: payment.paid_at,
                     source: "Gallery Access",
-                    description:
-                        `Gallery access payment #${payment.request_number}`,
+                    description: `Gallery access payment #${payment.request_number}`,
                     status: "Paid",
                     amount: GALLERY_ACCESS_FEE
                 });
             }
 
+            const galleryCount = countedGalleryRequests.size;
             const roundMoney = amount =>
                 Math.round((amount + Number.EPSILON) * 100) / 100;
 
@@ -2375,9 +2435,7 @@
 
             await loadTotalPhotos();
             await loadTotalIncome();
-            await updateExpiredGalleryAccess();
-            await loadActiveSessions();
-            await loadExpiredFolderAccess();
+            await loadGalleryAccessStats();
 
             console.log("Dashboard stats loaded:", {
                 customers: customerCount || 0,
@@ -2389,102 +2447,103 @@
         let calendarInstance = null;
 
 
-        async function loadActiveSessions() {
-            console.log("Checking customers with active folder access...");
 
+        async function loadGalleryAccessStats() {
             const activeElement =
                 document.getElementById("activeSessions");
-
-            if (!activeElement) return;
-
-            const now = new Date().toISOString();
-
-            const { data: accessRecords, error } =
-                await supabaseClient
-                    .from("gallery_access_requests")
-                    .select(`
-                id,
-                repository_id,
-                status,
-                access_expires_at,
-                is_expired
-            `)
-                    .eq("status", "approved")
-                    .eq("is_expired", false)
-                    .not("repository_id", "is", null)
-                    .gt("access_expires_at", now);
-
-            if (error) {
-                console.error("Active folder access error:", error);
-                activeElement.textContent = "0";
-                return;
-            }
-
-            const uniqueFolders = new Set();
-
-            (accessRecords || []).forEach(record => {
-                if (record.repository_id) {
-                    uniqueFolders.add(String(record.repository_id));
-                }
-            });
-
-            activeElement.textContent =
-                uniqueFolders.size.toLocaleString();
-
-            console.log("ACTIVE FOLDER ACCESS:", uniqueFolders.size);
-        }
-
-
-        async function loadExpiredFolderAccess() {
-            console.log("Loading all expired gallery access records...");
 
             const expiredElement =
                 document.getElementById("expiredSessions");
 
-            if (!expiredElement) return;
+            if (!activeElement || !expiredElement) return;
 
-            const now = new Date();
+            activeElement.textContent = "Loading...";
+            expiredElement.textContent = "Loading...";
 
-            const { data: accessRecords, error } =
-                await supabaseClient
-                    .from("gallery_access_requests")
-                    .select(`
-                id,
-                status,
-                is_expired,
-                access_expires_at,
-                expires_at
-            `);
-
-            if (error) {
-                console.error("Expired gallery access error:", error);
-                expiredElement.textContent = "Error";
-                return;
-            }
-
-            const expiredRecords = (accessRecords || []).filter(access => {
-                const accessExpiresAt = access.access_expires_at
-                    ? new Date(access.access_expires_at)
-                    : null;
-
-                const expiresAt = access.expires_at
-                    ? new Date(access.expires_at)
-                    : null;
-
-                const timestampExpired =
-                    (accessExpiresAt &&
-                        !isNaN(accessExpiresAt.getTime()) &&
-                        accessExpiresAt <= now) ||
-                    (expiresAt &&
-                        !isNaN(expiresAt.getTime()) &&
-                        expiresAt <= now);
-
-                return (
-                    access.is_expired === true ||
-                    String(access.status || "").toLowerCase() === "expired" ||
-                    timestampExpired
+            try {
+                const records = await fetchAllIncomeRows(
+                    supabaseClient
+                        .from("gallery_access_requests")
+                        .select(`
+                    id,
+                    repository_id,
+                    status,
+                    is_expired,
+                    access_expires_at,
+                    expires_at
+                `)
+                        .order("id", { ascending: true })
                 );
-            });
+
+                const now = Date.now();
+                const folders = new Map();
+
+                records.forEach(record => {
+                    if (!record.repository_id) return;
+
+                    const key = String(record.repository_id);
+                    const status = String(record.status || "")
+                        .trim().toLowerCase();
+
+                    const expiryValue =
+                        record.access_expires_at || record.expires_at;
+
+                    const expiry = expiryValue
+                        ? new Date(expiryValue).getTime()
+                        : NaN;
+
+                    const hasValidExpiry = Number.isFinite(expiry);
+
+                    const isActive =
+                        status === "approved" &&
+                        record.is_expired !== true &&
+                        hasValidExpiry &&
+                        expiry > now;
+
+                    const isExpired =
+                        record.is_expired === true ||
+                        status === "expired" ||
+                        (hasValidExpiry && expiry <= now);
+
+                    const current = folders.get(key) || {
+                        active: false,
+                        expired: false
+                    };
+
+                    current.active ||= isActive;
+                    current.expired ||= isExpired;
+
+                    folders.set(key, current);
+                });
+
+                let activeCount = 0;
+                let expiredCount = 0;
+
+                folders.forEach(folder => {
+                    if (folder.active) {
+                        activeCount++;
+                    } else if (folder.expired) {
+                        expiredCount++;
+                    }
+                });
+
+                activeElement.textContent =
+                    activeCount.toLocaleString("en-PH");
+
+                expiredElement.textContent =
+                    expiredCount.toLocaleString("en-PH");
+
+                console.log("Gallery access statistics:", {
+                    totalRequestRecords: records.length,
+                    activeFolders: activeCount,
+                    expiredFolders: expiredCount
+                });
+
+            } catch (error) {
+                console.error("Gallery access stats error:", error);
+                activeElement.textContent = "Error";
+                expiredElement.textContent = "Error";
+            }
         }
 
 
@@ -2756,32 +2815,85 @@
 
         async function loadBookingCalendar() {
 
+            let data = [];
 
-            const {
-                data,
-                error
-            } = await supabaseClient
-                .from("bookings")
-                .select("*")
-                .in("status", ["Confirmed", "Completed"])
-                .order("booking_date", {
-                    ascending: true
-                })
-                .order("booking_time", {
-                    ascending: true
-                });
+            try {
+                const pageSize = 1000;
+                let offset = 0;
 
-            if (error) {
+                while (true) {
+                    const { data: page, error } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .order("booking_date", { ascending: true })
+                        .order("booking_time", { ascending: true })
+                        .order("id", { ascending: true })
+                        .range(offset, offset + pageSize - 1);
 
-                console.error(
-                    "Calendar booking load error:",
-                    error
-                );
+                    if (error) throw error;
 
+                    data.push(...(page || []));
+
+                    if (!page || page.length < pageSize) break;
+
+                    offset += pageSize;
+                }
+            } catch (error) {
+                console.error("Calendar booking load error:", error);
                 return;
             }
+            function formatNotificationSession(value) {
+                if (!value) return "Not specified";
 
+                if (String(value).toLowerCase() === "studio_rental") {
+                    return "Studio Rental";
+                }
 
+                return String(value)
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, letter => letter.toUpperCase());
+            }
+
+            function formatNotificationItems(value) {
+                if (!value) return "None";
+
+                let items = value;
+
+                if (typeof items === "string") {
+                    try {
+                        items = JSON.parse(items);
+                    } catch {
+                        return items;
+                    }
+                }
+
+                if (!Array.isArray(items)) {
+                    return typeof items === "object"
+                        ? Object.entries(items)
+                            .map(([key, val]) => `${key}: ${val}`)
+                            .join(", ")
+                        : String(items);
+                }
+
+                if (items.length === 0) return "None";
+
+                return items.map(item => {
+                    if (typeof item === "string") return item;
+
+                    const name =
+                        item.name ||
+                        item.label ||
+                        item.title ||
+                        item.id ||
+                        "Add-on";
+
+                    const quantity = Number(item.quantity);
+
+                    return Number.isFinite(quantity) && quantity > 0
+                        ? `${name} (x${quantity})`
+                        : name;
+                }).join(", ");
+            }
             function formatArrayValue(value) {
 
                 if (Array.isArray(value)) {
@@ -2827,7 +2939,16 @@
 
             }
 
+            const bookingCountsByDate = {};
 
+            data.forEach(booking => {
+                if (!booking.booking_date) return;
+
+                const date = booking.booking_date;
+
+                bookingCountsByDate[date] =
+                    (bookingCountsByDate[date] || 0) + 1;
+            });
             function formatCurrency(value) {
 
                 const amount =
@@ -2885,7 +3006,8 @@
                             booking.booking_time,
 
                         extendedProps: {
-
+                            status: booking.status,
+                            paymentStatus: booking.payment_status,
                             bookingId:
                                 booking.id,
 
@@ -2895,18 +3017,12 @@
                             contact:
                                 booking.contact_number,
 
-                            /*
-                             * PACKAGE
-                             */
                             package:
                                 booking.package ||
                                 booking.photo_package ||
                                 booking.photoPackage ||
                                 "Not specified",
 
-                            /*
-                             * SESSION TYPE
-                             */
                             session:
                                 booking.session_type ||
                                 "Not specified",
@@ -2915,10 +3031,13 @@
                                 booking.booking_date,
 
                             bookingTime:
-                                booking.booking_time,
+                                booking.rental_start_time || booking.booking_time,
 
                             duration:
-                                booking.booking_duration,
+                                booking.booking_duration || booking.rental_duration,
+
+                            rentalEndTime:
+                                booking.rental_end_time,
 
                             backdrop:
                                 booking.backdrops,
@@ -2950,7 +3069,20 @@
 
                 }
             );
-
+            const dailyCountEvents = Object.entries(
+                bookingCountsByDate
+            ).map(([date, count]) => ({
+                id: `daily-count-${date}`,
+                title: `${count} booking${count === 1 ? "" : "s"}`,
+                start: date,
+                allDay: true,
+                display: "list-item",
+                backgroundColor: "#639A88",
+                borderColor: "#639A88",
+                extendedProps: {
+                    isDailyCount: true
+                }
+            }));
             const blockedEvents = await getBlockedDateEvents();
 
             const events = [
@@ -3048,9 +3180,11 @@
                             document.getElementById(
                                 "modalTime"
                             ).textContent =
-                                props.bookingTime ||
-                                "Not specified";
-
+                                formatDashboardBookingTimeRange(
+                                    props.bookingTime,
+                                    props.duration,
+                                    props.rentalEndTime
+                                );
 
                             const duration =
                                 Number(
@@ -3124,10 +3258,24 @@
                                 "No notes provided.";
 
 
-                            document.getElementById(
-                                "modalStatus"
-                            ).textContent =
-                                props.status || "Unknown";
+                            const actualStatus = String(
+                                props.status ?? ""
+                            ).trim();
+
+                            const statusElement = document.getElementById("modalStatus");
+
+                            statusElement.textContent =
+                                actualStatus || "Status not recorded";
+
+                            statusElement.className = "booking-status";
+
+                            const statusClass = actualStatus
+                                .toLowerCase()
+                                .replace(/\s+/g, "-");
+
+                            if (statusClass) {
+                                statusElement.classList.add(statusClass);
+                            }
                             document
                                 .getElementById(
                                     "bookingModal"
@@ -3148,7 +3296,6 @@
 
             closeButton.onclick =
                 function () {
-
                     document
                         .getElementById(
                             "bookingModal"
@@ -3309,57 +3456,25 @@
                         bookingId:
                             booking.id,
 
-                        email:
-                            booking.email,
+                        status: booking.status || "Not specified",
 
-                        contact:
-                            booking.contact_number,
+                        paymentStatus: booking.payment_status || "Not specified",
 
-                        package:
-                            booking.package ||
-                            booking.photo_package ||
-                            booking.photoPackage ||
-                            "Not specified",
+                        duration: booking.booking_duration,
 
-                        session:
-                            booking.session_type ||
-                            "Not specified",
+                        backdrop: booking.backdrops,
 
-                        bookingDate:
-                            booking.booking_date,
+                        addons: booking.addons,
 
-                        bookingTime:
-                            booking.booking_time,
+                        paymentMethod: booking.payment_method,
 
-                        duration:
-                            booking.booking_duration,
+                        totalPrice: booking.total_price,
 
-                        backdrop:
-                            booking.backdrops,
+                        downpayment: booking.downpayment_amount,
 
-                        addons:
-                            booking.addons,
+                        remainingBalance: booking.remaining_balance,
 
-                        paymentMethod:
-                            booking.payment_method,
-
-                        totalPrice:
-                            totalPrice,
-
-                        downpayment:
-                            downpayment,
-
-                        remainingBalance:
-                            remainingBalance,
-
-                        paymentStatus:
-                            booking.payment_status,
-
-                        notes:
-                            booking.notes,
-
-                        status:
-                            booking.status
+                        notes: booking.notes
 
                     }
 
@@ -3667,13 +3782,6 @@
 
             let booking = notification.booking;
 
-
-            /*
-            ============================================================
-            REFRESH BOOKING FROM DATABASE
-            ============================================================
-            */
-
             try {
 
                 const {
@@ -3709,16 +3817,7 @@
                 );
 
             }
-
-
             selectedNotificationBooking = booking;
-
-
-            /*
-            ============================================================
-            HELPER FUNCTIONS
-            ============================================================
-            */
 
             function formatCurrency(value) {
 
@@ -3779,14 +3878,6 @@
                 return "None";
 
             }
-
-
-            /*
-            ============================================================
-            CUSTOMER INFORMATION
-            ============================================================
-            */
-
             document.getElementById(
                 "notificationBookingClient"
             ).textContent =
@@ -3808,11 +3899,6 @@
                 "Not provided";
 
 
-            /*
-            ============================================================
-            BOOKING STATUS
-            ============================================================
-            */
 
             const statusElement =
                 document.getElementById(
@@ -3865,44 +3951,48 @@
 
             }
 
-
-            /*
-            ============================================================
-            BOOKING INFORMATION
-            ============================================================
-            */
-
             document.getElementById(
                 "notificationBookingSession"
             ).textContent =
-                booking.session_type ||
-                "Not specified";
+                formatNotificationSession(booking.session_type);
 
 
             document.getElementById(
                 "notificationBookingDate"
             ).textContent =
-                booking.booking_date ||
-                "Not specified";
+                booking.booking_date
+                    ? new Date(
+                        `${String(booking.booking_date).slice(0, 10)}T00:00:00`
+                    ).toLocaleDateString("en-PH", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric"
+                    })
+                    : "Not specified";
+
+
+            const isStudioRental =
+                String(booking.booking_type || booking.session_type || "")
+                    .trim()
+                    .toLowerCase() === "studio_rental";
+
+            const duration = Number(
+                isStudioRental
+                    ? (booking.rental_duration || booking.booking_duration)
+                    : booking.booking_duration
+            ) || 0;
 
 
             document.getElementById(
                 "notificationBookingTime"
             ).textContent =
-                booking.booking_time ||
-                "Not specified";
-
-
-            /*
-            ============================================================
-            DURATION
-            ============================================================
-            */
-
-            const duration =
-                Number(
-                    booking.booking_duration
-                ) || 0;
+                formatDashboardBookingTimeRange(
+                    isStudioRental
+                        ? (booking.rental_start_time || booking.booking_time)
+                        : booking.booking_time,
+                    duration,
+                    isStudioRental ? booking.rental_end_time : null
+                );
 
 
             document.getElementById(
@@ -3913,39 +4003,20 @@
                     : "Not specified";
 
 
-            /*
-            ============================================================
-            BACKDROP
-            ============================================================
-            */
-
             document.getElementById(
                 "notificationBookingBackdrop"
             ).textContent =
-                formatArrayValue(
-                    booking.backdrops
-                );
+                formatNotificationItems(booking.backdrops);
 
-
-            /*
-            ============================================================
-            ADD-ONS
-            ============================================================
-            */
 
             document.getElementById(
                 "notificationBookingAddons"
             ).textContent =
-                formatArrayValue(
-                    booking.addons
+                formatNotificationItems(
+                    isStudioRental && booking.rental_addons
+                        ? booking.rental_addons
+                        : booking.addons
                 );
-
-
-            /*
-            ============================================================
-            PAYMENT INFORMATION
-            ============================================================
-            */
 
             document.getElementById(
                 "notificationBookingPaymentMethod"
@@ -4008,25 +4079,11 @@
                     remainingBalance
                 );
 
-
-            /*
-            ============================================================
-            PAYMENT STATUS
-            ============================================================
-            */
-
             document.getElementById(
                 "notificationBookingPaymentStatus"
             ).textContent =
                 booking.payment_status ||
                 "Pending";
-
-
-            /*
-            ============================================================
-            PAYMENT PROOF
-            ============================================================
-            */
 
             const proofElement =
                 document.getElementById(
@@ -4132,26 +4189,11 @@
                 }
 
             }
-
-
-            /*
-            ============================================================
-            CLIENT NOTES
-            ============================================================
-            */
-
             document.getElementById(
                 "notificationBookingNotes"
             ).textContent =
                 booking.notes ||
                 "No notes provided.";
-
-
-            /*
-            ============================================================
-            REJECTION REASON
-            ============================================================
-            */
 
             const rejectionSection =
                 document.getElementById(

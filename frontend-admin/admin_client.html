@@ -423,7 +423,54 @@
                 hour12: true
             });
         }
+        function formatBookingTimeRange(booking) {
+            const startTime =
+                booking.rental_start_time ||
+                booking.booking_time;
 
+            const duration = Number(
+                booking.booking_duration ||
+                booking.rental_duration ||
+                booking.duration ||
+                0
+            );
+
+            if (!startTime) return "-";
+
+            const formattedStart = formatBookingTime(startTime);
+
+            if (!Number.isFinite(duration) || duration <= 0) {
+                return formattedStart;
+            }
+
+            const [hours, minutes] = String(startTime)
+                .split(":")
+                .map(Number);
+
+            if (
+                !Number.isInteger(hours) ||
+                !Number.isInteger(minutes) ||
+                hours < 0 || hours > 23 ||
+                minutes < 0 || minutes > 59
+            ) {
+                return formattedStart;
+            }
+
+            const totalMinutes = hours * 60 + minutes + duration;
+
+            if (totalMinutes >= 1440) {
+                return formattedStart;
+            }
+
+            const endHours = Math.floor(totalMinutes / 60);
+            const endMinutes = totalMinutes % 60;
+
+            const endTime =
+                `${String(endHours).padStart(2, "0")}:` +
+                `${String(endMinutes).padStart(2, "0")}`;
+
+            return `${formattedStart} – ${formatBookingTime(endTime)}`;
+        }
         function getBookingPriority(bookingDate, status) {
             const normalizedStatus = String(status || "").trim().toLowerCase();
 
@@ -1143,11 +1190,7 @@
                             </strong>
 
                             <span>
-                                ${escapeHtml(
-                        formatBookingTime(
-                            booking.booking_time
-                        )
-                    )}
+                                $${escapeHtml(formatBookingTimeRange(booking))}
                             </span>
 
                         </div>
@@ -1265,6 +1308,96 @@
                 }
             )}`;
 
+        }
+        function formatRentalItems(items) {
+            if (!items) return "-";
+
+            let parsed = items;
+
+            if (typeof parsed === "string") {
+                try {
+                    parsed = JSON.parse(parsed);
+                } catch {
+                    return escapeHtml(parsed);
+                }
+            }
+
+            if (Array.isArray(parsed)) {
+                if (parsed.length === 0) return "None";
+
+                return parsed.map(item => {
+                    if (typeof item === "string") {
+                        return escapeHtml(item);
+                    }
+
+                    if (item && typeof item === "object") {
+                        const name =
+                            item.name ||
+                            item.label ||
+                            item.key ||
+                            item.id ||
+                            "Item";
+
+                        const quantity = Number(item.quantity);
+
+                        return escapeHtml(
+                            `${name}${Number.isFinite(quantity) && quantity > 0
+                                ? ` (x${quantity})`
+                                : ""}`
+                        );
+                    }
+
+                    return escapeHtml(String(item));
+                }).join(", ");
+            }
+
+            if (typeof parsed === "object") {
+                return Object.entries(parsed)
+                    .map(([key, value]) =>
+                        `${escapeHtml(key)}: ${escapeHtml(
+                            typeof value === "object"
+                                ? JSON.stringify(value)
+                                : String(value)
+                        )}`
+                    )
+                    .join(", ");
+            }
+
+            return escapeHtml(String(parsed));
+        }
+
+        function calculateRentalEndTime(startTime, durationMinutes) {
+            if (!startTime || !Number.isFinite(Number(durationMinutes))) {
+                return "-";
+            }
+
+            const parts = String(startTime).split(":");
+            const hours = Number(parts[0]);
+            const minutes = Number(parts[1]);
+            const duration = Number(durationMinutes);
+
+            if (
+                !Number.isInteger(hours) ||
+                !Number.isInteger(minutes) ||
+                hours < 0 || hours > 23 ||
+                minutes < 0 || minutes > 59 ||
+                duration <= 0
+            ) {
+                return "-";
+            }
+
+            const totalMinutes = hours * 60 + minutes + duration;
+
+            if (totalMinutes >= 1440) {
+                return "-";
+            }
+
+            const endHours = Math.floor(totalMinutes / 60);
+            const endMinutes = totalMinutes % 60;
+
+            return formatBookingTime(
+                `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`
+            );
         }
         function openBookingDetailsModal(bookingId) {
 
@@ -1437,16 +1570,12 @@
 
             <div class="booking-detail-item">
 
-                <span class="booking-detail-label">
+               <span class="booking-detail-label">
                     Booking Time
                 </span>
 
                 <span class="booking-detail-value">
-                    ${escapeHtml(
-                    formatBookingTime(
-                        booking.booking_time
-                    )
-                )}
+                    ${escapeHtml(formatBookingTimeRange(booking))}
                 </span>
 
             </div>
@@ -1491,8 +1620,8 @@
 
                 <span class="booking-detail-value">
                     ${escapeHtml(
-                    booking.duration
-                        ? `${booking.duration} minutes`
+                    (booking.booking_duration || booking.rental_duration || booking.duration)
+                        ? `${booking.booking_duration || booking.rental_duration || booking.duration} minutes`
                         : "-"
                 )}
                 </span>
@@ -1500,21 +1629,104 @@
             </div>
 
 
-            <div class="booking-detail-item">
+                    <div class="booking-detail-item">
 
-                <span class="booking-detail-label">
-                    Booking ID
-                </span>
+                        <span class="booking-detail-label">
+                            Booking ID
+                        </span>
 
-                <span class="booking-detail-value">
-                    ${escapeHtml(
+                        <span class="booking-detail-value">
+                            ${escapeHtml(
                     booking.id ||
                     "-"
                 )}
-                </span>
+                        </span>
 
-            </div>
+                    </div>
+                    ${String(booking.booking_type || booking.session_type || "")
+                        .trim()
+                        .toLowerCase() === "studio_rental"
+                        ? `
+     
 
+        <div class="booking-detail-item">
+            <span class="booking-detail-label">
+                Rental Rate
+            </span>
+            <span class="booking-detail-value">
+                ${booking.rental_rate != null
+                            ? formatCurrency(booking.rental_rate)
+                            : "-"}
+            </span>
+        </div>
+
+        ${booking.rental_addons &&
+                            (Array.isArray(booking.rental_addons)
+                                ? booking.rental_addons.length > 0
+                                : true)
+                            ? `
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Rental Add-ons
+                    </span>
+                    <span class="booking-detail-value">
+                        ${formatRentalItems(booking.rental_addons)}
+                    </span>
+                </div>
+            `
+                            : ""
+                        }
+
+        ${booking.backdrops &&
+                            (Array.isArray(booking.backdrops)
+                                ? booking.backdrops.length > 0
+                                : true)
+                            ? `
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Selected Backdrops
+                    </span>
+                    <span class="booking-detail-value">
+                        ${formatRentalItems(booking.backdrops)}
+                    </span>
+                </div>
+            `
+                            : ""
+                        }
+
+        ${booking.addons &&
+                            (Array.isArray(booking.addons)
+                                ? booking.addons.length > 0
+                                : true)
+                            ? `
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Additional Add-ons
+                    </span>
+                    <span class="booking-detail-value">
+                        ${formatRentalItems(booking.addons)}
+                    </span>
+                </div>
+            `
+                            : ""
+                        }
+
+        ${booking.paymongo_reference
+                            ? `
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Payment Reference
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(booking.paymongo_reference)}
+                    </span>
+                </div>
+            `
+                            : ""
+                        }
+    `
+                        : ""
+                    }
 
             ${booking.notes
                         ? `

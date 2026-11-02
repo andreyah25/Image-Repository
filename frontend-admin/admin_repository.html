@@ -395,9 +395,9 @@
                 }
 
                 item.innerHTML = `
-        <div class="notification-icon">
-            <i class="fa-regular fa-folder"></i>
-        </div>
+       <div class="notification-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
         <div class="notification-content">
             <h4>${escapeHTML(notification.title || "Notification")}</h4>
             <p class="notification-message">${escapeHTML(notification.message || "")}</p>
@@ -1056,63 +1056,83 @@
                 ];
 
                 card.innerHTML = `
-            <div class="repo-search-photo-image-wrapper">
-                ${photo.image_url
+    <div class="repo-search-photo-image-wrapper">
+
+        ${photo.is_archived ? `
+            <span class="archived-photo-badge">
+                <i class="fa-solid fa-box-archive"></i>
+                Archived
+            </span>
+        ` : ""}
+
+        ${photo.image_url
                         ? `
-                            <img
-                                class="repo-photo-image"
-                                src="${escapeHTML(photo.image_url)}"
-                                alt="${escapeHTML(photo.original_name || "Photo")}"
-                                loading="lazy"
-                            >
-                          `
-                        : `
-                            <div class="repo-search-empty">
-                                <i class="fa-regular fa-image"></i>
-                                <p>Image unavailable</p>
-                            </div>
-                          `
-                    }
-            </div>
-
-            <div class="repo-search-photo-info">
-                <p
-                    class="repo-search-photo-name"
-                    title="${escapeHTML(photo.original_name || "Unnamed photo")}"
+                <img
+                    class="repo-photo-image"
+                    src="${escapeHTML(photo.image_url)}"
+                    alt="${escapeHTML(photo.original_name || "Photo")}"
+                    loading="lazy"
                 >
-                    ${escapeHTML(photo.original_name || "Unnamed photo")}
-                </p>
+              `
+                        : `
+                <div class="repo-search-empty">
+                    <i class="fa-regular fa-image"></i>
+                    <p>Image unavailable</p>
+                </div>
+              `
+                    }
+    </div>
 
-                <p class="repo-search-photo-details">
-                    <i class="fa-solid fa-user"></i>
-                    ${escapeHTML(photo.client_name || "Unknown client")}
-                </p>
+    <div class="repo-search-photo-info">
 
-                <p class="repo-search-photo-details">
-                    <i class="fa-solid fa-camera"></i>
-                    ${escapeHTML(photo.session_type || "Unknown package")}
-                </p>
+        <p
+            class="repo-search-photo-name"
+            title="${escapeHTML(photo.original_name || "Unnamed photo")}"
+        >
+            ${escapeHTML(photo.original_name || "Unnamed photo")}
+        </p>
 
-                <div class="repo-search-photo-tags">
-                    ${labels.length
+        <p class="repo-search-photo-details">
+            <i class="fa-solid fa-user"></i>
+            ${escapeHTML(photo.client_name || "Unknown client")}
+        </p>
+
+        <p class="repo-search-photo-details">
+            <i class="fa-solid fa-camera"></i>
+            ${escapeHTML(photo.session_type || "Unknown package")}
+        </p>
+
+        <div class="repo-search-photo-tags">
+            ${labels.length
                         ? labels.map(label => `
-                                <span class="photo-tag">
-                                    ${escapeHTML(label)}
-                                </span>
-                            `).join("")
+                    <span class="photo-tag">
+                        ${escapeHTML(label)}
+                    </span>
+                `).join("")
                         : `<span class="photo-tag">No labels</span>`
                     }
-                </div>
-            </div>
-        `;
+        </div>
 
+    </div>
+`;
                 card.addEventListener("click", () => {
+
+                    // If archived, open Archives and locate this specific photo.
+                    if (photo.is_archived) {
+
+                        window.location.href =
+                            `/admin/archives?photo=${encodeURIComponent(photo.id)}`;
+
+                        return;
+                    }
+
+                    // If active, open the customer's repository folder.
                     if (!photo.booking_id) return;
 
                     window.location.href =
-                        `/admin/customer-folders?package=${encodeURIComponent(photo.session_type || "")
-                        }&booking=${encodeURIComponent(photo.booking_id)
-                        }`;
+                        `/admin/customer-folders?package=${encodeURIComponent(photo.session_type || "")}` +
+                        `&booking=${encodeURIComponent(photo.booking_id)}`;
+
                 });
 
                 gallery.appendChild(card);
@@ -1314,7 +1334,7 @@
 
             if (error) {
 
-                console.log(error);
+                // console.log(error);
 
                 return;
 
@@ -1422,23 +1442,21 @@
                 alert("Could not delete the photo. Please check your permissions.");
             }
         }
-        document
 
-            .getElementById("uploadPhotosActionOption")
+        const uploadPhotosActionOption =
+            document.getElementById("uploadPhotosActionOption");
 
-            .addEventListener("click", () => {
-
+        if (uploadPhotosActionOption) {
+            uploadPhotosActionOption.addEventListener("click", () => {
                 if (!selectedFolderId) {
-
                     alert("Please open a folder first.");
-
                     return;
-
                 }
 
                 document.getElementById("photoFilesUploader").click();
-
             });
+        }
+
         document
 
             .getElementById("photoFilesUploader")
@@ -1588,7 +1606,7 @@
                 // 1. Upload the original photo first.
                 const { error: uploadError } =
                     await supabaseClient.storage
-                        .from("repository-photos")
+                        .from("client-photos")
                         .upload(filePath, file, {
                             upsert: false,
                             contentType: file.type || "application/octet-stream"
@@ -1612,7 +1630,7 @@
 
                         const { error: compressedUploadError } =
                             await supabaseClient.storage
-                                .from("repository-photos")
+                                .from("client-photos")
                                 .upload(
                                     compressedStoragePath,
                                     result.blob,
@@ -1647,7 +1665,7 @@
                 // 3. Get the original public URL, as in your current code.
                 const { data: urlData } =
                     supabaseClient.storage
-                        .from("repository-photos")
+                        .from("client-photos")
                         .getPublicUrl(filePath);
 
                 // 4. Save the original and compression details.
@@ -1675,7 +1693,7 @@
 
                     const { error: cleanupError } =
                         await supabaseClient.storage
-                            .from("repository-photos")
+                            .from("client-photos")
                             .remove(pathsToRemove);
 
                     if (cleanupError) {
@@ -1700,61 +1718,6 @@
             await loadPhotos(selectedFolderId);
         }
 
-
-        /* async function uploadPhotos(e) {
- 
-             const files = e.target.files;
- 
-             if (!files.length) return;
- 
- 
-             for (const file of files) {
- 
-                 const filePath =
-                     `${currentUser.id}/${selectedFolderId}/${Date.now()}_${file.name}`;
- 
- 
-                 const { error: uploadError } =
-                     await supabaseClient.storage
-                         .from("repository-photos")
-                         .upload(filePath, file);
- 
- 
-                 if (uploadError) {
- 
-                     console.log(uploadError);
-                     continue;
- 
-                 }
- 
- 
-                 const { data: urlData } =
-                     supabaseClient.storage
-                         .from("repository-photos")
-                         .getPublicUrl(filePath);
- 
- 
- 
-                 await supabaseClient
-                     .from("photos")
-                     .insert([{
- 
-                         folder_id: selectedFolderId,
- 
-                         image_url: urlData.publicUrl,
- 
-                         file_name: file.name
- 
-                     }]);
- 
-             }
- 
- 
-             alert("Photos uploaded successfully.");
- 
-             loadPhotos(selectedFolderId);
- 
-         }*/
         function renderFolders(folders) {
             const view = document.getElementById("foldersView");
 
@@ -1795,10 +1758,9 @@
 
             });
         }
-
         document
             .getElementById("newEventForm")
-            .addEventListener("submit", async (e) => {
+            ?.addEventListener("submit", async (e) => {
 
                 e.preventDefault();
 
@@ -1849,42 +1811,54 @@
 
             });
 
+
+
         document.addEventListener("DOMContentLoaded", () => {
             const sidebar = document.querySelector(".sidebar");
-            const sidebarToggle = document.getElementById("sidebarToggle");
+            const toggle = document.getElementById("sidebarToggle");
 
-            if (sidebarToggle && sidebar) {
-                const icon = sidebarToggle.querySelector("i");
+            if (!sidebar || !toggle) return;
 
-                // 1. Restore saved collapsed state from localStorage on page load
-                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
-                if (isCollapsed) {
-                    sidebar.classList.add("collapsed");
-                    if (icon) {
-                        icon.classList.remove("fa-bars");
-                        icon.classList.add("fa-chevron-right");
-                    }
+            function updateSidebar(collapsed) {
+                sidebar.classList.toggle("collapsed", collapsed);
+
+                document.documentElement.classList.toggle(
+                    "sidebar-is-collapsed",
+                    collapsed
+                );
+
+                const icon = toggle.querySelector("i");
+
+                if (icon) {
+                    icon.classList.toggle("fa-chevron-right", collapsed);
+                    icon.classList.toggle("fa-bars", !collapsed);
                 }
 
-                // 2. Toggle state and save preference to localStorage on click
-                sidebarToggle.addEventListener("click", () => {
-                    sidebar.classList.toggle("collapsed");
-                    const collapsed = sidebar.classList.contains("collapsed");
-
-                    localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
-
-                    if (icon) {
-                        if (collapsed) {
-                            icon.classList.remove("fa-bars");
-                            icon.classList.add("fa-chevron-right");
-                        } else {
-                            icon.classList.remove("fa-chevron-right");
-                            icon.classList.add("fa-bars");
-                        }
-                    }
-                });
+                toggle.setAttribute("aria-expanded", String(!collapsed));
             }
+
+
+            // Match the state selected in Dashboard or another module
+            updateSidebar(
+                localStorage.getItem("sidebarCollapsed") === "true"
+            );
+
+            toggle.addEventListener("click", () => {
+                const collapsed = !sidebar.classList.contains("collapsed");
+
+                updateSidebar(collapsed);
+                localStorage.setItem("sidebarCollapsed", String(collapsed));
+            });
+
+            window.addEventListener("storage", (event) => {
+                if (event.key === "sidebarCollapsed") {
+                    updateSidebar(event.newValue === "true");
+                }
+            });
         });
+
+
+
     </script>
 </body>
 

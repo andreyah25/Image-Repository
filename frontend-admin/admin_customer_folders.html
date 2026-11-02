@@ -171,7 +171,7 @@
                     </div>
 
                 </div>
-            
+
                 <div id="uploadStatus" class="upload-status"></div>
 
                 <div class="repo-view-container" id="customerFolder">
@@ -443,7 +443,7 @@
         const logoutBtn =
             document.getElementById("logoutBtn");
 
-    
+
         let searchTimeout;
 
         window.addEventListener("load", async () => {
@@ -1130,7 +1130,7 @@
                 selectedRepository =
                     await getOrCreateRepository(
                         client
-            )
+                    )
 
                 selectedCustomerName.textContent =
                     client.full_name ||
@@ -1747,6 +1747,7 @@
 
         }
 
+
         function renderPhotos(photos) {
             photoGrid.innerHTML = "";
 
@@ -1765,6 +1766,55 @@
                 const card = document.createElement("div");
                 card.className = "customer-photo-card";
                 card.dataset.photoIndex = index;
+
+                const detectedObjects = Array.isArray(photo.detected_objects)
+                    ? photo.detected_objects
+                    : [];
+
+                const detectionHTML = detectedObjects.length
+                    ? detectedObjects.map(object => {
+                        const name = typeof object === "string"
+                            ? object
+                            : object?.name || "Unknown object";
+
+                        let confidence = null;
+
+                        if (typeof object?.confidence_percent === "number") {
+                            confidence = object.confidence_percent;
+                        } else if (typeof object?.confidence === "number") {
+                            confidence = object.confidence <= 1
+                                ? object.confidence * 100
+                                : object.confidence;
+                        }
+
+                        const confidenceText = confidence !== null &&
+                            Number.isFinite(confidence)
+                            ? `${Math.round(confidence)}%`
+                            : "N/A";
+
+                        return `
+                    <span style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 5px;
+                        padding: 5px 9px;
+                        margin: 3px 4px 3px 0;
+                        border-radius: 15px;
+                        background: #e8f3ef;
+                        color: #477d6b;
+                        font-size: 11px;
+                        font-weight: 600;
+                    ">
+                        ${escapeHTML(name)}
+                        <span style="color:#263f36;">
+                            ${confidenceText}
+                        </span>
+                    </span>
+                `;
+                    }).join("")
+                    : photo.processing_status === "completed"
+                        ? `<small style="color:#888;">No objects detected.</small>`
+                        : `<small style="color:#888;">Detection results not available yet.</small>`;
 
                 card.innerHTML = `
             <div class="photo-processing-badge">
@@ -1785,18 +1835,41 @@
                     ${escapeHTML(photo.processing_status || "Pending processing")}
                 </div>
 
-                <button type="button" class="delete-photo-btn" title="Delete photo" aria-label="Delete photo">
+                <div class="photo-detection-results" style="
+                    margin-top: 8px;
+                    line-height: 1.8;
+                ">
+                    <div style="
+                        font-size: 11px;
+                        font-weight: 700;
+                        color: #555;
+                        margin-bottom: 3px;
+                    ">
+                        AI DETECTION RESULTS
+                    </div>
+
+                    ${detectionHTML}
+                </div>
+
+                <button type="button" class="delete-photo-btn"
+                    title="Delete photo" aria-label="Delete photo">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
         `;
-                card.querySelector(".delete-photo-btn").addEventListener("click", async event => {
-                    event.stopPropagation();
-                    await deletePhoto(photo);
-                });
+
+                card.querySelector(".delete-photo-btn").addEventListener(
+                    "click",
+                    async event => {
+                        event.stopPropagation();
+                        await deletePhoto(photo);
+                    }
+                );
+
                 photoGrid.appendChild(card);
             });
         }
+
         async function deletePhoto(photo) {
             if (!photo?.id || !selectedRepository?.id) {
                 alert("Unable to identify this photo.");

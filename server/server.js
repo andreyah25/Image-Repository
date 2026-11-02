@@ -4485,7 +4485,15 @@ if (paymentInsertError) {
     throw paymentInsertError;
 }
         }
+const bookingTypeLabel =
+    booking.session_type === "studio_rental"
+        ? "Studio Rental"
+        : booking.session_type;
 
+const bookingDurationLabel =
+    booking.booking_duration
+        ? `${booking.booking_duration} minutes`
+        : "Not specified";
         const peso = amount =>
             Number(amount || 0).toLocaleString("en-PH", {
                 minimumFractionDigits: 2,
@@ -4503,7 +4511,8 @@ if (paymentInsertError) {
                         `${booking.full_name} submitted a booking and paid the downpayment.\n\n` +
                         `Date: ${booking.booking_date}\n` +
                         `Time: ${booking.booking_time}\n` +
-                        `Session: ${booking.session_type}\n` +
+                       `Session: ${bookingTypeLabel}\n` +
+                        `Duration: ${bookingDurationLabel}\n` +
                         `Total: ₱${peso(booking.total_price)}\n` +
                         `Downpayment Paid: ₱${peso(booking.downpayment_amount)}\n` +
                         `Remaining Balance: ₱${peso(booking.remaining_balance)}\n` +
@@ -4518,7 +4527,7 @@ if (paymentInsertError) {
         }
 
         // Send the admin email only if it has not already been sent.
-        if (bookingCreatedNow && !checkout.admin_email_sent) {
+       if (booking && !checkout.admin_email_sent) {
             if (!resend || !RESEND_FROM_EMAIL || !ADMIN_NOTIFICATION_EMAIL) {
                 console.error(
                     "Admin email not sent: configure RESEND_API_KEY, RESEND_FROM_EMAIL and ADMIN_NOTIFICATION_EMAIL."
@@ -4538,7 +4547,8 @@ if (paymentInsertError) {
                                 <p><strong>Contact:</strong> ${escapeHtml(booking.contact_number || "")}</p>
                                 <p><strong>Date:</strong> ${escapeHtml(booking.booking_date || "")}</p>
                                 <p><strong>Time:</strong> ${escapeHtml(booking.booking_time || "")}</p>
-                                <p><strong>Session:</strong> ${escapeHtml(booking.session_type || "")}</p>
+                                <p><strong>Session:</strong> ${escapeHtml(bookingTypeLabel || "")}</p>
+                                <p><strong>Duration:</strong> ${escapeHtml(bookingDurationLabel || "")}</p>
                                 <p><strong>Total:</strong> ₱${peso(booking.total_price)}</p>
                                 <p><strong>Downpayment PAID:</strong> ₱${peso(booking.downpayment_amount)}</p>
                                 <p><strong>Remaining balance:</strong> ₱${peso(booking.remaining_balance)}</p>
