@@ -1853,3 +1853,65 @@ select[name="package_id"],
 .summary-row.highlight-row strong {
     color: #8B718E;
 }
+
+/* =========================================
+   PAID BOOKING CONFIRMATION LAYOUT
+   DESKTOP AND MOBILE
+========================================= */
+
+#paidBookingPanel {
+    width: 100%;
+    max-width: 100%;
+    margin: 20px auto !important;
+    padding: 25px !important;
+    box-sizing: border-box;
+}
+
+#paidBookingHeading,
+#paidBookingMessage {
+    text-align: center;
+}
+
+#paidBookingMessage {
+    margin: 12px auto 25px;
+    line-height: 1.6;
+}
+
+#paidBookingDetails {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+#paidBookingDetails > p {
+    min-width: 0;
+    margin: 0;
+    padding: 15px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background: #ffffff;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+#paidBookingDetails > p strong {
+    color: #8B718E;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    #paidBookingPanel {
+        padding: 15px !important;
+    }
+
+    #paidBookingDetails {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    #paidBookingDetails > p {
+        padding: 12px;
+    }
+}
