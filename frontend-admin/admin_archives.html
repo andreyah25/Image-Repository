@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/design/admin_dashboard.css">
-    <link rel="stylesheet" href="/design/admin_client_list.css">
     <link rel="stylesheet" href="/design/admin_repository.css">
     <link rel="stylesheet" href="/design/admin_archives.css?v=1.4">
 </head>
@@ -453,11 +452,7 @@
 
         });
         async function runArchiveAndCompression(session) {
-            // Archive completed bookings after 14 days.
             await archiveCompletedBookings();
-
-            // Permanently delete archived records after 45 days.
-            await purgeExpiredArchives();
         }
         async function restoreArchiveItem(item) {
             const restorePhotos = async (repositoryId) => {
@@ -471,43 +466,63 @@
 
                 if (error) throw error;
             };
-
             const restoreFolder = async (folderId) => {
-                const { data: folder, error: fetchError } = await supabaseClient
-                    .from("repository_client_links")
-                    .select("id, booking_id")
-                    .eq("id", folderId)
-                    .single();
+                const { data: folder, error: fetchError } =
+                    await supabaseClient
+                        .from("repository_client_links")
+                        .select("id, booking_id")
+                        .eq("id", folderId)
+                        .single();
 
                 if (fetchError) throw fetchError;
 
-                // Restore the folder itself.
-                const { error: folderError } = await supabaseClient
-                    .from("repository_client_links")
-                    .update({
-                        is_archived: false,
-                        archived_at: null
-                    })
-                    .eq("id", folderId);
+                const restoredAt = new Date().toISOString();
+
+                const { error: folderError } =
+                    await supabaseClient
+                        .from("repository_client_links")
+                        .update({
+                            is_archived: false,
+                            archived_at: null,
+                            restored_at: restoredAt
+                        })
+                        .eq("id", folderId);
 
                 if (folderError) throw folderError;
 
-                // Restore all photos belonging to the folder.
-                await restorePhotos(folderId);
-
-                // If its booking was archived, restore it so the folder
-                // can appear again in the active Repository.
-                if (folder.booking_id) {
-                    const { error: bookingError } = await supabaseClient
-                        .from("bookings")
+                const { error: photoError } =
+                    await supabaseClient
+                        .from("repository_photos")
                         .update({
                             is_archived: false,
                             archived_at: null
                         })
-                        .eq("id", folder.booking_id);
+                        .eq("repository_id", folderId);
+
+                if (photoError) throw photoError;
+
+                // Restore the associated customer booking.
+                if (folder.booking_id) {
+                    const { error: bookingError } =
+                        await supabaseClient
+                            .from("bookings")
+                            .update({
+                                is_archived: false,
+                                archived_at: null
+                            })
+                            .eq("id", folder.booking_id);
 
                     if (bookingError) throw bookingError;
                 }
+
+                console.log("Folder restored:", {
+                    folderId,
+                    restoredAt,
+                    nextArchiveAt: new Date(
+                        Date.parse(restoredAt) +
+                        14 * 24 * 60 * 60 * 1000
+                    ).toISOString()
+                });
             };
 
             if (item.category === "folder") {
@@ -516,42 +531,24 @@
                 return;
             }
 
-            if (item.category === "customer") {
-                // Restore the booking.
-                const { error: bookingError } = await supabaseClient
-                    .from("bookings")
-                    .update({
-                        is_archived: false,
-                        archived_at: null
-                    })
-                    .eq("id", item.id);
+            const restoredAt = new Date().toISOString();
 
-                if (bookingError) throw bookingError;
-
-                // Restore all folders and photos belonging to the booking.
-                const { data: folders, error: folderError } = await supabaseClient
-                    .from("repository_client_links")
-                    .select("id")
-                    .eq("booking_id", item.id);
-
-                if (folderError) throw folderError;
-
-                for (const folder of folders || []) {
-                    const { error: restoreFolderError } = await supabaseClient
+            for (const folder of folders || []) {
+                const { error: restoreFolderError } =
+                    await supabaseClient
                         .from("repository_client_links")
                         .update({
                             is_archived: false,
-                            archived_at: null
+                            archived_at: null,
+                            restored_at: restoredAt
                         })
                         .eq("id", folder.id);
 
-                    if (restoreFolderError) throw restoreFolderError;
-
-                    await restorePhotos(folder.id);
+                if (restoreFolderError) {
+                    throw restoreFolderError;
                 }
 
-                alert("Customer, folders, and original photos have been restored.");
-                return;
+                await restorePhotos(folder.id);
             }
 
             if (item.category === "photo") {
@@ -773,47 +770,80 @@
         }
 
         async function archiveCompletedBookings() {
-            const cutoffTimestamp = new Date(
-                Date.now() - 14 * 24 * 60 * 60 * 1000
-            ).toISOString();
+            const now = Date.now();
+            const DAY = 24 * 60 * 60 * 1000;
 
-            // Only bookings completed at least 14 days ago.
-            const { data: bookings, error } = await supabaseClient
-                .from("bookings")
-                .select("id, full_name, completed_at, status, is_archived")
-                .eq("status", "Completed")
-                .eq("is_archived", false)
-                .not("completed_at", "is", null)
-                .lte("completed_at", cutoffTimestamp);
+            // Only completed bookings are eligible.
+            const { data: bookings, error: bookingsError } =
+                await supabaseClient
+                    .from("bookings")
+                    .select("id, full_name, completed_at, status")
+                    .eq("status", "Completed")
+                    .not("completed_at", "is", null);
 
-            if (error) throw error;
+            if (bookingsError) throw bookingsError;
 
             for (const booking of bookings || []) {
-                const archiveTime = new Date().toISOString();
-
-                // Find only the folders belonging to this booking.
-                const { data: folders, error: folderError } =
+                const { data: folders, error: foldersError } =
                     await supabaseClient
                         .from("repository_client_links")
-                        .select("id")
+                        .select(
+                            "id, booking_id, is_archived, archived_at, restored_at"
+                        )
                         .eq("booking_id", booking.id);
 
-                if (folderError) throw folderError;
+                if (foldersError) throw foldersError;
 
-                // Archive the customer's photos and folders.
-                for (const folder of folders || []) {
-                    const { error: photoError } = await supabaseClient
-                        .from("repository_photos")
-                        .update({
-                            is_archived: true,
-                            archived_at: archiveTime
-                        })
-                        .eq("repository_id", folder.id)
-                        .eq("is_archived", false);
+                if (!folders?.length) {
+                    continue;
+                }
+
+                for (const folder of folders) {
+                    if (folder.is_archived === true) {
+                        continue;
+                    }
+
+                    const isRestored = Boolean(folder.restored_at);
+
+                    // First archive: 12 days after completion.
+                    // Re-archive: 14 days after latest restoration.
+                    const startDate = isRestored
+                        ? folder.restored_at
+                        : booking.completed_at;
+
+                    const requiredDays = isRestored ? 14 : 12;
+                    const startTime = new Date(startDate).getTime();
+
+                    if (!Number.isFinite(startTime)) {
+                        console.warn(
+                            "Invalid archive start date:",
+                            folder.id
+                        );
+                        continue;
+                    }
+
+                    const archiveDue = startTime + requiredDays * DAY;
+
+                    if (now < archiveDue) {
+                        continue;
+                    }
+
+                    const archiveTime = new Date().toISOString();
+
+                    // Archive all photos belonging to this folder.
+                    const { error: photoError } =
+                        await supabaseClient
+                            .from("repository_photos")
+                            .update({
+                                is_archived: true,
+                                archived_at: archiveTime
+                            })
+                            .eq("repository_id", folder.id);
 
                     if (photoError) throw photoError;
 
-                    const { error: folderArchiveError } =
+                    // Archive the folder.
+                    const { data: updatedFolders, error: folderError } =
                         await supabaseClient
                             .from("repository_client_links")
                             .update({
@@ -821,43 +851,62 @@
                                 archived_at: archiveTime
                             })
                             .eq("id", folder.id)
-                            .eq("is_archived", false);
+                            .eq("is_archived", false)
+                            .select("id");
 
-                    if (folderArchiveError) throw folderArchiveError;
+                    if (folderError) throw folderError;
+
+                    if (updatedFolders?.length) {
+                        console.log("Folder archived:", {
+                            customer: booking.full_name,
+                            folderId: folder.id,
+                            archiveType: isRestored
+                                ? "Re-archive after 14 days"
+                                : "First archive after 12 days",
+                            archivedAt: archiveTime
+                        });
+                    }
                 }
 
-                // Archive the completed booking itself.
-                const { data: updatedBookings, error: bookingError } =
+                // Check whether all customer folders are archived.
+                const { data: currentFolders, error: checkError } =
                     await supabaseClient
-                        .from("bookings")
-                        .update({
-                            is_archived: true,
-                            archived_at: archiveTime
-                        })
-                        .eq("id", booking.id)
-                        .eq("status", "Completed")
-                        .eq("is_archived", false)
-                        .lte("completed_at", cutoffTimestamp)
-                        .select("id");
+                        .from("repository_client_links")
+                        .select("id, is_archived, archived_at")
+                        .eq("booking_id", booking.id);
 
-                if (bookingError) throw bookingError;
+                if (checkError) throw checkError;
 
-                if (!updatedBookings?.length) {
-                    console.warn(
-                        "Booking was not archived; eligibility changed:",
-                        booking.id
+                const allArchived =
+                    currentFolders?.length > 0 &&
+                    currentFolders.every(
+                        folder => folder.is_archived === true
                     );
-                    continue;
+
+                if (allArchived) {
+                    const latestArchiveDate = currentFolders
+                        .map(folder => folder.archived_at)
+                        .filter(Boolean)
+                        .sort()
+                        .at(-1);
+
+                    const { error: bookingArchiveError } =
+                        await supabaseClient
+                            .from("bookings")
+                            .update({
+                                is_archived: true,
+                                archived_at: latestArchiveDate
+                            })
+                            .eq("id", booking.id);
+
+                    if (bookingArchiveError) {
+                        throw bookingArchiveError;
+                    }
                 }
-
-                console.log(
-                    "Archived completed booking:",
-                    booking.full_name,
-                    booking.id
-                );
             }
-        }
 
+            // console.log("Completed booking archive check finished.");
+        }
         /*async function archiveFoldersOlderThanTwoMonths() {
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getMonth() - 14);
@@ -910,13 +959,14 @@
             console.log("Two-month folder archive check finished.");
         }
 */
+
         async function loadArchivedItems() {
             archiveItems = [];
 
-            const { data: bookings, error: bookingsError } = await supabaseClient
-                .from("bookings")
-                .select("*")
-                .eq("is_archived", true);
+            const { data: bookings, error: bookingsError } =
+                await supabaseClient
+                    .from("bookings")
+                    .select("*");
 
             if (bookingsError) throw bookingsError;
 
@@ -980,10 +1030,13 @@
 
 
             for (const booking of bookings || []) {
+                if (booking.is_archived !== true) {
+                    continue;
+                }
+
                 const bookingFolders = (folders || []).filter(
                     folder => String(folder.booking_id) === String(booking.id)
                 );
-
                 archiveItems.push({
                     id: booking.id,
                     category: "customer",

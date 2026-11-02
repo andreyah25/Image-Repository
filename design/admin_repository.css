@@ -858,3 +858,30 @@ span.notification-badge,
         flex-direction: column;
     }
 }
+.archived-photo-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #fff1d6;
+    color: #956515;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Repository sidebar toggle click fix */
+#sidebarToggle {
+    position: fixed !important;
+    z-index: 10001 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+#sidebarToggle i {
+    pointer-events: none;
+}

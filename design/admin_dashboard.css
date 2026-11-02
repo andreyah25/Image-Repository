@@ -684,14 +684,17 @@ i.fa-brands,
 }
 
 .notification-booking-card {
-    width: 580px;
-    max-width: 92vw;
-    max-height: 85vh;
+    width: 1000px;
+    max-width: 120vh;
+    max-height: 90vh;
+
     display: flex;
     flex-direction: column;
+
     background: #ffffff;
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+
     overflow: hidden;
 }
 
@@ -777,10 +780,12 @@ i.fa-brands,
 ========================================= */
 
 .notification-booking-body {
-    padding: 20px 24px;
+    padding: 20px 30px;
     padding-top: 10px !important;
+
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    max-height: calc(85vh - 80px);
 }
 
 .notification-section-title {
@@ -1801,12 +1806,6 @@ i.fa-brands,
     width: 100% !important;
     box-sizing: border-box !important;
 }
-
-/* =========================================================
-   FULLCALENDAR FULL-WIDTH FIX (Removes Space Beside Saturday)
-========================================================= */
-
-/* Force FullCalendar container and table grids to expand 100% width */
 .fc,
 .fc .fc-scrollgrid,
 .fc .fc-scrollgrid-table,
@@ -1821,10 +1820,6 @@ i.fa-brands,
     width: 100% !important;
     table-layout: fixed !important;
 }
-
-/* =========================================================
-   CLIENT NOTES BOX STYLING (NOTIFICATION CARD UI)
-========================================================= */
 
 .notes-box,
 #modalNotes {
@@ -1859,7 +1854,7 @@ i.fa-brands,
 .modal-close {
     font-size: 16px;     /* Reduce this (e.g., 14px or 16px) to make the X smaller */
     width: 24px;         /* Restrain container size */
-    height: 24px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2619,5 +2614,17 @@ i.fa-brands,
 
     .blocked-date-actions button {
         flex: 1;
+    }
+}
+.notification-message {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    line-height: 1.6;
+}
+@media (max-width: 768px) {
+    .notification-booking-card {
+        width: 95%;
+        max-width: 100%;
+        max-height: 95vh;
     }
 }
