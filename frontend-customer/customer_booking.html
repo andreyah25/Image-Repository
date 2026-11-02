@@ -150,10 +150,46 @@
                                         <option value="pre_birthday">Pre-Birthday Shoot (7 yrs old & up) - ₱999</option>
                                         <option value="theme_holiday">Theme / Holiday (3 persons) - ₱1,699</option>
                                         <option value="maternity">Maternity Shoot - ₱999</option>
+                                        <option value="studio_rental">Studio Rental</option>
                                     </select>
+                                    <div id="studioRentalOptions" style="display:none; margin-top:15px;">
+
+                                        <div class="form-group">
+                                            <label for="rentalDay">Rental Day</label>
+                                            <select id="rentalDay" disabled>
+                                                <option value="">Select booking date first</option>
+                                                <option value="1">Monday</option>
+                                                <option value="2">Tuesday</option>
+                                                <option value="3">Wednesday</option>
+                                                <option value="4">Thursday</option>
+                                                <option value="5">Friday</option>
+                                                <option value="6">Saturday</option>
+                                                <option value="0">Sunday</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group" style="margin-top:15px;">
+                                            <label for="rentalDuration">Rental Duration</label>
+                                            <select id="rentalDuration">
+                                                <option value="">Select rental duration</option>
+                                                <option value="2">2 Hours</option>
+                                                <option value="3">3 Hours</option>
+                                                <option value="4">4 Hours</option>
+                                                <option value="5">5 Hours</option>
+                                                <option value="6">6 Hours</option>
+                                                <option value="12">12 Hours</option>
+                                            </select>
+                                        </div>
+
+                                        <small id="rentalRateMessage"
+                                            style="display:block; margin-top:10px; color:#639A88;">
+                                        </small>
+                                        <div id="studioRentalMobilePosition"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                         <div class="form-section">
                             <h3 class="section-title-form"
                                 style="font-size: 0.9rem !important; font-weight: 600 !important; color: #353535 !important; margin-bottom: 16px !important;">
@@ -198,20 +234,20 @@
                                 </h3>
 
                                 <span id="backdropRequirement" style="
-                font-size: 0.85rem;
-                color: #639A88;
-                font-weight: 600;
-            ">
+                                    font-size: 0.85rem;
+                                    color: #639A88;
+                                    font-weight: 600;
+                                ">
                                     Select a package or session first
                                 </span>
                             </div>
 
                             <p style="
-        margin-top: 5px;
-        margin-bottom: 18px;
-        color: #666;
-        font-size: 0.88rem;
-    ">
+                                margin-top: 5px;
+                                margin-bottom: 18px;
+                                color: #666;
+                                font-size: 0.88rem;
+                            ">
                                 Pick the backdrop color you would like for your photo session.
                             </p>
 
@@ -300,15 +336,29 @@
                             </div>
 
                             <small id="backdropMessage" style="
-            display:block;
-            margin-top:10px;
-            color:#666;
-            font-size:0.8rem;
-        ">
+                                display:block;
+                                margin-top:10px;
+                                color:#666;
+                                font-size:0.8rem;
+                            ">
                                 Please select a package or session first.
                             </small>
 
                         </div>
+
+                        <!-- STUDIO RENTAL BOOKING SUMMARY -->
+                        <div class="form-section" id="studioRentalSummarySection" style="display:none;">
+
+                            <h3 class="section-title-form">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                                Studio Rental Booking Summary
+                            </h3>
+
+                            <div id="rentalInclusionsSummary" class="studio-rental-summary">
+                            </div>
+
+                        </div>
+
                         <div class="form-section">
 
                             <div class="section-header-flex">
@@ -413,6 +463,7 @@
                         <button type="button" class="service-menu-btn" id="openAddOns">Add-Ons</button>
                         <button type="button" class="service-menu-btn" id="openPetGuidelines">Pet Guidelines</button>
                         <button type="button" class="service-menu-btn" id="openStudioRental">Studio Rental</button>
+                        <div id="studioRentalDesktopPosition"></div>
                     </div>
                 </aside>
             </div>
@@ -993,7 +1044,8 @@
             kids: 1,
             pre_birthday: 1,
             theme_holiday: 1,
-            maternity: 1
+            maternity: 1,
+            studio_rental: 2
         };
 
         function getSelectedAddons() {
@@ -1192,10 +1244,9 @@
                     .classList.remove("disabled");
 
             });
-
-
-
-
+            if (getSelectedService() === "studio_rental") {
+                updateStudioRental();
+            }
             if (selectedBackdrops.length >= requiredCount) {
 
                 backdropOptions.forEach(input => {
@@ -1214,24 +1265,23 @@
 
             }
         }
-
-
         function getSelectedDuration() {
-
             const selectedService = getSelectedService();
 
-            if (!selectedService) {
-                return 0;
+            if (!selectedService) return 0;
+
+            if (selectedService === "studio_rental") {
+                const hours = Number(
+                    document.getElementById("rentalDuration").value
+                );
+
+                return hours > 0 ? hours * 60 : 0;
             }
 
-            const baseDuration =
-                getPackageDuration(selectedService);
-
-            const selectedAddons =
-                getSelectedAddons();
-
-            const addonDuration =
-                getAddonDurationFromKeys(selectedAddons);
+            const baseDuration = getPackageDuration(selectedService);
+            const addonDuration = getAddonDurationFromKeys(
+                getSelectedAddons()
+            );
 
             return baseDuration + addonDuration;
         }
@@ -1323,6 +1373,8 @@
 
         const MAX_ADVANCE_BOOKING_YEARS = 2;
         const MAX_BOOKINGS_PER_DAY = 8;
+        const MAX_STUDIO_RENTALS_PER_DAY = 3;
+        const STUDIO_RENTAL_PREPARATION_MINUTES = 60;
         function getMaximumBookingDate() {
             const maxDate = new Date();
             maxDate.setHours(0, 0, 0, 0);
@@ -1380,6 +1432,199 @@
 
             dateInput.min = `${year}-${month}-${day}`;
             dateInput.max = getMaximumBookingDate();
+        }
+
+        function getStudioRentalPrice(dateString, hours, isHoliday = false) {
+            const duration = Number(hours);
+            const allowedHours = [2, 3, 4, 5, 6, 12];
+
+            if (!dateString || !allowedHours.includes(duration)) {
+                return 0;
+            }
+
+            const date = new Date(`${dateString}T00:00:00`);
+
+            if (Number.isNaN(date.getTime())) {
+                return 0;
+            }
+
+            const day = date.getDay();
+
+            const isWeekendOrHoliday =
+                day === 0 || day === 6 || isHoliday;
+
+            // Saturday, Sunday and holidays
+            if (isWeekendOrHoliday) {
+                return 4000 + Math.max(0, duration - 2) * 1500;
+            }
+
+            // Monday to Friday discounted packages
+            if (duration === 6) return 5400;
+            if (duration === 12) return 9600;
+
+            // Regular weekday rate
+            return 2500 + Math.max(0, duration - 2) * 800;
+        }
+
+
+        function updateStudioRental() {
+            const selected = getSelectedService();
+            const container = document.getElementById("studioRentalOptions");
+            const date = document.getElementById("bookingDate").value;
+            const daySelect = document.getElementById("rentalDay");
+            const durationSelect = document.getElementById("rentalDuration");
+            const message = document.getElementById("rentalRateMessage");
+            const summary = document.getElementById("rentalInclusionsSummary");
+            const summarySection =
+                document.getElementById("studioRentalSummarySection");
+
+            if (summarySection) {
+                summarySection.style.display =
+                    selected === "studio_rental" ? "block" : "none";
+            }
+            container.style.display =
+                selected === "studio_rental" ? "block" : "none";
+
+            if (selected !== "studio_rental") return;
+
+            const backdrops = getSelectedBackdrops();
+
+            if (!date) {
+                daySelect.value = "";
+                message.textContent = "Please select a rental date.";
+                return;
+            }
+
+            const day = new Date(date + "T00:00:00").getDay();
+            daySelect.value = String(day);
+
+            const hours = Number(durationSelect.value);
+
+            if (![2, 3, 4, 5, 6, 12].includes(hours)) {
+                message.textContent = "Please select a rental duration.";
+                return;
+            }
+
+            const price = getStudioRentalPrice(date, hours);
+            const weekend = day === 0 || day === 6;
+
+            const baseRate = weekend ? 4000 : 2500;
+            const additionalRate = weekend ? 1500 : 800;
+            const extraHours = hours - 2;
+
+            const regularTotal =
+                baseRate + extraHours * additionalRate;
+
+            const discount = Math.max(0, regularTotal - price);
+
+            packagePrices.studio_rental = price;
+            BOOKING_DURATIONS.studio_rental = hours * 60;
+
+            const safeBackdrops = backdrops.map(value =>
+                String(value).replace(/[&<>"']/g, character => ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                }[character]))
+            );
+
+            if (summary) {
+                summary.innerHTML = `
+            <h4 style="margin:0 0 14px; color:#345e50;">
+                Your Rental Details
+            </h4>
+
+            <p>Date: ${date}</p>
+            <p>Duration: ${hours} hours</p>
+
+            <p>First 2 hours:
+                ₱${baseRate.toLocaleString()}
+            </p>
+
+            <p>Additional hours:
+                ${extraHours} × ₱${additionalRate.toLocaleString()}
+            </p>
+
+            ${discount > 0
+                        ? `<p>Extended-hours discount:
+                     −₱${discount.toLocaleString()}</p>`
+                        : ""}
+
+           <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                padding:14px;
+                margin:16px 0;
+                background:#eaf4ee;
+                border-radius:8px;
+            ">
+                <span><strong>Rental Fee</strong></span>
+                <strong style="font-size:18px;">
+                    ₱${price.toLocaleString()}
+                </strong>
+            </div>
+
+            <hr>
+
+            <strong>Included Facilities</strong>
+            <ul>
+                <li>Maximum of 10 persons</li>
+                <li>Private dressing area and restroom</li>
+                <li>Fully air-conditioned studio</li>
+                <li>Wi-Fi and Bluetooth speaker</li>
+                <li>Natural lighting</li>
+                <li>Lighting equipment</li>
+                <li>Studio furniture</li>
+                <li>2 seamless backdrop papers</li>
+                <li>Parking spaces</li>
+            </ul>
+
+            <p><strong>Selected Backdrops:</strong>
+                ${safeBackdrops.length
+                        ? safeBackdrops.join(", ")
+                        : "Please select 2 backdrops"}
+            </p>
+
+            <p>Preparation gap between rentals: 1 hour</p>
+            <p><strong>Camera is not included.</strong></p>
+        `;
+            }
+
+            message.textContent =
+                `Rental fee: ₱${price.toLocaleString()} for ${hours} hours.`;
+
+            updateDownpaymentUI();
+        }
+
+        function positionStudioRentalSummary() {
+            const summary = document.getElementById(
+                "studioRentalSummarySection"
+            );
+
+            const desktopPosition = document.getElementById(
+                "studioRentalDesktopPosition"
+            );
+
+            const mobilePosition = document.getElementById(
+                "studioRentalMobilePosition"
+            );
+
+            if (!summary || !desktopPosition || !mobilePosition) {
+                return;
+            }
+
+            const isMobile = window.innerWidth <= 768;
+
+            const target = isMobile
+                ? mobilePosition
+                : desktopPosition;
+
+            if (summary.parentElement !== target) {
+                target.appendChild(summary);
+            }
         }
 
         async function loadAvailableTimeSlots() {
@@ -1512,7 +1757,7 @@
 
                 return;
             }
-
+            /*
             console.log("====================================");
             console.log("LOADING BOOKING AVAILABILITY");
             console.log("Date:", selectedDate);
@@ -1522,10 +1767,7 @@
                 BOOKING_PREPARATION_TIME
             );
             console.log("====================================");
-
-            // ---------------------------------------------------------
-            // CHECK PAST DATE
-            // ---------------------------------------------------------
+            */
 
             const selectedDateObject =
                 new Date(`${selectedDate}T00:00:00`);
@@ -1653,6 +1895,31 @@
                     return (hours * 60) + minutes;
                 }
 
+                const isStudioRental =
+                    getSelectedService() === "studio_rental";
+
+                const rentalCount = activeBookings.filter(
+                    booking => booking.session_type === "studio_rental"
+                ).length;
+
+                if (
+                    isStudioRental &&
+                    rentalCount >= MAX_STUDIO_RENTALS_PER_DAY
+                ) {
+                    timeSelect.innerHTML =
+                        '<option value="">Studio Rental fully booked</option>';
+
+                    timeSelect.disabled = true;
+
+                    if (message) {
+                        message.textContent =
+                            `All ${MAX_STUDIO_RENTALS_PER_DAY} Studio Rental bookings are taken for this date.`;
+
+                        message.style.color = "#dc2626";
+                    }
+
+                    return;
+                }
 
                 const existingBookingRanges =
                     activeBookings
@@ -1715,7 +1982,11 @@
 
                             const occupiedEnd =
                                 sessionEnd +
-                                BOOKING_PREPARATION_TIME;
+                                (
+                                    booking.session_type === "studio_rental"
+                                        ? STUDIO_RENTAL_PREPARATION_MINUTES
+                                        : BOOKING_PREPARATION_TIME
+                                );
 
                             return {
                                 start,
@@ -1730,9 +2001,7 @@
                             (a, b) =>
                                 a.start - b.start
                         );
-                console.log(
-                    "Existing booking ranges:"
-                );
+                //console.log("Existing booking ranges:");
 
                 console.table(
                     existingBookingRanges.map(range => ({
@@ -1756,68 +2025,45 @@
                     }))
                 );
 
+
+                const isFullDayRental =
+                    isStudioRental && requestedDuration === 720;
+
+                const openingMinutes = isStudioRental
+                    ? 8 * 60
+                    : BOOKING_START_MINUTES;
+
+                const closingMinutes = isStudioRental
+                    ? 20 * 60
+                    : BOOKING_END_MINUTES;
+
+                const requestedBuffer = isStudioRental
+                    ? STUDIO_RENTAL_PREPARATION_MINUTES
+                    : BOOKING_PREPARATION_TIME;
+
                 const availableTimes = [];
 
                 for (
-                    let candidateStart =
-                        BOOKING_START_MINUTES;
-
-                    candidateStart <=
-                    BOOKING_END_MINUTES;
-
-                    candidateStart +=
-                    BOOKING_INTERVAL
+                    let candidateStart = openingMinutes;
+                    candidateStart + requestedDuration <= closingMinutes;
+                    candidateStart += BOOKING_INTERVAL
                 ) {
-
-
-                    const candidateSessionEnd =
-                        candidateStart +
-                        requestedDuration;
-
-
-                    const candidateOccupiedEnd =
-                        candidateSessionEnd +
-                        BOOKING_PREPARATION_TIME;
-
-                    if (
-                        candidateOccupiedEnd >
-                        BOOKING_END_MINUTES
-                    ) {
+                    if (isFullDayRental && candidateStart !== 8 * 60) {
                         continue;
                     }
 
-                    let conflict = false;
+                    const candidateSessionEnd =
+                        candidateStart + requestedDuration;
 
-                    for (
-                        const existing
-                        of existingBookingRanges
-                    ) {
+                    const candidateOccupiedEnd =
+                        candidateSessionEnd + requestedBuffer;
 
-
-                        const overlaps =
-                            candidateStart <
-                            existing.occupiedEnd
-                            &&
-                            candidateOccupiedEnd >
-                            existing.start;
-
-                        if (overlaps) {
-
-                            conflict = true;
-
-                            break;
-                        }
-
-                        if (
-                            existing.start >
-                            candidateOccupiedEnd
-                        ) {
-                            break;
-                        }
-                    }
+                    const conflict = existingBookingRanges.some(existing =>
+                        candidateStart < existing.occupiedEnd &&
+                        candidateOccupiedEnd > existing.start
+                    );
 
                     if (!conflict) {
-
                         availableTimes.push({
                             start: candidateStart,
                             end: candidateSessionEnd
@@ -1884,41 +2130,66 @@
 
                 timeSelect.disabled = false;
 
+                const remainingBookings = isStudioRental
+                    ? Math.max(0, MAX_STUDIO_RENTALS_PER_DAY - rentalCount)
+                    : Math.max(0, MAX_BOOKINGS_PER_DAY - activeBookings.length);
+
+                const dailyLimit = isStudioRental
+                    ? MAX_STUDIO_RENTALS_PER_DAY
+                    : MAX_BOOKINGS_PER_DAY;
                 if (message) {
+                    if (remainingBookings === 0) {
+                        message.textContent = isStudioRental
+                            ? `${remainingBookings} of ${dailyLimit} Studio Rental bookings remaining. ` +
+                            `Your rental lasts ${requestedDuration / 60} hours. ` +
+                            `A 1-hour preparation gap is required between rentals. ` +
+                            `Only available start times are shown.`
+                            : `${remainingBookings} of ${dailyLimit} bookings remaining for this date.`;
 
-                    message.textContent =
-                        `${availableTimes.length} available time with a ${requestedDuration}-minute session. ` +
-                        `A ${BOOKING_PREPARATION_TIME}-minute for choosing their best photos`;
+                        message.style.color = "#639A88";
+
+                        timeSelect.disabled = true;
+                        timeSelect.innerHTML =
+                            '<option value="">Fully booked</option>';
+                    } else {
+                        const isRental = getSelectedService() === "studio_rental";
+
+                        message.textContent =
+                            `${remainingBookings} of ${MAX_BOOKINGS_PER_DAY} bookings remaining for this date. ` +
+                            (isRental
+                                ? `Your studio rental lasts ${requestedDuration / 60} hours. `
+                                : `Your selected session lasts ${requestedDuration} minutes. ` +
+                                `An additional ${BOOKING_PREPARATION_TIME} minutes is reserved between bookings for studio preparation. `) +
+                            `Please choose an available time above.`;
+
+                        message.style.color = "#639A88";
+                    }
                 }
-
-                console.log(
-                    "===================================="
-                );
-
+                /*
                 console.log(
                     "AVAILABILITY RESULT"
                 );
-
+ 
                 console.log(
                     "Date:",
                     selectedDate
                 );
-
+ 
                 console.log(
                     "Existing bookings:",
                     activeBookings.length
                 );
-
+ 
                 console.log(
                     "Requested duration:",
                     requestedDuration
                 );
-
+ 
                 console.log(
                     "Buffer:",
                     BOOKING_PREPARATION_TIME
                 );
-
+ 
                 console.log(
                     "Available ranges:",
                     availableTimes.map(slot => ({
@@ -1926,10 +2197,11 @@
                         end: minutesToTime(slot.end)
                     }))
                 );
-
+ 
                 console.log(
                     "===================================="
                 );
+                */
 
             } catch (error) {
 
@@ -1939,10 +2211,10 @@
                 );
 
                 timeSelect.innerHTML = `
-            <option value="">
-                Unable to load available times
-            </option>
-        `;
+                    <option value="">
+                        Unable to load available times
+                    </option>
+                `;
 
                 timeSelect.disabled = true;
 
@@ -1951,24 +2223,25 @@
                         "An unexpected error occurred while checking availability.";
                 }
             }
-        }
-        function getCalculatedDownpayment() {
-            const photoPackageSelect = document.getElementById("photoPackage");
-            const sessionTypeSelect = document.getElementById("sessionType");
+        } function getCalculatedDownpayment() {
+            const selectedKey = getSelectedService();
 
-            // Get selected value from whichever dropdown is currently chosen
-            const selectedKey = sessionTypeSelect.value || photoPackageSelect.value;
+            let packageTotal = 0;
 
-            // Fetch package price from object map
-            const packageTotal = packagePrices[selectedKey] || 0;
+            if (selectedKey === "studio_rental") {
+                const date = document.getElementById("bookingDate").value;
+                const hours = Number(
+                    document.getElementById("rentalDuration").value
+                );
 
-            // Fetch add-ons price total
+                packageTotal = getStudioRentalPrice(date, hours);
+            } else {
+                packageTotal = packagePrices[selectedKey] || 0;
+            }
+
             const addonTotal = getSelectedAddonTotal();
-
-            // Calculate total price
             const totalPrice = packageTotal + addonTotal;
 
-            // Fixed ₱1 reservation fee
             const FIXED_RESERVATION_FEE = 1;
 
             return {
@@ -2034,7 +2307,12 @@
             const emailInput = document.getElementById("emailAddress");
             const nameInput = document.getElementById("fullName");
             const contactInput = document.getElementById("contactNumber");
+            positionStudioRentalSummary();
 
+            window.addEventListener(
+                "resize",
+                positionStudioRentalSummary
+            );
             if (emailInput) emailInput.readOnly = false;
             if (nameInput) nameInput.readOnly = false;
             if (contactInput) contactInput.readOnly = false;
@@ -2140,22 +2418,6 @@
                 photoPackageSelect.addEventListener("change", async function () {
                     if (this.value && sessionTypeSelect) {
                         sessionTypeSelect.value = "";
-                    }
-
-                    updateDownpaymentUI();
-                    updateBackdropUI();
-
-                    if (bookingDate && bookingDate.value) {
-                        await loadAvailableTimeSlots();
-                    }
-                });
-            }
-
-            // Update available booking options when session type changes
-            if (sessionTypeSelect) {
-                sessionTypeSelect.addEventListener("change", async function () {
-                    if (this.value && photoPackageSelect) {
-                        photoPackageSelect.value = "";
                     }
 
                     updateDownpaymentUI();
@@ -2330,7 +2592,8 @@
                     "Theme / Holiday": "theme_holiday",
 
                     "Maternity": "maternity",
-                    "Maternity Shoot": "maternity"
+                    "Maternity Shoot": "maternity",
+                    "studio rental": "studio_rental"
 
                 };
 
@@ -2348,17 +2611,18 @@
                     "kids",
                     "pre_birthday",
                     "theme_holiday",
-                    "maternity"
+                    "maternity",
+                    "studio_rental"
                 ];
 
                 photoPackageSelect.innerHTML = `
-            <option value="">Select a photo package</option>
-        `;
-
+                    <option value="">Select a photo package</option>
+                `;
                 if (sessionTypeSelect) {
                     sessionTypeSelect.innerHTML = `
-                <option value="">Select a session type</option>
-            `;
+                    <option value="">Select a session type</option>
+                    <option value="studio_rental">Studio Rental</option>
+                `;
                 }
 
                 (availablePackages || []).forEach(packageItem => {
@@ -2440,7 +2704,7 @@
                 updateDownpaymentUI();
                 updateBackdropUI();
 
-                console.log("Available packages:", packages);
+                //console.log("Available packages:", packages);
 
             } catch (error) {
                 console.error("Failed to load packages:", error);
@@ -2539,10 +2803,7 @@
 
                 updateBackdropUI();
 
-                console.log(
-                    "Available backdrops:",
-                    backdrops
-                );
+                //console.log("Available backdrops:", backdrops);
 
             } catch (error) {
                 console.error(
@@ -2608,10 +2869,10 @@
             if (error) {
                 console.error("Load available add-ons error:", error);
                 container.innerHTML = `
-            <p class="addon-error">
-                Unable to load add-ons. Please refresh the page.
-            </p>
-        `;
+                    <p class="addon-error">
+                        Unable to load add-ons. Please refresh the page.
+                    </p>
+                `;
                 return;
             }
 
@@ -2677,7 +2938,7 @@
 
             updateDownpaymentUI();
 
-            console.log("Loaded available add-ons:", availableAddons);
+            //console.log("Loaded available add-ons:", availableAddons);
         }
 
         function renderAddonsModal(addons) {
@@ -2802,6 +3063,8 @@
 
                             return;
                         }
+                        updateStudioRental();
+                        updateDownpaymentUI();
                         await loadAvailableTimeSlots();
 
                     }
@@ -2840,18 +3103,29 @@
                             photoPackageSelect.value = "";
                         }
 
-                        updateDownpaymentUI();
+                        // ADD THIS
+                        updateStudioRental();
 
+                        updateDownpaymentUI();
                         updateBackdropUI();
                         updateBookingDateLimits();
+
                         if (bookingDate.value) {
                             await loadAvailableTimeSlots();
                         }
-
                     }
                 );
             }
+            const rentalDurationSelect =
+                document.getElementById("rentalDuration");
 
+            if (rentalDurationSelect) {
+                rentalDurationSelect.addEventListener("change", async function () {
+                    updateStudioRental();
+                    updateDownpaymentUI();
+                    await loadAvailableTimeSlots();
+                });
+            }
             function bindModal(openBtnId, modalId, closeBtnId) {
 
                 const modal = document.getElementById(modalId);
@@ -3306,7 +3580,21 @@
 
                     return;
                 }
+                if (selectedType === "studio_rental") {
+                    const hours = Number(
+                        document.getElementById("rentalDuration").value
+                    );
 
+                    if (![2, 3, 4, 5, 6, 12].includes(hours)) {
+                        alert("Please select a valid Studio Rental duration.");
+                        return;
+                    }
+
+                    if (getSelectedBackdrops().length !== 2) {
+                        alert("Please select exactly 2 backdrops.");
+                        return;
+                    }
+                }
 
                 if (photoPackage) {
                     const photoPackageSelect =
@@ -3373,10 +3661,7 @@
                         return;
                     }
 
-                    console.log(
-                        "Package availability confirmed:",
-                        currentPackage
-                    );
+                    //console.log("Package availability confirmed:", currentPackage);
                 }
                 if (
                     requiredBackdrops > 0 &&
@@ -3808,26 +4093,20 @@
 
                     return;
                 }
-                console.log("========== FINAL BOOKING CHECK ==========");
-                console.log("Selected date:", date);
-                console.log("Selected time:", time);
-                console.log("Requested start:", requestedStart);
-                console.log("Requested end:", requestedEnd);
-                console.log("Has conflict:", hasConflict);
-                console.log("=========================================");
-
-
+                /* console.log("========== FINAL BOOKING CHECK ==========");
+                 console.log("Selected date:", date);
+                 console.log("Selected time:", time);
+                 console.log("Requested start:", requestedStart);
+                 console.log("Requested end:", requestedEnd);
+                 console.log("Has conflict:", hasConflict);
+                 console.log("========================================="); */
 
                 submitButton.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Creating payment checkout...
-        `;
-
-
-                console.log(
-                    "Creating PayMongo checkout..."
-                );
-
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Creating payment checkout...
+                    `;
+                /*
+                console.log("Creating PayMongo checkout...");
                 console.log("BOOKING DATA BEFORE PAYMONGO:", {
                     fullName,
                     email,
@@ -3856,25 +4135,22 @@
                 console.log("addons:", getSelectedAddons());
                 console.log("booking_duration:", getSelectedDuration());
                 console.log("==================================");
-
-
-
+ 
+                */
 
                 const totalPrice = Number(totalAmount);
                 const downpayment = Number(downpaymentAmount);
-
                 const API_BASE = BOOKING_API_BASE;
-                console.log("CHECKPOINT 1: Starting PayMongo request");
+                /*console.log("CHECKPOINT 1: Starting PayMongo request");
                 console.log("Backend URL:", API_BASE);
                 console.log("Payment method:", paymentMethod);
                 console.log("Total price:", totalPrice);
                 console.log("Downpayment:", downpayment);
-
+                */
                 let response;
 
                 try {
-                    response = await fetch(
-                        `${API_BASE}/api/paymongo/create-checkout`,
+                    response = await fetch(`${API_BASE}/api/paymongo/create-checkout`,
                         {
                             method: "POST",
                             headers: {
@@ -3907,12 +4183,11 @@
 
                     return;
                 }
-
+                /*
                 console.log("CHECKPOINT 2: PayMongo backend responded");
                 console.log("HTTP status:", response.status);
-
+                */
                 let result;
-
                 try {
                     result = await response.json();
                 } catch (parseError) {
@@ -3925,23 +4200,16 @@
                     return;
                 }
 
-                console.log(
-                    "PayMongo response:",
-                    JSON.stringify(result, null, 2)
-                );
-
+                //console.log("PayMongo response:", JSON.stringify(result, null, 2));
                 if (!response.ok) {
                     console.error("Checkout creation failed:", result);
-
                     alert(
                         result.message ||
                         result.error ||
                         "Unable to create the payment checkout."
                     );
-
                     return;
                 }
-
                 const checkoutUrl =
                     result.checkout_url ||
                     result.checkoutUrl ||
@@ -3978,16 +4246,15 @@
                     return;
                 }
 
-                console.log("Redirecting to PayMongo:", checkoutUrl);
+                //console.log("Redirecting to PayMongo:", checkoutUrl);
 
                 redirectingToPayMongo = true;
 
                 submitButton.disabled = true;
                 submitButton.innerHTML = `
-    <i class="fa-solid fa-arrow-right"></i>
-    Redirecting to PayMongo...
-`;
-
+                    <i class="fa-solid fa-arrow-right"></i>
+                    Redirecting to PayMongo...
+                `;
                 window.location.href = checkoutUrl;
 
             }

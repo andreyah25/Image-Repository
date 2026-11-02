@@ -2999,7 +2999,7 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
 
     try {
 
-   const {
+  const {
     customer_id,
     full_name,
     email,
@@ -3013,7 +3013,15 @@ app.post("/api/paymongo/create-checkout", async (req, res) => {
     downpayment_amount,
     backdrops,
     addons,
-    booking_duration
+    booking_duration,
+
+    // Studio rental fields
+    booking_type,
+    rental_duration,
+    rental_start_time,
+    rental_end_time,
+    rental_rate,
+    rental_addons
 } = req.body;
        
  const missingFields = [];
@@ -3101,15 +3109,57 @@ const amountInCentavos =
             Array.isArray(addons)
                 ? addons
                 : [];
+        const isStudioRental =
+    booking_type === "studio_rental" ||
+    session_type === "studio_rental";
 
-        const duration = Number(booking_duration);
+const duration = Number(
+    isStudioRental
+        ? (rental_duration ?? booking_duration)
+        : booking_duration
+);
 
-            if (!Number.isFinite(duration) || duration <= 0) {
-             return res.status(400).json({
-              success: false,
-              error: "Invalid booking duration."
-              });         
-            }           
+if (!Number.isFinite(duration) || duration <= 0) {
+    return res.status(400).json({
+        success: false,
+        error: "Invalid booking duration."
+    });
+}
+
+if (isStudioRental) {
+    if (
+        rental_start_time &&
+        String(rental_start_time).slice(0, 5) !==
+        String(booking_time).slice(0, 5)
+    ) {
+        return res.status(400).json({
+            success: false,
+            error: "Rental start time does not match booking time."
+        });
+    }
+
+    if (rental_end_time) {
+        const [h, m] = String(rental_end_time)
+            .slice(0, 5)
+            .split(":")
+            .map(Number);
+
+        const [startH, startM] = String(booking_time)
+            .slice(0, 5)
+            .split(":")
+            .map(Number);
+
+        const calculatedDuration =
+            (h * 60 + m) - (startH * 60 + startM);
+
+        if (calculatedDuration !== duration) {
+            return res.status(400).json({
+                success: false,
+                error: "Rental end time does not match duration."
+            });
+        }
+    }
+}         
 
         const bookingReference =
             `CAPTURED-${Date.now()}-${crypto
@@ -3244,24 +3294,55 @@ if (!Number.isFinite(existingDuration) || existingDuration <= 0) {
             });
 
         }
-    const bookingDataToSave = {
+        const bookingDataToSave = {
     customer_id: customer_id || null,
+
     full_name: String(full_name).trim(),
     contact_number: String(contact_number).trim(),
     email: String(email).trim(),
+
     booking_date,
     booking_time,
     session_type,
+
+    booking_type: isStudioRental
+        ? "studio_rental"
+        : "photo_session",
+
     notes: notes || null,
+
     payment_method: "PayMongo",
+
     total_price: Number(totalPrice.toFixed(2)),
     downpayment_amount: Number(downpayment.toFixed(2)),
     remaining_balance: Number(remainingBalance.toFixed(2)),
+
     payment_status: "Down Payment",
     status: "Down Payment",
+
     backdrops: selectedBackdrops,
     addons: selectedAddons,
-    booking_duration: duration
+
+    booking_duration: duration,
+
+    // Studio rental information
+    rental_duration: isStudioRental ? duration : null,
+
+    rental_start_time: isStudioRental
+        ? booking_time
+        : null,
+
+    rental_end_time: isStudioRental
+        ? rental_end_time || null
+        : null,
+
+    rental_rate: isStudioRental
+        ? Number(rental_rate || 0)
+        : null,
+
+    rental_addons: isStudioRental
+        ? (Array.isArray(rental_addons) ? rental_addons : [])
+        : []
 };
 
 const {
@@ -3312,7 +3393,9 @@ console.log(
                         {
                             currency: "PHP",
                             amount: amountInCentavos,
-                            name: `Reservation Down Payment - ${session_type}`,
+                            name: isStudioRental
+                                ? "Studio Rental - Reservation Down Payment"
+                                : `Reservation Down Payment - ${session_type}`,
                             quantity: 1
                         }
                     ],
@@ -3322,8 +3405,9 @@ console.log(
                         email: email,
                         phone: contact_number
                     },
-                    description:
-                        `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
+                   description: isStudioRental
+                        ? `Studio Rental - ${booking_date} ${booking_time} - ${duration} minutes`
+                        : `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
                     reference_number: bookingReference,
                     metadata: {
                         pending_checkout_id: String(pendingCheckout.id),
@@ -4241,9 +4325,9 @@ app.post("/api/paymongo/confirm-booking", async (req, res) => {
             });
         }
 
-   let booking = null;
-let bookingCreatedNow = false;
-let bookingRecovered = false;
+    let booking = null;
+    let bookingCreatedNow = false;
+    let bookingRecovered = false;
 
         // Reuse the booking if this checkout has already been finalized.
         if (checkout.final_booking_id) {
