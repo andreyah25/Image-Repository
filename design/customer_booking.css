@@ -1854,56 +1854,147 @@ select[name="package_id"],
     color: #8B718E;
 }
 
-/* =========================================
-   PAID BOOKING CONFIRMATION LAYOUT
-   DESKTOP AND MOBILE
-========================================= */
+/* ==========================================
+   PAYMENT SUCCESS - CONFIRM BOOKING LAYOUT
+   CSS ONLY - NO FUNCTION CHANGES
+========================================== */
 
+/* Payment details main box */
 #paidBookingPanel {
-    width: 100%;
-    max-width: 100%;
-    margin: 20px auto !important;
-    padding: 25px !important;
+    width: 100% !important;
+    max-width: 900px !important;
+    margin: 30px auto 0 !important;
+    padding: 30px !important;
+    background: #f8f6f9 !important;
+    border: 1px solid #e5dce7 !important;
+    border-radius: 14px !important;
     box-sizing: border-box;
 }
 
-#paidBookingHeading,
-#paidBookingMessage {
+/* Heading and payment status */
+#paidBookingHeading {
     text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    color: #8B718E;
+    margin-bottom: 12px;
 }
 
 #paidBookingMessage {
-    margin: 12px auto 25px;
-    line-height: 1.6;
+    max-width: 720px;
+    margin: 0 auto 25px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #555;
 }
 
+/* Payment details: two columns on laptop */
 #paidBookingDetails {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
+    gap: 14px;
     width: 100%;
-    margin-top: 20px;
+    margin-top: 20px !important;
+    line-height: normal !important;
 }
 
+/* Each detail box */
 #paidBookingDetails > p {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
     min-width: 0;
     margin: 0;
-    padding: 15px;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    background: #ffffff;
-    line-height: 1.6;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #e7e0e8;
+    border-radius: 9px;
+    color: #353535;
+    font-size: 14px;
+    line-height: 1.5;
     overflow-wrap: anywhere;
 }
 
-#paidBookingDetails > p strong {
+/* Labels */
+#paidBookingDetails > p > strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
     color: #8B718E;
+}
+
+/* Only change the layout after payment */
+body:has(#paidBookingPanel[style*="block"])
+.booking-layout-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    width: 100%;
+    max-width: 900px;
+    margin: 16px auto 30px;
+    gap: 0;
+}
+
+/* Align the button container with details box */
+body:has(#paidBookingPanel[style*="block"])
+.sessions-panel {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 18px 24px 24px;
+    box-sizing: border-box;
+}
+
+/* Hide the services sidebar in payment confirmation */
+body:has(#paidBookingPanel[style*="block"])
+.studio-services-panel {
+    display: none;
+}
+
+/* Confirm Booking button alignment */
+body:has(#paidBookingPanel[style*="block"])
+.form-actions {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+body:has(#paidBookingPanel[style*="block"])
+#proceedToPaymentBtn {
+    width: 100% !important;
+    min-height: 50px;
+    margin: 0 !important;
+    border-radius: 9px;
+    background: #B39EB5;
+    color: #fff;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    #paidBookingPanel {
+        padding: 22px !important;
+    }
 }
 
 /* Mobile */
 @media (max-width: 600px) {
     #paidBookingPanel {
-        padding: 15px !important;
+        margin: 18px auto 0 !important;
+        padding: 18px 14px !important;
+    }
+
+    #paidBookingHeading {
+        font-size: 21px;
+    }
+
+    #paidBookingMessage {
+        font-size: 13px;
+        margin-bottom: 18px;
     }
 
     #paidBookingDetails {
@@ -1912,6 +2003,12 @@ select[name="package_id"],
     }
 
     #paidBookingDetails > p {
-        padding: 12px;
+        padding: 13px 14px;
+        font-size: 13px;
+    }
+
+    body:has(#paidBookingPanel[style*="block"])
+    .sessions-panel {
+        padding: 14px;
     }
 }
