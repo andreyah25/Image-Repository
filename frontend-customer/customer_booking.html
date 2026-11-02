@@ -49,425 +49,420 @@
                 <h1>Schedule a Session</h1>
                 <p>Provide your booking details so we can prepare for your session.</p>
             </div>
-            <div id="paidBookingPanel" style="display:none; background:#f6f8f7; border:1px solid #d5e5dd;
-            border-radius:12px; padding:24px; margin-bottom:24px;">
+            <div id="paidBookingPanel" class="paid-booking-panel" style="display:none;"></div>
 
-                <h2 id="paidBookingHeading">Verifying Payment</h2>
+            <h2 id="paidBookingHeading">Verifying Payment</h2>
 
-                <p id="paidBookingMessage">
-                    Please wait while we verify your PayMongo payment.
-                </p>
+            <p id="paidBookingMessage">
+                Please wait while we verify your PayMongo payment.
+            </p>
 
-                <div id="paidBookingDetails" style="line-height:1.9; margin-top:16px;">
+            <div id="paidBookingDetails" class="paid-booking-details"></div>
+    </div>
+
+    </div>
+    <div class="booking-layout-wrapper">
+        <div class="sessions-panel booking-container">
+            <form id="bookingForm" class="booking-form">
+                <div class="form-section">
+                    <h3 class="section-title-form">Contact Information</h3>
+                    <div class="form-grid-three">
+                        <div class="form-group">
+                            <label for="fullName">Full Name <span style="color:red;">*</span></label>
+                            <input type="text" id="fullName" placeholder="Enter your name" pattern="^[a-zA-Z\s\-']+$"
+                                oninput="this.value = this.value.replace(/[0-9]/g, '')"
+                                title="Numbers are not allowed. Please enter letters only." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
+                            <input type="tel" id="contactNumber" placeholder="Enter your contact number" maxlength="11"
+                                inputmode="numeric" autocomplete="tel"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="^09\d{9}$"
+                                title="Please enter an 11-digit mobile number starting with 09." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="emailAddress">Email Address <span style="color:red;">*</span></label>
+                            <input type="email" id="emailAddress" placeholder="Enter your email" autocomplete="email"
+                                required>
+                        </div>
+                    </div>
                 </div>
 
-            </div>
-            <div class="booking-layout-wrapper">
-                <div class="sessions-panel booking-container">
-                    <form id="bookingForm" class="booking-form">
-                        <div class="form-section">
-                            <h3 class="section-title-form">Contact Information</h3>
-                            <div class="form-grid-three">
-                                <div class="form-group">
-                                    <label for="fullName">Full Name <span style="color:red;">*</span></label>
-                                    <input type="text" id="fullName" placeholder="Enter your name"
-                                        pattern="^[a-zA-Z\s\-']+$"
-                                        oninput="this.value = this.value.replace(/[0-9]/g, '')"
-                                        title="Numbers are not allowed. Please enter letters only." required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
-                                    <input type="tel" id="contactNumber" placeholder="Enter your contact number"
-                                        maxlength="11" inputmode="numeric" autocomplete="tel"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="^09\d{9}$"
-                                        title="Please enter an 11-digit mobile number starting with 09." required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="emailAddress">Email Address <span style="color:red;">*</span></label>
-                                    <input type="email" id="emailAddress" placeholder="Enter your email"
-                                        autocomplete="email" required>
-                                </div>
+
+                <!-- Section 2: Date, Time & Session Details -->
+                <div class="form-section form-grid-two">
+                    <div>
+                        <h3 class="section-title-form">Select Date and Time</h3>
+                        <div class="form-group icon-input" style="margin-bottom: 15px;">
+                            <label for="bookingDate">Photo Session Date <span style="color:red;">*</span></label>
+                            <div class="field-wrapper">
+                                <input type="date" id="bookingDate" required>
+                                <i class="fa-regular fa-calendar"></i>
                             </div>
                         </div>
+                        <div class="form-group icon-input">
+                            <label for="bookingTime">
+                                Preferred Time <span style="color:red;">*</span>
+                            </label>
 
-
-                        <!-- Section 2: Date, Time & Session Details -->
-                        <div class="form-section form-grid-two">
-                            <div>
-                                <h3 class="section-title-form">Select Date and Time</h3>
-                                <div class="form-group icon-input" style="margin-bottom: 15px;">
-                                    <label for="bookingDate">Photo Session Date <span
-                                            style="color:red;">*</span></label>
-                                    <div class="field-wrapper">
-                                        <input type="date" id="bookingDate" required>
-                                        <i class="fa-regular fa-calendar"></i>
-                                    </div>
-                                </div>
-                                <div class="form-group icon-input">
-                                    <label for="bookingTime">
-                                        Preferred Time <span style="color:red;">*</span>
-                                    </label>
-
-                                    <div class="field-wrapper">
-                                        <select id="bookingTime" required disabled>
-                                            <option value="" selected>
-                                                Select a date first
-                                            </option>
-                                        </select>
-                                        <small id="bookingAvailabilityMessage" style="
+                            <div class="field-wrapper">
+                                <select id="bookingTime" required disabled>
+                                    <option value="" selected>
+                                        Select a date first
+                                    </option>
+                                </select>
+                                <small id="bookingAvailabilityMessage" style="
                                                         display:block;
                                                         margin-top:7px;
                                                         color:#666;
                                                         font-size:0.8rem;">
-                                            Please select a date to see available time slots.
-                                        </small>
+                                    Please select a date to see available time slots.
+                                </small>
 
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 class="section-title-form">Session Details</h3>
-                                <div class="form-group" style="margin-bottom: 15px;">
-                                    <label for="photoPackage">Photo Package</label>
-                                    <select id="photoPackage">
-                                        <option value="" selected>Select a photo package</option>
-                                        <option value="basic_1">BASIC 1 (1 person) - ₱399</option>
-                                        <option value="basic_2">BASIC 2 (2 persons) - ₱599</option>
-                                        <option value="basic_3">BASIC 3 (3 persons) - ₱799</option>
-                                        <option value="group_package">GROUP PACKAGE (4-8 persons) - ₱1,999</option>
-                                        <option value="classic_1">Classic 1 - ₱1,199 (Graduation)</option>
-                                        <option value="classic_2">Classic 2 - ₱1,799 (Graduation)</option>
-                                        <option value="classic_3">Classic 3 - ₱3,499 (Graduation)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="sessionType">Special Sessions</label>
-                                    <select id="sessionType">
-                                        <option value="" selected>Select a session type</option>
-                                        <option value="kids">Kids Pre-Birthday Shoot (6 yrs old and below) - ₱1,699
-                                        </option>
-                                        <option value="pre_birthday">Pre-Birthday Shoot (7 yrs old & up) - ₱999</option>
-                                        <option value="theme_holiday">Theme / Holiday (3 persons) - ₱1,699</option>
-                                        <option value="maternity">Maternity Shoot - ₱999</option>
-                                        <option value="studio_rental">Studio Rental</option>
-                                    </select>
-                                    <div id="studioRentalOptions" style="display:none; margin-top:15px;">
-
-                                        <div class="form-group">
-                                            <label for="rentalDay">Rental Day</label>
-                                            <select id="rentalDay" disabled>
-                                                <option value="">Select booking date first</option>
-                                                <option value="1">Monday</option>
-                                                <option value="2">Tuesday</option>
-                                                <option value="3">Wednesday</option>
-                                                <option value="4">Thursday</option>
-                                                <option value="5">Friday</option>
-                                                <option value="6">Saturday</option>
-                                                <option value="0">Sunday</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="form-group" style="margin-top:15px;">
-                                            <label for="rentalDuration">Rental Duration</label>
-                                            <select id="rentalDuration">
-                                                <option value="">Select rental duration</option>
-                                                <option value="2">2 Hours</option>
-                                                <option value="3">3 Hours</option>
-                                                <option value="4">4 Hours</option>
-                                                <option value="5">5 Hours</option>
-                                                <option value="6">6 Hours</option>
-                                                <option value="12">12 Hours</option>
-                                            </select>
-                                        </div>
-
-                                        <small id="rentalRateMessage"
-                                            style="display:block; margin-top:10px; color:#639A88;">
-                                        </small>
-                                        <div id="studioRentalMobilePosition"></div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-section">
-                            <h3 class="section-title-form"
-                                style="font-size: 0.9rem !important; font-weight: 600 !important; color: #353535 !important; margin-bottom: 16px !important;">
-                                Add-Ons
-                                <span
-                                    style="font-weight: normal !important; color: #777 !important; font-size: 0.85rem !important;">(Optional)</span>
-                            </h3>
+                    <div>
+                        <h3 class="section-title-form">Session Details</h3>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label for="photoPackage">Photo Package</label>
+                            <select id="photoPackage">
+                                <option value="" selected>Select a photo package</option>
+                                <option value="basic_1">BASIC 1 (1 person) - ₱399</option>
+                                <option value="basic_2">BASIC 2 (2 persons) - ₱599</option>
+                                <option value="basic_3">BASIC 3 (3 persons) - ₱799</option>
+                                <option value="group_package">GROUP PACKAGE (4-8 persons) - ₱1,999</option>
+                                <option value="classic_1">Classic 1 - ₱1,199 (Graduation)</option>
+                                <option value="classic_2">Classic 2 - ₱1,799 (Graduation)</option>
+                                <option value="classic_3">Classic 3 - ₱3,499 (Graduation)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionType">Special Sessions</label>
+                            <select id="sessionType">
+                                <option value="" selected>Select a session type</option>
+                                <option value="kids">Kids Pre-Birthday Shoot (6 yrs old and below) - ₱1,699
+                                </option>
+                                <option value="pre_birthday">Pre-Birthday Shoot (7 yrs old & up) - ₱999</option>
+                                <option value="theme_holiday">Theme / Holiday (3 persons) - ₱1,699</option>
+                                <option value="maternity">Maternity Shoot - ₱999</option>
+                                <option value="studio_rental">Studio Rental</option>
+                            </select>
+                            <div id="studioRentalOptions" style="display:none; margin-top:15px;">
 
-                            <p style="font-size: 13px; color: #777; margin-bottom: 1px;">
-                                Select an add-on only if you would like to include it in your booking.
-                            </p>
-
-                            <div id="addonContainer">
-
-                                <!-- Add-on dropdown -->
-
-                                <div class="addon-row">
-                                    <select class="addon-select">
-                                        <option value="">Loading add-ons...</option>
+                                <div class="form-group">
+                                    <label for="rentalDay">Rental Day</label>
+                                    <select id="rentalDay" disabled>
+                                        <option value="">Select booking date first</option>
+                                        <option value="1">Monday</option>
+                                        <option value="2">Tuesday</option>
+                                        <option value="3">Wednesday</option>
+                                        <option value="4">Thursday</option>
+                                        <option value="5">Friday</option>
+                                        <option value="6">Saturday</option>
+                                        <option value="0">Sunday</option>
                                     </select>
-
-                                    <input type="number" class="addon-quantity" min="1" value="1" placeholder="Quantity"
-                                        style="display: none;">
-
-                                    <button type="button" class="remove-addon" style="display: none;">
-                                        ×
-                                    </button>
                                 </div>
 
+                                <div class="form-group" style="margin-top:15px;">
+                                    <label for="rentalDuration">Rental Duration</label>
+                                    <select id="rentalDuration">
+                                        <option value="">Select rental duration</option>
+                                        <option value="2">2 Hours</option>
+                                        <option value="3">3 Hours</option>
+                                        <option value="4">4 Hours</option>
+                                        <option value="5">5 Hours</option>
+                                        <option value="6">6 Hours</option>
+                                        <option value="12">12 Hours</option>
+                                    </select>
+                                </div>
 
+                                <small id="rentalRateMessage" style="display:block; margin-top:10px; color:#639A88;">
+                                </small>
+                                <div id="studioRentalMobilePosition"></div>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <button type="button" id="addAddonBtn" class="btn-secondary" style="margin-top: 10px;">
-                                + Add Another Add-On
+                <div class="form-section">
+                    <h3 class="section-title-form"
+                        style="font-size: 0.9rem !important; font-weight: 600 !important; color: #353535 !important; margin-bottom: 16px !important;">
+                        Add-Ons
+                        <span
+                            style="font-weight: normal !important; color: #777 !important; font-size: 0.85rem !important;">(Optional)</span>
+                    </h3>
+
+                    <p style="font-size: 13px; color: #777; margin-bottom: 1px;">
+                        Select an add-on only if you would like to include it in your booking.
+                    </p>
+
+                    <div id="addonContainer">
+
+                        <!-- Add-on dropdown -->
+
+                        <div class="addon-row">
+                            <select class="addon-select">
+                                <option value="">Loading add-ons...</option>
+                            </select>
+
+                            <input type="number" class="addon-quantity" min="1" value="1" placeholder="Quantity"
+                                style="display: none;">
+
+                            <button type="button" class="remove-addon" style="display: none;">
+                                ×
                             </button>
                         </div>
-                        <div class="form-section" id="backdropSection">
 
-                            <div class="section-header-flex">
-                                <h3 class="section-title-form">
-                                    Choose Your Backdrop
-                                </h3>
 
-                                <span id="backdropRequirement" style="
+                    </div>
+
+                    <button type="button" id="addAddonBtn" class="btn-secondary" style="margin-top: 10px;">
+                        + Add Another Add-On
+                    </button>
+                </div>
+                <div class="form-section" id="backdropSection">
+
+                    <div class="section-header-flex">
+                        <h3 class="section-title-form">
+                            Choose Your Backdrop
+                        </h3>
+
+                        <span id="backdropRequirement" style="
                                     font-size: 0.85rem;
                                     color: #639A88;
                                     font-weight: 600;
                                 ">
-                                    Select a package or session first
-                                </span>
-                            </div>
+                            Select a package or session first
+                        </span>
+                    </div>
 
-                            <p style="
+                    <p style="
                                 margin-top: 5px;
                                 margin-bottom: 18px;
                                 color: #666;
                                 font-size: 0.88rem;
                             ">
-                                Pick the backdrop color you would like for your photo session.
-                            </p>
+                        Pick the backdrop color you would like for your photo session.
+                    </p>
 
-                            <div id="backdropGrid" class="backdrop-grid">
+                    <div id="backdropGrid" class="backdrop-grid">
 
-                                <!-- WHITE -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="White">
+                        <!-- WHITE -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="White">
 
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-white"></div>
-                                        <span>White</span>
-                                    </div>
-                                </label>
-
-                                <!-- LAVENDER -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="Lavender Purple">
-
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-lavender"></div>
-                                        <span>Lavender Purple</span>
-                                    </div>
-                                </label>
-
-                                <!-- SKY BLUE -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="Sky Blue">
-
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-sky"></div>
-                                        <span>Sky Blue</span>
-                                    </div>
-                                </label>
-
-                                <!-- SAGE GREEN -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="Sage Green">
-
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-sage"></div>
-                                        <span>Sage Green</span>
-                                    </div>
-                                </label>
-
-                                <!-- RED -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="Red">
-
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-red"></div>
-                                        <span>Red</span>
-                                    </div>
-                                </label>
-
-                                <!-- CAMEL BROWN -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="Camel Brown">
-
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-camel"></div>
-                                        <span>Camel Brown</span>
-                                    </div>
-                                </label>
-
-                                <!-- BEIGE -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="Beige / Nude">
-
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-beige"></div>
-                                        <span>Beige / Nude</span>
-                                    </div>
-                                </label>
-
-                                <!-- GRAY -->
-                                <label class="backdrop-option">
-                                    <input type="checkbox" name="backdrop" value="Gray">
-
-                                    <div class="backdrop-card">
-                                        <div class="backdrop-color backdrop-gray"></div>
-                                        <span>Gray</span>
-                                    </div>
-                                </label>
-
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-white"></div>
+                                <span>White</span>
                             </div>
+                        </label>
 
-                            <small id="backdropMessage" style="
+                        <!-- LAVENDER -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="Lavender Purple">
+
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-lavender"></div>
+                                <span>Lavender Purple</span>
+                            </div>
+                        </label>
+
+                        <!-- SKY BLUE -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="Sky Blue">
+
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-sky"></div>
+                                <span>Sky Blue</span>
+                            </div>
+                        </label>
+
+                        <!-- SAGE GREEN -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="Sage Green">
+
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-sage"></div>
+                                <span>Sage Green</span>
+                            </div>
+                        </label>
+
+                        <!-- RED -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="Red">
+
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-red"></div>
+                                <span>Red</span>
+                            </div>
+                        </label>
+
+                        <!-- CAMEL BROWN -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="Camel Brown">
+
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-camel"></div>
+                                <span>Camel Brown</span>
+                            </div>
+                        </label>
+
+                        <!-- BEIGE -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="Beige / Nude">
+
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-beige"></div>
+                                <span>Beige / Nude</span>
+                            </div>
+                        </label>
+
+                        <!-- GRAY -->
+                        <label class="backdrop-option">
+                            <input type="checkbox" name="backdrop" value="Gray">
+
+                            <div class="backdrop-card">
+                                <div class="backdrop-color backdrop-gray"></div>
+                                <span>Gray</span>
+                            </div>
+                        </label>
+
+                    </div>
+
+                    <small id="backdropMessage" style="
                                 display:block;
                                 margin-top:10px;
                                 color:#666;
                                 font-size:0.8rem;
                             ">
-                                Please select a package or session first.
-                            </small>
+                        Please select a package or session first.
+                    </small>
 
-                        </div>
+                </div>
 
-                        <!-- STUDIO RENTAL BOOKING SUMMARY -->
-                        <div class="form-section" id="studioRentalSummarySection" style="display:none;">
+                <!-- STUDIO RENTAL BOOKING SUMMARY -->
+                <div class="form-section" id="studioRentalSummarySection" style="display:none;">
 
-                            <h3 class="section-title-form">
-                                <i class="fa-solid fa-clipboard-list"></i>
-                                Studio Rental Booking Summary
-                            </h3>
+                    <h3 class="section-title-form">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        Studio Rental Booking Summary
+                    </h3>
 
-                            <div id="rentalInclusionsSummary" class="studio-rental-summary">
+                    <div id="rentalInclusionsSummary" class="studio-rental-summary">
+                    </div>
+
+                </div>
+
+                <div class="form-section">
+
+                    <div class="section-header-flex">
+                        <h3 class="section-title-form">
+                            Reservation Down Payment
+                        </h3>
+                    </div>
+
+                    <div class="form-grid-two">
+
+                        <div>
+
+
+                            <div class="form-group">
+                                <label>
+                                    Down Payment Amount
+                                </label>
+
+                                <input type="text" id="downpaymentInput" value="Select a package or session first"
+                                    readonly>
+
+                                <!-- Policy trigger text below input -->
+                                <small style="margin-top: 6px; display: block; font-size: 0.78rem; color: #666666;">
+                                    By proceeding, you acknowledge our <a href="#" id="openDownpaymentPolicy"
+                                        style="color: #639A88; text-decoration: underline; font-weight: 600;">Down
+                                        Payment & Cancellation Policy</a>.
+                                </small>
+
+
                             </div>
 
-                        </div>
+                            <!-- Added Total Breakdown Summary directly above Payment Method -->
+                            <div class="payment-summary-section">
+                                <h3 class="section-title-form">Payment Summary</h3>
 
-                        <div class="form-section">
-
-                            <div class="section-header-flex">
-                                <h3 class="section-title-form">
-                                    Reservation Down Payment
-                                </h3>
-                            </div>
-
-                            <div class="form-grid-two">
-
-                                <div>
-
-
-                                    <div class="form-group">
-                                        <label>
-                                            Down Payment Amount
-                                        </label>
-
-                                        <input type="text" id="downpaymentInput"
-                                            value="Select a package or session first" readonly>
-
-                                        <!-- Policy trigger text below input -->
-                                        <small
-                                            style="margin-top: 6px; display: block; font-size: 0.78rem; color: #666666;">
-                                            By proceeding, you acknowledge our <a href="#" id="openDownpaymentPolicy"
-                                                style="color: #639A88; text-decoration: underline; font-weight: 600;">Down
-                                                Payment & Cancellation Policy</a>.
-                                        </small>
-
-
+                                <div class="summary-details">
+                                    <div class="summary-row">
+                                        <span id="summaryPackageLabel">Package/Session Fee:</span>
+                                        <strong id="summaryPackagePrice">₱0.00</strong>
                                     </div>
 
-                                    <!-- Added Total Breakdown Summary directly above Payment Method -->
-                                    <div class="payment-summary-section">
-                                        <h3 class="section-title-form">Payment Summary</h3>
-
-                                        <div class="summary-details">
-                                            <div class="summary-row">
-                                                <span id="summaryPackageLabel">Package/Session Fee:</span>
-                                                <strong id="summaryPackagePrice">₱0.00</strong>
-                                            </div>
-
-                                            <div class="summary-row">
-                                                <span>Add-Ons Total:</span>
-                                                <strong id="summaryAddonPrice">₱0.00</strong>
-                                            </div>
-
-                                            <div class="summary-row">
-                                                <span>Total Booking Amount:</span>
-                                                <strong id="summaryTotalPrice">₱0.00</strong>
-                                            </div>
-
-                                            <div class="summary-row highlight-row">
-                                                <span>Down Payment (Due Now):</span>
-                                                <strong id="requiredAmountText">₱0.00</strong>
-                                            </div>
-
-                                            <div class="summary-row">
-                                                <span>Remaining Balance (Due Upon Arrival):</span>
-                                                <strong id="summaryRemainingBalance">₱0.00</strong>
-                                            </div>
-                                        </div>
+                                    <div class="summary-row">
+                                        <span>Add-Ons Total:</span>
+                                        <strong id="summaryAddonPrice">₱0.00</strong>
                                     </div>
 
-                                    <div class="form-group">
-                                        <label for="paymentMethod">Payment Method</label>
-                                        <select id="paymentMethod" name="payment_method" required>
-                                            <option value="" selected disabled>Select a payment method</option>
-                                            <option value="PayMongo">PayMongo QR Scan </option>
-                                        </select>
+                                    <div class="summary-row">
+                                        <span>Total Booking Amount:</span>
+                                        <strong id="summaryTotalPrice">₱0.00</strong>
+                                    </div>
+
+                                    <div class="summary-row highlight-row">
+                                        <span>Down Payment (Due Now):</span>
+                                        <strong id="requiredAmountText">₱0.00</strong>
+                                    </div>
+
+                                    <div class="summary-row">
+                                        <span>Remaining Balance (Due Upon Arrival):</span>
+                                        <strong id="summaryRemainingBalance">₱0.00</strong>
                                     </div>
                                 </div>
-
                             </div>
-                        </div>
-                        <div class="form-section">
-                            <h3 class="section-title-form">Notes/Request (Optional)</h3>
+
                             <div class="form-group">
-                                <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
+                                <label for="paymentMethod">Payment Method</label>
+                                <select id="paymentMethod" name="payment_method" required>
+                                    <option value="" selected disabled>Select a payment method</option>
+                                    <option value="PayMongo">PayMongo QR Scan </option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="form-actions" style="justify-content: stretch;">
-                            <button type="submit" id="proceedToPaymentBtn" class="btn-confirm"
-                                style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <i class="fa-solid fa-credit-card"></i> Proceed to Payment
-                            </button>
-                        </div>
-
-
-                    </form>
-                </div>
-                <aside class="studio-services-panel">
-                    <h2>Studio Services</h2>
-                    <p class="services-subtitle">Click a category below to view packages, inclusions, and pricing.</p>
-                    <div class="services-menu-list">
-                        <button type="button" class="service-menu-btn" id="openBasicPackages">Basic Packages</button>
-                        <button type="button" class="service-menu-btn" id="openGraduationPackage">Graduation
-                            Package</button>
-                        <button type="button" class="service-menu-btn" id="openSpecialSessions">Special
-                            Sessions</button>
-                        <button type="button" class="service-menu-btn" id="openAddOns">Add-Ons</button>
-                        <button type="button" class="service-menu-btn" id="openPetGuidelines">Pet Guidelines</button>
-                        <button type="button" class="service-menu-btn" id="openStudioRental">Studio Rental</button>
-                        <div id="studioRentalDesktopPosition"></div>
                     </div>
-                </aside>
+                </div>
+                <div class="form-section">
+                    <h3 class="section-title-form">Notes/Request (Optional)</h3>
+                    <div class="form-group">
+                        <textarea id="notes" placeholder="Any special requests or notes?"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="justify-content: stretch;">
+                    <button type="submit" id="proceedToPaymentBtn" class="btn-confirm"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fa-solid fa-credit-card"></i> Proceed to Payment
+                    </button>
+                </div>
+
+
+            </form>
+        </div>
+        <aside class="studio-services-panel">
+            <h2>Studio Services</h2>
+            <p class="services-subtitle">Click a category below to view packages, inclusions, and pricing.</p>
+            <div class="services-menu-list">
+                <button type="button" class="service-menu-btn" id="openBasicPackages">Basic Packages</button>
+                <button type="button" class="service-menu-btn" id="openGraduationPackage">Graduation
+                    Package</button>
+                <button type="button" class="service-menu-btn" id="openSpecialSessions">Special
+                    Sessions</button>
+                <button type="button" class="service-menu-btn" id="openAddOns">Add-Ons</button>
+                <button type="button" class="service-menu-btn" id="openPetGuidelines">Pet Guidelines</button>
+                <button type="button" class="service-menu-btn" id="openStudioRental">Studio Rental</button>
+                <div id="studioRentalDesktopPosition"></div>
             </div>
-        </main>
+        </aside>
+    </div>
+    </main>
 
     </div>
     <div id="basicPackagesModal" class="modal-overlay">
@@ -3244,18 +3239,31 @@
             heading.textContent = "Verifying Payment";
             message.textContent =
                 "Please wait while we verify your payment with PayMongo. Do not make another payment.";
-
             function addDetail(label, value) {
-                const row = document.createElement("p");
-                const strong = document.createElement("strong");
+                const row = document.createElement("div");
+                row.className = "paid-detail-item";
 
-                strong.textContent = `${label}: `;
-                row.appendChild(strong);
-                row.appendChild(document.createTextNode(String(value ?? "-")));
+                const labelElement = document.createElement("span");
+                labelElement.className = "paid-detail-label";
+                labelElement.textContent = label;
+
+                const valueElement = document.createElement("span");
+                valueElement.className = "paid-detail-value";
+                valueElement.textContent = String(value ?? "-");
+
+                if (label === "Downpayment") {
+                    valueElement.classList.add("paid-detail-success");
+                }
+
+                if (label === "Remaining Balance") {
+                    valueElement.classList.add("paid-detail-balance");
+                }
+
+                row.appendChild(labelElement);
+                row.appendChild(valueElement);
 
                 details.appendChild(row);
             }
-
             function formatPeso(value) {
                 return `₱${Number(value || 0).toLocaleString("en-PH", {
                     minimumFractionDigits: 2,
@@ -3373,8 +3381,6 @@
 
                         return;
                     }
-
-                    // Only enable Confirm Booking after the backend verifies payment.
                     if (result.payment_verified === true) {
                         paidReturnVerified = true;
                         paidReturnAlreadyConfirmed = false;

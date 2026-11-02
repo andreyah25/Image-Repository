@@ -1075,6 +1075,56 @@
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         ];
+        function formatNotificationSession(value) {
+            if (!value) return "Not specified";
+
+            return String(value)
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, char => char.toUpperCase());
+        }
+
+        function formatNotificationItems(value) {
+            if (!value) return "None";
+
+            let items = value;
+
+            if (typeof items === "string") {
+                try {
+                    items = JSON.parse(items);
+                } catch {
+                    return items.trim() || "None";
+                }
+            }
+
+            if (!Array.isArray(items)) {
+                return String(items);
+            }
+
+            if (items.length === 0) return "None";
+
+            return items.map(item => {
+                if (typeof item === "string") {
+                    return item;
+                }
+
+                if (item && typeof item === "object") {
+                    const name =
+                        item.name ||
+                        item.label ||
+                        item.addon_name ||
+                        item.addon ||
+                        "Add-on";
+
+                    const quantity = Number(item.quantity || 1);
+
+                    return quantity > 1
+                        ? `${name} (x${quantity})`
+                        : name;
+                }
+
+                return String(item);
+            }).join(", ");
+        }
         let latestIncomeReport = null;
 
         function updateIncomeReportControls() {
@@ -3596,20 +3646,9 @@
             notificationPanel.classList.toggle("show");
 
             if (notificationPanel.classList.contains("show")) {
-                const { error } = await supabaseClient
-                    .from("notifications")
-                    .update({ is_read: true })
-                    .eq("recipient", "admin")
-                    .eq("is_read", false);
-
-                if (error) {
-                    console.error("Unable to mark notifications read:", error);
-                }
-
                 await loadNotifications();
             }
         });
-
 
 
         notificationPanel.addEventListener("click", function (e) {
@@ -3690,27 +3729,28 @@
 
 
         function createBookingNotification(booking) {
-            if (!booking || booking.id == null) return null;
+            if (!booking?.id) return null;
 
             const notification = {
                 id: "booking-" + String(booking.id),
+                databaseId: null,
+                bookingId: booking.id,
                 type: "booking",
                 title: "New Customer Booking",
                 message:
-                    `${booking.full_name || "A customer"} booked a session. Proceed to confirm the session.`,
+                    `${booking.full_name || "A customer"} booked a session. ` +
+                    `Proceed to review the booking.`,
                 date: booking.created_at || new Date().toISOString(),
                 unread: true,
                 booking: booking
             };
 
-            // Use the same read key as database notifications for this booking.
             if (readNotificationIds.has(getNotificationReadKey(notification))) {
                 notification.unread = false;
             }
 
             return notification;
         }
-
         function cleanGalleryMessage(message) {
             if (!message) return "";
             return message
@@ -4245,47 +4285,80 @@
             );
 
         }
-
         async function handleNotificationClick(notification, item) {
             if (!notification) return;
 
-            const bookingId = notification.bookingId;
+            try {
+                const bookingId =
+                    notification.bookingId ||
+                    notification.booking?.id ||
+                    null;
 
-            if (notification.databaseId) {
-                const { error } = await supabaseClient
-                    .from("notifications")
-                    .update({ is_read: true })
-                    .eq("id", notification.databaseId);
+                if (!bookingId) {
+                    console.warn(
+                        "Notification has no linked booking:",
+                        notification
+                    );
 
-                if (error) {
-                    console.error("Unable to mark notification read:", error);
-                } else {
-                    notification.unread = false;
-                    item?.classList.remove("unread");
-                    updateNotificationBadge();
+                    alert(
+                        "This notification has no linked booking record. " +
+                        "Please check its booking_id in Supabase."
+                    );
+                    return;
                 }
+
+                const { data: booking, error } = await supabaseClient
+                    .from("bookings")
+                    .select("*")
+                    .eq("id", bookingId)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (!booking) {
+                    alert("The booking record could not be found.");
+                    return;
+                }
+
+                await openNotificationBooking({
+                    ...notification,
+                    bookingId: booking.id,
+                    booking
+                });
+
+                // Confirm that the modal was actually opened.
+                if (!notificationBookingModal.classList.contains("show")) {
+                    return;
+                }
+
+                if (notification.databaseId) {
+                    const { error: readError } = await supabaseClient
+                        .from("notifications")
+                        .update({ is_read: true })
+                        .eq("id", notification.databaseId);
+
+                    if (readError) {
+                        console.error(
+                            "Failed to mark notification as read:",
+                            readError
+                        );
+                    } else {
+                        notification.unread = false;
+                        item?.classList.remove("unread");
+                        updateNotificationBadge();
+                    }
+                }
+
+                notificationPanel.classList.remove("show");
+
+            } catch (error) {
+                console.error("Notification modal failed:", error);
+
+                alert(
+                    "Unable to open notification details: " +
+                    (error.message || String(error))
+                );
             }
-
-            notificationPanel.classList.remove("show");
-
-            if (!bookingId) return;
-
-            const { data: booking, error } = await supabaseClient
-                .from("bookings")
-                .select("*")
-                .eq("id", bookingId)
-                .maybeSingle();
-
-            if (error || !booking) {
-                console.error("Booking not found:", error);
-                return;
-            }
-
-            await openNotificationBooking({
-                ...notification,
-                type: "booking",
-                booking
-            });
         }
 
         function renderNotifications() {
@@ -4463,16 +4536,40 @@
 
 
         notificationBookingProcess.addEventListener("click", function () {
-            const bookingId = selectedNotificationBooking?.id;
+            const booking = selectedNotificationBooking;
 
-            if (!bookingId) {
-                console.error("No booking selected.");
+            if (!booking?.id) {
+                alert("No booking selected.");
                 return;
             }
 
+            const status = String(booking.status || "")
+                .trim()
+                .toLowerCase();
+
+            let tab = "pending";
+
+            if (status === "completed") {
+                tab = "completed";
+            } else if (
+                status === "rejected" ||
+                status === "declined"
+            ) {
+                tab = "rejected";
+            } else if (
+                status === "confirmed" ||
+                status === "upcoming"
+            ) {
+                tab = "upcoming";
+            }
+
+            const params = new URLSearchParams({
+                tab,
+                booking_id: String(booking.id)
+            });
+
             window.location.href =
-                "/admin/clients?tab=pending&booking_id=" +
-                encodeURIComponent(String(bookingId));
+                "/admin/clients?" + params.toString();
         });
 
         function handleNotificationBookingRedirect() {
@@ -4590,10 +4687,9 @@
 
                         const alreadyExists = notifications.some(
                             item =>
-                                String(item.booking?.id) ===
+                                String(item.bookingId || item.booking?.id || "") ===
                                 String(booking.id)
                         );
-
                         if (!alreadyExists) {
                             const notification =
                                 createBookingNotification(booking);

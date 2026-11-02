@@ -125,8 +125,13 @@
                 <div class="client-controls-bar">
                     <div class="client-actions-row">
                         <div class="table-search-box">
-                            <input type="text" id="clientSearchInput" placeholder="Search a name, email, etc.." autocomplete="off">
-                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="clientSearchInput" placeholder="Search a name or email..."
+                                autocomplete="off">
+
+                            <button type="button" id="clientSearchBtn" class="search-icon-btn"
+                                aria-label="Search customers">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
                         </div>
 
                         <div class="filter-dropdown-wrapper" id="filterWrapper">
@@ -427,7 +432,7 @@
             }
 
             async function autoArchiveAccessRequests() {
-              //  console.log("Checking expired gallery access requests...");
+                //  console.log("Checking expired gallery access requests...");
 
                 const now = new Date().toISOString();
 
@@ -444,7 +449,7 @@
                 }
 
                 if (!requests || requests.length === 0) {
-                 //   console.log("No expired requests found.");
+                    //   console.log("No expired requests found.");
                     return;
                 }
 
@@ -465,7 +470,7 @@
                             updateError
                         );
                     } else {
-                      //  console.log("Request expired:", request.id);
+                        //  console.log("Request expired:", request.id);
                     }
                 }
             }
@@ -507,7 +512,7 @@
 
                 if (existingRepository) {
 
-                   // console.log( "Repository already exists.");
+                    // console.log( "Repository already exists.");
 
                     return existingRepository;
                 }
@@ -580,7 +585,7 @@
 
             async function autoArchiveAccessRequests() {
 
-               // console.log("Checking access requests for archive...");
+                // console.log("Checking access requests for archive...");
 
                 const now = new Date().toISOString();
 
@@ -604,7 +609,7 @@
 
                 if (!requests || requests.length === 0) {
 
-                   // console.log("No access requests need to be archived.");
+                    // console.log("No access requests need to be archived.");
 
                     return;
                 }
@@ -724,7 +729,7 @@
 
                 });
 
-              //  console.log("Access requests loaded:",allAccessRequests);
+                //  console.log("Access requests loaded:",allAccessRequests);
 
                 renderAccessRequests();
             }
@@ -846,37 +851,38 @@
                         .trim()
                         .toLowerCase();
 
-                    const booking = request.booking || {};
-
-                    // Display only records belonging to the selected tab.
+                    // Keep the selected tab filtering.
                     if (status !== activeAccessTab) {
                         return false;
                     }
 
-                    // Apply the existing search field to the selected tab.
-                    const searchableText = [
-                        booking.full_name,
-                        booking.email,
-                        request.customer_email,
-                        request.booking_id,
-                        request.request_number,
-                        booking.session_type,
-                        booking.booking_date,
-                        booking.booking_time,
-                        request.status,
-                        request.created_at,
-                        request.approved_at
-                    ]
-                        .filter(value => value !== null && value !== undefined)
-                        .join(" ")
-                        .toLowerCase();
+                    // Get customer information from the linked booking.
+                    const booking = request.booking || {};
 
-                    const searchInput = document.getElementById("clientSearchInput");
-                    const searchTerm = searchInput
-                        ? searchInput.value.trim().toLowerCase()
-                        : "";
+                    const customerName = String(
+                        booking.full_name ||
+                        request.full_name ||
+                        request.customer_name ||
+                        ""
+                    ).trim().toLowerCase();
 
-                    return searchableText.includes(searchTerm);
+                    const customerEmail = String(
+                        booking.email ||
+                        request.customer_email ||
+                        request.email ||
+                        ""
+                    ).trim().toLowerCase();
+
+                    // No search text: display all requests in the selected tab.
+                    if (!searchTerm) {
+                        return true;
+                    }
+
+                    // Search by name or email, including partial matches.
+                    return (
+                        customerName.includes(searchTerm) ||
+                        customerEmail.includes(searchTerm)
+                    );
                 });
 
                 if (filteredRequests.length === 0) {
@@ -1151,7 +1157,7 @@
                             );
                         }
 
-                       // console.log("CURRENT ADMIN:",currentUser.id);
+                        // console.log("CURRENT ADMIN:",currentUser.id);
 
 
                         if (request.status === "approved") {
@@ -1228,9 +1234,9 @@
                             console.error("Access request update error:", updateError);
                             throw updateError;
                         }
-                       // console.log("Sending approved gallery email...");
+                        // console.log("Sending approved gallery email...");
 
-                      //  console.log("Customer email:",request.customer_email);
+                        //  console.log("Customer email:",request.customer_email);
 
 
                         const emailResponse =
@@ -1267,7 +1273,7 @@
                         }
 
 
-                       // console.log( "GALLERY EMAIL RESPONSE:", emailResult );
+                        // console.log( "GALLERY EMAIL RESPONSE:", emailResult );
 
 
                         if (!emailResponse.ok) {
@@ -1288,7 +1294,7 @@
                             );
 
                         }
-                       // console.log( "GALLERY ACCESS EMAIL SENT:",emailResult.email);
+                        // console.log( "GALLERY ACCESS EMAIL SENT:",emailResult.email);
                         showToast(
                             "Access Approved",
                             "The customer's gallery access has been approved."
@@ -1614,7 +1620,14 @@
 
             const searchInput =
                 document.getElementById("clientSearchInput");
+            const searchButton = document.getElementById("clientSearchBtn");
 
+            if (searchButton && searchInput) {
+                searchButton.addEventListener("click", () => {
+                    searchInput.focus();
+                    renderAccessRequests();
+                });
+            }
             if (searchInput) {
                 searchInput.addEventListener("input", () => {
                     renderAccessRequests();
