@@ -2950,3 +2950,3858 @@ AILED */
     justify-content: center !important;
     gap: 6px !important;
 }
+.client-tabs {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    border-bottom: 1px solid #e5e5e5;
+    width: 100%;
+}
+
+/* Generic Tab Navigation (Reusable anywhere) */
+.tab-navigation {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid #e5e5e5;
+    margin-top: 18px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #666666;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #1f2d2f;
+}
+
+.tab-btn.active {
+    color: #639A88;
+    font-weight: 700;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #639A88;
+}
+
+.confirm-btn {
+    background: #1d7a4a;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 8px;
+}
+
+.confirm-btn:hover {
+    background: #17633c;
+}
+
+.confirm-btn:active {
+    transform: scale(0.97);
+}
+
+.reject-btn {
+    background: #ffffff;
+    color: #a33434;
+    border: 1px solid #dca6a6;
+    padding: 8px 16px;      /* Matches booking-view-btn padding */
+    border-radius: 4px;     /* Matches booking-view-btn radius (4px) */
+    font-size: 13px;        /* Matches table action font size */
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 6px;       /* Spacing between buttons */
+    transition: 0.2s ease;
+}
+
+.reject-btn:hover {
+    background: #fbe8e8;
+}
+
+.reject-btn:active {
+    transform: scale(0.97);
+}
+.client-header-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.page-header {
+    width: 100%;
+}
+.client-controls-bar {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: -37px;
+    margin-bottom: -13px;
+}
+
+.client-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toast {
+    position: fixed;
+    top: 90px;
+    right: 25px;
+    min-width: 320px;
+    max-width: 420px;
+    background: #fff;
+    border-left: 5px solid #2e7d32;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+    padding: 18px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(50px);
+    transition: .35s;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.toast i {
+    font-size: 24px;
+    color: #2e7d32;
+}
+
+.toast strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 17px;
+}
+
+.toast p {
+    margin: 0;
+    color: #555;
+    line-height: 1.5;
+}
+
+.client-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.table-search-box {
+    position: relative;
+}
+
+.table-search-box input {
+    width: 210px;
+    height: 38px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    padding: 0 35px 0 12px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #333333;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.table-search-box i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999999;
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.table-filter-btn {
+    background: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    height: 38px;
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #777777;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.table-filter-btn:hover {
+    background: #f9f9f9;
+}
+
+.add-new-client-btn {
+    background-color: #639A88;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    height: 38px;
+    padding: 0 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.add-new-client-btn:hover {
+    background-color: #528373;
+}
+
+.ui-table-card-panel {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    overflow-x: auto;
+    /* Enables smooth horizontal scroll for 11 columns */
+    min-height: 580px;
+    width: 100%;
+}
+
+.ui-data-grid {
+    width: 100%;
+    min-width: 1200px;
+    /* Ensures wide tables do not squash text headers */
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.ui-data-grid thead tr {
+    background-color: #639A88;
+}
+
+.ui-data-grid th {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 14px 18px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.ui-data-grid td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f2f2f2;
+    color: #333333;
+    font-size: 13.5px;
+    vertical-align: middle;
+}
+
+.confirm-btn,
+.reject-btn,
+.complete-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.complete-btn {
+    border: 1px solid #38BDF8 !important;  /* Soft neon/sky blue border */
+    background: #E0F2FE !important;        /* Light blue tint background */
+    color: #0284C7 !important;             /* High-contrast blue text */
+    padding: 10px 18px !important;         /* Matches Delete button padding */
+    border-radius: 8px !important;         /* Matches Delete button radius */
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    min-width: 110px !important;
+    transition: 0.2s ease !important;
+}
+
+.complete-btn:hover {
+    background: #BAE6FD !important;        /* Hover color */
+    border-color: #0284C7 !important;
+}
+
+
+.filter-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.filter-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background-color: #ffffff;
+    width: 180px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    padding: 8px 0 4px 0;
+}
+
+.filter-dropdown-menu.show {
+    display: flex;
+}
+
+.dropdown-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #999999;
+    text-transform: uppercase;
+    padding: 4px 14px 8px 14px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 4px;
+}
+
+.dropdown-scroll-area {
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.filter-dropdown-menu a {
+    font-size: 13px;
+    color: #333333;
+    padding: 8px 14px;
+    text-decoration: none;
+    display: block;
+    font-family: inherit;
+    transition: background-color 0.1s ease;
+}
+
+.filter-dropdown-menu a:hover {
+    background-color: #f5f5f5;
+    color: #1f2d2f;
+}
+
+.filter-dropdown-menu a.clear-filter {
+    color: #cc3333;
+    font-weight: 500;
+    padding-top: 8px;
+}
+
+.filter-dropdown-menu a.clear-filter:hover {
+    background-color: #fff3f3;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #f0f0f0;
+    margin: 4px 0;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-card {
+    background: #ffffff;
+    width: 420px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    transform: translateY(-20px);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.show .modal-card {
+    transform: translateY(0);
+}
+
+.modal-header {
+    background-color: #639A88;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+}
+
+.modal-header i {
+    font-size: 22px;
+}
+
+.modal-header h2 {
+    font-size: 22px;
+    font-weight: 500;
+    margin: 0;
+    letter-spacing: 0.3px;
+}
+
+.modal-form {
+    padding: 24px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-instruction {
+    text-align: center;
+    color: #777777;
+    font-size: 15px;
+    font-weight: 400;
+    margin: 0 0 6px 0;
+}
+
+.form-field {
+    position: relative;
+    width: 100%;
+}
+
+.form-field input,
+.form-field select {
+    width: 100%;
+    height: 46px;
+    border: 1px solid #c8c8c8;
+    border-radius: 6px;
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #333333;
+    outline: none;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+    border-color: #233539;
+}
+
+.form-field input::placeholder {
+    color: #a0a0a0;
+}
+
+.select-field-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding-right: 40px;
+}
+
+.select-field-wrapper select:invalid,
+.select-field-wrapper select option[value=""] {
+    color: #a0a0a0;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #777777;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.date-field-wrapper {
+    position: relative;
+}
+
+.date-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #777777;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.save-client-btn {
+    background-color: #639A88;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    height: 48px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.save-client-btn:hover {
+    background-color: #528373;
+}
+
+/* =========================================================
+   NOTIFICATION DROPDOWN & TRIGGER BUTTON STYLING
+========================================================= */
+
+div.notification-wrapper,
+.notification-container {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+button.notification-btn,
+#notificationBtn {
+    position: relative !important;
+    background: transparent !important;
+    border: none !important;
+    color: #353535 !important;
+    font-size: 18px !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    transition: background 0.2s ease, color 0.2s ease !important;
+}
+
+button.notification-btn:hover,
+#notificationBtn:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #111111 !important;
+}
+
+span.notification-badge,
+#notificationCount {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    min-width: 17px !important;
+    height: 17px !important;
+    padding: 0 4px !important;
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid #ffffff !important;
+}
+
+.notification-dropdown,
+.notification-panel {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    width: 430px !important;
+    max-height: 480px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12) !important;
+    z-index: 10000 !important;
+    display: none;
+    overflow: hidden !important;
+}
+
+.notification-dropdown.show,
+.notification-panel.show {
+    display: block !important;
+}
+
+.notification-header {
+    height: 50px !important;
+    padding: 0 15px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+    background: #ffffff !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+}
+
+.notification-header h3,
+.notification-header strong {
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    color: #333333 !important;
+}
+
+.notification-header button {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #639A88 !important;
+    cursor: pointer !important;
+    transition: color 0.2s ease !important;
+}
+
+.notification-header button:hover {
+    color: #528373 !important;
+}
+
+#notificationList,
+.notification-list {
+    max-height: 430px !important;
+    overflow-y: auto !important;
+}
+
+/* Scrollbar matching standard WebKit/Windows scrollbar style */
+#notificationList::-webkit-scrollbar,
+.notification-dropdown::-webkit-scrollbar {
+    width: 18px !important;
+}
+
+#notificationList::-webkit-scrollbar-track,
+.notification-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+}
+
+#notificationList::-webkit-scrollbar-thumb,
+.notification-dropdown::-webkit-scrollbar-thumb {
+    background-color: #888888 !important;
+    border-radius: 10px !important;
+    border: 3px solid #f1f1f1 !important;
+    /* creates the inner padding around the scroll pill */
+}
+
+#notificationList::-webkit-scrollbar-thumb:hover,
+.notification-dropdown::-webkit-scrollbar-thumb:hover {
+    background-color: #555555 !important;
+}
+
+/* Scrollbar arrow buttons (up/down arrows) */
+#notificationList::-webkit-scrollbar-button,
+.notification-dropdown::-webkit-scrollbar-button {
+    display: block !important;
+    height: 14px !important;
+    background-color: #f1f1f1 !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+
+/* Up arrow button */
+#notificationList::-webkit-scrollbar-button:single-button:vertical:decrement,
+.notification-dropdown::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23666666' viewBox='0 0 16 16'><path d='M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592c.86 0 1.32-1.012.753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z'/></svg>") !important;
+}
+
+/* Down arrow button */
+#notificationList::-webkit-scrollbar-button:single-button:vertical:increment,
+.notification-dropdown::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23666666' viewBox='0 0 16 16'><path d='M7.247 11.14l-4.796-5.481c-.566-.647-.106-1.659.753-1.659h9.592c.86 0 1.32 1.012.753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>") !important;
+}
+
+/* Individual Notification Items */
+.notification-item {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    background: #ffffff !important;
+}
+
+.notification-item:last-child {
+    border-bottom: none !important;
+}
+
+.notification-item:hover {
+    background: #f8f9fc !important;
+}
+
+.notification-item.unread {
+    background: #f0f7f4 !important;
+}
+
+/* Left Icon Styling Matching Info Card Icon Frame */
+.notification-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    background: rgba(53, 53, 53, 0.1) !important;
+    color: #353535 !important;
+    font-size: 16px !important;
+    box-shadow: none !important;
+}
+
+.notification-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.notification-content h4 {
+    margin: 0 0 2px 0 !important;
+    color: #222222 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+.notification-content p,
+.notification-content .notification-message {
+    font-size: 12.5px !important;
+    /* <-- CHANGE BODY FONT SIZE HERE */
+    font-weight: 400 !important;
+    /* <-- CHANGE BODY WEIGHT HERE */
+    line-height: 1.4 !important;
+    /* <-- CHANGE LINE HEIGHT/SPACING HERE */
+    color: #666666 !important;
+    /* <-- CHANGE TEXT COLOR HERE */
+    margin: 0 0 4px 0 !important;
+}
+
+.notification-content small {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: #888888 !important;
+    font-size: 11.5px !important;
+}
+
+.notification-list-empty {
+    text-align: center !important;
+    padding: 30px 15px !important;
+    color: #888888 !important;
+    font-size: 13px !important;
+}
+
+/* ==========================================================================
+   LAYOUT WRAPPER & SIDEBAR
+   ========================================================================== */
+.dashboard-wrapper {
+    display: flex;
+    height: calc(100vh - 70px);
+}
+
+.sidebar {
+    width: 230px;
+    background: white;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 25px 18px;
+    transition: width 0.3s ease;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+    width: 70px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Keep navigation centered when collapsed */
+.sidebar.collapsed nav a {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    gap: 0;
+    font-size: 0;
+    /* Hides text label */
+}
+
+/* Keep icons visible when collapsed */
+.sidebar.collapsed nav a i {
+    width: 18px;
+    margin: 0;
+    font-size: 15px;
+}
+
+/* Logout button collapsed state */
+.sidebar.collapsed .logout-btn {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    gap: 0;
+}
+
+.sidebar.collapsed .logout-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .logout-icon {
+    margin: 0;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: absolute;
+    left: 235px;
+    top: 100px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e5e5e5;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: left 0.3s ease, transform 0.3s ease, background 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    background: #f5f5f5;
+}
+
+/* Move toggle button position when sidebar is collapsed */
+.dashboard-wrapper:has(.sidebar.collapsed) .sidebar-toggle {
+    left: 70px;
+}
+
+.content {
+    flex: 1;
+    padding: 35px;
+    overflow: auto;
+}
+
+.sidebar.collapsed~.content {
+    margin-left: 10px;
+}
+
+/* =========================================================
+   STATUS BADGES & ANIMATIONS
+========================================================= */
+
+/* Base badge styling */
+.status-badge,
+.payment-status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* --- PAYMENT STATUS BADGES --- */
+.status-badge[class*="paid"],
+.payment-status-badge[class*="paid"],
+.status-badge[class*="verified"],
+.payment-status-badge[class*="verified"],
+.status-badge.paid,
+.payment-paid {
+    background-color: rgba(34, 197, 94, 0.15) !important;
+    color: #16a34a !important;
+    border: 1px solid #6ee7b7 !important;
+}
+
+/* 2. Payment Failed -> RED BACKGROUND */
+.status-badge[class*="failed"],
+.payment-status-badge[class*="failed"],
+.status-badge[class*="rejected"],
+.payment-status-badge[class*="rejected"],
+.status-badge.failed,
+.payment-failed {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5 !important;
+}
+
+/* 3. Pending Payment -> YELLOW BACKGROUND */
+.status-badge[class*="pending"],
+.payment-status-badge[class*="pending"],
+.status-badge.payment-pending,
+.payment-pending {
+    background-color: #fff3cd !important;
+    color: #b7791f !important;
+    border: 1px solid #f6d365 !important;
+}
+
+span.status-badge.downpayment-paid,
+span.booking-status.downpayment-paid,
+span.payment-status-badge.downpayment-paid,
+span.payment-status.downpayment-paid,
+.status-badge.downpayment-paid,
+.booking-status.downpayment-paid,
+.payment-status-badge.downpayment-paid,
+.payment-status.downpayment-paid {
+    background-color: #E2F4EE !important; /* Soft mint / teal tint background */
+    color: #0F766E !important;             /* Deep, readable teal text */
+    border: 1px solid #5EEAD4 !important;  /* Bright aqua border */
+}
+
+.ui-data-grid .booking-status.downpayment-paid,
+.ui-data-grid span.booking-status[class*="downpayment"] {
+    background-color: #E2F4EE !important;
+    color: #0F766E !important;
+    border: 1px solid #5EEAD4 !important;
+}
+
+/* --- BOOKING STATUS BADGES --- */
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #b7791f;
+    border: 1px solid #f6d365;
+}
+
+.status-badge.confirmed {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #16A34A;
+    border: 1px solid #6ee7b7;
+}
+
+.status-badge.completed {
+    background-color: #e3edff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.status-badge.cancelled {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
+
+.status-badge.rejected {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+
+.access-action-btn {
+    min-width: 95px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.payment-status-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.payment-paid {
+    background: #dff3ea;
+    color: #35745f;
+}
+
+.payment-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-processing {
+    background: #e7f0ff;
+    color: #4169a1;
+}
+
+.payment-failed {
+    background: #f8dddd;
+    color: #a84b4b;
+}
+
+.payment-proof-btn {
+    border: 0;
+    background: #639A88;
+    color: #fff;
+    border-radius: 5px;
+    padding: 7px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.payment-proof-btn:hover {
+    background: #528373;
+}
+
+.payment-proof-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, .72);
+}
+
+.payment-proof-modal.show {
+    display: flex;
+}
+
+.payment-proof-card {
+    width: min(800px, 96vw);
+    max-height: 94vh;
+    overflow: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    position: relative;
+    padding: 20px;
+}
+
+.payment-proof-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 2;
+}
+
+/* Creating the two cross lines with rounded caps */
+.payment-proof-close::before,
+.payment-proof-close::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;                 /* Length of the icon arms */
+    height: 2.5px;               /* Thickness of the lines */
+    background-color: #555555;   /* Color of the X */
+    border-radius: 10px;         /* Creates circular ends on each line cap */
+}
+
+.payment-proof-close::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.payment-proof-close::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.payment-proof-close:hover::before,
+.payment-proof-close:hover::after {
+    background-color: #2c3e50;
+}
+
+.payment-proof-header {
+    padding: 0 48px 14px 4px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+.payment-proof-header h2 {
+    margin: 0 0 5px;
+    font-size: 20px;
+    color: #353535;
+}
+
+.payment-proof-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 20px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    color: #555;
+}
+
+.payment-proof-image-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+    background: #f7f7f7;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.payment-proof-image {
+    display: block;
+    max-width: 100%;
+    max-height: 68vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+body.payment-proof-modal-open {
+    overflow: hidden;
+}
+
+@media (max-width: 700px) {
+    .payment-proof-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+#paymentProofName {
+    background-color: #639A88;
+    color: #ffffff;
+    border-radius: 50px;
+    width: fit-content;
+    height: 27px;
+    /* Adjust height directly (e.g., 36px) OR use padding below */
+    padding: 6px 16px;
+    /* Creates inner spacing around the name */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.rejection-modal-card {
+    width: min(500px, 92vw);
+    max-width: 500px;
+}
+
+.rejection-modal-card .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rejection-modal-card .modal-header i {
+    color: #c95c5c;
+    font-size: 20px;
+}
+
+.rejection-modal-card .modal-header h2 {
+    margin: 0;
+}
+
+.rejection-modal-card .form-instruction {
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.rejection-modal-card select,
+.rejection-modal-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.rejection-modal-card textarea {
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    resize: vertical;
+    outline: none;
+}
+
+.rejection-modal-card textarea:focus {
+    border-color: #c95c5c;
+}
+
+.rejection-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.rejection-cancel-btn {
+    border: 0;
+    border-radius: 6px;
+    padding: 9px 16px;
+    background: #eee;
+    color: #0f0d0d;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.rejection-cancel-btn:hover {
+    background: #e2e2e2;
+}
+
+.rejection-confirm-btn {
+    border: 0;
+    border-radius: 6px;
+    padding: 9px 16px;
+    background: #c95c5c;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.rejection-confirm-btn:hover {
+    opacity: .9;
+}
+
+.rejection-confirm-btn:disabled,
+.rejection-cancel-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+    .ui-table-card-panel {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ui-data-grid {
+        min-width: max-content;
+    }
+}
+
+.verify-access-btn {
+    background: #669f8d;
+    color: #fff;
+    border-color: #669f8d;
+}
+
+.verify-access-btn:hover {
+    background: #578f7d;
+    border-color: #578f7d;
+}
+
+.approved-action-btn {
+    background: #e8f5ef;
+    color: #2f7d5f;
+    border-color: #b9dfcd;
+    cursor: default;
+}
+
+.rejected-action-btn {
+    background: #fff0f0;
+    color: #d9534f;
+    border-color: #ffb3b3;
+    cursor: default;
+}
+
+.access-action-btn:disabled {
+    opacity: 1;
+}
+
+@keyframes notifFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media(max-width: 1024px) {
+    .client-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .client-actions-row {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+/* =========================================================
+   CLIENT TABLE - HORIZONTAL SCROLL
+   ========================================================= */
+
+.ui-table-card-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    box-sizing: border-box;
+    overflow: hidden !important;
+}
+
+/* ACTUAL SCROLL AREA */
+.table-scroll-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    display: block !important;
+    box-sizing: border-box;
+
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: auto;
+}
+
+/* Make the table wider than the screen */
+.table-scroll-container .ui-data-grid {
+    width: 1900px !important;
+    min-width: 1900px !important;
+    max-width: none !important;
+
+    table-layout: auto !important;
+    border-collapse: collapse;
+}
+
+/* Keep columns from shrinking */
+.table-scroll-container .ui-data-grid th,
+.table-scroll-container .ui-data-grid td {
+    white-space: nowrap !important;
+    vertical-align: middle;
+}
+
+/* Email */
+.table-scroll-container .ui-data-grid td:nth-child(4) {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Contact */
+.table-scroll-container .ui-data-grid td:nth-child(3) {
+    min-width: 130px;
+}
+
+/* Notes */
+.table-scroll-container .ui-data-grid td:nth-child(12) {
+    white-space: normal !important;
+    min-width: 150px;
+    max-width: 350px;
+    overflow-wrap: break-word;
+}
+
+/* Buttons */
+.table-scroll-container .ui-data-grid button {
+    white-space: nowrap !important;
+}
+
+/* Chrome / Edge scrollbar */
+.table-scroll-container::-webkit-scrollbar {
+    height: 14px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #e5e5e5 !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #639A88 !important;
+    border-radius: 7px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #528373 !important;
+}
+
+/* =========================================================
+   FIX TABLE HORIZONTAL SCROLL
+   ========================================================= */
+
+/* Allow the main content area to shrink */
+.content {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+/* The card itself stays within the content width */
+.ui-table-card-panel {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+}
+
+/* THIS is the scrolling element */
+.table-scroll-container {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    box-sizing: border-box !important;
+
+    -webkit-overflow-scrolling: touch !important;
+
+    scrollbar-width: auto !important;
+}
+
+/* Force the table to be wider than the screen */
+.table-scroll-container .ui-data-grid {
+    display: table !important;
+
+    width: 1900px !important;
+    min-width: 1900px !important;
+    max-width: none !important;
+
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+}
+
+/* Prevent columns from shrinking */
+.table-scroll-container .ui-data-grid th,
+.table-scroll-container .ui-data-grid td {
+    white-space: nowrap !important;
+}
+
+/* Keep buttons together */
+.table-scroll-container .ui-data-grid button {
+    white-space: nowrap !important;
+}
+
+/* Make scrollbar visible in Chrome / Edge */
+.table-scroll-container::-webkit-scrollbar {
+    height: 16px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #e5e5e5 !important;
+    border-radius: 8px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #639A88 !important;
+    border-radius: 8px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #528373 !important;
+}
+
+.booking-status-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 18px;
+    padding-bottom: 0;
+    overflow: visible;
+}
+
+.booking-status-tab {
+    position: relative;
+    border: 1px solid #cdd5d2;
+    background: #ffffff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #353535;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.booking-status-tab:hover {
+    color: #3f7567;
+    border-color: #639A88;
+    background: #f3f8f6;
+}
+
+.booking-status-tab.active {
+    color: #ffffff;
+    background: #639A88;
+    border-color: #639A88;
+    font-weight: 600;
+}
+
+.booking-status-tab .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e9e7;
+    color: #444444;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+}
+
+.booking-status-tab.active .tab-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+#clientTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    background: #ffffff;
+
+    color: #252827;
+
+    border: 1px solid #e1e5e3;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+
+/* TABLE HEADER */
+
+#clientTable thead th {
+    background: #639A88;
+
+    color: #ffffff;
+
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+
+    padding: 13px 16px;
+
+    text-align: left;
+
+    border: none;
+}
+
+
+/* TABLE BODY */
+
+#clientTable tbody td {
+    background: #ffffff;
+
+    color: #303534;
+
+    font-size: 13px;
+
+    padding: 14px 16px;
+
+    border-bottom: 1px solid #e8ecea;
+
+    vertical-align: middle;
+}
+
+
+/* ALTERNATING ROW */
+
+#clientTable tbody tr:nth-child(even) td {
+    background: #fbfcfc;
+}
+
+
+/* HOVER */
+
+#clientTable tbody tr:hover td {
+    background: #f3f8f6;
+}
+
+
+/* LAST ROW */
+
+#clientTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+.client-name-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.client-name-cell strong {
+    color: #202322;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.client-name-cell span {
+    color: #707775;
+    font-size: 12px;
+}
+
+
+.booking-date-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.booking-date-cell strong {
+    color: #292d2c;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.booking-date-cell span {
+    color: #707775;
+    font-size: 12px;
+}
+
+
+
+.payment-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px 11px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+/* PAID */
+
+.payment-status.paid {
+    background: #dff2e9;
+    color: #176448;
+}
+
+
+/* PENDING */
+
+.payment-status.pending {
+    background: #fff1cc;
+    color: #805b00;
+}
+AILED */
+
+.payment-status.failed {
+    background: #fbe2e2;
+    color: #9b2929;
+}
+
+.booking-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px 11px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+.booking-status.pending {
+    background: #fff1cc;
+    color: #805b00;
+}
+
+.booking-status.confirmed {
+    background: #dff2e9;
+    color: #176448;
+}
+
+.booking-status.completed {
+    background: #e4edf8;
+    color: #0284C7;
+}
+
+
+.booking-status.rejected,
+.booking-status.cancelled {
+    background: #fbe2e2;
+    color: #9b2929;
+}
+
+.booking-view-btn {
+    border: 1px solid #639A88;
+    background: #ffffff;
+    color: #3f7567;
+    padding: 6px 13px;
+    border-radius: 4px;
+    font-family: "DM Sans", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.booking-view-btn:hover {
+    background: #639A88;
+    color: #ffffff;
+}
+.delete-rejected-btn {
+    border: 1px solid #e8aaaa;
+    background: #fbe2e2;
+    color: #9b2929;
+    padding: 10px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 110px;
+}
+
+.delete-rejected-btn:hover {
+    background: #f6d4d4;
+    border-color: #d98f8f;
+}
+
+.delete-rejected-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/*PENDING PAYMENT STATUS ACTIONS*/
+
+.confirm-btn {
+    background: #ffffff;       /* Neon-y green background tint */
+    color: #16A34A;           /* High-contrast neon green text */
+    border: 1px solid #4ADE80; /* Neon green border matching your confirmed status badges */
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 6px;
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 3px;
+}
+
+.confirm-btn:hover {
+    background: #bbf7d0;       /* Slightly darker neon green on hover */
+    border-color: #22c55e;
+}
+.reject-btn {
+    background: #ffffff;
+    color: #a33434;
+    border: 1px solid #dca6a6;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 6px;
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: -6px !important;
+}
+
+.reject-btn:hover {
+    background: #fbe8e8;
+}
+
+
+/* =========================================================
+   COMPLETE BUTTON
+   ========================================================= */
+
+.complete-btn {
+    border: 1px solid #38BDF8 !important;  /* Soft neon/sky blue border */
+    background: #E0F2FE !important;        /* Light blue tint background */
+    color: #0284C7 !important;             /* High-contrast blue text */
+    padding: 10px 18px !important;         /* Matches Delete button padding */
+    border-radius: 5px !important;         /* Matches Delete button radius */
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    min-width: 110px !important;
+    transition: 0.2s ease !important;
+}
+
+.complete-btn:hover {
+    background: #BAE6FD !important;        /* Hover color */
+    border-color: #0284C7 !important;
+}
+
+
+/* =========================================================
+   EMPTY TABLE
+   ========================================================= */
+
+.empty-table-message {
+    text-align: center;
+
+    padding: 45px !important;
+
+    color: #737a78 !important;
+
+    font-size: 14px;
+}
+
+
+#clientTable td strong {
+    color: #252827;
+}
+
+.client-controls input {
+    color: #292d2c;
+    background: #ffffff;
+    border: 1px solid #cfd6d3;
+}
+
+.client-controls input::placeholder {
+    color: #8a918f;
+}
+
+.client-controls input:focus {
+    border-color: #639A88;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(99, 154, 136, 0.12);
+}
+
+.client-controls button {
+    color: #3f7567;
+    background: #ffffff;
+    border: 1px solid #cfd6d3;
+}
+
+.client-controls button:hover {
+    background: #f3f8f6;
+    border-color: #639A88;
+}
+/* =========================================================
+   FINAL STATUS BADGE COLORS
+   Put this at the VERY END of the CSS
+   ========================================================= */
+
+.status-badge,
+.booking-status,
+.payment-status-badge,
+.payment-status {
+    font-family: "DM Sans", sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    letter-spacing: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+
+/* COMPLETED */
+.status-badge.completed,
+.booking-status.completed {
+    background-color: #E0F2FE !important; /* Bright, clean neon/sky blue background */
+    color: #0284C7 !important;             /* Vibrant high-contrast blue text */
+    border: 1px solid #38BDF8 !important;
+}
+
+
+/* CONFIRMED */
+.status-badge.confirmed,
+.booking-status.confirmed {
+    background-color: #DCFCE7 !important; /* Bright, vivid neon-tinted green background */
+    color: #16A34A !important;             /* High-contrast neon green text */
+    border: 1px solid #4ADE80 !important;
+}
+
+
+/* PENDING */
+.status-badge.pending,
+.booking-status.pending {
+    background-color: #FFF4D6 !important;
+    color: #805B00 !important;
+    border: 1px solid #E8C96A !important;
+}
+
+
+/* REJECTED */
+.status-badge.rejected,
+.booking-status.rejected {
+    background-color: #FDE2E2 !important;
+    color: #9B2929 !important;
+    border: 1px solid #E8AAAA !important;
+}
+
+
+/* CANCELLED */
+.status-badge.cancelled,
+.booking-status.cancelled {
+    background-color: #F0F1F2 !important;
+    color: #4B5563 !important;
+    border: 1px solid #D1D5DB !important;
+}
+
+
+/* PAYMENT PAID */
+.status-badge.paid,
+.payment-status-badge.paid,
+.payment-paid,
+.payment-status.paid {
+    background-color: #DFF2E9 !important;
+    color: #176448 !important;
+    border: 1px solid #A8D8C5 !important;
+}
+
+
+/* PAYMENT PENDING */
+.status-badge.payment-pending,
+.payment-status-badge.pending,
+.payment-pending,
+.payment-status.pending {
+    background-color: #FFF4D6 !important;
+    color: #805B00 !important;
+    border: 1px solid #E8C96A !important;
+}
+
+
+/* PAYMENT FAILED */
+.status-badge.failed,
+.payment-status-badge.failed,
+.payment-failed,
+.payment-status.failed {
+    background-color: #FDE2E2 !important;
+    color: #9B2929 !important;
+    border: 1px solid #E8AAAA !important;
+}
+/* =========================================================
+   BOOKING VIEW BUTTON
+========================================================= */
+
+.booking-view-btn {
+    border: 1px solid #639a88;
+    background: #ffffff;
+    color: #639a88;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.booking-view-btn:hover {
+    background: #639a88;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   BOOKING DETAILS MODAL
+========================================================= */
+
+.booking-details-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 30, 28, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 3000;
+}
+
+.booking-details-modal.show {
+    display: flex;
+}
+
+.booking-details-card {
+    width: min(760px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.booking-details-close {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    color: #777;
+    cursor: pointer;
+}
+
+.booking-details-close:hover {
+    color: #222;
+}
+
+.booking-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.booking-details-eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #639a88;
+    margin-bottom: 5px;
+}
+
+.booking-details-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #26332f;
+}
+
+.booking-details-header p {
+    margin: 6px 0 0;
+    color: #777;
+    font-size: 13px;
+}
+
+.booking-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.booking-detail-item {
+    background: #f7f9f8;
+    border: 1px solid #e7ecea;
+    border-radius: 8px;
+    padding: 13px 15px;
+}
+
+.booking-detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.booking-detail-label {
+    display: block;
+    font-size: 11px;
+    color: #7b8581;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.booking-detail-value {
+    display: block;
+    color: #27332f;
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.booking-payment-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.booking-payment-summary > div {
+    border: 1px solid #e1e8e5;
+    border-radius: 10px;
+    padding: 15px;
+    background: #ffffff;
+}
+
+.booking-payment-summary span {
+    display: block;
+    font-size: 11px;
+    color: #7b8581;
+    margin-bottom: 5px;
+}
+
+.booking-payment-summary strong {
+    font-size: 17px;
+    color: #26332f;
+}
+
+.booking-details-proof {
+    margin-top: 18px;
+}
+
+.booking-details-proof .payment-proof-btn {
+    border: 1px solid #639a88;
+    background: #ffffff;
+    color: #639a88;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+}
+
+.booking-details-proof .payment-proof-btn:hover {
+    background: #639a88;
+    color: #ffffff;
+}
+
+.booking-details-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e7ecea;
+}
+
+.booking-details-actions button {
+    min-width: 110px;
+}
+
+.booking-modal-close-btn {
+    border: 1px solid #d8dfdc;
+    background: #ffffff;
+    color: #555;
+    padding: 10px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+}
+
+.booking-modal-close-btn:hover {
+    background: #f2f4f3;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .booking-details-card {
+        padding: 22px;
+    }
+
+    .booking-details-header {
+        flex-direction: column;
+    }
+
+    .booking-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-detail-item.full-width {
+        grid-column: auto;
+    }
+
+    .booking-payment-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-details-actions {
+        flex-direction: column-reverse;
+    }
+
+    .booking-details-actions button {
+        width: 100%;
+    }
+}
+/* =========================================================
+   BOOKING DETAILS MODAL
+========================================================= */
+
+.booking-details-modal {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.55);
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    z-index: 9999;
+}
+
+.booking-details-modal.show {
+    display: flex;
+}
+
+
+.booking-details-card {
+    position: relative;
+    width: min(780px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.20);
+}
+
+
+/* CLOSE */
+
+.booking-details-close {
+    position: absolute;
+
+    top: 16px;
+    right: 18px;
+
+    width: 38px;
+    height: 38px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f1f3f2;
+
+    color: #333;
+
+    font-size: 24px;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-details-close:hover {
+    background: #e5e9e7;
+}
+
+
+/* HEADER */
+
+.booking-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 26px;
+}
+
+.booking-details-eyebrow {
+    display: block;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color: #639A88;
+
+    margin-bottom: 6px;
+}
+
+.booking-details-header h2 {
+    margin: 0;
+    font-size: 25px;
+    color: #222;
+}
+
+.booking-details-header p {
+    margin: 5px 0 0;
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* DETAILS GRID */
+
+.booking-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.booking-detail-item {
+    padding: 14px 16px;
+    border: 1px solid #e7ebe9;
+    border-radius: 5px;
+    background: #fafcfb;
+}
+
+.booking-detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.booking-detail-label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.booking-detail-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222;
+    word-break: break-word;
+}
+
+
+/* PAYMENT SUMMARY */
+
+.booking-payment-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.booking-payment-box {
+    padding: 16px;
+    border-radius: 5px;
+    background: #f5f8f7;
+    border: 1px solid #e1e9e6;
+}
+
+.booking-payment-summary > div {
+    border: 1px solid #e1e8e5;
+    border-radius: 5px; /* <-- Change this to your desired radius */
+    padding: 15px;
+    background: #ffffff;
+}
+
+.booking-payment-box span {
+    display: block;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 6px;
+}
+
+.booking-payment-box strong {
+    display: block;
+    font-size: 18px;
+    color: #2f5147;
+}
+
+/* PAYMENT PROOF */
+
+.booking-details-proof {
+    margin-bottom: 20px;
+}
+
+.booking-details-proof:empty {
+    display: none;
+}
+
+.booking-details-proof .payment-proof-btn {
+    border: none;
+
+    background: #eef5f2;
+
+    color: #477b6b;
+
+    padding: 10px 15px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: 600;
+}
+
+
+/* ACTIONS */
+
+.booking-details-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #eeeeee;
+}
+
+
+/* VIEW BUTTON */
+
+.booking-view-btn {
+    border: none;
+    background: #639A88;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.booking-view-btn:hover {
+    background: #527f70;
+}
+
+
+/* MODAL CLOSE ACTION */
+
+.booking-modal-close-btn {
+    border: 1px solid #d7d7d7;
+    background: white;
+    color: #353535;
+    padding: 10px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 650px) {
+
+    .booking-details-modal {
+        padding: 12px;
+    }
+
+    .booking-details-card {
+        padding: 22px;
+
+        max-height: 94vh;
+    }
+
+    .booking-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-detail-item.full-width {
+        grid-column: auto;
+    }
+
+    .booking-payment-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-details-header {
+        flex-direction: column;
+    }
+
+    .booking-details-actions {
+        flex-direction: column-reverse;
+    }
+
+    .booking-details-actions button {
+        width: 100%;
+    }
+
+}
+/* =========================================================
+   REJECTION MODAL - DISPLAY FIX
+========================================================= */
+
+.simple-rejection-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 99999 !important;
+}
+
+.simple-rejection-modal.show {
+    display: flex !important;
+}
+
+.simple-rejection-card {
+    position: relative !important;
+    width: 520px !important;
+    max-width: 92vw !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    background: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18) !important;
+    z-index: 100000 !important;
+}
+
+#rejectionForm {
+    padding: 0 24px 24px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#rejectionModal h2 {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 20px 24px 16px !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+#rejectionModal p {
+    padding: 16px 24px 0 24px !important;
+    margin: 0 0 16px 0 !important;
+    color: #666 !important;
+    font-size: 13px !important;
+}
+
+#rejectionForm .form-field {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+    padding: 0 !important;
+}
+
+#rejectionModal select {
+    width: 100% !important;
+    height: 42px !important;
+    padding: 0 35px 0 12px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 5px !important;
+    background: #ffffff !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+}
+
+.simple-rejection-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    margin-top: 10px !important;
+    padding: 0 !important;
+}
+
+.rejection-cancel-btn,
+#cancelRejectionBtn {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+    padding: 10px 18px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.rejection-confirm-btn,
+#confirmRejectionBtn {
+    background: #c95c5c !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 10px 18px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* =========================================================
+   NO SHOW STATUS
+   ========================================================= */
+
+.status-badge.no-show,
+.booking-status.no-show {
+    background-color: #F3F0E8 !important;
+    color: #756B4A !important;
+    border: 1px solid #D8CFB5 !important;
+}
+
+/* =========================================================
+   NO SHOW BUTTON
+   ========================================================= */
+
+.no-show-btn {
+    background: #ffffff;
+    color: #756B4A;
+    border: 1px solid #D8CFB5;
+    padding: 8px 16px;      /* Matches reject-btn padding */
+    border-radius: 4px;     /* Matches reject-btn border-radius */
+    font-size: 13px;        /* Matches table action font size */
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 6px;       /* Spacing between buttons */
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.no-show-btn:hover {
+    background: #F3F0E8;
+    border-color: #C8BFA3;
+    color: #625A3E;
+}
+
+.no-show-btn:active {
+    transform: scale(0.97);
+}
+
+/* =========================================================
+   NO SHOW MODAL
+   ========================================================= */
+
+#noShowModal {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 99999 !important;
+}
+
+#noShowModal.show {
+    display: flex !important;
+}
+
+#noShowModal .simple-rejection-card {
+    position: relative !important;
+    width: 520px !important;
+    max-width: 92vw !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    background: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18) !important;
+    z-index: 100000 !important;
+}
+
+#noShowModal .modal-header {
+    background-color: #ffffff !important;
+    padding: 20px 24px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    border-bottom: 1px solid #eee !important;
+    justify-content: flex-start !important;
+}
+
+#noShowModal .modal-header h2 {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    margin: 0 !important;
+}
+
+#noShowModal p {
+    padding: 16px 24px 0 24px !important;
+    margin: 0 0 16px 0 !important;
+    color: #666 !important;
+    font-size: 13px !important;
+    line-height: 1.5;
+}
+
+#noShowForm {
+    padding: 0 24px 24px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#noShowForm .form-field {
+    width: 100% !important;
+    margin-bottom: 3px !important;
+    padding: 0 !important;
+}
+
+#noShowNote {
+    width: 100% !important;
+    min-height: 100px !important;
+    padding: 12px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    outline: none !important;
+    color: #374151 !important;
+    resize: vertical !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+}
+
+#noShowNote:focus {
+    border-color: #639A88 !important;
+}
+
+#confirmNoShowBtn {
+    background: #639A88 !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 10px 18px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: background 0.2s ease !important;
+}
+
+#confirmNoShowBtn:hover {
+    background: #528373 !important;
+}
+
+#noShowModal .booking-card {
+    width: 520px;
+    max-width: 92vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+}
+
+#noShowModal .booking-header {
+    background: #ffffff !important;
+    color: #111827 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+#noShowModal .modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+#noShowModal .close-booking-modal {
+    border: none;
+    background: none;
+    color: #6b7280 !important;
+    font-size: 22px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+#noShowModal .close-booking-modal:hover {
+    color: #111827 !important;
+}
+
+#noShowModal .booking-body {
+    padding: 20px 24px 24px;
+    overflow-y: auto;
+}
+
+#noShowNote {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    color: #374151;
+    resize: vertical;
+    min-height: 90px;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+#noShowNote:focus {
+    border-color: #639A88;
+}
+
+#noShowNote::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+#noShowModal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+#cancelNoShowBtn {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    padding: 10px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#cancelNoShowBtn:hover {
+    background: #f9fafb;
+}
+
+#confirmNoShowBtn {
+    background: #639A88;
+    border: none;
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+#confirmNoShowBtn:hover {
+    background: #528373;
+}
+
+#confirmNoShowBtn:disabled,
+#cancelNoShowBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+    #noShowModal .simple-rejection-card {
+        width: calc(100% - 20px) !important;
+        padding: 22px !important;
+    }
+
+    .simple-rejection-actions {
+        flex-direction: column-reverse;
+    }
+
+    #cancelNoShowBtn,
+    #confirmNoShowBtn {
+        width: 100%;
+    }
+}
+
+/* Ensure the table cell containing the buttons behaves as a consistent flex container */
+.ui-data-grid td:last-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important; /* Uniform gap between all buttons in the action row */
+    white-space: nowrap !important;
+}
+
+/* Reset individual conflicting margins on all action buttons */
+.ui-data-grid td:last-child button,
+.ui-data-grid td:last-child .booking-view-btn,
+.ui-data-grid td:last-child .confirm-btn,
+.ui-data-grid td:last-child .reject-btn,
+.ui-data-grid td:last-child .complete-btn,
+.ui-data-grid td:last-child .no-show-btn,
+.ui-data-grid td:last-child .delete-rejected-btn {
+    margin: 0 !important; /* Removes custom offsets like negative margins */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+}
+
+
+/* ==========================================
+   RESCHEDULE BOOKING MODAL
+========================================== */
+
+#rescheduleModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(3px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#rescheduleModal.show {
+    display: flex;
+}
+
+#rescheduleModal .simple-rejection-card {
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    animation: rescheduleModalIn 0.2s ease;
+}
+
+@keyframes rescheduleModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#rescheduleModal h2 {
+    font-size: 23px;
+    font-weight: 700;
+    color: #222222;
+    margin: 0 0 8px;
+}
+
+#rescheduleModal p {
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+#rescheduleForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#rescheduleForm label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333333;
+    margin-top: 8px;
+}
+
+#rescheduleForm input,
+#rescheduleForm select,
+#rescheduleForm textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid #E2E2E2;
+    border-radius: 8px;
+    background: #FAFAFA;
+    color: #333333;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+#rescheduleForm input:focus,
+#rescheduleForm select:focus,
+#rescheduleForm textarea:focus {
+    border-color: #333333;
+    background: #ffffff;
+}
+
+#rescheduleForm textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+}
+
+#rescheduleForm .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#rescheduleForm button {
+    padding: 13px 18px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#cancelRescheduleBtn {
+    background: #ffffff;
+    color: #444444;
+    border: 1px solid #E2E2E2;
+}
+
+#cancelRescheduleBtn:hover {
+    background: #F5F5F5;
+}
+
+#submitRescheduleBtn {
+    background: #252525;
+    color: #ffffff;
+    border: 1px solid #252525;
+}
+
+#submitRescheduleBtn:hover {
+    background: #444444;
+}
+
+#submitRescheduleBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    #rescheduleModal {
+        padding: 12px;
+    }
+
+    #rescheduleModal .simple-rejection-card {
+        padding: 22px;
+    }
+
+    #rescheduleForm .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    #rescheduleForm button {
+        width: 100%;
+    }
+}
+
+/* =====================================================
+   RESCHEDULE BOOKING MODAL
+===================================================== */
+
+#rescheduleModal {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+#rescheduleModal.show {
+    display: flex;
+}
+
+#rescheduleModal .reschedule-card {
+    width: 100%;
+    max-width: 620px;
+    max-height: 92vh;
+    overflow-y: auto;
+    padding: 0;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.20);
+}
+
+/* HEADER */
+
+#rescheduleModal .reschedule-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 26px 28px 22px;
+    border-bottom: 1px solid #eeeeee;
+}
+
+#rescheduleModal .reschedule-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #f3f3f3;
+    color: #292929;
+    font-size: 19px;
+}
+
+#rescheduleModal .reschedule-heading {
+    flex: 1;
+    min-width: 0;
+}
+
+#rescheduleModal .reschedule-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    color: #888888;
+}
+
+#rescheduleModal .reschedule-heading h2 {
+    margin: 0;
+    color: #222222;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+#rescheduleModal .reschedule-heading p {
+    margin: 7px 0 0;
+    color: #777777;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+#rescheduleModal .reschedule-close {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #777777;
+    cursor: pointer;
+}
+
+#rescheduleModal .reschedule-close:hover {
+    background: #f3f3f3;
+    color: #222222;
+}
+
+/* EMERGENCY NOTICE */
+
+#rescheduleModal .reschedule-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 22px 28px 4px;
+    padding: 15px 16px;
+    border: 1px solid #f0dfc5;
+    border-radius: 9px;
+    background: #fffaf3;
+    color: #9a682b;
+}
+
+#rescheduleModal .reschedule-notice > i {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+#rescheduleModal .reschedule-notice strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#rescheduleModal .reschedule-notice p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #886b45;
+}
+
+/* FORM */
+
+#rescheduleModal #rescheduleForm {
+    padding: 22px 28px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+#rescheduleModal #rescheduleForm .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+}
+
+#rescheduleModal #rescheduleForm label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333333;
+}
+
+#rescheduleModal .required {
+    color: #c65c4b;
+}
+
+#rescheduleModal .optional-label {
+    margin-left: 5px;
+    font-size: 10px;
+    font-weight: 400;
+    color: #999999;
+}
+
+/* INPUTS */
+
+#rescheduleModal .reschedule-input-wrapper {
+    position: relative;
+}
+
+#rescheduleModal .reschedule-input-wrapper select {
+    appearance: none;
+    padding-right: 38px;
+}
+
+#rescheduleModal .reschedule-input-wrapper > i {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: #888888;
+    pointer-events: none;
+}
+
+#rescheduleModal #rescheduleForm input,
+#rescheduleModal #rescheduleForm select,
+#rescheduleModal #rescheduleForm textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #e3e3e3;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #333333;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#rescheduleModal #rescheduleForm input,
+#rescheduleModal #rescheduleForm select {
+    min-height: 43px;
+}
+
+#rescheduleModal #rescheduleForm textarea {
+    resize: vertical;
+    min-height: 85px;
+    line-height: 1.6;
+}
+
+#rescheduleModal #rescheduleForm input:focus,
+#rescheduleModal #rescheduleForm select:focus,
+#rescheduleModal #rescheduleForm textarea:focus {
+    border-color: #777777;
+    box-shadow: 0 0 0 3px rgba(50, 50, 50, 0.06);
+}
+
+/* SCHEDULE SECTION */
+
+#rescheduleModal .reschedule-schedule-section {
+    padding: 17px;
+    border: 1px solid #eeeeee;
+    border-radius: 9px;
+    background: #fafafa;
+}
+
+#rescheduleModal .reschedule-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 15px;
+}
+
+#rescheduleModal .reschedule-section-heading > i {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #eeeeee;
+    color: #444444;
+    font-size: 14px;
+}
+
+#rescheduleModal .reschedule-section-heading strong {
+    display: block;
+    font-size: 12px;
+    color: #292929;
+}
+
+#rescheduleModal .reschedule-section-heading span {
+    display: block;
+    margin-top: 3px;
+    font-size: 10px;
+    color: #888888;
+}
+
+#rescheduleModal .reschedule-schedule-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+}
+
+/* FOOTER */
+
+#rescheduleModal .reschedule-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 18px;
+    border-top: 1px solid #eeeeee;
+}
+
+#rescheduleModal .reschedule-footer-note {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    color: #777777;
+}
+
+#rescheduleModal .reschedule-footer-note i {
+    color: #888888;
+}
+
+#rescheduleModal .simple-rejection-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 0;
+}
+
+#rescheduleModal .simple-rejection-actions button {
+    min-height: 42px;
+    padding: 0 17px;
+    border-radius: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+#rescheduleModal #cancelRescheduleBtn {
+    border: 1px solid #dddddd;
+    background: #ffffff;
+    color: #444444;
+}
+
+#rescheduleModal #cancelRescheduleBtn:hover {
+    background: #f5f5f5;
+}
+
+#rescheduleModal #submitRescheduleBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid #292929;
+    background: #292929;
+    color: #ffffff;
+}
+
+#rescheduleModal #submitRescheduleBtn:hover {
+    background: #444444;
+}
+
+#rescheduleModal #submitRescheduleBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+    #rescheduleModal {
+        padding: 12px;
+    }
+
+    #rescheduleModal .reschedule-header {
+        padding: 21px 20px;
+    }
+
+    #rescheduleModal #rescheduleForm {
+        padding: 20px;
+    }
+
+    #rescheduleModal .reschedule-notice {
+        margin: 18px 20px 0;
+    }
+
+    #rescheduleModal .reschedule-schedule-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #rescheduleModal .simple-rejection-actions {
+        flex-direction: column-reverse;
+    }
+
+    #rescheduleModal .simple-rejection-actions button {
+        width: 100%;
+    }
+}
+.reschedule-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 24px 28px;
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #f8f5ff 100%
+    );
+    border-bottom: 1px solid #eee8f7;
+    position: relative;
+}
+
+.reschedule-icon {
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0e9ff;
+    color: #7953b5;
+    border-radius: 15px;
+    font-size: 23px;
+}
+
+.reschedule-heading {
+    flex: 1;
+    min-width: 0;
+}
+
+.reschedule-eyebrow {
+    display: block;
+    color: #8967b7;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+}
+
+.reschedule-heading h2 {
+    color: #292333;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 5px;
+}
+
+.reschedule-heading p {
+    color: #777180;
+    font-size: 13px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.reschedule-close {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border: none;
+    border-radius: 10px;
+    background: #f1eef5;
+    color: #655d70;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reschedule-close:hover {
+    background: #e8def5;
+    color: #7953b5;
+    transform: rotate(90deg);
+}
+
+@media (max-width: 480px) {
+    .reschedule-header {
+        padding: 18px;
+        gap: 12px;
+    }
+
+    .reschedule-icon {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+        font-size: 20px;
+    }
+
+    .reschedule-heading h2 {
+        font-size: 18px;
+    }
+
+    .reschedule-heading p {
+        font-size: 12px;
+    }
+}
+
+
+/* ==========================================
+   RESCHEDULE MODAL - MATCH NO SHOW COLORS
+========================================== */
+
+/* Header */
+#rescheduleModal .reschedule-header {
+    background: #ffffff;
+    border-bottom: 1px solid #eee;
+}
+
+/* Calendar icon */
+#rescheduleModal .reschedule-icon {
+    background: #e8f1ed;
+    color: #639A88;
+}
+
+/* Small heading label */
+#rescheduleModal .reschedule-eyebrow {
+    color: #639A88;
+}
+
+/* Close button */
+#rescheduleModal .reschedule-close {
+    background: transparent;
+    color: #6b7280;
+}
+
+#rescheduleModal .reschedule-close:hover {
+    background: #e8f1ed;
+    color: #528373;
+    transform: none;
+}
+
+/* Input focus */
+#rescheduleModal #rescheduleForm input:focus,
+#rescheduleModal #rescheduleForm select:focus,
+#rescheduleModal #rescheduleForm textarea:focus {
+    border-color: #639A88;
+    box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.12);
+}
+
+/* Schedule section icon */
+#rescheduleModal .reschedule-section-heading > i {
+    background: #e8f1ed;
+    color: #639A88;
+}
+
+/* Cancel button */
+#rescheduleModal #cancelRescheduleBtn {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+#rescheduleModal #cancelRescheduleBtn:hover {
+    background: #f9fafb;
+}
+
+/* Submit Reschedule button */
+#rescheduleModal #submitRescheduleBtn {
+    background: #639A88;
+    border: 1px solid #639A88;
+    color: #ffffff;
+}
+
+#rescheduleModal #submitRescheduleBtn:hover {
+    background: #528373;
+    border-color: #528373;
+}
+
+#rescheduleModal #submitRescheduleBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Footer note icon */
+#rescheduleModal .reschedule-footer-note i {
+    color: #639A88;
+}
+
+/* RESCHEDULE BUTTON - MATCH NO SHOW BUTTON */
+
+.reschedule-btn {
+    background: #639A88 !important;
+    border: 1px solid #639A88 !important;
+    color: #ffffff !important;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.2s ease;
+}
+
+.reschedule-btn:hover {
+    background: #528373 !important;
+    border-color: #528373 !important;
+}
+
+.reschedule-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* RESCHEDULE BUTTON - MATCH NO SHOW BUTTON */
+
+.reschedule-btn {
+    background: #639A88 !important;
+    border: 1px solid #639A88 !important;
+    color: #ffffff !important;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.2s ease;
+}
+
+.reschedule-btn:hover {
+    background: #528373 !important;
+    border-color: #528373 !important;
+}
+
+.reschedule-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+/* EMAIL RESCHEDULED BOOKING BUTTON */
+#rescheduleModal #submitRescheduleBtn {
+    background: #639A88 !important;
+    border: 1px solid #639A88 !important;
+    color: #ffffff !important;
+}
+
+#rescheduleModal #submitRescheduleBtn:hover {
+    background: #528373 !important;
+    border-color: #528373 !important;
+}
+
+#rescheduleModal #submitRescheduleBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   RESCHEDULE FORM - SAGE GREEN THEME
+========================================== */
+
+/* Original Booking Details */
+#rescheduleModal .reschedule-booking-info {
+    padding: 17px;
+    margin-bottom: 5px;
+    background: #f7faf8;
+    border: 1px solid #e1ebe6;
+    border-radius: 9px;
+}
+
+#rescheduleModal .reschedule-booking-info h3 {
+    margin: 0 0 15px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #528373;
+}
+
+#rescheduleModal .reschedule-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+#rescheduleModal .reschedule-info-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#rescheduleModal .reschedule-info-grid small {
+    color: #888888;
+    font-size: 10px;
+}
+
+#rescheduleModal .reschedule-info-grid strong {
+    color: #333333;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Form labels */
+#rescheduleModal #rescheduleForm label {
+    color: #374151;
+}
+
+/* Required indicator */
+#rescheduleModal .required {
+    color: #c65c4b;
+}
+
+/* Select, input and textarea */
+#rescheduleModal #rescheduleForm input,
+#rescheduleModal #rescheduleForm select,
+#rescheduleModal #rescheduleForm textarea {
+    border: 1px solid #dce5e0;
+    background: #ffffff;
+    color: #374151;
+    border-radius: 7px;
+}
+
+/* Focus effect */
+#rescheduleModal #rescheduleForm input:focus,
+#rescheduleModal #rescheduleForm select:focus,
+#rescheduleModal #rescheduleForm textarea:focus {
+    border-color: #639A88;
+    box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.12);
+    outline: none;
+}
+
+/* Placeholder */
+#rescheduleModal #rescheduleForm textarea::placeholder {
+    color: #a0a8a4;
+}
+
+/* Dropdown arrow */
+#rescheduleModal .reschedule-input-wrapper > i {
+    color: #639A88;
+}
+
+/* New Schedule Section */
+#rescheduleModal .reschedule-schedule-section {
+    background: #f7faf8;
+    border: 1px solid #e1ebe6;
+}
+
+#rescheduleModal .reschedule-section-heading > i {
+    background: #e8f1ed;
+    color: #639A88;
+}
+
+#rescheduleModal .reschedule-section-heading strong {
+    color: #528373;
+}
+
+/* Availability message */
+#rescheduleModal #rescheduleAvailabilityMessage {
+    color: #777777;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* Footer */
+#rescheduleModal .reschedule-footer {
+    border-top: 1px solid #e8eee9;
+}
+
+#rescheduleModal .reschedule-footer-note {
+    color: #528373;
+}
+
+#rescheduleModal .reschedule-footer-note i {
+    color: #639A88;
+}
+
+/* Responsive layout */
+@media (max-width: 480px) {
+    #rescheduleModal .reschedule-info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}

@@ -886,3 +886,30 @@ span.notification-badge,
         width: 100%;
     }
 }
+.table-search-box {
+    position: relative;
+    z-index: 30;
+}
+
+.table-search-box input {
+    width: 100%;
+    padding-right: 45px;
+    pointer-events: auto;
+}
+
+.table-search-box .search-icon-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 3;
+    padding: 8px;
+    color: #666;
+}
+
+.table-search-box .search-icon-btn i {
+    pointer-events: none;
+}

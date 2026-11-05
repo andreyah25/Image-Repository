@@ -80,7 +80,7 @@
                                         Contact Number <span style="color:red;">*</span>
                                     </label>
 
-                                    <input type="tel" id="contactNumber" placeholder="+63"
+                                    <input type="tel" id="contactNumber" placeholder="+63 "
                                         maxlength="13" inputmode="tel" autocomplete="tel"
                                         pattern="^(09[0-9]{9}|\+639[0-9]{9})$"
                                         title="Enter a valid Philippine mobile number."
@@ -1818,26 +1818,23 @@
 
             try {
 
-                // -----------------------------------------------------
-                // GET ALL BOOKINGS FOR SELECTED DATE
-                // -----------------------------------------------------
-
                 const {
-                    data: existingBookings,
-                    error: availabilityError
-                } = await supabaseClient
-                    .from("bookings")
-                    .select(`
-                id,
-                booking_date,
-                booking_time,
-                status,
-                payment_status,
-                session_type,
-                booking_duration,
-                addons
-            `)
-                    .eq("booking_date", selectedDate);
+                data: existingBookings,
+                error: availabilityError
+            } = await supabaseClient
+                .from("bookings")
+                .select(`
+                    id,
+                    booking_date,
+                    booking_time,
+                    status,
+                    payment_status,
+                    session_type,
+                    booking_duration,
+                    addons
+                            `)
+                .eq("booking_date", selectedDate)
+                .limit(1000);
 
                 if (availabilityError) {
 
