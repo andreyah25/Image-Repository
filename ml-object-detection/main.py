@@ -3,7 +3,6 @@ from pathlib import Path
 from io import BytesIO
 import logging
 import time
-import os
 
 import requests
 from PIL import Image, ImageOps
@@ -14,7 +13,6 @@ from ultralytics import YOLO
 import torch
 
 torch.set_num_threads(1)
-
 # --------------------------------------------------
 # LOGGING
 # --------------------------------------------------
@@ -25,27 +23,24 @@ logger = logging.getLogger("captured-ml")
 # --------------------------------------------------
 # APP CONFIGURATION
 # --------------------------------------------------
-
 BASE_DIR = Path(__file__).resolve().parent
-
-MODEL_PATH = Path(
-    os.getenv(
-        "MODEL_PATH",
-        str(
-            BASE_DIR
-            / "runs"
-            / "detect"
-            / "runs"
-            / "detect"
-            / "captured_yolo26n_clean_v2"
-            / "weights"
-            / "best.pt"
-        )
-    )
+MODEL_PATH = (
+    BASE_DIR
+    / "runs"
+    / "detect"
+    / "runs"
+    / "detect"
+    / "captured_yolo26n_clean_v2"
+    / "weights"
+    / "best.pt"
 )
 
-if not MODEL_PATH.is_absolute():
-    MODEL_PATH = BASE_DIR / MODEL_PATH
+if not MODEL_PATH.exists():
+    raise FileNotFoundError(
+        f"Model not found: {MODEL_PATH}"
+    )
+
+model = YOLO(str(MODEL_PATH))
 app = FastAPI(title="Captured Object Detection API")
 
 app.add_middleware(
@@ -186,10 +181,7 @@ def analyze_image(request: AnalyzeRequest):
             image.size,
         )
 
-        # --------------------------------------------------
-        # YOLO INFERENCE
-        # --------------------------------------------------
-
+       
         inference_started = time.perf_counter()
 
         logger.info(
@@ -215,47 +207,31 @@ def analyze_image(request: AnalyzeRequest):
             logger.exception("YOLO INFERENCE FAILED")
             raise
 
-        # --------------------------------------------------
-        # GROUP DUPLICATE CLASSES
-        # Keep only the highest-confidence detection
-        # for each class in this image.
-        # --------------------------------------------------
 
-        best_detections = {}
+        objects = []
 
         if prediction.boxes is not None:
             for box in prediction.boxes:
                 class_id = int(box.cls[0])
-                confidence = float(box.conf[0])
 
-                class_name = model.names[class_id]
-
-                if (
-                    class_id not in best_detections
-                    or confidence > best_detections[class_id]["confidence"]
-                ):
-                    best_detections[class_id] = {
-                        "name": class_name,
-                        "confidence": round(confidence, 4),
-                        "box": [
-                            round(float(value), 2)
-                            for value in box.xyxy[0].tolist()
-                        ],
-                    }
-
-        objects = list(best_detections.values())
-
-        # --------------------------------------------------
-        # RESPONSE
-        # --------------------------------------------------
+                objects.append({
+                    "name": model.names[class_id],
+                    "confidence": round(
+                        float(box.conf[0]), 4
+                    ),
+                    "box": [
+                        round(float(value), 2)
+                        for value in box.xyxy[0].tolist()
+                    ],
+                })
 
         total_time = time.perf_counter() - started
 
         logger.info(
-            "ANALYZE COMPLETED in %.2f seconds; unique_classes=%d",
+            "ANALYZE COMPLETED in %.2f seconds; objects=%d",
             total_time,
             len(objects),
-        )
+        ) 
 
         return {
             "success": True,
@@ -274,3 +250,4 @@ def analyze_image(request: AnalyzeRequest):
             status_code=500,
             detail=f"Image analysis failed: {type(exc).__name__}: {exc}",
         ) from exc
+  
