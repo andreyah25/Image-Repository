@@ -453,6 +453,7 @@
         });
         async function runArchiveAndCompression(session) {
             await archiveCompletedBookings();
+            await purgeExpiredArchives();
         }
         async function restoreArchiveItem(item) {
             const restorePhotos = async (repositoryId) => {
@@ -570,8 +571,8 @@
         }
 
         async function permanentlyDeleteArchiveItem(item) {
-            // IMPORTANT: Match this to the bucket used by your upload process.
             const PHOTO_BUCKET = "client-photos";
+
             async function fetchPhotos(repositoryId) {
                 const { data, error } = await supabaseClient
                     .from("repository_photos")
@@ -592,20 +593,20 @@
                     )
                 ];
 
-                if (paths.length === 0) return;
+                if (!paths.length) return;
 
-                // Remove originals and compressed copies from Storage first.
                 const { error } = await supabaseClient.storage
                     .from(PHOTO_BUCKET)
                     .remove(paths);
 
                 if (error) {
                     throw new Error(
-                        `Failed to delete image files from ${PHOTO_BUCKET}: ${error.message}`
+                        `Failed to delete image files: ${error.message}`
                     );
                 }
             }
 
+            // DELETE INDIVIDUAL PHOTO
             if (item.category === "photo") {
                 const { data: photo, error: fetchError } = await supabaseClient
                     .from("repository_photos")
@@ -617,37 +618,67 @@
 
                 await deletePhotoFiles([photo]);
 
-                const { error: deleteError } = await supabaseClient
+                const { error } = await supabaseClient
                     .from("repository_photos")
                     .delete()
                     .eq("id", item.id);
 
-                if (deleteError) throw deleteError;
+                if (error) throw error;
+
                 return;
             }
 
+            // DELETE INDIVIDUAL FOLDER
             if (item.category === "folder") {
                 const photos = await fetchPhotos(item.id);
 
-                // Delete both original and compressed files.
                 await deletePhotoFiles(photos);
 
-                const { error: photoDeleteError } = await supabaseClient
+                const { error: photoError } = await supabaseClient
                     .from("repository_photos")
                     .delete()
                     .eq("repository_id", item.id);
 
-                if (photoDeleteError) throw photoDeleteError;
+                if (photoError) throw photoError;
 
-                const { error: folderDeleteError } = await supabaseClient
+                const { error: folderError } = await supabaseClient
                     .from("repository_client_links")
                     .delete()
                     .eq("id", item.id);
 
-                if (folderDeleteError) throw folderDeleteError;
+                if (folderError) throw folderError;
+
+                // Check if the customer still has other folders.
+                const bookingId = item.bookingId;
+
+                if (bookingId) {
+                    const { data: remainingFolders, error: remainingError } =
+                        await supabaseClient
+                            .from("repository_client_links")
+                            .select("id")
+                            .eq("booking_id", bookingId);
+
+                    if (remainingError) throw remainingError;
+
+                    // If no folders remain, hide the customer from Repository.
+                    // Preserve the booking record and its notifications.
+                    if (!remainingFolders || remainingFolders.length === 0) {
+                        const { error: bookingError } = await supabaseClient
+                            .from("bookings")
+                            .update({
+                                is_archived: true,
+                                archived_at: new Date().toISOString()
+                            })
+                            .eq("id", bookingId);
+
+                        if (bookingError) throw bookingError;
+                    }
+                }
+
                 return;
             }
 
+            // DELETE CUSTOMER AND ALL ASSOCIATED FOLDERS
             if (item.category === "customer") {
                 const { data: folders, error: folderError } = await supabaseClient
                     .from("repository_client_links")
@@ -662,10 +693,8 @@
                     allPhotos.push(...await fetchPhotos(folder.id));
                 }
 
-                // Do not remove database records if file deletion fails.
                 await deletePhotoFiles(allPhotos);
 
-                // This RPC must delete the customer's associated database records.
                 const { error: rpcError } = await supabaseClient.rpc(
                     "permanently_delete_customer",
                     { p_booking_id: item.id }
@@ -673,8 +702,7 @@
 
                 if (rpcError) {
                     throw new Error(
-                        "Image files were removed, but customer database cleanup failed. " +
-                        "Check the permanently_delete_customer RPC: " + rpcError.message
+                        "Customer deletion failed: " + rpcError.message
                     );
                 }
 
@@ -688,7 +716,7 @@
 
                 if (remaining) {
                     throw new Error(
-                        "The booking still exists. Check the customer deletion RPC."
+                        "The booking still exists. Check the permanently_delete_customer RPC."
                     );
                 }
 
@@ -697,7 +725,6 @@
 
             throw new Error("Unknown archive category: " + item.category);
         }
-
 
         async function purgeExpiredArchives() {
             const cutoffDate = new Date(

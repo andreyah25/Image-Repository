@@ -1,0 +1,14 @@
+balloon
+flower
+graduation_cap
+diploma
+family
+cake
+gift
+couple
+dog
+solo
+birthday
+animals
+sunglasses
+kids

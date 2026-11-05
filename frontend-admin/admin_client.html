@@ -112,7 +112,7 @@
         <main class="content">
             <div class="client-header-container">
                 <div class="page-header">
-                    <h1>Client List</h1>
+                    <h1>Client Information</h1>
                     <p>Monitor customer booked sessions and studio access requests.</p>
                     <div class="tab-navigation">
 
@@ -138,7 +138,7 @@
                         </button>
 
                         <button type="button" class="booking-status-tab" data-status="pending">
-                            Pending <span class="tab-count" id="count-pending">0</span>
+                            Reservation <span class="tab-count" id="count-pending">0</span>
                         </button>
 
                         <button type="button" class="booking-status-tab" data-status="rejected">
@@ -225,22 +225,37 @@
 
             <form id="rejectionForm">
                 <div class="form-field select-field-wrapper">
+
                     <select id="rejectionReason" required>
-                        <option value="" disabled selected hidden>Select rejection reason</option>
-                        <option value="The requested date is no longer available.">Requested date is unavailable
+                        <option value="" disabled selected hidden>
+                            Select rejection reason
                         </option>
-                        <option value="The requested time slot is no longer available.">Requested time slot is
-                            unavailable</option>
-                        <option value="The selected package or session is unavailable.">Selected package/session is
-                            unavailable</option>
-                        <option value="The booking information provided was incomplete or incorrect.">Incomplete or
-                            incorrect booking information</option>
-                        <option value="The payment could not be verified.">Payment could not be verified</option>
-                        <option value="The booking does not meet the studio's requirements.">Booking does not meet
-                            studio requirements</option>
-                        <option value="The studio is unavailable on the requested date.">Studio unavailable</option>
-                        <option value="Other">Other reason</option>
+                        <option value="Unexpected power outage (brownout)">
+                            Unexpected power outage (brownout)
+                        </option>
+                        <option value="Electrical or equipment malfunction">
+                            Electrical or equipment malfunction
+                        </option>
+                        <option value="Studio maintenance or emergency repairs">
+                            Studio maintenance or emergency repairs
+                        </option>
+                        <option value="Air-conditioning or facility failure">
+                            Air-conditioning or facility failure
+                        </option>
+                        <option value="Severe weather or natural disaster">
+                            Severe weather or natural disaster
+                        </option>
+                        <option value="Safety or emergency concern">
+                            Safety or emergency concern
+                        </option>
+                        <option value="Staff emergency or unavailability">
+                            Staff emergency or unavailability
+                        </option>
+                        <option value="Other unforeseen studio circumstances">
+                            Other unforeseen studio circumstances
+                        </option>
                     </select>
+
                     <i class="fa-solid fa-chevron-down select-arrow"></i>
                 </div>
 
@@ -330,6 +345,247 @@
         </div>
 
     </div>
+
+    <!-- RESCHEDULE BOOKING MODAL -->
+    <div class="simple-rejection-modal" id="rescheduleModal">
+
+        <div class="simple-rejection-card reschedule-card">
+
+            <div class="reschedule-header">
+
+                <div class="reschedule-icon">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+
+                <div class="reschedule-heading">
+                    <span class="reschedule-eyebrow">
+                        STUDIO BOOKING MANAGEMENT
+                    </span>
+
+                    <h2>Reschedule Booking</h2>
+
+                    <p>
+                        Set the new schedule and notify the customer.
+                    </p>
+                </div>
+
+                <button type="button" class="reschedule-close" id="closeRescheduleModalBtn">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <div class="reschedule-notice">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <div>
+                    <strong>Studio Emergency</strong>
+
+                    <p>
+                        Coordinate the new schedule with the customer
+                        before finalizing the rescheduling.
+                    </p>
+                </div>
+
+            </div>
+
+            <form id="rescheduleForm">
+                <!-- ORIGINAL BOOKING DETAILS -->
+                <div class="reschedule-booking-info">
+
+                    <h3>Original Booking Details</h3>
+
+                    <div class="reschedule-info-grid">
+
+                        <div>
+                            <small>Customer Name</small>
+                            <strong id="rescheduleCustomerName">-</strong>
+                        </div>
+
+                        <div>
+                            <small>Package / Session</small>
+                            <strong id="reschedulePackageName">-</strong>
+                        </div>
+
+                        <div>
+                            <small>Booking Type</small>
+                            <strong id="rescheduleBookingType">-</strong>
+                        </div>
+
+                        <div>
+                            <small>Original Duration</small>
+                            <strong id="rescheduleDuration">-</strong>
+                        </div>
+
+                        <div>
+                            <small>Original Date</small>
+                            <strong id="rescheduleOriginalDate">-</strong>
+                        </div>
+
+                        <div>
+                            <small>Original Time</small>
+                            <strong id="rescheduleOriginalTime">-</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="form-field">
+
+                    <label for="rescheduleReason">
+                        Emergency Reason <span class="required">*</span>
+                    </label>
+
+                    <div class="reschedule-input-wrapper">
+
+                        <select id="rescheduleReason" required>
+
+                            <option value="" disabled selected>
+                                Select studio emergency
+                            </option>
+
+                            <option value="Unexpected power outage (brownout)">
+                                Unexpected power outage (brownout)
+                            </option>
+
+                            <option value="Electrical or equipment malfunction">
+                                Electrical or equipment malfunction
+                            </option>
+
+                            <option value="Studio maintenance or emergency repairs">
+                                Studio maintenance or emergency repairs
+                            </option>
+
+                            <option value="Air-conditioning or facility failure">
+                                Air-conditioning or facility failure
+                            </option>
+
+                            <option value="Severe weather or natural disaster">
+                                Severe weather or natural disaster
+                            </option>
+
+                            <option value="Safety or emergency concern">
+                                Safety or emergency concern
+                            </option>
+
+                            <option value="Staff emergency or unavailability">
+                                Staff emergency or unavailability
+                            </option>
+
+                            <option value="Other unforeseen studio circumstances">
+                                Other unforeseen studio circumstances
+                            </option>
+
+                        </select>
+
+                        <i class="fa-solid fa-chevron-down"></i>
+
+                    </div>
+
+                </div>
+
+                <div class="form-field">
+
+                    <label for="rescheduleMessage">
+                        Message to Customer <span class="required">*</span>
+                    </label>
+
+                    <textarea id="rescheduleMessage" rows="4" placeholder="Explain the studio emergency..."
+                        required></textarea>
+
+                </div>
+
+                <div class="reschedule-schedule-section">
+
+                    <div class="reschedule-section-heading">
+
+                        <i class="fa-regular fa-calendar"></i>
+
+                        <div>
+                            <strong>New Rescheduled Schedule</strong>
+                            <span>Enter the confirmed new schedule.</span>
+                        </div>
+
+                    </div>
+
+                    <div class="reschedule-schedule-grid">
+
+                        <div class="form-field">
+
+                            <label for="proposedBookingDate">
+                                New Date <span class="required">*</span>
+                            </label>
+
+                            <input type="date" id="proposedBookingDate" required>
+
+                        </div>
+                        <div class="form-field">
+
+                            <label for="proposedBookingTime">
+                                Available Time <span class="required">*</span>
+                            </label>
+
+                            <select id="proposedBookingTime" required disabled>
+                                <option value="">Select a date first</option>
+                            </select>
+
+                            <small id="rescheduleAvailabilityMessage">
+                                Available time slots will appear after selecting a date.
+                            </small>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+                <div class="form-field">
+
+                    <label for="rescheduleOtherMessage">
+                        Additional Notes
+                        <span class="optional-label">Optional</span>
+                    </label>
+
+                    <textarea id="rescheduleOtherMessage" rows="2" placeholder="Additional information..."></textarea>
+
+                </div>
+
+                <div class="reschedule-footer">
+
+                    <span class="reschedule-footer-note">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Booking remains Confirmed and Paid.
+                    </span>
+
+                    <div class="simple-rejection-actions">
+
+                        <button type="button" id="cancelRescheduleBtn">
+                            Cancel
+                        </button>
+
+                        <button type="submit" id="submitRescheduleBtn">
+
+                            <i class="fa-solid fa-paper-plane"></i>
+                            Email Rescheduled Booking
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+
 
     <div class="simple-rejection-modal" id="noShowModal">
         <div class="simple-rejection-card">
@@ -425,19 +681,20 @@
         }
         function formatBookingTimeRange(booking) {
             const startTime =
-                booking.rental_start_time ||
-                booking.booking_time;
+                booking.booking_time ||
+                booking.rental_start_time;
 
             const duration = Number(
-                booking.booking_duration ||
                 booking.rental_duration ||
+                booking.booking_duration ||
                 booking.duration ||
                 0
             );
 
             if (!startTime) return "-";
 
-            const formattedStart = formatBookingTime(startTime);
+            const formattedStart =
+                formatBookingTime(startTime);
 
             if (!Number.isFinite(duration) || duration <= 0) {
                 return formattedStart;
@@ -449,14 +706,13 @@
 
             if (
                 !Number.isInteger(hours) ||
-                !Number.isInteger(minutes) ||
-                hours < 0 || hours > 23 ||
-                minutes < 0 || minutes > 59
+                !Number.isInteger(minutes)
             ) {
                 return formattedStart;
             }
 
-            const totalMinutes = hours * 60 + minutes + duration;
+            const totalMinutes =
+                hours * 60 + minutes + duration;
 
             if (totalMinutes >= 1440) {
                 return formattedStart;
@@ -1190,7 +1446,7 @@
                             </strong>
 
                             <span>
-                                $${escapeHtml(formatBookingTimeRange(booking))}
+                                ${escapeHtml(formatBookingTimeRange(booking))}
                             </span>
 
                         </div>
@@ -1399,16 +1655,18 @@
                 `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`
             );
         }
-        function openBookingDetailsModal(bookingId) {
 
-            const booking =
-                allBookedSessions.find(
+        async function openBookingDetailsModal(bookingId) {
+
+            // Find the booking's current position in the array
+            const bookingIndex =
+                allBookedSessions.findIndex(
                     item =>
                         String(item.id) ===
                         String(bookingId)
                 );
 
-            if (!booking) {
+            if (bookingIndex === -1) {
 
                 console.error(
                     "Booking not found:",
@@ -1417,6 +1675,48 @@
 
                 return;
             }
+
+            // FETCH THE LATEST BOOKING FROM SUPABASE
+            const {
+                data: latestBooking,
+                error: latestBookingError
+            } = await supabaseClient
+                .from("bookings")
+                .select("*")
+                .eq("id", bookingId)
+                .maybeSingle();
+
+            if (latestBookingError) {
+
+                console.error(
+                    "Failed to refresh booking details:",
+                    latestBookingError
+                );
+
+                alert(
+                    "Unable to load the latest booking details. Please try again."
+                );
+
+                return;
+            }
+
+            if (!latestBooking) {
+
+                console.error(
+                    "Booking no longer exists:",
+                    bookingId
+                );
+
+                alert("Booking could not be found.");
+
+                return;
+            }
+
+            // UPDATE THE EXISTING FRONTEND BOOKING DATA
+            allBookedSessions[bookingIndex] = latestBooking;
+
+            // USE THE FRESH DATABASE RECORD
+            const booking = latestBooking;
 
 
             currentViewedBookingId =
@@ -1462,15 +1762,11 @@
             }
 
             if (subtitle) {
-
                 subtitle.textContent =
-                    `${formatBookingDate(
-                        booking.booking_date
-                    )} • ${formatBookingTime(
-                        booking.booking_time
-                    )}`;
+                    `${formatBookingDate(booking.booking_date)} • ${formatBookingTime(booking.booking_time)}`;
 
             }
+
 
 
             if (statusElement) {
@@ -1500,10 +1796,7 @@
                 </span>
 
                 <span class="booking-detail-value">
-                    ${escapeHtml(
-                    booking.full_name ||
-                    "-"
-                )}
+                    ${escapeHtml(formatBookingTime(booking.booking_time))}
                 </span>
 
             </div>
@@ -1575,7 +1868,7 @@
                 </span>
 
                 <span class="booking-detail-value">
-                    ${escapeHtml(formatBookingTimeRange(booking))}
+                    ${escapeHtml(formatBookingTime(booking.booking_time))}
                 </span>
 
             </div>
@@ -1765,26 +2058,115 @@
                         : ""
                     }
 
+          
             ${booking.rejection_reason
                         ? `
-                    <div class="booking-detail-item full-width">
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Rejection Reason
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(booking.rejection_reason)}
+                    </span>
+                </div>
+                `
+                        : ""
+                    }
 
-                        <span class="booking-detail-label">
-                            Rejection Reason
-                        </span>
+            ${booking.reschedule_status &&
+                        booking.reschedule_status !== "none"
+                        ? `
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Rescheduling Status
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(booking.reschedule_status)}
+                    </span>
+                </div>
 
-                        <span class="booking-detail-value">
-                            ${escapeHtml(
-                            booking.rejection_reason
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Original Booking Schedule
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(
+                            formatBookingDate(
+                                booking.original_booking_date || booking.booking_date
+                            )
                         )}
-                        </span>
+                        •
+                        ${escapeHtml(
+                            formatBookingTime(
+                                booking.original_booking_time || booking.booking_time
+                            )
+                        )}
+                    </span>
+                </div>
 
-                    </div>
-                    `
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Proposed New Schedule
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(
+                            booking.proposed_booking_date
+                                ? formatBookingDate(booking.proposed_booking_date)
+                                : "-"
+                        )}
+                        •
+                        ${escapeHtml(
+                            booking.proposed_booking_time
+                                ? formatBookingTime(booking.proposed_booking_time)
+                                : "-"
+                        )}
+                    </span>
+                </div>
+
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Studio Emergency Reason
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(booking.reschedule_reason || "-")}
+                    </span>
+                </div>
+
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Admin Message
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(booking.reschedule_message || "-")}
+                    </span>
+                </div>
+
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Client Decision
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(
+                            booking.reschedule_customer_response ||
+                            "Waiting for client response"
+                        )}
+                    </span>
+                </div>
+
+                <div class="booking-detail-item full-width">
+                    <span class="booking-detail-label">
+                        Refund Status
+                    </span>
+                    <span class="booking-detail-value">
+                        ${escapeHtml(booking.refund_status || "none")}
+                    </span>
+                </div>
+                `
                         : ""
                     }
 
         `;
+
 
             }
             const totalElement =
@@ -1906,34 +2288,46 @@
                 Close
             </button>
         `;
+
                 } else if (status === "confirmed") {
                     actions.innerHTML = `
-            <button
-                type="button"
-                class="complete-btn"
-                data-id="${escapeHtml(booking.id)}"
-            >
-                <i class="fa-solid fa-check-double"></i>
-                Complete
-            </button>
+                    <button
+                        type="button"
+                        class="complete-btn"
+                        data-id="${escapeHtml(booking.id)}"
+                    >
+                        <i class="fa-solid fa-check-double"></i>
+                        Complete
+                    </button>
 
-            <button
-                type="button"
-                class="no-show-btn"
-                data-id="${escapeHtml(booking.id)}"
-            >
-                <i class="fa-solid fa-user-xmark"></i>
-                Mark as No Show
-            </button>
+                    <button
+                        type="button"
+                        class="no-show-btn"
+                        data-id="${escapeHtml(booking.id)}"
+                    >
+                        <i class="fa-solid fa-user-xmark"></i>
+                        Mark as No Show
+                    </button>
 
-            <button
-                type="button"
-                class="booking-modal-close-btn"
-                id="closeBookingDetailsAction"
-            >
-                Close
-            </button>
-        `;
+                    <!-- ADD THIS BUTTON -->
+                    <button
+                        type="button"
+                        class="reschedule-btn"
+                        data-id="${escapeHtml(booking.id)}"
+                    >
+                        <i class="fa-solid fa-calendar-days"></i>
+                        Reschedule Booking
+                    </button>
+
+                    <button
+                        type="button"
+                        class="booking-modal-close-btn"
+                        id="closeBookingDetailsAction"
+                    >
+                        Close
+                    </button>
+                `;
+
                 } else if (
                     status === "rejected" ||
                     status === "cancelled"
@@ -3031,6 +3425,452 @@
                     }
                 }
             });
+
+
+        /* ==========================================
+           ADMIN RESCHEDULING
+        ========================================== */
+
+        let rescheduleTargetId = null;
+
+        function openRescheduleModal(bookingId) {
+
+            const booking = allBookedSessions.find(
+                item => String(item.id) === String(bookingId)
+            );
+
+            if (!booking) {
+                showToast("Error", "Booking not found.");
+                return;
+            }
+
+            if (
+                String(booking.status || "").toLowerCase() !== "confirmed" ||
+                String(booking.payment_status || "").toLowerCase() !== "paid"
+            ) {
+                showToast(
+                    "Error",
+                    "Only paid and confirmed bookings can be rescheduled."
+                );
+                return;
+            }
+
+            // OLD RESCHEDULE STATUS CHECK REMOVED
+
+            rescheduleTargetId = booking.id;
+            // DISPLAY ORIGINAL BOOKING INFORMATION
+            const packageName =
+                booking.package_name ||
+                booking.package ||
+                booking.session_type ||
+                booking.special_session ||
+                "Package information unavailable";
+
+            const bookingIsRental =
+                String(booking.booking_type || "")
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[\s-]+/g, "_")
+                    .includes("rental") ||
+                String(booking.session_type || "")
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[\s-]+/g, "_")
+                    .includes("rental");
+
+            const bookingType = bookingIsRental
+                ? "Studio Rental"
+                : "Photoshoot / Special Session";
+
+            const duration = Number(
+                bookingIsRental
+                    ? (booking.rental_duration || booking.booking_duration || 0)
+                    : (booking.booking_duration || 0)
+            );
+            document.getElementById("rescheduleCustomerName").textContent =
+                booking.full_name || "-";
+
+            document.getElementById("reschedulePackageName").textContent =
+                packageName.replace(/_/g, " ");
+
+            document.getElementById("rescheduleBookingType").textContent =
+                bookingType;
+
+            document.getElementById("rescheduleDuration").textContent =
+                duration ? `${duration} minutes` : "Not specified";
+
+            document.getElementById("rescheduleOriginalDate").textContent =
+                booking.booking_date || "-";
+
+            const originalStart = String(
+                booking.booking_time || ""
+            ).slice(0, 5);
+
+            const originalStartMinutes = originalStart
+                ? Number(originalStart.slice(0, 2)) * 60 +
+                Number(originalStart.slice(3, 5))
+                : null;
+
+            const originalEndMinutes =
+                originalStartMinutes !== null
+                    ? originalStartMinutes + duration
+                    : null;
+
+            function formatScheduleTime(minutes) {
+
+                if (minutes === null) return "-";
+
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+
+                const displayHour = hours % 12 || 12;
+                const period = hours >= 12 ? "PM" : "AM";
+
+                return `${displayHour}:${String(mins).padStart(2, "0")} ${period}`;
+            }
+
+            document.getElementById("rescheduleOriginalTime").textContent =
+                originalEndMinutes !== null
+                    ? `${formatScheduleTime(originalStartMinutes)} – ${formatScheduleTime(originalEndMinutes)}`
+                    : "-";
+            const form = document.getElementById("rescheduleForm");
+
+            if (form) {
+                form.reset();
+            }
+            proposedTimeSelect.innerHTML =
+                '<option value="">Select a date first</option>';
+
+            proposedTimeSelect.disabled = true;
+
+            if (availabilityMessage) {
+                availabilityMessage.textContent =
+                    "Available time slots will appear after selecting a date.";
+            }
+            const proposedDate =
+                document.getElementById("proposedBookingDate");
+
+            if (proposedDate) {
+                const now = new Date();
+
+                const today =
+                    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+                proposedDate.min = today;
+            }
+
+            const modal =
+                document.getElementById("rescheduleModal");
+
+            if (!modal) {
+                console.error("Reschedule modal not found.");
+                showToast("Error", "Reschedule modal not found.");
+                return;
+            }
+
+            modal.classList.add("show");
+            document.body.style.overflow = "hidden";
+        }
+
+        /* ==========================================
+           LOAD AVAILABLE RESCHEDULE TIMES
+        ========================================== */
+
+        const proposedDateInput =
+            document.getElementById("proposedBookingDate");
+
+        const proposedTimeSelect =
+            document.getElementById("proposedBookingTime");
+
+        const availabilityMessage =
+            document.getElementById("rescheduleAvailabilityMessage");
+
+
+        if (proposedDateInput && proposedTimeSelect) {
+
+            proposedDateInput.addEventListener("change", async function () {
+
+                const selectedDate = this.value;
+
+                // Reset time dropdown
+                proposedTimeSelect.innerHTML =
+                    '<option value="">Loading available times...</option>';
+
+                proposedTimeSelect.disabled = true;
+
+                if (availabilityMessage) {
+                    availabilityMessage.textContent =
+                        "Checking available schedules...";
+                }
+
+                if (!selectedDate || !rescheduleTargetId) {
+
+                    proposedTimeSelect.innerHTML =
+                        '<option value="">Select a date first</option>';
+
+                    if (availabilityMessage) {
+                        availabilityMessage.textContent =
+                            "Available time slots will appear after selecting a date.";
+                    }
+
+                    return;
+                }
+
+                try {
+
+                    const {
+                        data: { session },
+                        error: sessionError
+                    } = await supabaseClient.auth.getSession();
+
+                    if (sessionError) throw sessionError;
+
+                    if (!session) {
+                        throw new Error("Please login again.");
+                    }
+
+                    const API_BASE =
+                        window.location.hostname === "localhost" ||
+                            window.location.hostname === "127.0.0.1"
+                            ? "http://localhost:3000"
+                            : "https://captured-server.onrender.com";
+
+                    const response = await fetch(
+                        `${API_BASE}/api/admin/reschedule-availability?bookingId=${encodeURIComponent(rescheduleTargetId)}&date=${encodeURIComponent(selectedDate)}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Authorization": `Bearer ${session.access_token}`
+                            }
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.message || "Unable to load available times."
+                        );
+                    }
+
+                    proposedTimeSelect.innerHTML =
+                        '<option value="">Select available time</option>';
+
+                    if (!Array.isArray(result.slots) || result.slots.length === 0) {
+
+                        proposedTimeSelect.disabled = true;
+
+                        proposedTimeSelect.innerHTML =
+                            '<option value="">No available times</option>';
+
+                        if (availabilityMessage) {
+                            availabilityMessage.textContent =
+                                "No available time slots for this date. Please select another date.";
+                        }
+
+                        return;
+                    }
+
+                    result.slots.forEach(slot => {
+
+                        const option = document.createElement("option");
+
+                        option.value = slot.value;
+                        option.textContent = slot.label;
+
+                        proposedTimeSelect.appendChild(option);
+
+                    });
+
+                    proposedTimeSelect.disabled = false;
+
+                    if (availabilityMessage) {
+                        availabilityMessage.textContent =
+                            `${result.slots.length} available time slot(s).`;
+                    }
+
+                } catch (error) {
+
+                    console.error("RESCHEDULE AVAILABILITY ERROR:", error);
+
+                    proposedTimeSelect.innerHTML =
+                        '<option value="">Unable to load times</option>';
+
+                    proposedTimeSelect.disabled = true;
+
+                    if (availabilityMessage) {
+                        availabilityMessage.textContent = error.message;
+                    }
+
+                }
+
+            });
+
+        }
+        /* SUBMIT RESCHEDULE FORM */
+
+        document
+            .getElementById("rescheduleForm")
+            .addEventListener("submit", async function (e) {
+
+                e.preventDefault();
+
+                if (!rescheduleTargetId) {
+                    showToast("Error", "No booking selected.");
+                    return;
+                }
+
+                const reason =
+                    document.getElementById("rescheduleReason").value;
+
+                const message =
+                    document.getElementById("rescheduleMessage").value.trim();
+
+                const newDate =
+                    document.getElementById("proposedBookingDate").value;
+
+                const newTime =
+                    document.getElementById("proposedBookingTime").value;
+
+                const additionalNotes =
+                    document.getElementById("rescheduleOtherMessage").value.trim();
+
+                if (!reason || !message || !newDate || !newTime) {
+                    showToast("Error", "Please complete all required fields.");
+                    return;
+                }
+
+                const submitBtn =
+                    document.getElementById("submitRescheduleBtn");
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+                try {
+
+                    // GET ADMIN SESSION TOKEN
+                    const {
+                        data: { session },
+                        error: sessionError
+                    } = await supabaseClient.auth.getSession();
+
+                    if (sessionError) throw sessionError;
+
+                    if (!session) {
+                        throw new Error("Please login again.");
+                    }
+
+                    /* SEND REQUEST TO BACKEND */
+                    const response = await fetch(
+                        `${window.location.hostname === "localhost" ||
+                            window.location.hostname === "127.0.0.1"
+                            ? "http://localhost:3000"
+                            : "https://captured-server.onrender.com"
+                        }/api/admin/reschedule-booking`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${session.access_token}`
+                            },
+                            body: JSON.stringify({
+                                bookingId: rescheduleTargetId,
+                                newDate,
+                                newTime,
+                                reason,
+                                message,
+                                additionalNotes
+                            })
+                        }
+                    );
+
+                    const responseText = await response.text();
+
+                    let result;
+
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch (error) {
+                        console.error(
+                            "RESCHEDULE SERVER RESPONSE:",
+                            response.status,
+                            responseText
+                        );
+
+                        throw new Error(
+                            `Server returned HTTP ${response.status}. Check server.js route.`
+                        );
+                    }
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.message || "Failed to reschedule booking."
+                        );
+                    }
+                    if (result.emailSent) {
+
+                        showToast(
+                            "Success",
+                            "Booking rescheduled and customer email sent!"
+                        );
+                    } else {
+
+                        showToast(
+                            "Warning",
+                            "Schedule updated, but email failed to send."
+                        );
+                    }
+
+                    closeRescheduleModal();
+
+                    // REFRESH BOOKING LIST / CALENDAR DATA
+                    await loadBookedSessions();
+
+                } catch (error) {
+
+                    console.error("Reschedule error:", error);
+
+                    showToast(
+                        "Error",
+                        error.message || "Failed to reschedule booking."
+                    );
+
+                } finally {
+
+                    submitBtn.disabled = false;
+
+                    submitBtn.innerHTML =
+                        '<i class="fa-solid fa-paper-plane"></i> Send Notification';
+
+                }
+
+            });
+
+        /* CLOSE MODAL */
+        function closeRescheduleModal() {
+            document.getElementById("rescheduleModal").classList.remove("show");
+            document.getElementById("rescheduleForm").reset();
+
+            rescheduleTargetId = null;
+            document.body.style.overflow = "";
+        }
+
+        /* CLICK RESCHEDULE BUTTON */
+        document.addEventListener("click", function (event) {
+            const button = event.target.closest(".reschedule-btn");
+
+            if (!button) return;
+
+            closeBookingDetailsModal();
+            openRescheduleModal(button.dataset.id);
+        });
+
+        /* CANCEL RESCHEDULE */
+        document.getElementById("cancelRescheduleBtn")
+            ?.addEventListener("click", closeRescheduleModal);
+
+
         let noShowTargetId = null;
 
         function openNoShowModal(bookingId) {

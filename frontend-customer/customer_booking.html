@@ -76,11 +76,15 @@
                                         title="Numbers are not allowed. Please enter letters only." required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="contactNumber">Contact Number <span style="color:red;">*</span></label>
-                                    <input type="tel" id="contactNumber" placeholder="Enter your contact number"
-                                        maxlength="11" inputmode="numeric" autocomplete="tel"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="^09\d{9}$"
-                                        title="Please enter an 11-digit mobile number starting with 09." required>
+                                    <label for="contactNumber">
+                                        Contact Number <span style="color:red;">*</span>
+                                    </label>
+
+                                    <input type="tel" id="contactNumber" placeholder="+63"
+                                        maxlength="13" inputmode="tel" autocomplete="tel"
+                                        pattern="^(09[0-9]{9}|\+639[0-9]{9})$"
+                                        title="Enter a valid Philippine mobile number."
+                                        required>
                                 </div>
                                 <div class="form-group">
                                     <label for="emailAddress">Email Address <span style="color:red;">*</span></label>
@@ -349,10 +353,16 @@
                         <!-- STUDIO RENTAL BOOKING SUMMARY -->
                         <div class="form-section" id="studioRentalSummarySection" style="display:none;">
 
+
                             <h3 class="section-title-form">
-                                <i class="fa-solid fa-clipboard-list"></i>
+                                <i class="fa-solid fa-clipboard-list" style="color:#639A88; margin-right:8px;"></i>
                                 Studio Rental Booking Summary
                             </h3>
+
+                            <p style="font-size:0.85rem; color:#666; margin:8px 0 18px;">
+                                Review your rental schedule, included facilities, and estimated rental fee.
+                            </p>
+
 
                             <div id="rentalInclusionsSummary" class="studio-rental-summary">
                             </div>
@@ -1530,67 +1540,83 @@
                 }[character]))
             );
 
+
+
             if (summary) {
                 summary.innerHTML = `
-            <h4 style="margin:0 0 14px; color:#345e50;">
-                Your Rental Details
-            </h4>
+        <h4 class="rental-summary-heading">
+            Your Rental Details
+        </h4>
 
-            <p>Date: ${date}</p>
-            <p>Duration: ${hours} hours</p>
+        <div class="rental-summary-block">
+            <div class="rental-summary-label">Rental Information</div>
 
-            <p>First 2 hours:
-                ₱${baseRate.toLocaleString()}
-            </p>
-
-            <p>Additional hours:
-                ${extraHours} × ₱${additionalRate.toLocaleString()}
-            </p>
-
-            ${discount > 0
-                        ? `<p>Extended-hours discount:
-                     −₱${discount.toLocaleString()}</p>`
-                        : ""}
-
-           <div style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                padding:14px;
-                margin:16px 0;
-                background:#eaf4ee;
-                border-radius:8px;
-            ">
-                <span><strong>Rental Fee</strong></span>
-                <strong style="font-size:18px;">
-                    ₱${price.toLocaleString()}
-                </strong>
+            <div class="rental-summary-row">
+                <span>Date</span>
+                <strong>${date}</strong>
             </div>
 
-            <hr>
+            <div class="rental-summary-row">
+                <span>Duration</span>
+                <strong>${hours} hours</strong>
+            </div>
 
-            <strong>Included Facilities</strong>
-            <ul>
-                <li>Maximum of 10 persons</li>
-                <li>Private dressing area and restroom</li>
-                <li>Fully air-conditioned studio</li>
-                <li>Wi-Fi and Bluetooth speaker</li>
-                <li>Natural lighting</li>
-                <li>Lighting equipment</li>
-                <li>Studio furniture</li>
-                <li>2 seamless backdrop papers</li>
-                <li>Parking spaces</li>
+            <div class="rental-summary-row">
+                <span>First 2 hours</span>
+                <strong>₱${baseRate.toLocaleString()}</strong>
+            </div>
+
+            <div class="rental-summary-row">
+                <span>Additional hours</span>
+                <strong>${extraHours} × ₱${additionalRate.toLocaleString()}</strong>
+            </div>
+
+            ${discount > 0 ? `
+                <div class="rental-summary-row">
+                    <span>Extended-hours discount</span>
+                    <strong>−₱${discount.toLocaleString()}</strong>
+                </div>
+            ` : ""}
+        </div>
+
+        <div class="rental-summary-total">
+            <div class="rental-summary-row">
+                <span>Rental Fee</span>
+                <strong>₱${price.toLocaleString()}</strong>
+            </div>
+        </div>
+
+        <div class="rental-summary-block">
+            <div class="rental-summary-label">Included Facilities</div>
+
+            <ul class="rental-summary-inclusions">
+                <li><i class="fas fa-check"></i> Maximum of 10 persons</li>
+                <li><i class="fas fa-check"></i> Private dressing area and restroom</li>
+                <li><i class="fas fa-check"></i> Fully air-conditioned studio</li>
+                <li><i class="fas fa-check"></i> Wi-Fi and Bluetooth speaker</li>
+                <li><i class="fas fa-check"></i> Natural lighting</li>
+                <li><i class="fas fa-check"></i> Lighting equipment</li>
+                <li><i class="fas fa-check"></i> Studio furniture</li>
+                <li><i class="fas fa-check"></i> 2 seamless backdrop papers</li>
+                <li><i class="fas fa-check"></i> Parking spaces</li>
             </ul>
+        </div>
 
-            <p><strong>Selected Backdrops:</strong>
+        <div class="rental-summary-block">
+            <div class="rental-summary-label">Selected Backdrops</div>
+
+            <p>
                 ${safeBackdrops.length
                         ? safeBackdrops.join(", ")
                         : "Please select 2 backdrops"}
             </p>
+        </div>
 
+        <div class="rental-summary-note">
             <p>Preparation gap between rentals: 1 hour</p>
-            <p><strong>Camera is not included.</strong></p>
-        `;
+            <strong>Camera is not included.</strong>
+        </div>
+    `;
             }
 
             message.textContent =
@@ -2342,19 +2368,18 @@
                 return validName;
             }
 
-            // CONTACT NUMBER VALIDATION
             function validateContactNumber() {
                 if (!contactInput) return true;
 
                 const contact = contactInput.value.trim();
 
-                // Philippine mobile number: 09 followed by 9 digits
-                const validContact = /^09[0-9]{9}$/.test(contact);
+                const validContact =
+                    /^(09[0-9]{9}|\+639[0-9]{9})$/.test(contact);
 
                 contactInput.setCustomValidity(
                     validContact
                         ? ""
-                        : "Enter an 11-digit Philippine mobile number starting with 09."
+                        : "Enter a valid Philippine mobile number, such as +639123456789."
                 );
 
                 return validContact;
@@ -2371,15 +2396,17 @@
                 });
             }
 
-            // Allow digits only, up to 11 digits, in the contact field
             if (contactInput) {
-                contactInput.setAttribute("inputmode", "numeric");
-                contactInput.setAttribute("maxlength", "11");
-                contactInput.setAttribute("minlength", "11");
-                contactInput.setAttribute("pattern", "09[0-9]{9}");
+                contactInput.setAttribute("inputmode", "tel");
+                contactInput.setAttribute("maxlength", "13");
+                contactInput.setAttribute("pattern", "^(09[0-9]{9}|\\+639[0-9]{9})$");
 
                 contactInput.addEventListener("input", function () {
-                    this.value = this.value.replace(/\D/g, "").slice(0, 11);
+                    this.value = this.value
+                        .replace(/[^\d+]/g, "")
+                        .replace(/(?!^)\+/g, "")
+                        .slice(0, 13);
+
                     validateContactNumber();
                 });
 
@@ -2413,13 +2440,34 @@
                 });
             }
 
-            // Update available booking options when package changes
-            if (photoPackageSelect) {
+
+            function updateBookingCategoryState() {
+                const packageSelected = Boolean(photoPackageSelect.value);
+                const sessionSelected = Boolean(sessionTypeSelect.value);
+
+                photoPackageSelect.disabled = sessionSelected;
+                sessionTypeSelect.disabled = packageSelected;
+
+                photoPackageSelect.style.backgroundColor =
+                    sessionSelected ? "#f1f3f2" : "#ffffff";
+
+                sessionTypeSelect.style.backgroundColor =
+                    packageSelected ? "#f1f3f2" : "#ffffff";
+
+                photoPackageSelect.style.cursor =
+                    sessionSelected ? "not-allowed" : "pointer";
+
+                sessionTypeSelect.style.cursor =
+                    packageSelected ? "not-allowed" : "pointer";
+            }
+
+            if (photoPackageSelect && sessionTypeSelect) {
                 photoPackageSelect.addEventListener("change", async function () {
-                    if (this.value && sessionTypeSelect) {
+                    if (this.value) {
                         sessionTypeSelect.value = "";
                     }
 
+                    updateBookingCategoryState();
                     updateDownpaymentUI();
                     updateBackdropUI();
 
@@ -2427,26 +2475,26 @@
                         await loadAvailableTimeSlots();
                     }
                 });
-            }
 
-            // Initial UI update on page load
-            updateDownpaymentUI();
-
-            if (sessionTypeSelect) {
                 sessionTypeSelect.addEventListener("change", async function () {
-                    if (this.value && photoPackageSelect) {
+                    if (this.value) {
                         photoPackageSelect.value = "";
                     }
+
+                    updateBookingCategoryState();
                     updateDownpaymentUI();
                     updateBackdropUI();
+
                     if (bookingDate && bookingDate.value) {
                         await loadAvailableTimeSlots();
                     }
                 });
+
+                updateBookingCategoryState();
             }
 
-
             updateDownpaymentUI();
+
         });
 
         const addAddonBtn = document.getElementById("addAddonBtn");
@@ -3544,8 +3592,15 @@
                 const fullName =
                     document.getElementById("fullName").value.trim();
 
-                const contact =
+                const enteredContact =
                     document.getElementById("contactNumber").value.trim();
+
+                // Always save Philippine mobile numbers in +63 format.
+                const contact = enteredContact.startsWith("+63")
+                    ? enteredContact
+                    : enteredContact.startsWith("09")
+                        ? "+63" + enteredContact.substring(1)
+                        : enteredContact;
 
                 const email =
                     document.getElementById("emailAddress").value.trim();
@@ -3681,11 +3736,9 @@
 
                     return;
                 }
-
-                if (!/^09\d{9}$/.test(contact)) {
-
+                if (!/^\+639\d{9}$/.test(contact)) {
                     alert(
-                        "Please enter a valid 11-digit mobile number (e.g. 09123456789)."
+                        "Please enter a valid Philippine mobile number (e.g. +639123456789)."
                     );
 
                     document

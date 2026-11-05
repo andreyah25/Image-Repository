@@ -1,0 +1,280 @@
+Duplicate images and their matching labels
+
+DUPLICATE HASH: 04014AEBBACFB2B0B332E7095A4FEED5B2F25BD1B4A655AB840CACD945D7CB8A
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 15.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 15.txt
+14 0.511864 0.455932 0.742373 0.738983
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\photo 15.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\photo 15.txt
+14 0.506780 0.448305 0.752542 0.679661
+
+DUPLICATE HASH: 074EA50A6A298C663F87651E9571EA0A2C97BC1588A822EDB1BF0BAFD4398C2A
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 12.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 12.txt
+3 0.197222 0.515741 0.164815 0.157407
+5 0.521296 0.690278 0.212963 0.328704
+13 0.544444 0.395370 0.187037 0.116667
+2 0.514815 0.346759 0.274074 0.217593
+7 0.702315 0.250463 0.104630 0.073148
+6 0.720370 0.412500 0.081481 0.062037
+14 0.471759 0.445370 0.799074 0.672222
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 12.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\photo 12.txt
+7 0.698611 0.264352 0.123148 0.049074
+3 0.173611 0.493056 0.171296 0.189815
+14 0.512963 0.425926 0.672222 0.668519
+6 0.725463 0.404630 0.058333 0.066667
+5 0.531019 0.688426 0.189815 0.308333
+13 0.541204 0.416204 0.341667 0.295370
+
+DUPLICATE HASH: 0C3AAC282FF9A984023532A9BB376D56D9D460271DD037FD3DEE2EC925A9EE81
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test12.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test12.txt
+7 0.366204 0.242130 0.204630 0.076852
+7 0.595833 0.429630 0.241667 0.096296
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\test12.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\test12.txt
+7 0.343981 0.238426 0.187963 0.062037
+7 0.569907 0.417130 0.200926 0.076852
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test12.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test12.txt
+7 0.354167 0.235185 0.156481 0.090741
+7 0.598148 0.427315 0.211111 0.108333
+
+DUPLICATE HASH: 12FDDA99000A716594E7A75FF9871B4498DCEA2ED0DDBDC50F1D16D60F4E4DDA
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test13.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test13.txt
+6 0.478704 0.554167 0.100000 0.060185
+7 0.402315 0.084259 0.136111 0.042593
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\test13.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\test13.txt
+6 0.478704 0.559259 0.085185 0.059259
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test13.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test13.txt
+6 0.479167 0.561574 0.080556 0.037963
+7 0.400000 0.075463 0.144444 0.039815
+
+DUPLICATE HASH: 1A96AF2B2C8C6D344658E1D0EA3FCC38B99BE4DFE638BBDDEF1050793997DDBC
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test17.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test17.txt
+0 0.348148 0.463889 0.562963 0.744444
+10 0.498611 0.431019 0.821296 0.728704
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test17.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test17.txt
+0 0.362963 0.483796 0.574074 0.728704
+10 0.499074 0.447222 0.788889 0.740741
+
+DUPLICATE HASH: 2873F4775788511A2B5EE9B9894DA371F7E9FB65CE00FF641AFCE1911263C265
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test20.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test20.txt
+8 0.418519 0.380093 0.157407 0.191667
+10 0.526389 0.462500 0.404630 0.569444
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test20.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test20.txt
+8 0.411111 0.389352 0.162963 0.189815
+10 0.522222 0.512037 0.529630 0.651852
+
+DUPLICATE HASH: 2A0B4650F82D7DA8ED662521F13D723D20976D14AB88BBF4C2FA290DD4276A6A
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test21.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test21.txt
+4 0.396619 0.539307 0.237971 0.111816
+5 0.565020 0.651855 0.263979 0.387695
+6 0.521456 0.603516 0.039012 0.044922
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test21.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test21.txt
+4 0.416125 0.534424 0.157347 0.104004
+5 0.555592 0.638916 0.258127 0.347168
+10 0.523082 0.611328 0.408973 0.525391
+
+DUPLICATE HASH: 3B47BF267372190C79206263957302B90E39036CF2502268B29D4E860E01C58C
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 1.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 1.txt
+2 0.373148 0.644907 0.579630 0.406481
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\photo 1.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\photo 1.txt
+2 0.366204 0.644907 0.584259 0.410185
+
+DUPLICATE HASH: 3D089963009BF045EC9A48349A30FD7FD990744C2CBFC5B3959924C60417C3A0
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 17.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 17.txt
+0 0.709322 0.404237 0.432203 0.608475
+9 0.311017 0.190678 0.181356 0.055932
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 17.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\photo 17.txt
+0 0.721186 0.419492 0.415254 0.628814
+0 0.470339 0.560169 0.432203 0.588136
+9 0.295763 0.183051 0.147458 0.081356
+
+DUPLICATE HASH: 3D62D7F4BF8C8EB418D001E942EA4AF0F4F204AE1ED0B2C3EBE95E088654FF26
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test14.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test14.txt
+7 0.422852 0.274170 0.157227 0.065918
+3 0.577881 0.678711 0.345215 0.215820
+13 0.575439 0.382080 0.263184 0.198730
+14 0.508301 0.410156 0.774414 0.606445
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\test14.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\test14.txt
+3 0.579346 0.672852 0.336426 0.244141
+14 0.524658 0.410400 0.730957 0.576660
+7 0.425781 0.280273 0.119141 0.026367
+13 0.569092 0.363281 0.246582 0.179688
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test14.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test14.txt
+3 0.585693 0.676025 0.305176 0.238770
+7 0.420166 0.271484 0.103027 0.043945
+13 0.571777 0.359619 0.259766 0.163574
+2 0.583252 0.666504 0.418457 0.321289
+14 0.502197 0.440674 0.789551 0.695801
+
+DUPLICATE HASH: 6F4ED0E3A66350BE57D3BE0677062FB02A88CE0E2D116C93E34BAC02DD4554B4
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 26.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 26.txt
+13 0.457520 0.207275 0.324219 0.166504
+2 0.370605 0.520752 0.572266 0.611816
+6 0.515381 0.819824 0.087402 0.048828
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 26.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\photo 26.txt
+13 0.458008 0.211670 0.289062 0.182129
+2 0.359131 0.564697 0.528809 0.553223
+6 0.515137 0.819092 0.066406 0.040527
+
+DUPLICATE HASH: 7530C9DE3F0A6949F19380C4D804C7A642BB94C37DFB63E4FAACC974CFFF38DD
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 7.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 7.txt
+7 0.681481 0.312500 0.159259 0.063889
+14 0.501852 0.393981 0.779630 0.678704
+6 0.747222 0.649537 0.087037 0.102778
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\photo 7.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\photo 7.txt
+7 0.678241 0.309722 0.173148 0.054630
+6 0.758796 0.638889 0.052778 0.105556
+14 0.526852 0.467130 0.781481 0.682407
+
+DUPLICATE HASH: 75E4E0DF56251B34D64A40917D8C926566D33BFE85E1A3206DDF411B87A73E6D
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 11.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 11.txt
+2 0.496759 0.595833 0.865741 0.469444
+3 0.176852 0.287963 0.237037 0.300000
+3 0.825926 0.181944 0.244444 0.234259
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\photo 11.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\photo 11.txt
+3 0.174074 0.288426 0.248148 0.286111
+3 0.830093 0.183333 0.239815 0.251852
+2 0.501852 0.608796 0.875926 0.478704
+
+DUPLICATE HASH: 77A9C0E04B208B832988D67F27AD0FD129195B00567535931084D71BC548E70B
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 8.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 8.txt
+7 0.591667 0.311574 0.212963 0.082407
+14 0.484722 0.453704 0.704630 0.703704
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 8.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\photo 8.txt
+14 0.476852 0.418981 0.551852 0.734259
+7 0.580556 0.315741 0.185185 0.044444
+
+DUPLICATE HASH: 939EF146B41CBE8D007ECC203ABDD2A3A9EE08754058F6E9EBFD287D974152FA
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test11.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test11.txt
+7 0.331944 0.294444 0.121296 0.100000
+14 0.480093 0.453704 0.682407 0.696296
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\test11.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\test11.txt
+14 0.482407 0.422222 0.596296 0.729630
+7 0.310185 0.293981 0.131481 0.086111
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test11.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test11.txt
+7 0.308796 0.286574 0.113889 0.080556
+14 0.478704 0.475000 0.685185 0.766667
+
+DUPLICATE HASH: 9BA2CB66CCE14C76F0866FE0A6469CAAFF2B9F237485C5E8BAE88A8F6023A103
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 28.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 28.txt
+13 0.331481 0.190741 0.325926 0.248148
+2 0.331019 0.581019 0.528704 0.543519
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 28.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\photo 28.txt
+13 0.350926 0.189352 0.312963 0.249074
+2 0.352315 0.504630 0.462037 0.727778
+
+DUPLICATE HASH: 9EE3744351B0FB5A4EDF8DD7B436A514242A312E221C43C1039B91B2FFA74DBC
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test16.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test16.txt
+7 0.479630 0.286111 0.296296 0.092593
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test16.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test16.txt
+7 0.465741 0.279630 0.248148 0.118519
+
+DUPLICATE HASH: A30322F4E9674E0E3507DCF04D2EF3999DB87E1EB35DB95CF138F53E625F1E20
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test19.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test19.txt
+12 0.557870 0.740741 0.336111 0.231481
+14 0.474074 0.372222 0.601852 0.577778
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test19.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test19.txt
+12 0.550463 0.745370 0.308333 0.233333
+14 0.518519 0.455093 0.762963 0.730556
+
+DUPLICATE HASH: C2E6F49EC3B534C9EEB9F595ABAE8A6F821D93FE8E629DD473B78EE80A83CC7B
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 5.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 5.txt
+2 0.446759 0.588889 0.730556 0.503704
+7 0.525000 0.231019 0.129630 0.082407
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 5.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\photo 5.txt
+2 0.460185 0.582870 0.740741 0.495370
+7 0.537037 0.230556 0.120370 0.120370
+
+DUPLICATE HASH: CF5D4D05D8D231D207F3C8757659CB91F618F2884EE14EE8D2C065B7E544AAF9
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test15.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test15.txt
+4 0.459722 0.411111 0.291667 0.225926
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test15.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test15.txt
+4 0.447685 0.424537 0.408333 0.195370
+
+DUPLICATE HASH: D898A8DA9DFC2B1DD7EDE68492D16D84506E6D31A25298C0EB91F642DDCDDD8A
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test18.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test18.txt
+14 0.438426 0.436111 0.612037 0.698148
+6 0.679167 0.737500 0.089815 0.108333
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test18.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test18.txt
+14 0.500926 0.476852 0.768519 0.742593
+
+DUPLICATE HASH: DF2BD4F25D824ADDD6AC431C58A78CEAD6018D83CC82C57874DCBA996B72CAC5
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\test10.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\test10.txt
+0 0.350000 0.329167 0.390741 0.499074
+10 0.444444 0.449537 0.596296 0.680556
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\test10.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\test10.txt
+0 0.346296 0.340278 0.403704 0.515741
+10 0.435648 0.463426 0.634259 0.700926
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\test10.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\test10.txt
+0 0.355093 0.339815 0.360185 0.557407
+10 0.441204 0.409722 0.617593 0.636111
+
+DUPLICATE HASH: E78B32C624A88FE1EDDCE62E01F9D3D442468C39DCD4F5DB7D8415E729358BB7
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 29.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 29.txt
+12 0.551695 0.496610 0.289831 0.423729
+14 0.504237 0.493220 0.818644 0.586441
+7 0.739831 0.416102 0.150847 0.089831
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 29.jpg
+LABEL: ml-object-detection\dataset_new\labels\train\photo 29.txt
+12 0.542373 0.525424 0.277966 0.481356
+14 0.505932 0.517797 0.808475 0.577966
+7 0.737288 0.410169 0.172881 0.115254
+
+DUPLICATE HASH: FA5FD66AE1AEF06A440D25FF430EF67FD35EBACBEFC5B8EFE772BA619F85BF0B
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\test\photo 18.jpg
+LABEL: ml-object-detection\dataset_new\labels\test\photo 18.txt
+14 0.455556 0.491204 0.677778 0.662037
+7 0.562963 0.368056 0.203704 0.075000
+5 0.557407 0.640741 0.342593 0.387037
+IMAGE: C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\val\photo 18.jpg
+LABEL: ml-object-detection\dataset_new\labels\val\photo 18.txt
+7 0.565278 0.368056 0.176852 0.071296
+11 0.217130 0.245370 0.180556 0.235185
+5 0.565278 0.640741 0.310185 0.418519

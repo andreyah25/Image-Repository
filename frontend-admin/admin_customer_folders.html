@@ -107,14 +107,6 @@
 
                     </div>
                 </div>
-                <div class="repo-actions-row">
-                    <div class="table-search-box">
-                        <input type="text" id="repoFolderSearchInput"
-                            placeholder="Search an object, keywords or file name" autocomplete="off">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </div>
-                </div>
-
                 <div class="repo-view-container" id="customerFoldersContainer">
                 </div>
             </div>
@@ -407,8 +399,6 @@
 
         const photosView =
             document.getElementById("photosView");
-        const searchInput =
-            document.getElementById("repoFolderSearchInput");
 
         const photoGrid =
             document.getElementById("photoGrid");
@@ -442,10 +432,6 @@
 
         const logoutBtn =
             document.getElementById("logoutBtn");
-
-
-        let searchTimeout;
-
         window.addEventListener("load", async () => {
 
             try {
@@ -1771,46 +1757,138 @@
                     ? photo.detected_objects
                     : [];
 
-                const detectionHTML = detectedObjects.length
-                    ? detectedObjects.map(object => {
-                        const name = typeof object === "string"
-                            ? object
-                            : object?.name || "Unknown object";
+                // Group duplicate object tags
+                const groupedObjects = new Map();
 
-                        let confidence = null;
+                detectedObjects.forEach(object => {
+                    const name = typeof object === "string"
+                        ? object
+                        : object?.name || "Unknown object";
 
-                        if (typeof object?.confidence_percent === "number") {
-                            confidence = object.confidence_percent;
-                        } else if (typeof object?.confidence === "number") {
-                            confidence = object.confidence <= 1
-                                ? object.confidence * 100
-                                : object.confidence;
+                    let confidence = null;
+
+                    if (typeof object?.confidence_percent === "number") {
+                        confidence = object.confidence_percent;
+                    } else if (typeof object?.confidence === "number") {
+                        confidence = object.confidence <= 1
+                            ? object.confidence * 100
+                            : object.confidence;
+                    }
+
+                    if (confidence !== null) {
+                        confidence = Math.max(0, Math.min(100, confidence));
+                    }
+
+                    const key = name.trim().toLowerCase();
+
+                    if (!groupedObjects.has(key)) {
+                        groupedObjects.set(key, {
+                            name,
+                            highestConfidence: confidence,
+                            count: 1
+                        });
+                    } else {
+                        const existing = groupedObjects.get(key);
+
+                        existing.count++;
+
+                        if (
+                            confidence !== null &&
+                            (
+                                existing.highestConfidence === null ||
+                                confidence > existing.highestConfidence
+                            )
+                        ) {
+                            existing.highestConfidence = confidence;
+                        }
+                    }
+                });
+
+                // Create grouped detection display
+                const detectionHTML = groupedObjects.size
+                    ? Array.from(groupedObjects.values()).map(object => {
+                        const confidence = object.highestConfidence;
+
+                        let confidenceText = "Not available";
+                        let confidenceLabel = "No score";
+                        let barColor = "#999";
+
+                        if (confidence !== null) {
+                            confidenceText = `${Math.round(confidence)}%`;
+
+                            if (confidence >= 75) {
+                                confidenceLabel = "High confidence";
+                                barColor = "#26966e";
+                            } else if (confidence >= 45) {
+                                confidenceLabel = "Moderate confidence";
+                                barColor = "#c58b35";
+                            } else {
+                                confidenceLabel = "Low confidence";
+                                barColor = "#c56b52";
+                            }
                         }
 
-                        const confidenceText = confidence !== null &&
-                            Number.isFinite(confidence)
-                            ? `${Math.round(confidence)}%`
-                            : "N/A";
-
                         return `
-                    <span style="
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 5px;
-                        padding: 5px 9px;
-                        margin: 3px 4px 3px 0;
-                        border-radius: 15px;
-                        background: #e8f3ef;
-                        color: #477d6b;
-                        font-size: 11px;
-                        font-weight: 600;
+            <div style="
+                padding: 10px 12px;
+                margin: 7px 0;
+                background: #f7f9f8;
+                border: 1px solid #e6ece9;
+                border-radius: 10px;
+            ">
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 8px;
+                ">
+                    <strong style="
+                        font-size: 12px;
+                        color: #34483f;
                     ">
-                        ${escapeHTML(name)}
-                        <span style="color:#263f36;">
-                            ${confidenceText}
-                        </span>
+                        ${escapeHTML(object.name)}
+                    </strong>
+
+                    <span style="
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: ${barColor};
+                    ">
+                        ${confidenceLabel}
                     </span>
-                `;
+                </div>
+
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 7px;
+                    font-size: 11px;
+                ">
+                    <span style="color: #777;">
+                        Detection confidence
+                    </span>
+
+                    <strong style="color: #34483f;">
+                        ${confidenceText}
+                    </strong>
+                </div>
+
+                <div style="
+                    height: 6px;
+                    background: #e3e9e6;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    margin-top: 5px;
+                ">
+                    <div style="
+                        height: 100%;
+                        width: ${confidence ?? 0}%;
+                        background: ${barColor};
+                        border-radius: 10px;
+                    "></div>
+                </div>
+            </div>
+        `;
                     }).join("")
                     : photo.processing_status === "completed"
                         ? `<small style="color:#888;">No objects detected.</small>`
@@ -2351,45 +2429,6 @@
 
             loadCompletedClients();
         });
-        searchInput.addEventListener(
-            "input",
-            event => {
-
-                if (
-                    photosView.style.display !==
-                    "none"
-                ) {
-                    return;
-                }
-
-                const keyword =
-                    event.target.value.trim();
-
-                clearTimeout(searchTimeout);
-
-                searchTimeout =
-                    setTimeout(
-                        async () => {
-
-                            if (!keyword) {
-
-                                renderCompletedClients(
-                                    completedClients
-                                );
-
-                                return;
-                            }
-
-                            await searchRepositoryPhotos(
-                                keyword
-                            );
-
-                        },
-                        300
-                    );
-
-            }
-        );
         function showUploadStatus(message, isError) {
 
             uploadStatus.textContent = message;

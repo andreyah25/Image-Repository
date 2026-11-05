@@ -885,3 +885,94 @@ span.notification-badge,
 #sidebarToggle i {
     pointer-events: none;
 }
+/* =========================================
+   CAPTURED THEME - CUSTOMER FOLDER CARDS
+========================================= */
+
+.folder-card.repository-client-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+
+    width: 100%;
+    min-height: 190px !important;
+    height: auto !important;
+    padding: 22px 16px !important;
+
+    background: #ffffff !important;
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 6px !important;
+
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    transition: border-color 0.2s ease,
+                box-shadow 0.2s ease !important;
+}
+
+.folder-card.repository-client-card:hover {
+    background: #fafafa !important;
+    border-color: #639A88 !important;
+    box-shadow: 0 2px 6px rgba(99, 154, 136, 0.12) !important;
+}
+
+/* Folder icon */
+.folder-card.repository-client-card .folder-icon-wrapper {
+    position: static !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    margin: 0 0 5px !important;
+}
+
+.folder-card.repository-client-card .folder-icon {
+    font-size: 42px !important;
+    color: #639A88 !important;
+    margin: 0 !important;
+}
+
+/* Customer name */
+.folder-card.repository-client-card h3 {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 0 4px !important;
+
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    color: #4d484b !important;
+    text-align: center !important;
+
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    overflow-wrap: anywhere !important;
+}
+
+/* Package and booking date */
+.folder-card.repository-client-card p {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+    color: #19705d !important;
+    text-align: center !important;
+
+    overflow-wrap: anywhere !important;
+}

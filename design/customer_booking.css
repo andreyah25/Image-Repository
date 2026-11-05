@@ -1854,138 +1854,322 @@ select[name="package_id"],
     color: #8B718E;
 }
 
-/* ==========================================
-   PAYMENT SUCCESS - CONFIRM BOOKING LAYOUT
-   CSS ONLY - NO FUNCTION CHANGES
-========================================== */
-
-/* Payment details main box */
 #paidBookingPanel {
-    width: 100% !important;
-    max-width: 900px !important;
-    margin: 30px auto 0 !important;
-    padding: 30px !important;
-    background: #f8f6f9 !important;
-    border: 1px solid #e5dce7 !important;
-    border-radius: 14px !important;
+    width: 100%;
+    max-width: 100%;
+    margin: 20px auto !important;
+    padding: 25px !important;
     box-sizing: border-box;
 }
 
-/* Heading and payment status */
-#paidBookingHeading {
+#paidBookingHeading,
+#paidBookingMessage {
     text-align: center;
-    font-size: 26px;
-    font-weight: 700;
-    color: #8B718E;
-    margin-bottom: 12px;
 }
 
 #paidBookingMessage {
-    max-width: 720px;
-    margin: 0 auto 25px;
-    text-align: center;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #555;
+    margin: 12px auto 25px;
+    line-height: 1.6;
 }
 
-/* Payment details: two columns on laptop */
 #paidBookingDetails {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 15px;
     width: 100%;
-    margin-top: 20px !important;
-    line-height: normal !important;
+    margin-top: 20px;
 }
-
-/* Each detail box */
 #paidBookingDetails > p {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 6px;
-    min-width: 0;
-    margin: 0;
-    padding: 16px 18px;
-    background: #fff;
-    border: 1px solid #e7e0e8;
-    border-radius: 9px;
-    color: #353535;
-    font-size: 14px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-}
+        padding: 12px;
+    }
 
-/* Labels */
-#paidBookingDetails > p > strong {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: #8B718E;
-}
+/* STUDIO RENTAL SUMMARY */
 
-/* Only change the layout after payment */
-body:has(#paidBookingPanel[style*="block"])
-.booking-layout-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
+.studio-rental-summary {
     width: 100%;
-    max-width: 900px;
-    margin: 16px auto 30px;
-    gap: 0;
-}
-
-/* Align the button container with details box */
-body:has(#paidBookingPanel[style*="block"])
-.sessions-panel {
-    flex: 1 1 100%;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    padding: 18px 24px 24px;
     box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #dce8e2;
+    border-radius: 16px;
+    padding: 26px;
+    color: #454545;
+    font-size: 14px;
+    line-height: 1.7;
+    box-shadow: 0 4px 18px rgba(52, 94, 80, 0.06);
 }
 
-/* Hide the services sidebar in payment confirmation */
-body:has(#paidBookingPanel[style*="block"])
-.studio-services-panel {
-    display: none;
+.studio-rental-summary p {
+    margin: 8px 0;
+    color: #666666;
 }
 
-/* Confirm Booking button alignment */
-body:has(#paidBookingPanel[style*="block"])
-.form-actions {
+.studio-rental-summary ul {
+    margin: 12px 0;
+    padding-left: 22px;
+}
+
+.studio-rental-summary li {
+    margin-bottom: 8px;
+}
+
+.studio-rental-summary strong {
+    color: #477563;
+}
+
+.studio-rental-summary .rental-summary-heading {
+    color: #345e50;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.studio-rental-summary .rental-summary-block {
+    background: #f8fbf9;
+    border: 1px solid #e2ece6;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 16px;
+}
+
+.studio-rental-summary .rental-summary-label {
+    color: #639a88;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.studio-rental-summary .rental-summary-row {
     display: flex;
-    width: 100%;
-    justify-content: center;
-    margin: 0;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.studio-rental-summary .rental-summary-row span {
+    color: #737373;
+}
+
+.studio-rental-summary .rental-summary-row strong {
+    color: #354d42;
+    text-align: right;
+    font-weight: 600;
+}
+
+.studio-rental-summary .rental-summary-total {
+    background: #edf5f0;
+    border: 1px solid #d4e6db;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 18px 0;
+}
+
+.studio-rental-summary .rental-summary-total strong {
+    color: #345e50;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.studio-rental-summary .rental-summary-inclusions {
+    list-style: none;
     padding: 0;
+    margin: 0;
 }
 
-body:has(#paidBookingPanel[style*="block"])
-#proceedToPaymentBtn {
-    width: 100% !important;
-    min-height: 50px;
-    margin: 0 !important;
-    border-radius: 9px;
-    background: #B39EB5;
-    color: #fff;
+.studio-rental-summary .rental-summary-inclusions li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    color: #555555;
 }
 
-/* Tablet */
-@media (max-width: 900px) {
-    #paidBookingPanel {
-        padding: 22px !important;
+.studio-rental-summary .rental-summary-inclusions li i {
+    color: #639a88;
+    margin-top: 5px;
+}
+
+.studio-rental-summary .rental-summary-note {
+    background: #f5f8f6;
+    border: 1px solid #e4ece7;
+    border-radius: 10px;
+    padding: 15px 18px;
+    color: #666666;
+    font-size: 13px;
+}
+
+.studio-rental-summary .rental-summary-note strong {
+    color: #477563;
+}
+
+@media (max-width: 600px) {
+    .studio-rental-summary {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .studio-rental-summary .rental-summary-block {
+        padding: 14px;
+    }
+
+    .studio-rental-summary .rental-summary-row {
+        gap: 10px;
+    }
+
+    .studio-rental-summary .rental-summary-total strong {
+        font-size: 18px;
     }
 }
 
-/* Mobile */
+#paidBookingPanel {
+    display: none;
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto 24px;
+    padding: 30px;
+    box-sizing: border-box;
+    background: #f6f8f7;
+    border: 1px solid #d5e5dd;
+    border-radius: 16px;
+    min-width: 0;
+}
+
+#paidBookingHeading {
+    font-size: 24px;
+    font-weight: 700;
+    color: #345e50;
+    text-align: center;
+    margin: 0 0 12px;
+}
+
+#paidBookingMessage {
+    font-size: 14px;
+    color: #66736d;
+    line-height: 1.7;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 25px;
+}
+
+/* Details container */
+
+#paidBookingDetails {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    line-height: normal;
+}
+
+/* Each booking information item */
+
+#paidBookingDetails .paid-detail-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 15px 18px;
+    background: #ffffff;
+    border: 1px solid #e4ebe7;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+#paidBookingDetails .paid-detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #7b8781;
+    letter-spacing: 0.2px;
+}
+
+#paidBookingDetails .paid-detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #303b35;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+#paidBookingDetails .paid-detail-success {
+    color: #27845b;
+}
+
+#paidBookingDetails .paid-detail-balance {
+    color: #b36a22;
+}
+
+/* Confirm booking button */
+
+body:has(#paidBookingPanel[style*="display: block"])
+#bookingForm .form-actions {
+    display: flex !important;
+    width: 100%;
+    max-width: 1050px;
+    margin: 20px auto 0;
+    justify-content: center !important;
+    box-sizing: border-box;
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+#proceedToPaymentBtn {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 50px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: normal;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Prevent grid overflow */
+
+.content,
+.booking-layout-wrapper,
+.sessions-panel,
+.booking-container,
+.booking-form {
+    min-width: 0;
+}
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width: 900px) {
+    #paidBookingPanel {
+        padding: 24px;
+    }
+
+    #paidBookingDetails {
+        gap: 12px;
+    }
+
+    #paidBookingDetails .paid-detail-item {
+        padding: 13px 14px;
+    }
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
 @media (max-width: 600px) {
     #paidBookingPanel {
-        margin: 18px auto 0 !important;
-        padding: 18px 14px !important;
+        width: 100%;
+        padding: 18px 14px;
+        border-radius: 12px;
+        margin-bottom: 16px;
     }
 
     #paidBookingHeading {
@@ -1994,21 +2178,37 @@ body:has(#paidBookingPanel[style*="block"])
 
     #paidBookingMessage {
         font-size: 13px;
-        margin-bottom: 18px;
+        margin-bottom: 20px;
     }
 
     #paidBookingDetails {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 10px;
     }
 
-    #paidBookingDetails > p {
+    #paidBookingDetails .paid-detail-item {
         padding: 13px 14px;
+        gap: 5px;
+    }
+
+    #paidBookingDetails .paid-detail-label {
+        font-size: 12px;
+    }
+
+    #paidBookingDetails .paid-detail-value {
         font-size: 13px;
     }
 
-    body:has(#paidBookingPanel[style*="block"])
-    .sessions-panel {
-        padding: 14px;
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm .form-actions {
+        margin-top: 16px;
     }
+
+    body:has(#paidBookingPanel[style*="display: block"])
+    #proceedToPaymentBtn {
+        min-height: 48px;
+        font-size: 14px;
+        padding: 12px 14px;
+    }
+}
 }

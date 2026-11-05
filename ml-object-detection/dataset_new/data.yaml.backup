@@ -1,0 +1,19 @@
+path: C:/Users/conce/OneDrive/Image Repository/ml-object-detection/dataset_new
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: balloon
+  1: flower
+  2: graduation_cap
+  3: diploma
+  4: family
+  5: cake
+  6: couple
+  7: dog
+  8: solo
+  9: birthday
+  10: animals
+  11: sunglasses
+  12: kids

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>train</folder>
+	<filename>photo 3.jpg</filename>
+	<path>C:\Users\conce\OneDrive\Image Repository\ml-object-detection\dataset_new\images\train\photo 3.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1080</width>
+		<height>1080</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>couple</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>191</xmin>
+			<ymin>144</ymin>
+			<xmax>852</xmax>
+			<ymax>829</ymax>
+		</bndbox>
+	</object>
+</annotation>

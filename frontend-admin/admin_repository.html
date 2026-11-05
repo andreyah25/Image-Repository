@@ -682,23 +682,27 @@
             ]);
         });
 
-
         async function loadEvents() {
             const { data, error } = await supabaseClient
                 .from("bookings")
                 .select("id, full_name, session_type, status, is_archived, booking_date")
-                .eq("status", "Completed")
-                .eq("is_archived", false);
+                .ilike("status", "Completed")
+                .or("is_archived.eq.false,is_archived.is.null");
 
             if (error) {
                 console.error("Repository package loading error:", error);
+
                 document.getElementById("foldersView").innerHTML = `
-            <div class="empty-repo-message">Could not load repository.</div>
+            <div class="empty-repo-message">
+                Could not load repository.
+            </div>
         `;
                 return;
             }
 
             const bookings = data || [];
+
+            console.log("Repository bookings:", bookings);
 
             const uniquePackages = [
                 ...new Set(
@@ -708,13 +712,14 @@
                 )
             ].sort((a, b) => a.localeCompare(b));
 
+            console.log("Repository packages:", uniquePackages);
+
             allFolders = uniquePackages;
             window.repositoryBookings = bookings;
 
             populateRepositoryEventFilter(uniquePackages);
             renderPackageFolders(uniquePackages);
         }
-
 
         function populateRepositoryEventFilter(packages) {
             const select = document.getElementById("repoEventFilter");
@@ -850,42 +855,59 @@
             .getElementById("repoSortFilter")
             .addEventListener("change", scheduleRepositorySearch);
 
+        function searchCustomerFolders(query, packageName = "") {
+            const view = document.getElementById("foldersView");
+            const searchTerm = query.trim().toLowerCase();
 
-        function searchCustomerFolders(query) {
-            const foldersView = document.getElementById("foldersView");
-            const searchTerm = query.toLowerCase().trim();
             const bookings = window.repositoryBookings || [];
 
             const matches = bookings.filter(booking => {
                 const customerName = (booking.full_name || "").toLowerCase();
-                const packageName = (booking.session_type || "").toLowerCase();
 
-                return customerName.includes(searchTerm) ||
-                    packageName.includes(searchTerm);
+                const matchesName = customerName.includes(searchTerm);
+
+                const matchesPackage =
+                    !packageName ||
+                    booking.session_type === packageName;
+
+                return matchesName && matchesPackage;
             });
 
-            foldersView.innerHTML = "";
-
-            if (!matches.length) {
-                foldersView.innerHTML = `
-            <div class="empty-repo-message">
-                No matching customer folders found.
-            </div>
-        `;
-                return;
+            if (matches.length === 0) {
+                return false;
             }
+
+            view.innerHTML = "";
+            view.style.display = "grid";
+
+            document.getElementById("photosView").style.display = "none";
 
             matches.forEach(booking => {
                 const card = document.createElement("div");
+
                 card.className = "folder-card repository-client-card";
+                card.dataset.bookingId = booking.id;
 
                 card.innerHTML = `
             <div class="folder-icon-wrapper">
                 <i class="fa-solid fa-folder folder-icon"></i>
             </div>
-            <h3>${escapeHTML(booking.full_name || "Unnamed Customer")}</h3>
-            <p>${escapeHTML(booking.session_type || "Unknown Package")}</p>
-            <p>${escapeHTML(formatRepositoryDate(booking.booking_date))}</p>
+
+            <div class="client-name">
+                <strong>
+                    ${escapeHTML(booking.full_name || "Unnamed Customer")}
+                </strong>
+            </div>
+
+            <div class="client-event">
+                <i class="fa-solid fa-camera"></i>
+                <span>${escapeHTML(booking.session_type || "Unknown Package")}</span>
+            </div>
+
+            <div class="client-date">
+                <i class="fa-regular fa-calendar"></i>
+                <span>${escapeHTML(formatRepositoryDate(booking.booking_date))}</span>
+            </div>
         `;
 
                 card.addEventListener("click", () => {
@@ -893,11 +915,11 @@
                         `/admin/customer-folders?booking=${encodeURIComponent(booking.id)}`;
                 });
 
-                foldersView.appendChild(card);
+                view.appendChild(card);
             });
+
+            return true;
         }
-
-
         async function searchRepositoryPhotos() {
             const searchInput = document.getElementById("repoFolderSearchInput");
             const eventFilter = document.getElementById("repoEventFilter");
@@ -908,7 +930,13 @@
             }
 
             const query = searchInput.value.trim();
-            const packageName = eventFilter.value;
+            const selectedPackage = eventFilter.value;
+
+            const packageName =
+                !selectedPackage ||
+                    ["all", "all events"].includes(selectedPackage.toLowerCase())
+                    ? ""
+                    : selectedPackage;
             const sortBy = sortFilter.value;
 
             const foldersView = document.getElementById("foldersView");
@@ -918,29 +946,28 @@
                 return;
             }
 
-            if (!query && !packageName && sortBy === "newest") {
-                foldersView.style.display = "";
-                photosView.style.display = "none";
-                renderPackageFolders(allFolders);
-                return;
-            }
+            // 1. If searching a customer name, show the customer's folder first.
+            if (query) {
+                const hasCustomerMatches =
+                    searchCustomerFolders(query, packageName);
 
-            if (query && sortBy === "newest") {
-                searchCustomerFolders(query);
-
-                foldersView.style.display = "";
-                photosView.style.display = "none";
-
-                const customerMatches = (window.repositoryBookings || []).some(booking =>
-                    (booking.full_name || "").toLowerCase().includes(query.toLowerCase()) ||
-                    (booking.session_type || "").toLowerCase().includes(query.toLowerCase())
-                );
-
-                if (customerMatches && !packageName) {
+                if (hasCustomerMatches) {
+                    foldersView.style.display = "";
+                    photosView.style.display = "none";
                     return;
                 }
             }
 
+            // 2. Show the normal package folders when there are no filters.
+            if (!query && !packageName && sortBy === "newest") {
+                foldersView.style.display = "";
+                photosView.style.display = "none";
+
+                renderPackageFolders(allFolders);
+                return;
+            }
+
+            // 3. If no customer folder matches, perform the existing photo search.
             foldersView.style.display = "none";
             photosView.style.display = "block";
 
@@ -971,7 +998,11 @@
                                 .createSignedUrl(photo.storage_path, 3600);
 
                         if (signedError) {
-                            console.error("Could not create signed URL:", signedError);
+                            console.error(
+                                "Could not create signed URL:",
+                                signedError
+                            );
+
                             return { ...photo, image_url: "" };
                         }
 
@@ -999,7 +1030,6 @@
         `;
             }
         }
-
 
         function renderGlobalSearchResults(photos, searchTerm) {
             const photosView = document.getElementById("photosView");

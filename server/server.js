@@ -574,7 +574,6 @@ app.get(
     }
 );
 
-
 const ARCHIVE_PHOTO_BUCKET = "repository-photos";
 const ARCHIVE_AFTER_DAYS = 7; // Local testing only
 
@@ -3172,128 +3171,6 @@ if (isStudioRental) {
             "Payment reference:",
             bookingReference
         );
-
-
-        const {
-            data: existingBookings,
-            error: existingBookingError
-        } = await supabase
-            .from("bookings")
-            .select(`
-                id,
-                booking_date,
-                booking_time,
-                status,
-                payment_status,
-                session_type,
-                addons,
-                booking_duration
-            `)
-            .eq("booking_date", booking_date);
-
-
-        if (existingBookingError) {
-
-            console.error(
-                "Existing booking check error:",
-                existingBookingError
-            );
-
-            return res.status(500).json({
-                success: false,
-                error: "Unable to check booking availability."
-            });
-
-        }
-        function timeToMinutes(time) {
-
-            const [hours, minutes] =
-                String(time)
-                    .slice(0, 5)
-                    .split(":")
-                    .map(Number);
-
-            return (hours * 60) + minutes;
-        }
-        const requestedStart =
-            timeToMinutes(booking_time);
-
-       const BOOKING_PREPARATION_TIME = 5;
-
-const requestedEnd =
-    requestedStart + duration + BOOKING_PREPARATION_TIME;
-
-        const conflictingBooking =
-            (existingBookings || []).find(booking => {
-
-                const status =
-                    (booking.status || "")
-                        .toLowerCase()
-                        .trim();
-
-                const paymentStatus =
-                    (booking.payment_status || "")
-                        .toLowerCase()
-                        .trim();
-
-                if (
-                    status === "cancelled" ||
-                    status === "canceled" ||
-                    status === "rejected" ||
-                    status === "declined"
-                ) {
-                    return false;
-                }
-                if (
-                    status === "cancelled" ||
-                    status === "canceled" ||
-                    status === "rejected" ||
-                    status === "declined" ||
-                    paymentStatus === "payment failed"
-                ) {
-                    return false;
-                }
-              const existingDuration =
-    Number(booking.booking_duration);
-
-if (!Number.isFinite(existingDuration) || existingDuration <= 0) {
-    return false;
-}
-
-                const existingStart =
-                    timeToMinutes(
-                        booking.booking_time
-                    );
-
-
-              const existingEnd =
-    existingStart +
-    existingDuration +
-    BOOKING_PREPARATION_TIME;
-
-
-                return (
-                    requestedStart < existingEnd &&
-                    requestedEnd > existingStart
-                );
-
-            });
-
-
-        if (conflictingBooking) {
-
-            console.log(
-                "Booking conflict:",
-                conflictingBooking.id
-            );
-
-            return res.status(409).json({
-                success: false,
-                error:
-                    "This time slot is no longer available. Please select another time."
-            });
-
-        }
         const bookingDataToSave = {
     customer_id: customer_id || null,
 
@@ -3345,20 +3222,41 @@ if (!Number.isFinite(existingDuration) || existingDuration <= 0) {
         : []
 };
 
+
 const {
     data: pendingCheckout,
     error: pendingCheckoutError
-} = await supabase
-    .from("pending_booking_checkouts")
-    .insert({
-        booking_reference: bookingReference,
-        customer_id: customer_id || null,
-        booking_data: bookingDataToSave,
-        expected_amount_centavos: amountInCentavos,
-        payment_status: "Pending Payment"
-    })
-    .select()
-    .single();
+} = await supabase.rpc("reserve_pending_checkout", {
+    p_booking_reference: bookingReference,
+    p_customer_id: customer_id || null,
+    p_booking_data: bookingDataToSave,
+    p_expected_amount_centavos: amountInCentavos
+});
+
+if (pendingCheckoutError) {
+    console.error("Reservation error:", pendingCheckoutError);
+
+    return res.status(500).json({
+        success: false,
+        error: "Unable to reserve schedule."
+    });
+}
+
+if (!pendingCheckout?.success) {
+    return res.status(409).json({
+        success: false,
+        code: pendingCheckout?.code,
+        error:
+            pendingCheckout?.code === "BOOKING_LIMIT"
+                ? "Maximum bookings for this date reached."
+                : "This schedule is no longer available. Please select another time."
+    });
+}
+
+const pendingCheckoutId = pendingCheckout.checkout_id;
+
+console.log("Reserved checkout:", pendingCheckoutId);
+
 
 if (pendingCheckoutError) {
     console.error(
@@ -7633,6 +7531,932 @@ app.get("/api/gallery-access/current-request", async (req, res) => {
         });
     }
 });
+
+app.get(
+    "/api/admin/reschedule-availability",
+    requireStaff,
+    async (req, res) => {
+
+        console.log("RESCHEDULE AVAILABILITY ROUTE REACHED");
+        console.log("QUERY:", req.query);
+
+        try {
+            const { bookingId, date } = req.query;
+
+            if (!bookingId || !date) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Booking ID and date are required."
+                });
+            }
+
+          
+const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+
+if (!dateMatch) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid booking date."
+    });
+}
+
+const year = Number(dateMatch[1]);
+const month = Number(dateMatch[2]);
+const day = Number(dateMatch[3]);
+
+const checkedDate = new Date(
+    Date.UTC(year, month - 1, day)
+);
+
+if (
+    checkedDate.getUTCFullYear() !== year ||
+    checkedDate.getUTCMonth() !== month - 1 ||
+    checkedDate.getUTCDate() !== day
+) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid booking date."
+    });
+}
+
+            // Check which bookings are allowed to reserve a schedule
+            function isScheduleBlocking(item) {
+                const status = String(item.status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const paymentStatus = String(item.payment_status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const activeStatus = [
+                    "pending",
+                    "confirmed",
+                    "reserved"
+                ].includes(status);
+
+                const paidStatus = [
+                    "paid",
+                    "downpayment paid"
+                ].includes(paymentStatus);
+
+                return activeStatus && paidStatus;
+            }
+
+            // Get the original booking
+            const {
+                data: booking,
+                error: bookingError
+            } = await supabaseAdmin
+                .from("bookings")
+                .select("*")
+                .eq("id", bookingId)
+                .maybeSingle();
+
+            if (bookingError) throw bookingError;
+
+            if (!booking) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Booking not found."
+                });
+            }
+
+            if (!isScheduleBlocking(booking)) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Only active bookings with paid downpayments can be rescheduled."
+                });
+            }
+              function isStudioRental(item) {
+
+    const bookingType = String(
+        item.booking_type || ""
+    )
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, "_");
+
+    const sessionType = String(
+        item.session_type || ""
+    )
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, "_");
+
+    return (
+        bookingType === "studio_rental" ||
+        sessionType === "studio_rental" ||
+        bookingType.includes("rental") ||
+        sessionType.includes("rental")
+    );
+}
+
+                const isRental = isStudioRental(booking);
+            // Preserve the original booking duration
+            const duration = Number(
+                isRental
+                    ? booking.rental_duration || booking.booking_duration
+                    : booking.booking_duration
+            );
+
+            if (!Number.isFinite(duration) || duration <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Original booking duration is invalid."
+                });
+            }
+
+            // Target booking operating hours
+            const openingMinutes = (isRental ? 8 : 10) * 60;
+            const closingMinutes = (isRental ? 20 : 19) * 60;
+
+            // Convert database time into minutes
+            function timeToMinutes(time) {
+                if (!time) return null;
+
+                const match = String(time).match(
+                    /^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/
+                );
+
+                if (!match) return null;
+
+                const hours = Number(match[1]);
+                const minutes = Number(match[2]);
+
+                if (
+                    hours < 0 ||
+                    hours > 23 ||
+                    minutes < 0 ||
+                    minutes > 59
+                ) {
+                    return null;
+                }
+
+                return hours * 60 + minutes;
+            }
+
+            // Get all bookings on the selected date
+            const {
+                data: dateBookings,
+                error: existingError
+            } = await supabaseAdmin
+                .from("bookings")
+               .select(`
+                    id,
+                    booking_date,
+                    booking_time,
+                    booking_type,
+                    session_type,
+                    booking_duration,
+                    rental_duration,
+                    rental_start_time,
+                    rental_end_time,
+                    status,
+                    payment_status
+                `)
+                .eq("booking_date", date)
+                .neq("id", bookingId);
+
+            if (existingError) throw existingError;
+
+            // Keep only active reservations with paid downpayments
+            const existingBookings = (dateBookings || [])
+                .filter(isScheduleBlocking);
+
+            // Convert all existing schedules into occupied time ranges
+       const occupiedSchedules = existingBookings.map(item => {
+
+    const itemIsRental = isStudioRental(item);
+
+    // Always use booking_time as the actual start time.
+    const occupiedStart = timeToMinutes(
+        item.booking_time
+    );
+
+    // Rental uses rental_duration.
+    // Basic 1, packages, and special sessions use booking_duration.
+    const occupiedDuration = Number(
+        itemIsRental
+            ? (item.rental_duration || item.booking_duration)
+            : item.booking_duration
+    );
+
+    if (
+        occupiedStart === null ||
+        !Number.isFinite(occupiedDuration) ||
+        occupiedDuration <= 0
+    ) {
+        throw new Error(
+            `Booking ${item.id} has an invalid schedule.`
+        );
+    }
+
+    const occupiedEnd =
+        occupiedStart + occupiedDuration;
+
+    return {
+        id: item.id,
+        start: occupiedStart,
+        end: occupiedEnd,
+        type: itemIsRental
+            ? "studio_rental"
+            : "photoshoot",
+        duration: occupiedDuration
+    };
+});
+const slots = [];
+
+for (
+    let start = openingMinutes;
+    start + duration <= closingMinutes;
+    start += 15
+) {
+    const end = start + duration;
+
+    const hasConflict = occupiedSchedules.some(item => {
+        return (
+            start < item.end &&
+            end > item.start
+        );
+    });
+
+    if (hasConflict) {
+        continue;
+    }
+
+    const hours = Math.floor(start / 60);
+    const minutes = start % 60;
+
+    const value =
+        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+
+    const displayHour = hours % 12 || 12;
+    const period = hours >= 12 ? "PM" : "AM";
+
+    const label =
+        `${displayHour}:${String(minutes).padStart(2, "0")} ${period}`;
+
+    slots.push({
+        value,
+        label,
+        start,
+        end,
+        duration
+    });
+}
+
+            return res.status(200).json({
+                success: true,
+                date,
+                duration,
+                bookingType: isRental
+                    ? "studio_rental"
+                    : "photoshoot",
+                operatingHours: {
+                    opening: isRental ? "08:00" : "10:00",
+                    closing: isRental ? "20:00" : "19:00"
+                },
+                blockedBookings: occupiedSchedules.length,
+                slots
+            });
+
+        } catch (error) {
+
+            console.error(
+                "RESCHEDULE AVAILABILITY ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: error.message ||
+                    "Failed to load available time slots."
+            });
+        }
+    }
+);
+
+app.post(
+    "/api/admin/reschedule-booking",
+    requireStaff,
+    async (req, res) => {
+
+        try {
+
+            const {
+                bookingId,
+                newDate,
+                newTime,
+                reason,
+                message,
+                additionalNotes
+            } = req.body;
+
+            // =====================================
+            // 1. VALIDATE INPUT
+            // =====================================
+
+            if (
+                !bookingId ||
+                !newDate ||
+                !newTime ||
+                !reason ||
+                !message
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Please complete all required fields."
+                });
+            }
+
+            // Validate date without timezone conversion
+            const dateMatch =
+                /^(\d{4})-(\d{2})-(\d{2})$/.exec(newDate);
+
+            if (!dateMatch) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid booking date."
+                });
+            }
+
+            const year = Number(dateMatch[1]);
+            const month = Number(dateMatch[2]);
+            const day = Number(dateMatch[3]);
+
+            const checkedDate = new Date(
+                Date.UTC(year, month - 1, day)
+            );
+
+            if (
+                checkedDate.getUTCFullYear() !== year ||
+                checkedDate.getUTCMonth() !== month - 1 ||
+                checkedDate.getUTCDate() !== day
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid booking date."
+                });
+            }
+
+            // Validate time
+            const timeMatch =
+                /^([01]\d|2[0-3]):([0-5]\d)$/.exec(newTime);
+
+            if (!timeMatch) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid booking time."
+                });
+            }
+
+            // =====================================
+            // 2. HELPER FUNCTIONS
+            // =====================================
+
+            function timeToMinutes(time) {
+
+                if (!time) return null;
+
+                const match = String(time).match(
+                    /^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/
+                );
+
+                if (!match) return null;
+
+                const hours = Number(match[1]);
+                const minutes = Number(match[2]);
+
+                if (
+                    hours < 0 ||
+                    hours > 23 ||
+                    minutes < 0 ||
+                    minutes > 59
+                ) {
+                    return null;
+                }
+
+                return hours * 60 + minutes;
+            }
+
+            function minutesToTime(minutes) {
+
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+
+                return (
+                    String(hours).padStart(2, "0") +
+                    ":" +
+                    String(mins).padStart(2, "0") +
+                    ":00"
+                );
+            }
+
+            function isScheduleBlocking(item) {
+
+                const status = String(item.status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const paymentStatus =
+                    String(item.payment_status || "")
+                        .trim()
+                        .toLowerCase();
+
+                const activeStatus = [
+                    "pending",
+                    "confirmed",
+                    "reserved"
+                ].includes(status);
+
+                const paidStatus = [
+                    "paid",
+                    "downpayment paid"
+                ].includes(paymentStatus);
+
+                return activeStatus && paidStatus;
+            }
+
+           function isRentalBooking(item) {
+
+    const bookingType = String(
+        item.booking_type || ""
+    )
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, "_");
+
+    const sessionType = String(
+        item.session_type || ""
+    )
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, "_");
+
+    return (
+        bookingType.includes("rental") ||
+        sessionType.includes("rental")
+    );
+}
+
+            const escapeHTML = (value) =>
+                String(value ?? "").replace(
+                    /[&<>"']/g,
+                    char => ({
+                        "&": "&amp;",
+                        "<": "&lt;",
+                        ">": "&gt;",
+                        '"': "&quot;",
+                        "'": "&#39;"
+                    })[char]
+                );
+
+            // =====================================
+            // 3. GET ORIGINAL BOOKING
+            // =====================================
+
+            const {
+                data: booking,
+                error: bookingError
+            } = await supabaseAdmin
+                .from("bookings")
+                .select("*")
+                .eq("id", bookingId)
+                .maybeSingle();
+
+            if (bookingError) throw bookingError;
+
+            if (!booking) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Booking not found."
+                });
+            }
+
+            // =====================================
+            // 4. VALIDATE BOOKING STATUS
+            // =====================================
+
+            if (!isScheduleBlocking(booking)) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Only active bookings with paid payments or downpayments can be rescheduled."
+                });
+            }
+            const isRental = isRentalBooking(booking);
+
+            const duration = Number(
+                isRental
+                    ? booking.rental_duration ||
+                      booking.booking_duration
+                    : booking.booking_duration
+            );
+
+            if (
+                !Number.isFinite(duration) ||
+                duration <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "The original booking duration is invalid."
+                });
+            }
+
+            const openingMinutes =
+                (isRental ? 8 : 10) * 60;
+
+            const closingMinutes =
+                (isRental ? 20 : 19) * 60;
+
+            const requestedStart =
+                timeToMinutes(newTime);
+
+            const requestedEnd =
+                requestedStart + duration;
+
+            // Check complete duration against operating hours
+            if (
+                requestedStart < openingMinutes ||
+                requestedEnd > closingMinutes
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "The selected time does not fit within the studio operating hours for this booking."
+                });
+            }
+
+            // =====================================
+            // 6. CHECK EXISTING BOOKINGS ON NEW DATE
+            // =====================================
+
+            const {
+                data: dateBookings,
+                error: existingError
+            } = await supabaseAdmin
+                .from("bookings")
+               .select(`
+    id,
+    booking_date,
+    booking_time,
+    booking_type,
+    session_type,
+    booking_duration,
+    rental_duration,
+    status,
+    payment_status
+`)
+                .eq("booking_date", newDate)
+                .neq("id", bookingId);
+
+            if (existingError) throw existingError;
+
+            const existingBookings =
+                (dateBookings || []).filter(isScheduleBlocking);
+
+            
+// =====================================
+// 7. CHECK TIME CONFLICTS
+// =====================================
+
+for (const item of existingBookings) {
+
+    const itemIsRental = isRentalBooking(item);
+
+    // Always use booking_time as the actual start.
+    const occupiedStart = timeToMinutes(
+        item.booking_time
+    );
+
+    const occupiedDuration = Number(
+        itemIsRental
+            ? (item.rental_duration || item.booking_duration)
+            : item.booking_duration
+    );
+
+    if (
+        occupiedStart === null ||
+        !Number.isFinite(occupiedDuration) ||
+        occupiedDuration <= 0
+    ) {
+        throw new Error(
+            `Booking ${item.id} has an invalid schedule.`
+        );
+    }
+
+    const occupiedEnd =
+        occupiedStart + occupiedDuration;
+
+    const hasConflict =
+        requestedStart < occupiedEnd &&
+        requestedEnd > occupiedStart;
+
+    console.log("RESCHEDULE CONFLICT CHECK:", {
+        existingBookingId: item.id,
+        bookingTime: item.booking_time,
+        occupiedStart,
+        occupiedEnd,
+        occupiedDuration,
+        requestedStart,
+        requestedEnd,
+        hasConflict
+    });
+
+    if (hasConflict) {
+
+        return res.status(409).json({
+            success: false,
+            message:
+                "The selected schedule is no longer available. Another paid booking already occupies this time."
+        });
+    }
+}
+
+            // =====================================
+            // 8. PRESERVE OLD SCHEDULE FOR EMAIL
+            // =====================================
+
+            const oldDate = booking.booking_date;
+
+           const oldTime = booking.booking_time;
+
+            const packageName =
+                booking.package_name ||
+                booking.package ||
+                "As originally booked";
+
+            const sessionName =
+                booking.session_type ||
+                booking.special_session ||
+                "As originally booked";
+
+            const customerEmail =
+                booking.email ||
+                booking.customer_email ||
+                booking.client_email;
+
+            // =====================================
+            // 9. UPDATE DATABASE SCHEDULE
+            // =====================================
+
+            const scheduleUpdate = {
+                booking_date: newDate,
+                booking_time: newTime
+            };
+
+            // Studio rental must update its actual
+            // rental start and end times as well.
+            if (isRental) {
+
+                scheduleUpdate.rental_start_time =
+                    minutesToTime(requestedStart);
+
+                scheduleUpdate.rental_end_time =
+                    minutesToTime(requestedEnd);
+            }
+
+            const {
+                data: updatedBooking,
+                error: updateError
+            } = await supabaseAdmin
+                .from("bookings")
+                .update(scheduleUpdate)
+                .eq("id", bookingId)
+                .select()
+                .maybeSingle();
+
+            if (updateError) throw updateError;
+
+            if (!updatedBooking) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "The booking schedule could not be updated."
+                });
+            }
+
+            console.log(
+                "BOOKING RESCHEDULED:",
+                {
+                    bookingId,
+                    oldDate,
+                    oldTime,
+                    newDate,
+                    newTime,
+                    duration,
+                    isRental
+                }
+            );
+            if (!resend || !customerEmail) {
+
+                return res.status(200).json({
+                    success: true,
+                    scheduleUpdated: true,
+                    emailSent: false,
+                    updatedBooking,
+                    message:
+                        !customerEmail
+                            ? "Schedule updated, but customer email was not found."
+                            : "Schedule updated, but email service is not configured."
+                });
+            }
+
+            try {
+
+                const emailResult =
+                    await resend.emails.send({
+
+                        from: RESEND_FROM_EMAIL,
+
+                        to: [customerEmail],
+
+                        subject:
+                            "Your Captured Studio Booking Has Been Rescheduled",
+
+                        html: `
+                            <div style="
+                                font-family:Arial,sans-serif;
+                                max-width:600px;
+                                margin:auto;
+                                color:#333;
+                                line-height:1.6;
+                            ">
+
+                                <h2>Booking Rescheduled</h2>
+
+                                <p>
+                                    Hello ${escapeHTML(
+                                        booking.full_name ||
+                                        "Valued Client"
+                                    )},
+                                </p>
+
+                                <p>
+                                    We sincerely apologize for any
+                                    inconvenience caused by the
+                                    studio maintenance and the
+                                    changes to your booking schedule.
+                                </p>
+
+                                <p>
+                                    As agreed, your updated booking
+                                    schedule is shown below.
+                                </p>
+
+                                <div style="
+                                    background:#f5f5f5;
+                                    padding:20px;
+                                    border-radius:8px;
+                                ">
+
+                                    <h3>Previous Schedule</h3>
+
+                                    <p>
+                                        Date:
+                                        ${escapeHTML(oldDate)}
+                                    </p>
+
+                                    <p>
+                                        Time:
+                                        ${escapeHTML(oldTime)}
+                                    </p>
+
+                                    <hr>
+
+                                    <h3>New Confirmed Schedule</h3>
+
+                                    <p>
+                                        Date:
+                                        ${escapeHTML(newDate)}
+                                    </p>
+
+                                    <p>
+                                        Time:
+                                        ${escapeHTML(newTime)}
+                                    </p>
+
+                                    ${
+                                        isRental
+                                            ? `
+                                                <p>
+                                                    End Time:
+                                                    ${escapeHTML(
+                                                        minutesToTime(
+                                                            requestedEnd
+                                                        )
+                                                    )}
+                                                </p>
+                                            `
+                                            : ""
+                                    }
+
+                                </div>
+
+                                <h3>Original Booking Details</h3>
+
+                                <p>
+                                    <strong>Package:</strong>
+                                    ${escapeHTML(packageName)}
+                                </p>
+
+                                <p>
+                                    <strong>Special Session:</strong>
+                                    ${escapeHTML(sessionName)}
+                                </p>
+
+                                <p>
+                                    <strong>Total Price:</strong>
+                                    ${escapeHTML(booking.total_price)}
+                                </p>
+
+                                <p>
+                                    <strong>Payment Status:</strong>
+                                    ${escapeHTML(
+                                        booking.payment_status
+                                    )}
+                                </p>
+
+                                <p>
+                                    We sincerely apologize again
+                                    for the inconvenience and truly
+                                    appreciate your patience,
+                                    understanding, and flexibility.
+                                </p>
+
+                                <p>
+                                    We look forward to welcoming
+                                    you to Captured Studio on your
+                                    newly confirmed schedule.
+                                </p>
+
+                                <p>
+                                    Best regards,<br>
+                                    <strong>Captured Studio Team</strong>
+                                </p>
+
+                            </div>
+                        `
+                    });
+
+                if (emailResult?.error) {
+                    throw emailResult.error;
+                }
+
+                console.log(
+                    "RESCHEDULE EMAIL SENT:",
+                    customerEmail,
+                    bookingId
+                );
+
+                return res.status(200).json({
+                    success: true,
+                    scheduleUpdated: true,
+                    emailSent: true,
+                    updatedBooking,
+                    message:
+                        "Booking successfully rescheduled and customer email sent."
+                });
+
+            } catch (emailError) {
+
+                console.error(
+                    "RESCHEDULE EMAIL ERROR:",
+                    emailError
+                );
+
+                return res.status(200).json({
+                    success: true,
+                    scheduleUpdated: true,
+                    emailSent: false,
+                    updatedBooking,
+                    message:
+                        "Booking schedule was updated, but the customer email could not be sent."
+                });
+            }
+
+        } catch (error) {
+
+            console.error(
+                "ADMIN RESCHEDULE ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    error.message ||
+                    "Failed to reschedule booking."
+            });
+        }
+    }
+);
+
 
 app.listen(
     PORT,

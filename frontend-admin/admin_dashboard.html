@@ -133,7 +133,7 @@
         <main class="content">
 
             <div class="page-header">
-                <h1>Welcome back!</h1>
+                <h1>Dashboard </h1>
                 <p>See the latest updates on your studio.</p>
             </div>
 
@@ -3081,13 +3081,21 @@
                                 booking.booking_date,
 
                             bookingTime:
-                                booking.rental_start_time || booking.booking_time,
+                                booking.booking_time,
 
                             duration:
-                                booking.booking_duration || booking.rental_duration,
-
-                            rentalEndTime:
-                                booking.rental_end_time,
+                                String(booking.booking_type || "")
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/[\s-]+/g, "_")
+                                    .includes("rental") ||
+                                    String(booking.session_type || "")
+                                        .trim()
+                                        .toLowerCase()
+                                        .replace(/[\s-]+/g, "_")
+                                        .includes("rental")
+                                    ? Number(booking.rental_duration || booking.booking_duration || 0)
+                                    : Number(booking.booking_duration || 0),
 
                             backdrop:
                                 booking.backdrops,
@@ -3498,9 +3506,6 @@
                         booking.full_name ||
                         "Customer",
 
-                    start:
-                        `${booking.booking_date}T${booking.booking_time} `,
-
                     extendedProps: {
 
                         bookingId:
@@ -3510,8 +3515,21 @@
 
                         paymentStatus: booking.payment_status || "Not specified",
 
-                        duration: booking.booking_duration,
+                        bookingTime: booking.booking_time,
 
+                        duration:
+                            String(booking.booking_type || "")
+                                .trim()
+                                .toLowerCase()
+                                .replace(/[\s-]+/g, "_")
+                                .includes("rental") ||
+                                String(booking.session_type || "")
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/[\s-]+/g, "_")
+                                    .includes("rental")
+                                ? Number(booking.rental_duration || booking.booking_duration || 0)
+                                : Number(booking.booking_duration || 0),
                         backdrop: booking.backdrops,
 
                         addons: booking.addons,
@@ -3767,17 +3785,20 @@
         }
 
 
+
         async function loadNotifications() {
             try {
-                const { data, error } = await supabaseClient
-                    .from("notifications")
-                    .select("*")
-                    .eq("recipient", "admin")
-                    .order("created_at", { ascending: false });
+                // Load saved notifications.
+                const { data: notificationRows, error: notificationError } =
+                    await supabaseClient
+                        .from("notifications")
+                        .select("*")
+                        .eq("recipient", "admin")
+                        .order("created_at", { ascending: false });
 
-                if (error) throw error;
+                if (notificationError) throw notificationError;
 
-                notifications = (data || []).map(row => ({
+                const databaseNotifications = (notificationRows || []).map(row => ({
                     id: String(row.id),
                     databaseId: row.id,
                     bookingId: row.booking_id || null,
@@ -3790,11 +3811,53 @@
                     booking: null
                 }));
 
+                // Load pending bookings directly.
+                // This does NOT insert or update any database records.
+                const { data: bookings, error: bookingError } =
+                    await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .ilike("status", "pending")
+                        .order("created_at", { ascending: false });
+
+                if (bookingError) throw bookingError;
+
+                // Generate frontend-only booking notifications.
+                const bookingNotifications = (bookings || [])
+                    .map(createBookingNotification)
+                    .filter(Boolean);
+
+                // Merge notifications and avoid duplicate booking notifications.
+                const mergedNotifications = [...databaseNotifications];
+
+                bookingNotifications.forEach(bookingNotification => {
+                    const exists = mergedNotifications.some(notification =>
+                        String(
+                            notification.bookingId ||
+                            notification.booking?.id ||
+                            ""
+                        ) === String(bookingNotification.bookingId)
+                    );
+
+                    if (!exists) {
+                        mergedNotifications.push(bookingNotification);
+                    }
+                });
+
+                notifications = mergedNotifications
+                    .sort((a, b) =>
+                        new Date(b.date || 0).getTime() -
+                        new Date(a.date || 0).getTime()
+                    )
+                    .slice(0, 100);
+
                 renderNotifications();
+
             } catch (error) {
                 console.error("Notification loading error:", error);
             }
         }
+
 
         async function openNotificationBooking(notification) {
 
@@ -4027,11 +4090,8 @@
                 "notificationBookingTime"
             ).textContent =
                 formatDashboardBookingTimeRange(
-                    isStudioRental
-                        ? (booking.rental_start_time || booking.booking_time)
-                        : booking.booking_time,
-                    duration,
-                    isStudioRental ? booking.rental_end_time : null
+                    booking.booking_time || booking.rental_start_time,
+                    duration
                 );
 
 
@@ -4285,63 +4345,155 @@
             );
 
         }
+
         async function handleNotificationClick(notification, item) {
             if (!notification) return;
 
             try {
-                const bookingId =
+                let booking = notification.booking || null;
+
+                // Accept booking ID from different notification properties.
+                let bookingId =
                     notification.bookingId ||
+                    notification.booking_id ||
                     notification.booking?.id ||
+                    notification.data?.booking_id ||
+                    notification.metadata?.booking_id ||
                     null;
 
-                if (!bookingId) {
-                    console.warn(
-                        "Notification has no linked booking:",
-                        notification
-                    );
+                // 1. Try direct booking ID first.
+                if (bookingId) {
+                    const { data, error } = await supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .eq("id", bookingId)
+                        .maybeSingle();
+
+                    if (error) throw error;
+                    booking = data;
+                }
+
+                // 2. If notification has no booking ID,
+                // resolve it using its message and creation time.
+                if (!booking) {
+                    const message = String(notification.message || "");
+                    const notificationDate = notification.date
+                        ? new Date(notification.date)
+                        : null;
+
+                    // Extract customer email if present.
+                    const email = message.match(
+                        /[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}/
+                    )?.[0];
+
+                    // Extract YYYY-MM-DD if present.
+                    const date = message.match(
+                        /(?:Date|Booking Date):\s*(\d{4}-\d{2}-\d{2})/i
+                    )?.[1];
+
+                    // Extract HH:MM if present.
+                    const time = message.match(
+                        /(?:Time|Booking Time):\s*(\d{2}:\d{2})(?::\d{2})?/i
+                    )?.[1];
+
+                    let query = supabaseClient
+                        .from("bookings")
+                        .select("*")
+                        .order("created_at", { ascending: false })
+                        .limit(100);
+
+                    if (email) {
+                        query = query.eq("email", email);
+                    }
+
+                    if (date) {
+                        query = query.eq("booking_date", date);
+                    }
+
+                    const { data: bookings, error } = await query;
+
+                    if (error) throw error;
+
+                    let candidates = bookings || [];
+
+                    // Filter exact booking time if message contains time.
+                    if (time) {
+                        candidates = candidates.filter(booking =>
+                            String(booking.booking_time || "").startsWith(time)
+                        );
+                    }
+
+                    // If still unmatched, use notification timestamp.
+                    // This helps notifications without booking_id.
+                    if (
+                        candidates.length === 0 &&
+                        !email &&
+                        !date &&
+                        !time &&
+                        notificationDate &&
+                        !Number.isNaN(notificationDate.getTime())
+                    ) {
+                        const { data: recentBookings, error: recentError } =
+                            await supabaseClient
+                                .from("bookings")
+                                .select("*")
+                                .order("created_at", { ascending: false })
+                                .limit(100);
+
+                        if (recentError) throw recentError;
+
+                        candidates = (recentBookings || []).filter(booking => {
+                            if (!booking.created_at) return false;
+
+                            const bookingTime = new Date(booking.created_at).getTime();
+                            const notificationTime = notificationDate.getTime();
+
+                            // Match within 5 minutes of notification creation.
+                            return Math.abs(
+                                bookingTime - notificationTime
+                            ) <= 5 * 60 * 1000;
+                        });
+                    }
+
+                    // Only open when the match is unique.
+                    if (candidates.length === 1) {
+                        booking = candidates[0];
+                    }
+                }
+
+                // 3. Stop only when no exact booking was resolved.
+                if (!booking?.id) {
+                    console.error("Booking could not be resolved:", {
+                        notification,
+                        bookingId
+                    });
 
                     alert(
-                        "This notification has no linked booking record. " +
-                        "Please check its booking_id in Supabase."
+                        "Unable to find the booking associated with this notification. " +
+                        "Please check the notification message and booking details."
                     );
+
                     return;
                 }
 
-                const { data: booking, error } = await supabaseClient
-                    .from("bookings")
-                    .select("*")
-                    .eq("id", bookingId)
-                    .maybeSingle();
-
-                if (error) throw error;
-
-                if (!booking) {
-                    alert("The booking record could not be found.");
-                    return;
-                }
-
+                // 4. Open booking details.
                 await openNotificationBooking({
                     ...notification,
                     bookingId: booking.id,
                     booking
                 });
 
-                // Confirm that the modal was actually opened.
-                if (!notificationBookingModal.classList.contains("show")) {
-                    return;
-                }
+                notificationPanel.classList.remove("show");
 
-                if (notification.databaseId) {
-                    const { error: readError } = await supabaseClient
+                // 5. Mark notification read.
+                if (notification.databaseId && notification.unread) {
+                    const { error } = await supabaseClient
                         .from("notifications")
                         .update({ is_read: true })
                         .eq("id", notification.databaseId);
 
-                    if (readError) {
-                        console.error(
-                            "Failed to mark notification as read:",
-                            readError
-                        );
+                    if (error) {
+                        console.error("Mark as read failed:", error);
                     } else {
                         notification.unread = false;
                         item?.classList.remove("unread");
@@ -4349,13 +4501,11 @@
                     }
                 }
 
-                notificationPanel.classList.remove("show");
-
             } catch (error) {
-                console.error("Notification modal failed:", error);
+                console.error("Notification click error:", error);
 
                 alert(
-                    "Unable to open notification details: " +
+                    "Unable to open booking details: " +
                     (error.message || String(error))
                 );
             }

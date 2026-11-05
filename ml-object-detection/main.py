@@ -13,6 +13,7 @@ from ultralytics import YOLO
 import torch
 
 torch.set_num_threads(1)
+
 # --------------------------------------------------
 # LOGGING
 # --------------------------------------------------
@@ -23,13 +24,20 @@ logger = logging.getLogger("captured-ml")
 # --------------------------------------------------
 # APP CONFIGURATION
 # --------------------------------------------------
+
 BASE_DIR = Path(__file__).resolve().parent
 
 MODEL_PATH = (
     BASE_DIR
-    / "models"
-    / "captured_yolo26n_v2.pt"
+    / "runs"
+    / "detect"
+    / "runs"
+    / "detect"
+    / "captured_yolo26n_clean_v2"
+    / "weights"
+    / "best.pt"
 )
+
 app = FastAPI(title="Captured Object Detection API")
 
 app.add_middleware(
@@ -170,7 +178,10 @@ def analyze_image(request: AnalyzeRequest):
             image.size,
         )
 
-       
+        # --------------------------------------------------
+        # YOLO INFERENCE
+        # --------------------------------------------------
+
         inference_started = time.perf_counter()
 
         logger.info(
@@ -196,31 +207,47 @@ def analyze_image(request: AnalyzeRequest):
             logger.exception("YOLO INFERENCE FAILED")
             raise
 
+        # --------------------------------------------------
+        # GROUP DUPLICATE CLASSES
+        # Keep only the highest-confidence detection
+        # for each class in this image.
+        # --------------------------------------------------
 
-        objects = []
+        best_detections = {}
 
         if prediction.boxes is not None:
             for box in prediction.boxes:
                 class_id = int(box.cls[0])
+                confidence = float(box.conf[0])
 
-                objects.append({
-                    "name": model.names[class_id],
-                    "confidence": round(
-                        float(box.conf[0]), 4
-                    ),
-                    "box": [
-                        round(float(value), 2)
-                        for value in box.xyxy[0].tolist()
-                    ],
-                })
+                class_name = model.names[class_id]
+
+                if (
+                    class_id not in best_detections
+                    or confidence > best_detections[class_id]["confidence"]
+                ):
+                    best_detections[class_id] = {
+                        "name": class_name,
+                        "confidence": round(confidence, 4),
+                        "box": [
+                            round(float(value), 2)
+                            for value in box.xyxy[0].tolist()
+                        ],
+                    }
+
+        objects = list(best_detections.values())
+
+        # --------------------------------------------------
+        # RESPONSE
+        # --------------------------------------------------
 
         total_time = time.perf_counter() - started
 
         logger.info(
-            "ANALYZE COMPLETED in %.2f seconds; objects=%d",
+            "ANALYZE COMPLETED in %.2f seconds; unique_classes=%d",
             total_time,
             len(objects),
-        ) 
+        )
 
         return {
             "success": True,
@@ -239,4 +266,3 @@ def analyze_image(request: AnalyzeRequest):
             status_code=500,
             detail=f"Image analysis failed: {type(exc).__name__}: {exc}",
         ) from exc
-  

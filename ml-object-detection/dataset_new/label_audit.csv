@@ -1,0 +1,198 @@
+﻿label_file,label_split,matching_images_any_split,class_ids,has_class_13
+dataset_new\labels\train\3.txt,train,dataset_new\images\train\3.png,"7, 0",False
+dataset_new\labels\train\photo 12.txt,train,dataset_new\images\train\photo 12.jpg; dataset_new\images\test\photo 12.jpg,"11, 3, 4",False
+dataset_new\labels\train\photo 17.txt,train,dataset_new\images\train\photo 17.jpg; dataset_new\images\test\photo 17.jpg,"0, 0, 8",False
+dataset_new\labels\train\photo 26.txt,train,dataset_new\images\train\photo 26.jpg; dataset_new\images\test\photo 26.jpg,"2, 6",False
+dataset_new\labels\train\photo 28.txt,train,dataset_new\images\train\photo 28.jpg; dataset_new\images\test\photo 28.jpg,"2, 4",False
+dataset_new\labels\train\photo 29.txt,train,dataset_new\images\train\photo 29.jpg; dataset_new\images\test\photo 29.jpg,"7, 10, 4",False
+dataset_new\labels\train\photo 3.txt,train,dataset_new\images\train\photo 3.jpg,6,False
+dataset_new\labels\train\photo 4.txt,train,dataset_new\images\train\photo 4.jpg,6,False
+dataset_new\labels\train\photo 46.txt,train,dataset_new\images\train\photo 46.jpg,"0, 6",False
+dataset_new\labels\train\photo 48.txt,train,dataset_new\images\train\photo 48.jpg,"0, 5, 7",False
+dataset_new\labels\train\photo 5.txt,train,dataset_new\images\train\photo 5.jpg; dataset_new\images\test\photo 5.jpg,2,False
+dataset_new\labels\train\photo 6.txt,train,dataset_new\images\train\photo 6.jpg,6,False
+dataset_new\labels\train\photo 61.txt,train,dataset_new\images\train\photo 61.jpg,"4, 12",False
+dataset_new\labels\train\photo 62.txt,train,dataset_new\images\train\photo 62.jpg,"4, 12, 11",False
+dataset_new\labels\train\photo 63.txt,train,dataset_new\images\train\photo 63.jpg,"0, 12, 11, 9",False
+dataset_new\labels\train\photo 64.txt,train,dataset_new\images\train\photo 64.jpg,"9, 5, 0, 0",False
+dataset_new\labels\train\photo 65.txt,train,dataset_new\images\train\photo 65.jpg,"5, 0",False
+dataset_new\labels\train\photo 66.txt,train,dataset_new\images\train\photo 66.jpg,"2, 6",False
+dataset_new\labels\train\photo 67.txt,train,dataset_new\images\train\photo 67.jpg,"1, 6",False
+dataset_new\labels\train\photo 68.txt,train,dataset_new\images\train\photo 68.jpg,"1, 4",False
+dataset_new\labels\train\photo 69.txt,train,dataset_new\images\train\photo 69.jpg,"1, 0, 4",False
+dataset_new\labels\train\photo 7.txt,train,dataset_new\images\train\photo 7.jpg; dataset_new\images\test\photo 7.jpg,"11, 4, 12",False
+dataset_new\labels\train\photo 70.txt,train,dataset_new\images\train\photo 70.jpg,"0, 0, 8, 9",False
+dataset_new\labels\train\photo 72.txt,train,dataset_new\images\train\photo 72.jpg,"12, 4",False
+dataset_new\labels\train\photo 73.txt,train,dataset_new\images\train\photo 73.jpg,"7, 7, 8, 10, 10",False
+dataset_new\labels\train\photo 75.txt,train,dataset_new\images\train\photo 75.jpg,"1, 8",False
+dataset_new\labels\train\photo 76.txt,train,dataset_new\images\train\photo 76.jpg,"8, 8",False
+dataset_new\labels\train\photo 77.txt,train,dataset_new\images\train\photo 77.jpg,"0, 0, 6",False
+dataset_new\labels\train\photo 78.txt,train,dataset_new\images\train\photo 78.jpg,"12, 4",False
+dataset_new\labels\train\photo 79.txt,train,dataset_new\images\train\photo 79.jpg,4,False
+dataset_new\labels\train\photo 8.txt,train,dataset_new\images\train\photo 8.jpg; dataset_new\images\test\photo 8.jpg,"6, 11",False
+dataset_new\labels\train\photo 81.txt,train,dataset_new\images\train\photo 81.jpg,"1, 8",False
+dataset_new\labels\train\photo 82.txt,train,dataset_new\images\train\photo 82.jpg,"5, 12, 4",False
+dataset_new\labels\train\photo 85.txt,train,dataset_new\images\train\photo 85.jpg,"1, 8",False
+dataset_new\labels\train\photo 86.txt,train,dataset_new\images\train\photo 86.jpg,"1, 6",False
+dataset_new\labels\train\photo 90.txt,train,dataset_new\images\train\photo 90.jpg,"0, 1, 8, 0, 5",False
+dataset_new\labels\train\photo 93.txt,train,dataset_new\images\train\photo 93.jpg,"0, 8, 9, 0",False
+dataset_new\labels\train\photo 94.txt,train,dataset_new\images\train\photo 94.jpg,"5, 5, 12, 9",False
+dataset_new\labels\train\photo 95.txt,train,dataset_new\images\train\photo 95.jpg,"0, 5, 8, 9",False
+dataset_new\labels\train\photo 97.txt,train,dataset_new\images\train\photo 97.jpg,"1, 6",False
+dataset_new\labels\train\photo61.txt,train,dataset_new\images\train\photo61.jpg,"2, 6",False
+dataset_new\labels\train\test1.txt,train,dataset_new\images\train\test1.jpg,"2, 4, 11, 3",False
+dataset_new\labels\train\test10.txt,train,dataset_new\images\train\test10.jpg; dataset_new\images\val\test10.jpg; dataset_new\images\test\test10.jpg,"0, 12",False
+dataset_new\labels\train\test11.txt,train,dataset_new\images\train\test11.jpg; dataset_new\images\val\test11.jpg; dataset_new\images\test\test11.jpg,"12, 4, 11",False
+dataset_new\labels\train\test12.txt,train,dataset_new\images\train\test12.jpg; dataset_new\images\val\test12.jpg; dataset_new\images\test\test12.jpg,"11, 11, 12",False
+dataset_new\labels\train\test13.txt,train,dataset_new\images\train\test13.jpg; dataset_new\images\val\test13.jpg; dataset_new\images\test\test13.jpg,6,False
+dataset_new\labels\train\test14.txt,train,dataset_new\images\train\test14.jpg; dataset_new\images\val\test14.jpg; dataset_new\images\test\test14.jpg,"3, 4, 11, 2",False
+dataset_new\labels\train\test2.txt,train,dataset_new\images\train\test2.jpg,"11, 11, 12",False
+dataset_new\labels\train\test3.txt,train,dataset_new\images\train\test3.jpg,6,False
+dataset_new\labels\train\test4.txt,train,dataset_new\images\train\test4.jpg,8,False
+dataset_new\labels\train\test5.txt,train,dataset_new\images\train\test5.jpg,6,False
+dataset_new\labels\train\test6.txt,train,dataset_new\images\train\test6.jpg,6,False
+dataset_new\labels\train\test7.txt,train,dataset_new\images\train\test7.jpg,"11, 8",False
+dataset_new\labels\train\test8.txt,train,dataset_new\images\train\test8.jpg,"0, 0, 9, 5, 12",False
+dataset_new\labels\train\test9.txt,train,dataset_new\images\train\test9.jpg,"11, 12",False
+dataset_new\labels\val\3.txt,val,dataset_new\images\train\3.png,"0, 7, 10",False
+dataset_new\labels\val\photo 1.txt,val,dataset_new\images\val\photo 1.jpg; dataset_new\images\test\photo 1.jpg,6,False
+dataset_new\labels\val\photo 11.txt,val,dataset_new\images\val\photo 11.jpg; dataset_new\images\test\photo 11.jpg,"3, 3, 6",False
+dataset_new\labels\val\photo 12.txt,val,dataset_new\images\train\photo 12.jpg; dataset_new\images\test\photo 12.jpg,"4, 3, 5",False
+dataset_new\labels\val\photo 13.txt,val,dataset_new\images\val\photo 13.jpg,"4, 11",False
+dataset_new\labels\val\photo 14.txt,val,dataset_new\images\val\photo 14.jpg,"0, 12",False
+dataset_new\labels\val\photo 15.txt,val,dataset_new\images\val\photo 15.jpg; dataset_new\images\test\photo 15.jpg,"12, 12",False
+dataset_new\labels\val\photo 17.txt,val,dataset_new\images\train\photo 17.jpg; dataset_new\images\test\photo 17.jpg,"1, 9, 10",False
+dataset_new\labels\val\photo 18.txt,val,dataset_new\images\val\photo 18.jpg; dataset_new\images\test\photo 18.jpg,"11, 6",False
+dataset_new\labels\val\photo 2.txt,val,dataset_new\images\val\photo 2.jpg,6,False
+dataset_new\labels\val\photo 26.txt,val,dataset_new\images\train\photo 26.jpg; dataset_new\images\test\photo 26.jpg,"3, 7",False
+dataset_new\labels\val\photo 28.txt,val,dataset_new\images\train\photo 28.jpg; dataset_new\images\test\photo 28.jpg,"3, 5",False
+dataset_new\labels\val\photo 29.txt,val,dataset_new\images\train\photo 29.jpg; dataset_new\images\test\photo 29.jpg,"8, 11, 5",False
+dataset_new\labels\val\photo 3.txt,val,dataset_new\images\train\photo 3.jpg,6,False
+dataset_new\labels\val\photo 31.txt,val,dataset_new\images\val\photo 31.jpg,"1, 8",False
+dataset_new\labels\val\photo 4.txt,val,dataset_new\images\train\photo 4.jpg,6,False
+dataset_new\labels\val\photo 41.txt,val,dataset_new\images\val\photo 41.jpg,"4, 12",False
+dataset_new\labels\val\photo 42.txt,val,dataset_new\images\val\photo 42.jpg,"11, 11, 11, 4",False
+dataset_new\labels\val\photo 46.txt,val,dataset_new\images\train\photo 46.jpg,"1, 7",False
+dataset_new\labels\val\photo 47.txt,val,dataset_new\images\val\photo 47.jpg,"7, 10, 4",False
+dataset_new\labels\val\photo 48.txt,val,dataset_new\images\train\photo 48.jpg,"1, 6, 8, 11",False
+dataset_new\labels\val\photo 49.txt,val,dataset_new\images\val\photo 49.jpg,"8, 9, 0",False
+dataset_new\labels\val\photo 5.txt,val,dataset_new\images\train\photo 5.jpg; dataset_new\images\test\photo 5.jpg,"4, 11",False
+dataset_new\labels\val\photo 6.txt,val,dataset_new\images\train\photo 6.jpg,4,False
+dataset_new\labels\val\photo 61.txt,val,dataset_new\images\train\photo 61.jpg,"5, 13",True
+dataset_new\labels\val\photo 62.txt,val,dataset_new\images\train\photo 62.jpg,"13, 12, 12, 5",True
+dataset_new\labels\val\photo 63.txt,val,dataset_new\images\train\photo 63.jpg,"1, 13, 12, 10",True
+dataset_new\labels\val\photo 64.txt,val,dataset_new\images\train\photo 64.jpg,"1, 1, 1, 10, 6",False
+dataset_new\labels\val\photo 65.txt,val,dataset_new\images\train\photo 65.jpg,"1, 6, 10, 13",True
+dataset_new\labels\val\photo 66.txt,val,dataset_new\images\train\photo 66.jpg,"3, 7",False
+dataset_new\labels\val\photo 67.txt,val,dataset_new\images\train\photo 67.jpg,"2, 7",False
+dataset_new\labels\val\photo 68.txt,val,dataset_new\images\train\photo 68.jpg,"2, 5",False
+dataset_new\labels\val\photo 69.txt,val,dataset_new\images\train\photo 69.jpg,"1, 2, 5",False
+dataset_new\labels\val\photo 7.txt,val,dataset_new\images\train\photo 7.jpg; dataset_new\images\test\photo 7.jpg,"12, 13, 5",True
+dataset_new\labels\val\photo 70.txt,val,dataset_new\images\train\photo 70.jpg,"1, 1, 10",False
+dataset_new\labels\val\photo 72.txt,val,dataset_new\images\train\photo 72.jpg,"13, 5",True
+dataset_new\labels\val\photo 73.txt,val,dataset_new\images\train\photo 73.jpg,"8, 8, 9, 11, 11",False
+dataset_new\labels\val\photo 74.txt,val,dataset_new\images\val\photo 74.jpg,"1, 8",False
+dataset_new\labels\val\photo 75.txt,val,dataset_new\images\train\photo 75.jpg,"2, 9",False
+dataset_new\labels\val\photo 76.txt,val,dataset_new\images\train\photo 76.jpg,"2, 9",False
+dataset_new\labels\val\photo 77.txt,val,dataset_new\images\train\photo 77.jpg,"1, 1, 12",False
+dataset_new\labels\val\photo 78.txt,val,dataset_new\images\train\photo 78.jpg,"13, 5",True
+dataset_new\labels\val\photo 79.txt,val,dataset_new\images\train\photo 79.jpg,"13, 5",True
+dataset_new\labels\val\photo 8.txt,val,dataset_new\images\train\photo 8.jpg; dataset_new\images\test\photo 8.jpg,7,False
+dataset_new\labels\val\photo 81.txt,val,dataset_new\images\train\photo 81.jpg,"2, 9",False
+dataset_new\labels\val\photo 82.txt,val,dataset_new\images\train\photo 82.jpg,"6, 5",False
+dataset_new\labels\val\photo 85.txt,val,dataset_new\images\train\photo 85.jpg,"2, 9",False
+dataset_new\labels\val\photo 86.txt,val,dataset_new\images\train\photo 86.jpg,"2, 7",False
+dataset_new\labels\val\photo 90.txt,val,dataset_new\images\train\photo 90.jpg,"1, 1, 2, 6, 10",False
+dataset_new\labels\val\photo 93.txt,val,dataset_new\images\train\photo 93.jpg,"1, 1, 9",False
+dataset_new\labels\val\photo 94.txt,val,dataset_new\images\train\photo 94.jpg,"6, 2, 13, 10",True
+dataset_new\labels\val\photo 95.txt,val,dataset_new\images\train\photo 95.jpg,"6, 9, 1, 10",False
+dataset_new\labels\val\photo 97.txt,val,dataset_new\images\train\photo 97.jpg,"2, 7, 12",False
+dataset_new\labels\val\photo.txt,val,dataset_new\images\val\photo.jpg,"0, 12, 9",False
+dataset_new\labels\val\photo61.txt,val,dataset_new\images\train\photo61.jpg,"3, 6",False
+dataset_new\labels\val\test1.txt,val,dataset_new\images\train\test1.jpg,"3, 5, 12",False
+dataset_new\labels\val\test10.txt,val,dataset_new\images\train\test10.jpg; dataset_new\images\val\test10.jpg; dataset_new\images\test\test10.jpg,"0, 12",False
+dataset_new\labels\val\test11.txt,val,dataset_new\images\train\test11.jpg; dataset_new\images\val\test11.jpg; dataset_new\images\test\test11.jpg,"12, 4, 11",False
+dataset_new\labels\val\test12.txt,val,dataset_new\images\train\test12.jpg; dataset_new\images\val\test12.jpg; dataset_new\images\test\test12.jpg,"11, 11, 12",False
+dataset_new\labels\val\test13.txt,val,dataset_new\images\train\test13.jpg; dataset_new\images\val\test13.jpg; dataset_new\images\test\test13.jpg,4,False
+dataset_new\labels\val\test14.txt,val,dataset_new\images\train\test14.jpg; dataset_new\images\val\test14.jpg; dataset_new\images\test\test14.jpg,"3, 2, 11, 4",False
+dataset_new\labels\val\test15.txt,val,dataset_new\images\val\test15.jpg; dataset_new\images\test\test15.jpg,5,False
+dataset_new\labels\val\test16.txt,val,dataset_new\images\val\test16.jpg; dataset_new\images\test\test16.jpg,"11, 8, 12",False
+dataset_new\labels\val\test17.txt,val,dataset_new\images\val\test17.jpg; dataset_new\images\test\test17.jpg,"0, 8, 12",False
+dataset_new\labels\val\test18.txt,val,dataset_new\images\val\test18.jpg; dataset_new\images\test\test18.jpg,"4, 12",False
+dataset_new\labels\val\test19.txt,val,dataset_new\images\val\test19.jpg; dataset_new\images\test\test19.jpg,"10, 4, 12",False
+dataset_new\labels\val\test2.txt,val,dataset_new\images\train\test2.jpg,"12, 12, 5",False
+dataset_new\labels\val\test20.txt,val,dataset_new\images\val\test20.jpg; dataset_new\images\test\test20.jpg,"1, 8",False
+dataset_new\labels\val\test21.txt,val,dataset_new\images\val\test21.jpg; dataset_new\images\test\test21.jpg,"5, 8, 9",False
+dataset_new\labels\val\test3.txt,val,dataset_new\images\train\test3.jpg,7,False
+dataset_new\labels\val\test4.txt,val,dataset_new\images\train\test4.jpg,9,False
+dataset_new\labels\val\test5.txt,val,dataset_new\images\train\test5.jpg,7,False
+dataset_new\labels\val\test6.txt,val,dataset_new\images\train\test6.jpg,7,False
+dataset_new\labels\val\test7.txt,val,dataset_new\images\train\test7.jpg,"9, 12",False
+dataset_new\labels\val\test8.txt,val,dataset_new\images\train\test8.jpg,"1, 1, 6, 10",False
+dataset_new\labels\val\test9.txt,val,dataset_new\images\train\test9.jpg,"12, 13, 9",True
+dataset_new\labels\test\3.txt,test,dataset_new\images\train\3.png,"7, 0",False
+dataset_new\labels\test\photo 1.txt,test,dataset_new\images\val\photo 1.jpg; dataset_new\images\test\photo 1.jpg,6,False
+dataset_new\labels\test\photo 11.txt,test,dataset_new\images\val\photo 11.jpg; dataset_new\images\test\photo 11.jpg,"6, 3, 3",False
+dataset_new\labels\test\photo 12.txt,test,dataset_new\images\train\photo 12.jpg; dataset_new\images\test\photo 12.jpg,"3, 2, 4, 11",False
+dataset_new\labels\test\photo 15.txt,test,dataset_new\images\val\photo 15.jpg; dataset_new\images\test\photo 15.jpg,"12, 12",False
+dataset_new\labels\test\photo 17.txt,test,dataset_new\images\train\photo 17.jpg; dataset_new\images\test\photo 17.jpg,"0, 9",False
+dataset_new\labels\test\photo 18.txt,test,dataset_new\images\val\photo 18.jpg; dataset_new\images\test\photo 18.jpg,"6, 11",False
+dataset_new\labels\test\photo 26.txt,test,dataset_new\images\train\photo 26.jpg; dataset_new\images\test\photo 26.jpg,"2, 6",False
+dataset_new\labels\test\photo 28.txt,test,dataset_new\images\train\photo 28.jpg; dataset_new\images\test\photo 28.jpg,"2, 4",False
+dataset_new\labels\test\photo 29.txt,test,dataset_new\images\train\photo 29.jpg; dataset_new\images\test\photo 29.jpg,"7, 4",False
+dataset_new\labels\test\photo 3.txt,test,dataset_new\images\train\photo 3.jpg,6,False
+dataset_new\labels\test\photo 4.txt,test,dataset_new\images\train\photo 4.jpg,6,False
+dataset_new\labels\test\photo 46.txt,test,dataset_new\images\train\photo 46.jpg,"0, 6",False
+dataset_new\labels\test\photo 48.txt,test,dataset_new\images\train\photo 48.jpg,"5, 7, 0",False
+dataset_new\labels\test\photo 5.txt,test,dataset_new\images\train\photo 5.jpg; dataset_new\images\test\photo 5.jpg,5,False
+dataset_new\labels\test\photo 6.txt,test,dataset_new\images\train\photo 6.jpg,4,False
+dataset_new\labels\test\photo 61.txt,test,dataset_new\images\train\photo 61.jpg,"4, 12",False
+dataset_new\labels\test\photo 62.txt,test,dataset_new\images\train\photo 62.jpg,"12, 4",False
+dataset_new\labels\test\photo 63.txt,test,dataset_new\images\train\photo 63.jpg,"0, 12",False
+dataset_new\labels\test\photo 64.txt,test,dataset_new\images\train\photo 64.jpg,"0, 0, 0, 5",False
+dataset_new\labels\test\photo 65.txt,test,dataset_new\images\train\photo 65.jpg,"5, 0, 9",False
+dataset_new\labels\test\photo 66.txt,test,dataset_new\images\train\photo 66.jpg,"2, 6",False
+dataset_new\labels\test\photo 67.txt,test,dataset_new\images\train\photo 67.jpg,"1, 6",False
+dataset_new\labels\test\photo 68.txt,test,dataset_new\images\train\photo 68.jpg,"1, 4",False
+dataset_new\labels\test\photo 69.txt,test,dataset_new\images\train\photo 69.jpg,"0, 1, 4",False
+dataset_new\labels\test\photo 7.txt,test,dataset_new\images\train\photo 7.jpg; dataset_new\images\test\photo 7.jpg,"4, 11, 12",False
+dataset_new\labels\test\photo 70.txt,test,dataset_new\images\train\photo 70.jpg,"0, 0, 9",False
+dataset_new\labels\test\photo 72.txt,test,dataset_new\images\train\photo 72.jpg,"12, 4",False
+dataset_new\labels\test\photo 73.txt,test,dataset_new\images\train\photo 73.jpg,"7, 7, 8",False
+dataset_new\labels\test\photo 75.txt,test,dataset_new\images\train\photo 75.jpg,"1, 8",False
+dataset_new\labels\test\photo 76.txt,test,dataset_new\images\train\photo 76.jpg,"1, 8",False
+dataset_new\labels\test\photo 77.txt,test,dataset_new\images\train\photo 77.jpg,"0, 0",False
+dataset_new\labels\test\photo 78.txt,test,dataset_new\images\train\photo 78.jpg,"4, 12",False
+dataset_new\labels\test\photo 79.txt,test,dataset_new\images\train\photo 79.jpg,4,False
+dataset_new\labels\test\photo 8.txt,test,dataset_new\images\train\photo 8.jpg; dataset_new\images\test\photo 8.jpg,"11, 6",False
+dataset_new\labels\test\photo 81.txt,test,dataset_new\images\train\photo 81.jpg,"1, 8",False
+dataset_new\labels\test\photo 82.txt,test,dataset_new\images\train\photo 82.jpg,"5, 4",False
+dataset_new\labels\test\photo 85.txt,test,dataset_new\images\train\photo 85.jpg,"1, 8",False
+dataset_new\labels\test\photo 86.txt,test,dataset_new\images\train\photo 86.jpg,"1, 6",False
+dataset_new\labels\test\photo 90.txt,test,dataset_new\images\train\photo 90.jpg,"1, 5, 0, 0, 9",False
+dataset_new\labels\test\photo 93.txt,test,dataset_new\images\train\photo 93.jpg,"0, 9",False
+dataset_new\labels\test\photo 94.txt,test,dataset_new\images\train\photo 94.jpg,"5, 1, 9",False
+dataset_new\labels\test\photo 95.txt,test,dataset_new\images\train\photo 95.jpg,"5, 8, 9, 0",False
+dataset_new\labels\test\photo 97.txt,test,dataset_new\images\train\photo 97.jpg,"1, 6",False
+dataset_new\labels\test\photo61.txt,test,dataset_new\images\train\photo61.jpg,"2, 6",False
+dataset_new\labels\test\test1.txt,test,dataset_new\images\train\test1.jpg,"2, 4, 11",False
+dataset_new\labels\test\test10.txt,test,dataset_new\images\train\test10.jpg; dataset_new\images\val\test10.jpg; dataset_new\images\test\test10.jpg,"0, 12, 9",False
+dataset_new\labels\test\test11.txt,test,dataset_new\images\train\test11.jpg; dataset_new\images\val\test11.jpg; dataset_new\images\test\test11.jpg,"11, 4, 12",False
+dataset_new\labels\test\test12.txt,test,dataset_new\images\train\test12.jpg; dataset_new\images\val\test12.jpg; dataset_new\images\test\test12.jpg,"11, 11, 12",False
+dataset_new\labels\test\test13.txt,test,dataset_new\images\train\test13.jpg; dataset_new\images\val\test13.jpg; dataset_new\images\test\test13.jpg,6,False
+dataset_new\labels\test\test14.txt,test,dataset_new\images\train\test14.jpg; dataset_new\images\val\test14.jpg; dataset_new\images\test\test14.jpg,"11, 3, 2, 4",False
+dataset_new\labels\test\test15.txt,test,dataset_new\images\val\test15.jpg; dataset_new\images\test\test15.jpg,5,False
+dataset_new\labels\test\test16.txt,test,dataset_new\images\val\test16.jpg; dataset_new\images\test\test16.jpg,"11, 12",False
+dataset_new\labels\test\test17.txt,test,dataset_new\images\val\test17.jpg; dataset_new\images\test\test17.jpg,"0, 12",False
+dataset_new\labels\test\test18.txt,test,dataset_new\images\val\test18.jpg; dataset_new\images\test\test18.jpg,"4, 12",False
+dataset_new\labels\test\test19.txt,test,dataset_new\images\val\test19.jpg; dataset_new\images\test\test19.jpg,"10, 4",False
+dataset_new\labels\test\test2.txt,test,dataset_new\images\train\test2.jpg,"11, 11, 12",False
+dataset_new\labels\test\test20.txt,test,dataset_new\images\val\test20.jpg; dataset_new\images\test\test20.jpg,"1, 8",False
+dataset_new\labels\test\test21.txt,test,dataset_new\images\val\test21.jpg; dataset_new\images\test\test21.jpg,"5, 8, 9",False
+dataset_new\labels\test\test3.txt,test,dataset_new\images\train\test3.jpg,6,False
+dataset_new\labels\test\test4.txt,test,dataset_new\images\train\test4.jpg,8,False
+dataset_new\labels\test\test5.txt,test,dataset_new\images\train\test5.jpg,6,False
+dataset_new\labels\test\test6.txt,test,dataset_new\images\train\test6.jpg,6,False
+dataset_new\labels\test\test7.txt,test,dataset_new\images\train\test7.jpg,8,False
+dataset_new\labels\test\test8.txt,test,dataset_new\images\train\test8.jpg,"0, 0, 5, 9",False
+dataset_new\labels\test\test9.txt,test,dataset_new\images\train\test9.jpg,"11, 12",False
