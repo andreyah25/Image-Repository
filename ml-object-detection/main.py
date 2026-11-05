@@ -3,6 +3,7 @@ from pathlib import Path
 from io import BytesIO
 import logging
 import time
+import os
 
 import requests
 from PIL import Image, ImageOps
@@ -27,17 +28,24 @@ logger = logging.getLogger("captured-ml")
 
 BASE_DIR = Path(__file__).resolve().parent
 
-MODEL_PATH = (
-    BASE_DIR
-    / "runs"
-    / "detect"
-    / "runs"
-    / "detect"
-    / "captured_yolo26n_clean_v2"
-    / "weights"
-    / "best.pt"
+MODEL_PATH = Path(
+    os.getenv(
+        "MODEL_PATH",
+        str(
+            BASE_DIR
+            / "runs"
+            / "detect"
+            / "runs"
+            / "detect"
+            / "captured_yolo26n_clean_v2"
+            / "weights"
+            / "best.pt"
+        )
+    )
 )
 
+if not MODEL_PATH.is_absolute():
+    MODEL_PATH = BASE_DIR / MODEL_PATH
 app = FastAPI(title="Captured Object Detection API")
 
 app.add_middleware(
