@@ -80,11 +80,9 @@
                                         Contact Number <span style="color:red;">*</span>
                                     </label>
 
-                                    <input type="tel" id="contactNumber" placeholder="+63 "
-                                        maxlength="13" inputmode="tel" autocomplete="tel"
-                                        pattern="^(09[0-9]{9}|\+639[0-9]{9})$"
-                                        title="Enter a valid Philippine mobile number."
-                                        required>
+                                    <input type="tel" id="contactNumber" placeholder="+63 " maxlength="13"
+                                        inputmode="tel" autocomplete="tel" pattern="^(09[0-9]{9}|\+639[0-9]{9})$"
+                                        title="Enter a valid Philippine mobile number." required>
                                 </div>
                                 <div class="form-group">
                                     <label for="emailAddress">Email Address <span style="color:red;">*</span></label>
@@ -1819,22 +1817,14 @@
             try {
 
                 const {
-                data: existingBookings,
-                error: availabilityError
-            } = await supabaseClient
-                .from("bookings")
-                .select(`
-                    id,
-                    booking_date,
-                    booking_time,
-                    status,
-                    payment_status,
-                    session_type,
-                    booking_duration,
-                    addons
-                            `)
-                .eq("booking_date", selectedDate)
-                .limit(1000);
+                    data: existingBookings,
+                    error: availabilityError
+                } = await supabaseClient.rpc(
+                    "get_public_booking_availability",
+                    {
+                        p_booking_date: selectedDate
+                    }
+                );
 
                 if (availabilityError) {
 
