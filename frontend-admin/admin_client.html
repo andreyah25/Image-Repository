@@ -3617,7 +3617,7 @@
                         window.location.hostname === "localhost" ||
                             window.location.hostname === "127.0.0.1"
                             ? "http://localhost:3000"
-                            : "https://captured-server.onrender.com";
+                            : "https://image-repository-1.onrender.com";
 
                     if (!rescheduleDurationMinutes || rescheduleDurationMinutes <= 0) {
                         throw new Error(
@@ -3781,13 +3781,13 @@
                         `${window.location.hostname === "localhost" ||
                             window.location.hostname === "127.0.0.1"
                             ? "http://localhost:3000"
-                            : "https://captured-server.onrender.com"
-                        }/api/admin/reschedule-booking`,
+                            : "https://image-repository-1.onrender.com"
+                        }/api/admin / reschedule - booking`,
                         {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                "Authorization": `Bearer ${session.access_token}`
+                                "Authorization": `Bearer ${session.access_token} `
                             },
                             body: JSON.stringify({
                                 bookingId: rescheduleTargetId,
@@ -4035,7 +4035,7 @@
 
                     showToast(
                         "Booking Marked as No Show",
-                        `${updatedBooking.full_name}'s booking has been marked as No Show.`
+                        `${updatedBooking.full_name} 's booking has been marked as No Show.`
                     );
 
                     closeNoShowModal();

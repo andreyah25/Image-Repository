@@ -14,6 +14,7 @@ const sharp = require("sharp");
 const app = express();
 
 const allowedOrigins = [
+    
     "https://captured-admin-studio.onrender.com",
     "https://captured-photo-studio.onrender.com",
     "http://localhost:3000",
