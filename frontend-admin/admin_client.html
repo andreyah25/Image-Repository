@@ -145,10 +145,10 @@
                             Rejected <span class="tab-count" id="count-rejected">0</span>
                         </button>
 
-                        <button type="button" class="booking-status-tab" data-status="upcoming">
-                            Upcoming <span class="tab-count" id="count-upcoming">0</span>
+                        <button class="booking-status-tab" data-status="upcoming">
+                            Upcoming
+                            <span class="tab-count" id="count-upcoming">0</span>
                         </button>
-
                     </div>
                 </div>
 
@@ -1048,44 +1048,72 @@
             }
 
         }
+
         function updateBookingTabCounts() {
-            // 1. Filter by the currently selected month first (if any month filter is active)
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
             let baseBookings = [...allBookedSessions];
 
             if (selectedMonth !== "all") {
                 baseBookings = baseBookings.filter(booking => {
                     if (!booking.booking_date) return false;
-                    const month = Number(String(booking.booking_date).substring(5, 7));
+
+                    const month = Number(
+                        String(booking.booking_date).substring(5, 7)
+                    );
+
                     return month === Number(selectedMonth);
                 });
             }
 
-            // 2. Calculate counts based on your existing tab filtering rules
             const counts = {
                 all: baseBookings.length,
-                completed: baseBookings.filter(b => String(b.status || "").trim().toLowerCase() === "completed").length,
-                pending: baseBookings.filter(b => isBookingPending(b.status)).length,
+
+                completed: baseBookings.filter(b =>
+                    String(b.status || "").trim().toLowerCase() === "completed"
+                ).length,
+
+                pending: baseBookings.filter(b =>
+                    isBookingPending(b.status)
+                ).length,
+
                 rejected: baseBookings.filter(b => {
                     const status = String(b.status || "").trim().toLowerCase();
-                    return status === "rejected" || status === "cancelled";
+
+                    return status === "rejected" ||
+                        status === "cancelled";
                 }).length,
+
                 upcoming: baseBookings.filter(b => {
                     const status = String(b.status || "").trim().toLowerCase();
-                    if (status !== "confirmed" || !b.booking_date) return false;
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const bookingDate = new Date(`${b.booking_date}T00:00:00`);
-                    return !Number.isNaN(bookingDate.getTime()) && bookingDate >= today;
+
+                    const isActiveBooking =
+                        isBookingPending(status) ||
+                        status === "confirmed";
+
+                    if (!isActiveBooking || !b.booking_date) {
+                        return false;
+                    }
+
+                    const bookingDate = new Date(
+                        `${String(b.booking_date).substring(0, 10)}T00:00:00`
+                    );
+
+                    return !Number.isNaN(bookingDate.getTime()) &&
+                        bookingDate >= today;
                 }).length
             };
 
-            // 3. Update the HTML elements
-            for (const [status, count] of Object.entries(counts)) {
+            Object.entries(counts).forEach(([status, count]) => {
                 const badge = document.getElementById(`count-${status}`);
+
                 if (badge) {
                     badge.textContent = count;
                 }
-            }
+            });
+
         }
 
 
@@ -1138,8 +1166,9 @@
 
 
                     // UPCOMING: confirmed bookings with a date today or later.
+                    // UPCOMING: future/today bookings that are still active.
                     if (selectedStatus === "upcoming") {
-                        if (status !== "confirmed" || !booking.booking_date) {
+                        if (!booking.booking_date) {
                             return false;
                         }
 
@@ -1147,13 +1176,17 @@
                         today.setHours(0, 0, 0, 0);
 
                         const bookingDate = new Date(
-                            `${booking.booking_date}T00:00:00`
+                            `${String(booking.booking_date).substring(0, 10)}T00:00:00`
                         );
 
-                        return !Number.isNaN(bookingDate.getTime()) &&
+                        const isActiveBooking =
+                            isBookingPending(status) ||
+                            status === "confirmed";
+
+                        return isActiveBooking &&
+                            !Number.isNaN(bookingDate.getTime()) &&
                             bookingDate >= today;
                     }
-
                     if (selectedStatus === "completed") {
                         return status === "completed";
                     }
@@ -1256,7 +1289,9 @@
             console.table(filteredBookings.map(booking => ({
                 name: booking.full_name,
                 status: booking.status,
-                payment_status: booking.payment_status
+                payment_status: booking.payment_status,
+                booking_date: booking.booking_date,
+                booking_time: booking.booking_time
             })));
 
             if (filteredBookings.length === 0) {
@@ -1503,6 +1538,7 @@
 
                         <td>
                             ${actionHTML}
+                        </td>
                 </tr>`;
                 }
             );
