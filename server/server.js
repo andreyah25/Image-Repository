@@ -7532,160 +7532,92 @@ app.get("/api/gallery-access/current-request", async (req, res) => {
     }
 });
 
+
 app.get(
     "/api/admin/reschedule-availability",
     requireStaff,
+    
     async (req, res) => {
-
-        console.log("RESCHEDULE AVAILABILITY ROUTE REACHED");
-        console.log("QUERY:", req.query);
-
         try {
-            const { bookingId, date } = req.query;
+           
+        // =====================================
+        // 1. VALIDATE INPUT
+        // =====================================
 
-            if (!bookingId || !date) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Booking ID and date are required."
-                });
-            }
+        const bookingId = String(req.query.bookingId || "").trim();
+        const selectedDate = String(req.query.date || "").trim();
 
-          
-const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+        console.log("RESCHEDULE DATE RECEIVED:", {
+            bookingId,
+            selectedDate,
+            query: req.query
+        });
 
-if (!dateMatch) {
-    return res.status(400).json({
-        success: false,
-        message: "Invalid booking date."
-    });
-}
+        if (!bookingId || !selectedDate) {
+            return res.status(400).json({
+                success: false,
+                message: "Booking ID and selected date are required."
+            });
+        }
 
-const year = Number(dateMatch[1]);
-const month = Number(dateMatch[2]);
-const day = Number(dateMatch[3]);
+        // Validate YYYY-MM-DD
+        const dateMatch =
+            /^(\d{4})-(\d{2})-(\d{2})$/.exec(selectedDate);
 
-const checkedDate = new Date(
-    Date.UTC(year, month - 1, day)
-);
+        if (!dateMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid booking date format. Expected YYYY-MM-DD."
+            });
+        }
 
-if (
-    checkedDate.getUTCFullYear() !== year ||
-    checkedDate.getUTCMonth() !== month - 1 ||
-    checkedDate.getUTCDate() !== day
-) {
-    return res.status(400).json({
-        success: false,
-        message: "Invalid booking date."
-    });
-}
+        const year = Number(dateMatch[1]);
+        const month = Number(dateMatch[2]);
+        const day = Number(dateMatch[3]);
 
-            // Check which bookings are allowed to reserve a schedule
-            function isScheduleBlocking(item) {
-                const status = String(item.status || "")
-                    .trim()
-                    .toLowerCase();
+        // Validate actual calendar date without timezone conversion
+        const checkedDate = new Date(
+            Date.UTC(year, month - 1, day)
+        );
 
-                const paymentStatus = String(item.payment_status || "")
-                    .trim()
-                    .toLowerCase();
+        const isValidDate =
+            checkedDate.getUTCFullYear() === year &&
+            checkedDate.getUTCMonth() === month - 1 &&
+            checkedDate.getUTCDate() === day;
 
-                const activeStatus = [
-                    "pending",
-                    "confirmed",
-                    "reserved"
-                ].includes(status);
+        if (!isValidDate) {
+            console.error("INVALID RESCHEDULE CALENDAR DATE:", {
+                selectedDate,
+                year,
+                month,
+                day
+            });
 
-                const paidStatus = [
-                    "paid",
-                    "downpayment paid"
-                ].includes(paymentStatus);
+            return res.status(400).json({
+                success: false,
+                message: "Invalid booking date."
+            });
+        }
 
-                return activeStatus && paidStatus;
-            }
+        // Use selectedDate throughout this route
+        const date = selectedDate;
 
-            // Get the original booking
-            const {
-                data: booking,
-                error: bookingError
-            } = await supabaseAdmin
-                .from("bookings")
-                .select("*")
-                .eq("id", bookingId)
-                .maybeSingle();
 
-            if (bookingError) throw bookingError;
+            // =====================================
+            // 2. TIME HELPERS
+            // =====================================
 
-            if (!booking) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Booking not found."
-                });
-            }
+            function timeToMinutes(value) {
+                if (!value) return null;
 
-            if (!isScheduleBlocking(booking)) {
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Only active bookings with paid downpayments can be rescheduled."
-                });
-            }
-              function isStudioRental(item) {
+                const parts = String(value).trim().split(":");
 
-    const bookingType = String(
-        item.booking_type || ""
-    )
-        .trim()
-        .toLowerCase()
-        .replace(/[\s-]+/g, "_");
-
-    const sessionType = String(
-        item.session_type || ""
-    )
-        .trim()
-        .toLowerCase()
-        .replace(/[\s-]+/g, "_");
-
-    return (
-        bookingType === "studio_rental" ||
-        sessionType === "studio_rental" ||
-        bookingType.includes("rental") ||
-        sessionType.includes("rental")
-    );
-}
-
-                const isRental = isStudioRental(booking);
-            // Preserve the original booking duration
-            const duration = Number(
-                isRental
-                    ? booking.rental_duration || booking.booking_duration
-                    : booking.booking_duration
-            );
-
-            if (!Number.isFinite(duration) || duration <= 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Original booking duration is invalid."
-                });
-            }
-
-            // Target booking operating hours
-            const openingMinutes = (isRental ? 8 : 10) * 60;
-            const closingMinutes = (isRental ? 20 : 19) * 60;
-
-            // Convert database time into minutes
-            function timeToMinutes(time) {
-                if (!time) return null;
-
-                const match = String(time).match(
-                    /^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/
-                );
-
-                if (!match) return null;
-
-                const hours = Number(match[1]);
-                const minutes = Number(match[2]);
+                const hours = Number(parts[0]);
+                const minutes = Number(parts[1]);
 
                 if (
+                    !Number.isInteger(hours) ||
+                    !Number.isInteger(minutes) ||
                     hours < 0 ||
                     hours > 23 ||
                     minutes < 0 ||
@@ -7697,13 +7629,164 @@ if (
                 return hours * 60 + minutes;
             }
 
-            // Get all bookings on the selected date
+            function minutesToTime(minutes) {
+                const normalized =
+                    ((minutes % 1440) + 1440) % 1440;
+
+                const hours = Math.floor(normalized / 60);
+                const mins = normalized % 60;
+
+                return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:00`;
+            }
+
+            function formatTime(minutes) {
+                const normalized =
+                    ((minutes % 1440) + 1440) % 1440;
+
+                const hours = Math.floor(normalized / 60);
+                const mins = normalized % 60;
+
+                const period = hours >= 12 ? "PM" : "AM";
+                const displayHour = hours % 12 || 12;
+
+                return `${displayHour}:${String(mins).padStart(2, "0")} ${period}`;
+            }
+
+            // =====================================
+            // 3. BOOKING STATUS HELPERS
+            // =====================================
+
+            function isScheduleBlocking(item) {
+                const status = String(item.status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const paymentStatus = String(item.payment_status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const activeStatuses = [
+                    "pending",
+                    "confirmed",
+                    "reserved"
+                ];
+
+                const paidStatuses = [
+                    "paid",
+                    "downpayment paid",
+                    "downpayment_paid"
+                ];
+
+                return (
+                    activeStatuses.includes(status) &&
+                    paidStatuses.includes(paymentStatus)
+                );
+            }
+
+            function isStudioRental(item) {
+                const bookingType = String(item.booking_type || "")
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[\s-]+/g, "_");
+
+                const sessionType = String(item.session_type || "")
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[\s-]+/g, "_");
+
+                return (
+                    bookingType.includes("rental") ||
+                    sessionType.includes("rental")
+                );
+            }
+
+            // =====================================
+            // 4. GET ORIGINAL BOOKING
+            // =====================================
+
             const {
-                data: dateBookings,
-                error: existingError
+                data: originalBooking,
+                error: originalError
             } = await supabaseAdmin
                 .from("bookings")
-               .select(`
+                .select("*")
+                .eq("id", bookingId)
+                .maybeSingle();
+
+            if (originalError) {
+                throw originalError;
+            }
+
+            if (!originalBooking) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Booking not found."
+                });
+            }
+
+            if (!isScheduleBlocking(originalBooking)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Only active and paid bookings can be rescheduled."
+                });
+            }
+
+          // =====================================
+// 5. GET ORIGINAL BOOKING DURATION
+// =====================================
+
+const isRental = isStudioRental(originalBooking);
+
+const originalDuration = Number(
+    isRental
+        ? originalBooking.rental_duration ??
+          originalBooking.booking_duration ??
+          0
+        : originalBooking.booking_duration ?? 0
+);
+
+if (
+    !Number.isFinite(originalDuration) ||
+    originalDuration <= 0
+) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid original booking duration."
+    });
+}
+
+// THIS IS THE DURATION USED BY ALL AVAILABLE SLOTS
+const duration = originalDuration;
+
+console.log("ORIGINAL RESCHEDULE DURATION:", {
+    bookingId,
+    bookingType: isRental ? "RENTAL" : "PACKAGE",
+    rental_duration: originalBooking.rental_duration,
+    booking_duration: originalBooking.booking_duration,
+    finalDuration: duration
+});
+            // =====================================
+            // 6. OPERATING HOURS
+            // =====================================
+
+            const openingMinutes = isRental
+                ? 8 * 60
+                : 10 * 60;
+
+            const closingMinutes = isRental
+                ? 20 * 60
+                : 19 * 60;
+
+            // =====================================
+            // 7. FETCH BOOKINGS ON SELECTED DATE
+            // =====================================
+
+            const {
+                data: dateBookings,
+                error: dateBookingsError
+            } = await supabaseAdmin
+                .from("bookings")
+                .select(`
                     id,
                     booking_date,
                     booking_time,
@@ -7713,112 +7796,254 @@ if (
                     rental_duration,
                     rental_start_time,
                     rental_end_time,
+                    addons,
                     status,
                     payment_status
                 `)
-                .eq("booking_date", date)
+                .eq("booking_date", selectedDate)
                 .neq("id", bookingId);
 
-            if (existingError) throw existingError;
+            if (dateBookingsError) {
+                throw dateBookingsError;
+            }
 
-            // Keep only active reservations with paid downpayments
-            const existingBookings = (dateBookings || [])
-                .filter(isScheduleBlocking);
+            // =====================================
+            // 8. BUILD OCCUPIED SCHEDULES
+            // =====================================
 
-            // Convert all existing schedules into occupied time ranges
-       const occupiedSchedules = existingBookings.map(item => {
+            const PACKAGE_DURATIONS = {
+                basic_1: 15,
+                basic_2: 20,
+                basic_3: 20,
+                group_package: 60,
+                classic_1: 60,
+                classic_2: 60,
+                classic_3: 70,
+                kids: 50,
+                pre_birthday: 50,
+                theme_holiday: 35,
+                maternity: 50
+            };
 
-    const itemIsRental = isStudioRental(item);
+            function getBookingDuration(item) {
 
-    // Always use booking_time as the actual start time.
-    const occupiedStart = timeToMinutes(
-        item.booking_time
+                // Use saved booking duration first
+                const savedDuration =
+                    Number(item.booking_duration);
+
+                if (
+                    Number.isFinite(savedDuration) &&
+                    savedDuration > 0
+                ) {
+                    return savedDuration;
+                }
+
+                // Fallback to package duration
+                const sessionType = String(
+                    item.session_type || ""
+                )
+                    .trim()
+                    .toLowerCase();
+
+                let duration =
+                    PACKAGE_DURATIONS[sessionType] || 0;
+
+                // Add photographer add-ons
+                const addons = Array.isArray(item.addons)
+                    ? item.addons
+                    : [];
+
+                for (const addon of addons) {
+
+                    if (!addon) continue;
+
+                    const key = String(addon.key || "")
+                        .trim()
+                        .toLowerCase();
+
+                    const quantity =
+                        Number(addon.quantity) || 1;
+
+                    if (key === "photographer_15") {
+                        duration += 15 * quantity;
+                    }
+
+                    if (key === "photographer_30") {
+                        duration += 30 * quantity;
+                    }
+                }
+
+                return duration;
+            }
+
+            const occupiedSchedules = [];
+
+            for (const item of dateBookings || []) {
+
+                // Ignore bookings that do not block schedules
+                if (!isScheduleBlocking(item)) {
+                    continue;
+                }
+
+                const itemIsRental =
+                    isStudioRental(item);
+
+                // =====================================
+                // 8.1 GET BOOKING START
+                // =====================================
+                // IMPORTANT:
+                // BOTH RENTAL AND PACKAGE USE booking_time
+
+                const occupiedStart = timeToMinutes(
+                    item.booking_time
+                );
+
+                if (occupiedStart === null) {
+                    console.warn(
+                        "Invalid booking_time:",
+                        item.id,
+                        item.booking_time
+                    );
+
+                    continue;
+                }
+
+                // =====================================
+// 8.2 GET EXISTING BOOKING DURATION
+// =====================================
+
+let occupiedDuration;
+
+if (itemIsRental) {
+
+    occupiedDuration = Number(
+        item.rental_duration ??
+        item.booking_duration ??
+        0
     );
 
-    // Rental uses rental_duration.
-    // Basic 1, packages, and special sessions use booking_duration.
-    const occupiedDuration = Number(
-        itemIsRental
-            ? (item.rental_duration || item.booking_duration)
-            : item.booking_duration
-    );
+} else {
 
-    if (
-        occupiedStart === null ||
-        !Number.isFinite(occupiedDuration) ||
-        occupiedDuration <= 0
-    ) {
-        throw new Error(
-            `Booking ${item.id} has an invalid schedule.`
-        );
-    }
+    occupiedDuration = getBookingDuration(item);
 
-    const occupiedEnd =
-        occupiedStart + occupiedDuration;
-
-    return {
-        id: item.id,
-        start: occupiedStart,
-        end: occupiedEnd,
-        type: itemIsRental
-            ? "studio_rental"
-            : "photoshoot",
-        duration: occupiedDuration
-    };
-});
-const slots = [];
-
-for (
-    let start = openingMinutes;
-    start + duration <= closingMinutes;
-    start += 15
-) {
-    const end = start + duration;
-
-    const hasConflict = occupiedSchedules.some(item => {
-        return (
-            start < item.end &&
-            end > item.start
-        );
-    });
-
-    if (hasConflict) {
-        continue;
-    }
-
-    const hours = Math.floor(start / 60);
-    const minutes = start % 60;
-
-    const value =
-        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-
-    const displayHour = hours % 12 || 12;
-    const period = hours >= 12 ? "PM" : "AM";
-
-    const label =
-        `${displayHour}:${String(minutes).padStart(2, "0")} ${period}`;
-
-    slots.push({
-        value,
-        label,
-        start,
-        end,
-        duration
-    });
 }
 
-            return res.status(200).json({
+if (
+    !Number.isFinite(occupiedDuration) ||
+    occupiedDuration <= 0
+) {
+    console.warn(
+        "Invalid booking duration:",
+        item.id,
+        occupiedDuration
+    );
+
+    continue;
+}
+
+                // =====================================
+                // 8.3 COMPUTE BOOKING END
+                // =====================================
+                // booking_time + duration
+
+                const occupiedEnd =
+                    occupiedStart + occupiedDuration;
+
+                // =====================================
+                // 8.4 SAVE OCCUPIED SCHEDULE
+                // =====================================
+
+                occupiedSchedules.push({
+                    id: item.id,
+                    start: occupiedStart,
+                    end: occupiedEnd,
+                    duration: occupiedDuration,
+                    isRental: itemIsRental
+                });
+
+                console.log(
+                    "OCCUPIED BOOKING:",
+                    {
+                        id: item.id,
+                        type: itemIsRental
+                            ? "RENTAL"
+                            : "PACKAGE",
+                        booking_time: item.booking_time,
+                        start: formatTime(occupiedStart),
+                        end: formatTime(occupiedEnd),
+                        duration: occupiedDuration
+                    }
+                );
+            }
+
+            // =====================================
+            // 9. GENERATE NON-OVERLAPPING SLOTS
+            // =====================================
+
+            const slots = [];
+
+            const SLOT_INTERVAL = 15;
+
+            for (
+                let start = openingMinutes;
+                start + duration <= closingMinutes;
+                start += SLOT_INTERVAL
+            ) {
+
+                const end = start + duration;
+
+                // =====================================
+                // CHECK OVERLAPPING BOOKINGS
+                // =====================================
+
+                const hasConflict =
+                    occupiedSchedules.some((occupied) => {
+
+                        return (
+                            start < occupied.end &&
+                            end > occupied.start
+                        );
+
+                    });
+
+                if (hasConflict) {
+                    continue;
+                }
+
+                // =====================================
+                // ADD AVAILABLE SLOT
+                // =====================================
+
+                slots.push({
+                    value: minutesToTime(start),
+                    label: `${formatTime(start)} – ${formatTime(end)}`,
+                    start,
+                    end,
+                    duration
+                });
+            }
+
+            // =====================================
+            // 10. RESPONSE
+            // =====================================
+
+            return res.json({
                 success: true,
-                date,
+                date: selectedDate,
                 duration,
+
                 bookingType: isRental
                     ? "studio_rental"
-                    : "photoshoot",
+                    : "package",
+
                 operatingHours: {
-                    opening: isRental ? "08:00" : "10:00",
-                    closing: isRental ? "20:00" : "19:00"
+                    opening: formatTime(openingMinutes),
+                    closing: formatTime(closingMinutes)
                 },
-                blockedBookings: occupiedSchedules.length,
+
+                blockedBookings:
+                    occupiedSchedules.length,
+
                 slots
             });
 
@@ -7831,12 +8056,12 @@ for (
 
             return res.status(500).json({
                 success: false,
-                message: error.message ||
-                    "Failed to load available time slots."
+                message: "Failed to retrieve available time slots."
             });
         }
     }
 );
+
 
 app.post(
     "/api/admin/reschedule-booking",
@@ -7854,63 +8079,60 @@ app.post(
                 additionalNotes
             } = req.body;
 
-            // =====================================
-            // 1. VALIDATE INPUT
-            // =====================================
+           
+ // =====================================
+ // 1. VALIDATE INPUT
+ // =====================================
 
-            if (
-                !bookingId ||
-                !newDate ||
-                !newTime ||
-                !reason ||
-                !message
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Please complete all required fields."
-                });
-            }
+if (!bookingId || !newDate || !newTime) {
+        return res.status(400).json({
+        success: false,
+        message: "Booking ID and selected date are required."
+    });
+}
 
-            // Validate date without timezone conversion
-            const dateMatch =
-                /^(\d{4})-(\d{2})-(\d{2})$/.exec(newDate);
+// Normalize selected date
+const selectedDate = String(newDate).trim();
+// Validate YYYY-MM-DD without timezone conversion
+const dateMatch =
+    /^(\d{4})-(\d{2})-(\d{2})$/.exec(selectedDate);
 
-            if (!dateMatch) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid booking date."
-                });
-            }
+if (!dateMatch) {
+    console.error("INVALID RESCHEDULE DATE:", {
+        bookingId,
+        receivedDate: newDate
+    });
 
-            const year = Number(dateMatch[1]);
-            const month = Number(dateMatch[2]);
-            const day = Number(dateMatch[3]);
+    return res.status(400).json({
+        success: false,
+        message: "Invalid booking date. Expected YYYY-MM-DD."
+    });
+}
 
-            const checkedDate = new Date(
-                Date.UTC(year, month - 1, day)
-            );
+const year = Number(dateMatch[1]);
+const month = Number(dateMatch[2]);
+const day = Number(dateMatch[3]);
+const checkedDate = new Date(
+    Date.UTC(year, month - 1, day)
+);
 
-            if (
-                checkedDate.getUTCFullYear() !== year ||
-                checkedDate.getUTCMonth() !== month - 1 ||
-                checkedDate.getUTCDate() !== day
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid booking date."
-                });
-            }
+if (
+    checkedDate.getUTCFullYear() !== year ||
+    checkedDate.getUTCMonth() !== month - 1 ||
+    checkedDate.getUTCDate() !== day
+) {
+    console.error("INVALID CALENDAR DATE:", {
+        receivedDate: newDate,
+        year,
+        month,
+        day
+    });
 
-            // Validate time
-            const timeMatch =
-                /^([01]\d|2[0-3]):([0-5]\d)$/.exec(newTime);
-
-            if (!timeMatch) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid booking time."
-                });
-            }
+    return res.status(400).json({
+        success: false,
+        message: "Invalid booking date."
+    });
+}
 
             // =====================================
             // 2. HELPER FUNCTIONS
@@ -7973,33 +8195,34 @@ app.post(
 
                 const paidStatus = [
                     "paid",
-                    "downpayment paid"
+                    "downpayment paid",
+                    "downpayment_paid"
                 ].includes(paymentStatus);
 
                 return activeStatus && paidStatus;
             }
 
-           function isRentalBooking(item) {
+            function isRentalBooking(item) {
 
-    const bookingType = String(
-        item.booking_type || ""
-    )
-        .trim()
-        .toLowerCase()
-        .replace(/[\s-]+/g, "_");
+                const bookingType = String(
+                    item.booking_type || ""
+                )
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[\s-]+/g, "_");
 
-    const sessionType = String(
-        item.session_type || ""
-    )
-        .trim()
-        .toLowerCase()
-        .replace(/[\s-]+/g, "_");
+                const sessionType = String(
+                    item.session_type || ""
+                )
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[\s-]+/g, "_");
 
-    return (
-        bookingType.includes("rental") ||
-        sessionType.includes("rental")
-    );
-}
+                return (
+                    bookingType.includes("rental") ||
+                    sessionType.includes("rental")
+                );
+            }
 
             const escapeHTML = (value) =>
                 String(value ?? "").replace(
@@ -8047,13 +8270,25 @@ app.post(
                         "Only active bookings with paid payments or downpayments can be rescheduled."
                 });
             }
-            const isRental = isRentalBooking(booking);
+
+            const isRental =
+                isRentalBooking(booking);
+
+            // =====================================
+            // 5. GET ORIGINAL BOOKING DURATION
+            // =====================================
 
             const duration = Number(
                 isRental
-                    ? booking.rental_duration ||
-                      booking.booking_duration
-                    : booking.booking_duration
+                    ? (
+                        booking.rental_duration ??
+                        booking.booking_duration ??
+                        0
+                    )
+                    : (
+                        booking.booking_duration ??
+                        0
+                    )
             );
 
             if (
@@ -8066,6 +8301,10 @@ app.post(
                         "The original booking duration is invalid."
                 });
             }
+
+            // =====================================
+            // 5.1 OPERATING HOURS
+            // =====================================
 
             const openingMinutes =
                 (isRental ? 8 : 10) * 60;
@@ -8094,96 +8333,228 @@ app.post(
             // =====================================
             // 6. CHECK EXISTING BOOKINGS ON NEW DATE
             // =====================================
+            // Fetch bookings on the selected newDate.
+            // Exclude the original booking being rescheduled.
 
             const {
                 data: dateBookings,
                 error: existingError
             } = await supabaseAdmin
                 .from("bookings")
-               .select(`
-    id,
-    booking_date,
-    booking_time,
-    booking_type,
-    session_type,
-    booking_duration,
-    rental_duration,
-    status,
-    payment_status
-`)
+                .select(`
+                    id,
+                    booking_date,
+                    booking_time,
+                    booking_type,
+                    session_type,
+                    booking_duration,
+                    rental_duration,
+                    rental_start_time,
+                    rental_end_time,
+                    addons,
+                    status,
+                    payment_status
+                `)
                 .eq("booking_date", newDate)
                 .neq("id", bookingId);
 
-            if (existingError) throw existingError;
+            if (existingError) {
+                throw existingError;
+            }
 
             const existingBookings =
-                (dateBookings || []).filter(isScheduleBlocking);
+                (dateBookings || []).filter(
+                    isScheduleBlocking
+                );
 
-            
-// =====================================
-// 7. CHECK TIME CONFLICTS
-// =====================================
+            // =====================================
+            // 7. CHECK TIME CONFLICTS
+            // =====================================
 
-for (const item of existingBookings) {
+            const PACKAGE_DURATIONS = {
+                basic_1: 15,
+                basic_2: 20,
+                basic_3: 20,
+                group_package: 60,
+                classic_1: 60,
+                classic_2: 60,
+                classic_3: 70,
+                kids: 50,
+                pre_birthday: 50,
+                theme_holiday: 35,
+                maternity: 50
+            };
 
-    const itemIsRental = isRentalBooking(item);
+            function getBookingDuration(item) {
 
-    // Always use booking_time as the actual start.
-    const occupiedStart = timeToMinutes(
-        item.booking_time
-    );
+                // Use saved booking duration first
+                const savedDuration =
+                    Number(item.booking_duration);
 
-    const occupiedDuration = Number(
-        itemIsRental
-            ? (item.rental_duration || item.booking_duration)
-            : item.booking_duration
-    );
+                if (
+                    Number.isFinite(savedDuration) &&
+                    savedDuration > 0
+                ) {
+                    return savedDuration;
+                }
 
-    if (
-        occupiedStart === null ||
-        !Number.isFinite(occupiedDuration) ||
-        occupiedDuration <= 0
-    ) {
-        throw new Error(
-            `Booking ${item.id} has an invalid schedule.`
-        );
-    }
+                // Fallback to package duration
+                const sessionType = String(
+                    item.session_type || ""
+                )
+                    .trim()
+                    .toLowerCase();
 
-    const occupiedEnd =
-        occupiedStart + occupiedDuration;
+                let packageDuration =
+                    PACKAGE_DURATIONS[sessionType] || 0;
 
-    const hasConflict =
-        requestedStart < occupiedEnd &&
-        requestedEnd > occupiedStart;
+                // Add photographer add-ons
+                const addons = Array.isArray(item.addons)
+                    ? item.addons
+                    : [];
 
-    console.log("RESCHEDULE CONFLICT CHECK:", {
-        existingBookingId: item.id,
-        bookingTime: item.booking_time,
-        occupiedStart,
-        occupiedEnd,
-        occupiedDuration,
-        requestedStart,
-        requestedEnd,
-        hasConflict
-    });
+                for (const addon of addons) {
 
-    if (hasConflict) {
+                    if (!addon) continue;
 
-        return res.status(409).json({
-            success: false,
-            message:
-                "The selected schedule is no longer available. Another paid booking already occupies this time."
-        });
-    }
-}
+                    const key = String(addon.key || "")
+                        .trim()
+                        .toLowerCase();
+
+                    const quantity =
+                        Number(addon.quantity) || 1;
+
+                    if (key === "photographer_15") {
+                        packageDuration += 15 * quantity;
+                    }
+
+                    if (key === "photographer_30") {
+                        packageDuration += 30 * quantity;
+                    }
+                }
+
+                return packageDuration;
+            }
+
+            for (const item of existingBookings) {
+
+                const itemIsRental =
+                    isRentalBooking(item);
+
+                // =====================================
+                // 7.1 GET EXISTING BOOKING START
+                // =====================================
+                // Rental and package both use booking_time
+
+                const occupiedStart =
+                    timeToMinutes(item.booking_time);
+
+                if (occupiedStart === null) {
+                    throw new Error(
+                        `Booking ${item.id} has an invalid booking_time.`
+                    );
+                }
+
+                // =====================================
+                // 7.2 GET EXISTING BOOKING DURATION
+                // =====================================
+
+                let occupiedDuration;
+
+                if (itemIsRental) {
+
+                    // RENTAL:
+                    // booking_time + rental_duration
+
+                    occupiedDuration = Number(
+                        item.rental_duration ??
+                        item.booking_duration ??
+                        0
+                    );
+
+                } else {
+
+                    // PACKAGE:
+                    // booking_time + booking_duration
+                    // Fallback to package duration + add-ons
+
+                    occupiedDuration =
+                        getBookingDuration(item);
+                }
+
+                if (
+                    !Number.isFinite(occupiedDuration) ||
+                    occupiedDuration <= 0
+                ) {
+                    throw new Error(
+                        `Booking ${item.id} has an invalid duration.`
+                    );
+                }
+
+                // =====================================
+                // 7.3 COMPUTE EXISTING BOOKING END
+                // =====================================
+
+                const occupiedEnd =
+                    occupiedStart + occupiedDuration;
+
+                // =====================================
+                // 7.4 CHECK OVERLAPPING SCHEDULE
+                // =====================================
+
+                const hasConflict =
+                    requestedStart < occupiedEnd &&
+                    requestedEnd > occupiedStart;
+
+                console.log(
+                    "RESCHEDULE CONFLICT CHECK:",
+                    {
+                        existingBookingId: item.id,
+
+                        bookingDate:
+                            item.booking_date,
+
+                        bookingTime:
+                            item.booking_time,
+
+                        type: itemIsRental
+                            ? "RENTAL"
+                            : "PACKAGE",
+
+                        occupiedStart,
+                        occupiedEnd,
+                        occupiedDuration,
+
+                        requestedDate: newDate,
+                        requestedStart,
+                        requestedEnd,
+
+                        hasConflict
+                    }
+                );
+
+                // =====================================
+                // 7.5 REJECT OVERLAPPING SCHEDULE
+                // =====================================
+
+                if (hasConflict) {
+                    return res.status(409).json({
+                        success: false,
+                        message:
+                            "The selected schedule is no longer available. Another paid booking already occupies this time."
+                    });
+                }
+            }
 
             // =====================================
             // 8. PRESERVE OLD SCHEDULE FOR EMAIL
             // =====================================
 
-            const oldDate = booking.booking_date;
+            const oldDate =
+                booking.booking_date;
 
-           const oldTime = booking.booking_time;
+            const oldTime =
+                booking.booking_time;
 
             const packageName =
                 booking.package_name ||
@@ -8209,15 +8580,24 @@ for (const item of existingBookings) {
                 booking_time: newTime
             };
 
-            // Studio rental must update its actual
-            // rental start and end times as well.
             if (isRental) {
+
+                // booking_time must match new rental start
+
+                scheduleUpdate.booking_time =
+                    minutesToTime(requestedStart);
 
                 scheduleUpdate.rental_start_time =
                     minutesToTime(requestedStart);
 
                 scheduleUpdate.rental_end_time =
                     minutesToTime(requestedEnd);
+
+                scheduleUpdate.rental_duration =
+                    duration;
+
+                scheduleUpdate.booking_duration =
+                    duration;
             }
 
             const {
@@ -8230,10 +8610,11 @@ for (const item of existingBookings) {
                 .select()
                 .maybeSingle();
 
-            if (updateError) throw updateError;
+            if (updateError) {
+                throw updateError;
+            }
 
             if (!updatedBooking) {
-
                 return res.status(409).json({
                     success: false,
                     message:
@@ -8253,19 +8634,59 @@ for (const item of existingBookings) {
                     isRental
                 }
             );
-            if (!resend || !customerEmail) {
 
-                return res.status(200).json({
-                    success: true,
-                    scheduleUpdated: true,
-                    emailSent: false,
-                    updatedBooking,
-                    message:
-                        !customerEmail
-                            ? "Schedule updated, but customer email was not found."
-                            : "Schedule updated, but email service is not configured."
-                });
-            }
+          // =====================================
+// 10. CHECK EMAIL CONFIGURATION
+// =====================================
+
+if (!resend) {
+    console.error(
+        "RESEND NOT CONFIGURED: Missing RESEND_API_KEY"
+    );
+
+    return res.status(200).json({
+        success: true,
+        scheduleUpdated: true,
+        emailSent: false,
+        updatedBooking,
+        message:
+            "Booking successfully rescheduled, but Resend is not configured."
+    });
+}
+
+if (!RESEND_FROM_EMAIL) {
+    console.error(
+        "RESEND NOT CONFIGURED: Missing RESEND_FROM_EMAIL"
+    );
+
+    return res.status(200).json({
+        success: true,
+        scheduleUpdated: true,
+        emailSent: false,
+        updatedBooking,
+        message:
+            "Booking successfully rescheduled, but sender email is missing."
+    });
+}
+
+if (!customerEmail) {
+    console.error(
+        "CUSTOMER EMAIL NOT FOUND:",
+        bookingId
+    );
+
+    return res.status(200).json({
+        success: true,
+        scheduleUpdated: true,
+        emailSent: false,
+        updatedBooking,
+        message:
+            "Booking successfully rescheduled, but customer email was not found."
+    });
+}
+            // =====================================
+            // 11. SEND RESCHEDULE EMAIL
+            // =====================================
 
             try {
 
@@ -8337,8 +8758,12 @@ for (const item of existingBookings) {
                                     </p>
 
                                     <p>
-                                        Time:
-                                        ${escapeHTML(newTime)}
+                                        Start Time:
+                                        ${escapeHTML(
+                                            isRental
+                                                ? minutesToTime(requestedStart)
+                                                : newTime
+                                        )}
                                     </p>
 
                                     ${
@@ -8347,10 +8772,14 @@ for (const item of existingBookings) {
                                                 <p>
                                                     End Time:
                                                     ${escapeHTML(
-                                                        minutesToTime(
-                                                            requestedEnd
-                                                        )
+                                                        minutesToTime(requestedEnd)
                                                     )}
+                                                </p>
+
+                                                <p>
+                                                    Duration:
+                                                    ${escapeHTML(duration)}
+                                                    minutes
                                                 </p>
                                             `
                                             : ""
@@ -8378,10 +8807,11 @@ for (const item of existingBookings) {
                                 <p>
                                     <strong>Payment Status:</strong>
                                     ${escapeHTML(
-                                        booking.payment_status
+                                        Number(booking.downpayment_amount) > 0
+                                            ? "Downpayment Paid"
+                                            : booking.payment_status || "Unpaid"
                                     )}
                                 </p>
-
                                 <p>
                                     We sincerely apologize again
                                     for the inconvenience and truly
@@ -8456,7 +8886,6 @@ for (const item of existingBookings) {
         }
     }
 );
-
 
 app.listen(
     PORT,

@@ -1338,17 +1338,6 @@
                             `;
                         }
 
-                        actionHTML += `
-                            <button
-                                type="button"
-                                class="reject-btn"
-                                data-id="${escapeHtml(booking.id)}"
-                            >
-                                <i class="fa-solid fa-xmark"></i>
-                                Reject
-                            </button>
-                        `;
-
                     }
                     if (status === "confirmed") {
 
@@ -2271,14 +2260,7 @@
                             : ""
                         }
 
-            <button
-                type="button"
-                class="reject-btn"
-                data-id="${escapeHtml(booking.id)}"
-            >
-                <i class="fa-solid fa-xmark"></i>
-                Reject
-            </button>
+            
 
             <button
                 type="button"
@@ -3425,14 +3407,9 @@
                     }
                 }
             });
-
-
-        /* ==========================================
-           ADMIN RESCHEDULING
-        ========================================== */
-
         let rescheduleTargetId = null;
-
+        let rescheduleDurationMinutes = 0;
+        let rescheduleBookingType = "";
         function openRescheduleModal(bookingId) {
 
             const booking = allBookedSessions.find(
@@ -3482,11 +3459,19 @@
                 ? "Studio Rental"
                 : "Photoshoot / Special Session";
 
-            const duration = Number(
-                bookingIsRental
-                    ? (booking.rental_duration || booking.booking_duration || 0)
-                    : (booking.booking_duration || 0)
+            // Preserve the original booking duration
+            rescheduleDurationMinutes = Number(
+                booking.rental_duration ||
+                booking.booking_duration ||
+                booking.duration ||
+                booking.package_duration ||
+                booking.session_duration ||
+                0
             );
+
+            rescheduleBookingType = bookingIsRental
+                ? "studio_rental"
+                : "photoshoot";
             document.getElementById("rescheduleCustomerName").textContent =
                 booking.full_name || "-";
 
@@ -3497,7 +3482,7 @@
                 bookingType;
 
             document.getElementById("rescheduleDuration").textContent =
-                duration ? `${duration} minutes` : "Not specified";
+                rescheduleDurationMinutes ? `${rescheduleDurationMinutes} minutes` : "Unavailable";
 
             document.getElementById("rescheduleOriginalDate").textContent =
                 booking.booking_date || "-";
@@ -3512,10 +3497,9 @@
                 : null;
 
             const originalEndMinutes =
-                originalStartMinutes !== null
-                    ? originalStartMinutes + duration
+                originalStartMinutes !== null && rescheduleDurationMinutes > 0
+                    ? originalStartMinutes + rescheduleDurationMinutes
                     : null;
-
             function formatScheduleTime(minutes) {
 
                 if (minutes === null) return "-";
@@ -3635,8 +3619,38 @@
                             ? "http://localhost:3000"
                             : "https://captured-server.onrender.com";
 
+                    if (!rescheduleDurationMinutes || rescheduleDurationMinutes <= 0) {
+                        throw new Error(
+                            "Unable to determine the original booking duration."
+                        );
+                    }
+
+                    const availabilityURL = new URL(
+                        `${API_BASE}/api/admin/reschedule-availability`
+                    );
+
+                    availabilityURL.searchParams.set(
+                        "bookingId",
+                        rescheduleTargetId
+                    );
+
+                    availabilityURL.searchParams.set(
+                        "date",
+                        selectedDate
+                    );
+
+                    availabilityURL.searchParams.set(
+                        "durationMinutes",
+                        String(rescheduleDurationMinutes)
+                    );
+
+                    availabilityURL.searchParams.set(
+                        "bookingType",
+                        rescheduleBookingType
+                    );
+
                     const response = await fetch(
-                        `${API_BASE}/api/admin/reschedule-availability?bookingId=${encodeURIComponent(rescheduleTargetId)}&date=${encodeURIComponent(selectedDate)}`,
+                        availabilityURL.toString(),
                         {
                             method: "GET",
                             headers: {
@@ -3672,17 +3686,18 @@
                     }
 
                     result.slots.forEach(slot => {
-
                         const option = document.createElement("option");
 
                         option.value = slot.value;
                         option.textContent = slot.label;
 
                         proposedTimeSelect.appendChild(option);
-
                     });
 
+                    proposedTimeSelect.value = "";
+
                     proposedTimeSelect.disabled = false;
+
 
                     if (availabilityMessage) {
                         availabilityMessage.textContent =
