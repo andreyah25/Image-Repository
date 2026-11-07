@@ -1387,10 +1387,16 @@
         async function getIncomeData(startDate = null, endDate = null) {
             let bookingQuery = supabaseClient
                 .from("bookings")
-                .select("id, booking_date, status, total_price")
-                .ilike("status", "completed")
+                .select(`
+                    id,
+                    booking_date,
+                    status,
+                    total_price,
+                    downpayment_amount,
+                    payment_status,
+                    final_payment_amount
+                `)
                 .order("booking_date", { ascending: true });
-
 
             let galleryQuery = supabaseClient
                 .from("gallery_access_requests")
@@ -1448,16 +1454,37 @@
             let galleryIncome = 0;
             let missingPrices = 0;
 
-            for (const booking of bookings) {
-                const amount = Number(booking.total_price);
 
-                if (
-                    booking.total_price == null ||
-                    booking.total_price === "" ||
-                    !Number.isFinite(amount) ||
-                    amount < 0
+            for (const booking of bookings) {
+                const status = String(booking.status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const paymentStatus = String(booking.payment_status || "")
+                    .trim()
+                    .toLowerCase();
+
+                const totalPrice = Number(booking.total_price || 0);
+                const downpayment = Number(booking.downpayment_amount || 0);
+
+                let amount = 0;
+                let description = "";
+
+                if (status === "completed") {
+                    amount = totalPrice;
+                    description = "Downpayment + Balance";
+                } else if (
+                    paymentStatus === "paid" &&
+                    ["pending", "confirmed", "no show", "rejected", "cancelled"]
+                        .includes(status)
                 ) {
-                    missingPrices++;
+                    amount = downpayment;
+                    description = status === "no show"
+                        ? "Paid Downpayment - No Show"
+                        : "Paid Downpayment";
+                }
+
+                if (!Number.isFinite(amount) || amount <= 0) {
                     continue;
                 }
 
@@ -1467,11 +1494,12 @@
                     id: booking.id,
                     date: booking.booking_date || "",
                     source: "Booking",
-                    description: "Completed booking",
+                    description,
                     status: booking.status,
                     amount
                 });
             }
+
             const countedGalleryRequests = new Set();
 
             for (const payment of galleryPayments) {
