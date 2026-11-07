@@ -138,11 +138,10 @@
                         </button>
 
                         <button type="button" class="booking-status-tab" data-status="pending">
-                            Reservation <span class="tab-count" id="count-pending">0</span>
+                            Reserved <span class="tab-count" id="count-pending">0</span>
                         </button>
-
-                        <button type="button" class="booking-status-tab" data-status="rejected">
-                            Rejected <span class="tab-count" id="count-rejected">0</span>
+                        <button type="button" class="booking-status-tab" data-status="no-show">
+                            Reserved <span class="tab-count" id="count-no-show">0</span>
                         </button>
 
                         <button class="booking-status-tab" data-status="upcoming">
@@ -1078,13 +1077,9 @@
                 pending: baseBookings.filter(b =>
                     isBookingPending(b.status)
                 ).length,
-
-                rejected: baseBookings.filter(b => {
-                    const status = String(b.status || "").trim().toLowerCase();
-
-                    return status === "rejected" ||
-                        status === "cancelled";
-                }).length,
+                "no-show": baseBookings.filter(b =>
+                    String(b.status || "").trim().toLowerCase() === "no show"
+                ).length,
 
                 upcoming: baseBookings.filter(b => {
                     const status = String(b.status || "").trim().toLowerCase();
@@ -1191,10 +1186,9 @@
                         return status === "completed";
                     }
 
-                    if (selectedStatus === "rejected") {
-                        return status === "rejected" || status === "cancelled";
+                    if (selectedStatus === "no-show") {
+                        return status === "no show";
                     }
-
                     return status === selectedStatus;
                 });
             }
