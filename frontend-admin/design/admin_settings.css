@@ -644,7 +644,7 @@
 
 .activity-log-filters {
     display: grid;
-    grid-template-columns: minmax(180px, 2fr) minmax(130px, 1fr) repeat(2, minmax(140px, 1fr)) auto;
+    grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) auto;
     gap: 12px;
     align-items: end;
     margin: 22px 0;
@@ -653,25 +653,84 @@
 .activity-log-filters input,
 .activity-log-filters select {
     width: 100%;
+    height: 42px;
     min-width: 0;
     box-sizing: border-box;
-    padding: 11px 12px;
+    padding: 0 12px;
     border: 1px solid #dddddd;
-    border-radius: 6px;
+    border-radius: 4px;
     background: #ffffff;
     font: inherit;
+    font-size: 13px;
+    color: #333333;
+    outline: none;
+    text-align: left; /* Ensures text/placeholders align properly to the left */
+}
+
+/* Fix specific styling for date inputs to align text properly */
+.activity-log-filters input[type="date"] {
+    padding-right: 8px;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* Custom wrapper styling for the All Actions dropdown so the arrow is correctly positioned */
+.activity-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.activity-log-filters select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 32px; /* Leaves room for the custom chevron arrow */
+    cursor: pointer;
+}
+
+.activity-log-filters input:focus,
+.activity-log-filters select:focus {
+    border-color: #639A88;
 }
 
 .activity-date-filter {
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 4px;
     min-width: 0;
 }
 
 .activity-date-filter label {
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 500;
     color: #555555;
+}
+
+.activity-log-filters button {
+    width: 100%;
+    height: 42px;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0 16px;
+    border-radius: 4px;
+    font: inherit;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.activity-log-filters #clearActivityFiltersBtn {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    font-weight: 600;
+    transition: background-color 0.15s ease;
+}
+
+.activity-log-filters #clearActivityFiltersBtn:hover {
+    background-color: #e5e7eb;
 }
 
 .activity-log-table-wrapper {

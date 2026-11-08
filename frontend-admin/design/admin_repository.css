@@ -695,7 +695,7 @@ span.notification-badge,
 /* Consistent gallery columns */
 .repo-search-gallery {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     align-items: stretch;
     gap: 18px;
     width: 100%;

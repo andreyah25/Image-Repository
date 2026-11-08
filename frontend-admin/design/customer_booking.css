@@ -1,3 +1,5 @@
+
+
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
@@ -456,7 +458,7 @@ i.fa-brands {
 }
 
 .form-section {
-    margin-bottom: 35px;
+    margin-bottom: 28px;
 }
 
 .form-section + .form-section {
@@ -855,7 +857,7 @@ select[name="package_id"],
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    margin-top: -23px;
+    margin-top: -10px;
 }
 
 .btn-confirm:hover {
@@ -1136,7 +1138,7 @@ select[name="package_id"],
 .rate-discounted {
     margin-top: 12px;
     padding: 8px 10px;
-    background-color: #528373;
+    background-color: #B39EB5;
     border-radius: 7px;
     font-size: 0.75rem;
     color: #ffffff;
@@ -1532,8 +1534,9 @@ select[name="package_id"],
         border-radius: 10px;
     }
 
-    .form-section {
-        margin-bottom: 28px;
+    #studioRentalSummarySection.form-section {
+        margin-bottom: 10px !important;
+        padding-bottom: 0 !important;
     }
 
     .form-grid-three,
@@ -1890,7 +1893,7 @@ select[name="package_id"],
     box-sizing: border-box;
     background: #ffffff;
     border: 1px solid #dce8e2;
-    border-radius: 16px;
+    border-radius: 8px;
     padding: 26px;
     color: #454545;
     font-size: 14px;
@@ -1917,7 +1920,7 @@ select[name="package_id"],
 }
 
 .studio-rental-summary .rental-summary-heading {
-    color: #345e50;
+    color: #353535;
     font-size: 17px;
     font-weight: 700;
     margin-bottom: 20px;
@@ -1926,13 +1929,13 @@ select[name="package_id"],
 .studio-rental-summary .rental-summary-block {
     background: #f8fbf9;
     border: 1px solid #e2ece6;
-    border-radius: 12px;
-    padding: 18px;
+    border-radius: 8px;
+    padding: 14px 18px;
     margin-bottom: 16px;
 }
 
 .studio-rental-summary .rental-summary-label {
-    color: #639a88;
+    color: #B39EB5;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.8px;
@@ -1959,16 +1962,20 @@ select[name="package_id"],
 }
 
 .studio-rental-summary .rental-summary-total {
-    background: #edf5f0;
-    border: 1px solid #d4e6db;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 18px 0;
+    background: #F8F3F8;
+    border: 1px solid rgba(179, 158, 181, 0.3);
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin: 14px 0;
+}
+
+.studio-rental-summary .rental-summary-total span {
+    font-size: 15px;
 }
 
 .studio-rental-summary .rental-summary-total strong {
-    color: #345e50;
-    font-size: 22px;
+    color: #B39EB5; 
+    font-size: 20px; 
     font-weight: 700;
 }
 
@@ -1986,7 +1993,7 @@ select[name="package_id"],
 }
 
 .studio-rental-summary .rental-summary-inclusions li i {
-    color: #639a88;
+    color: #B39EB5;
     margin-top: 5px;
 }
 
@@ -1997,20 +2004,27 @@ select[name="package_id"],
     padding: 15px 18px;
     color: #666666;
     font-size: 13px;
+    font-weight: 500;
 }
 
 .studio-rental-summary .rental-summary-note strong {
-    color: #477563;
+    color: #B39EB5;
 }
 
 @media (max-width: 600px) {
     .studio-rental-summary {
-        padding: 16px;
+        padding: 14px;
         border-radius: 12px;
     }
 
     .studio-rental-summary .rental-summary-block {
-        padding: 14px;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .studio-rental-summary .rental-summary-note {
+        padding: 10px 12px;
+        margin-bottom: 0;
     }
 
     .studio-rental-summary .rental-summary-row {
@@ -2210,5 +2224,4 @@ body:has(#paidBookingPanel[style*="display: block"])
         font-size: 14px;
         padding: 12px 14px;
     }
-}
 }
