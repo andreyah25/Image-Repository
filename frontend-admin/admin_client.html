@@ -3812,7 +3812,7 @@
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                "Authorization": `Bearer ${session.access_token} `
+                                "Authorization": `Bearer ${session.access_token}`
                             },
                             body: JSON.stringify({
                                 bookingId: rescheduleTargetId,
@@ -3827,27 +3827,34 @@
 
                     const responseText = await response.text();
 
-                    let result;
+                    let result = {};
 
                     try {
                         result = JSON.parse(responseText);
                     } catch (error) {
-                        console.error(
-                            "RESCHEDULE SERVER RESPONSE:",
-                            response.status,
-                            responseText
-                        );
+                        console.error("RESCHEDULE SERVER RESPONSE:", {
+                            status: response.status,
+                            url: response.url,
+                            response: responseText
+                        });
 
                         throw new Error(
-                            `Server returned HTTP ${response.status}. Check server.js route.`
+                            `HTTP ${response.status}: Invalid server response.`
                         );
                     }
+
+                    console.log("RESCHEDULE RESPONSE:", {
+                        status: response.status,
+                        url: response.url,
+                        result
+                    });
 
                     if (!response.ok || !result.success) {
                         throw new Error(
-                            result.message || "Failed to reschedule booking."
+                            result.message || `HTTP ${response.status}: Failed to reschedule booking.`
                         );
                     }
+
                     if (result.emailSent) {
 
                         showToast(
