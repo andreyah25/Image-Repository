@@ -14,7 +14,6 @@ const sharp = require("sharp");
 const app = express();
 
 const allowedOrigins = [
-    
     "https://captured-admin-studio.onrender.com",
     "https://captured-photo-studio.onrender.com",
     "http://localhost:3000",
@@ -30,7 +29,7 @@ const corsOptions = {
         }
 
         console.error("CORS blocked origin:", origin);
-        return callback(new Error("Not allowed by CORS"));
+        return callback(null, false);
     },
     methods: [
         "GET",
@@ -49,12 +48,13 @@ const corsOptions = {
         "x-client-info",
         "x-supabase-api-version"
     ],
+    credentials: false,
     optionsSuccessStatus: 204
 };
 
-// IMPORTANT: CORS must run before your API routes.
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
+
 // Preserve the PayMongo webhook raw body.
 app.use(express.json({
     verify: (req, res, buffer) => {
