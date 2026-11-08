@@ -8331,12 +8331,6 @@ if (
                 });
             }
 
-            // =====================================
-            // 6. CHECK EXISTING BOOKINGS ON NEW DATE
-            // =====================================
-            // Fetch bookings on the selected newDate.
-            // Exclude the original booking being rescheduled.
-
             const {
                 data: dateBookings,
                 error: existingError
