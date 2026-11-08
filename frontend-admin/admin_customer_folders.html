@@ -459,9 +459,30 @@
 
                     return;
                 }
+
                 currentUser = session.user;
+
                 await loadAdminProfile();
                 await loadCompletedClients();
+
+                const bookingId = new URLSearchParams(
+                    window.location.search
+                ).get("booking");
+
+                if (bookingId) {
+                    const client = completedClients.find(
+                        item => String(item.id) === String(bookingId)
+                    );
+
+                    if (client) {
+                        await openCustomerFolder(client);
+                    } else {
+                        showFolderError(
+                            "Customer booking not found or not available in the repository."
+                        );
+                    }
+                }
+
             } catch (error) {
 
                 console.error(
@@ -766,19 +787,17 @@
                         }
                     );
                     card
-                        .querySelector(
-                            ".open-client-btn"
-                        )
-                        .addEventListener(
-                            "click",
-                            async () => {
+                        .querySelector(".open-client-btn")
+                        .addEventListener("click", async (event) => {
 
-                                await openCustomerFolder(
-                                    client
-                                );
+                            event.preventDefault();
+                            event.stopPropagation();
 
-                            }
-                        );
+                            console.log("OPEN BUTTON CLICKED:", client.id);
+
+                            await openCustomerFolder(client);
+
+                        });
 
                     card
                         .querySelector(
@@ -1103,72 +1122,64 @@
                 grid
             );
         }
-        async function openCustomerFolder(
-            client
-        ) {
+        async function openCustomerFolder(client) {
+
+            console.log("OPEN CUSTOMER FOLDER CLICKED");
+            console.log("CLIENT:", client);
 
             try {
 
-                selectedClient =
-                    client;
+                if (!client || !client.id) {
+                    throw new Error("Invalid customer booking.");
+                }
 
+                selectedClient = client;
 
                 selectedRepository =
-                    await getOrCreateRepository(
-                        client
-                    )
+                    await getOrCreateRepository(client);
+
+                console.log("REPOSITORY:", selectedRepository);
 
                 selectedCustomerName.textContent =
-                    client.full_name ||
-                    "Customer";
-
+                    client.full_name || "Customer";
 
                 selectedCustomerDetails.textContent =
-                    "Booking ID: " +
-                    client.id +
-                    " • " +
-                    (client.session_type || "Session");
-
-
-                const link =
-                    makeClientLink(
-                        selectedRepository.access_token
-                    );
-
+                    "Booking ID: " + client.id +
+                    " • " + (client.session_type || "Session");
 
                 clientLinkInput.value =
-                    link;
+                    makeClientLink(selectedRepository.access_token);
 
-
-                foldersView.style.display =
-                    "none";
-
-
-                photosView.style.display =
-                    "block";
-
-                await loadPhotos(
-                    selectedRepository.id
+                // FORCE VIEW SWITCH
+                foldersView.style.setProperty(
+                    "display",
+                    "none",
+                    "important"
                 );
 
+                photosView.style.setProperty(
+                    "display",
+                    "block",
+                    "important"
+                );
+
+                console.log("FOLDERS HIDDEN:", getComputedStyle(foldersView).display);
+                console.log("PHOTOS VISIBLE:", getComputedStyle(photosView).display);
+
+                // Load selected customer's photos
+                await loadPhotos(selectedRepository.id);
 
             } catch (error) {
 
-                console.error(
-                    "Open customer folder error:",
-                    error
-                );
+                console.error("OPEN CUSTOMER FOLDER ERROR:", error);
 
                 alert(
-                    "Could not open customer folder.\n\n" +
+                    "Failed to open customer folder:\n" +
                     error.message
                 );
 
             }
-
         }
-
-
         async function getOrCreateRepository(client) {
 
             if (!client || !client.id) {
@@ -1382,10 +1393,10 @@
             let timeout;
             let timedOut = false;
 
-            console.log("========== ML ANALYSIS STARTED ==========");
-            console.log("Photo ID:", photoId);
-            console.log("ML service:", ML_SERVICE_URL);
-
+            /*    console.log("========== ML ANALYSIS STARTED ==========");
+                console.log("Photo ID:", photoId);
+                console.log("ML service:", ML_SERVICE_URL);
+            */
             try {
                 // 1. Mark the existing photo as processing.
                 const { error: processingError } = await supabaseClient
@@ -2420,15 +2431,28 @@
 
             }
         );
-        backToFoldersBtn.addEventListener("click", () => {
+
+        backToFoldersBtn.addEventListener("click", async () => {
+
             selectedClient = null;
             selectedRepository = null;
 
-            photosView.style.display = "none";
-            foldersView.style.display = "block";
+            photosView.style.setProperty(
+                "display",
+                "none",
+                "important"
+            );
 
-            loadCompletedClients();
+            foldersView.style.setProperty(
+                "display",
+                "block",
+                "important"
+            );
+
+            await loadCompletedClients();
+
         });
+
         function showUploadStatus(message, isError) {
 
             uploadStatus.textContent = message;

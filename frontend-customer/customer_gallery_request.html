@@ -212,9 +212,8 @@
                                 <span>*</span>
 
                             </label>
-
-                            <input type="text" id="customerName" placeholder="Enter your full name" required>
-
+                            <input type="text" id="customerName" placeholder="Enter your full name" autocomplete="name"
+                                required>
                         </div>
 
 
@@ -359,7 +358,17 @@
                 "accessCountdown"
             );
 
+        const customerNameInput =
+            document.getElementById("customerName");
 
+        customerNameInput.addEventListener("input", function () {
+
+            this.value = this.value.replace(
+                /[^\p{L}\p{M} .-]/gu,
+                ""
+            );
+
+        });
 
         /* =========================================================
            PAGE LOAD
@@ -411,16 +420,26 @@
                     .checked;
 
 
-            /* =====================================================
-               VALIDATION
-            ===================================================== */
-
             if (!email || !fullName || !bookingDate) {
 
                 showMessage(
                     "Please complete all required fields.",
                     "error"
                 );
+
+                return;
+            }
+
+            const namePattern = /^[\p{L}\p{M} .-]+$/u;
+
+            if (!namePattern.test(fullName)) {
+
+                showMessage(
+                    "Full name must contain letters only. Numbers and other special characters are not allowed.",
+                    "error"
+                );
+
+                document.getElementById("customerName").focus();
 
                 return;
             }

@@ -855,16 +855,22 @@
             .getElementById("repoSortFilter")
             .addEventListener("change", scheduleRepositorySearch);
 
+
         function searchCustomerFolders(query, packageName = "") {
+
             const view = document.getElementById("foldersView");
+
             const searchTerm = query.trim().toLowerCase();
 
             const bookings = window.repositoryBookings || [];
 
             const matches = bookings.filter(booking => {
-                const customerName = (booking.full_name || "").toLowerCase();
 
-                const matchesName = customerName.includes(searchTerm);
+                const customerName =
+                    (booking.full_name || "").toLowerCase();
+
+                const matchesName =
+                    customerName.includes(searchTerm);
 
                 const matchesPackage =
                     !packageName ||
@@ -873,21 +879,24 @@
                 return matchesName && matchesPackage;
             });
 
-            if (matches.length === 0) {
-                return false;
-            }
-
             view.innerHTML = "";
             view.style.display = "grid";
 
             document.getElementById("photosView").style.display = "none";
 
+            if (matches.length === 0) {
+                return false;
+            }
+
             matches.forEach(booking => {
+
                 const card = document.createElement("div");
 
                 card.className = "folder-card repository-client-card";
+
                 card.dataset.bookingId = booking.id;
 
+                // Show ONLY the customer's folder name.
                 card.innerHTML = `
             <div class="folder-icon-wrapper">
                 <i class="fa-solid fa-folder folder-icon"></i>
@@ -898,21 +907,14 @@
                     ${escapeHTML(booking.full_name || "Unnamed Customer")}
                 </strong>
             </div>
-
-            <div class="client-event">
-                <i class="fa-solid fa-camera"></i>
-                <span>${escapeHTML(booking.session_type || "Unknown Package")}</span>
-            </div>
-
-            <div class="client-date">
-                <i class="fa-regular fa-calendar"></i>
-                <span>${escapeHTML(formatRepositoryDate(booking.booking_date))}</span>
-            </div>
         `;
 
+                // Open the customer's actual repository folder.
                 card.addEventListener("click", () => {
+
                     window.location.href =
                         `/admin/customer-folders?booking=${encodeURIComponent(booking.id)}`;
+
                 });
 
                 view.appendChild(card);
@@ -920,6 +922,7 @@
 
             return true;
         }
+
         async function searchRepositoryPhotos() {
             const searchInput = document.getElementById("repoFolderSearchInput");
             const eventFilter = document.getElementById("repoEventFilter");

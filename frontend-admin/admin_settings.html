@@ -222,13 +222,20 @@
                     </div>
 
                     <div class="activity-log-filters">
-                        <input type="text" id="activitySearchInput" placeholder="Search name, email, or action...">
+                        <div class="form-group" style="margin: 0;">
+                            <input type="text" id="activitySearchInput" placeholder="Search name, email, or action...">
+                        </div>
 
-                        <select id="activityActionFilter">
-                            <option value="">All Actions</option>
-                            <option value="LOGIN">Login</option>
-                            <option value="LOGOUT">Logout</option>
-                        </select>
+                        <div class="form-group" style="margin: 0;">
+                            <div class="activity-select-wrapper" style="position: relative; width: 100%;">
+                                <select id="activityActionFilter">
+                                    <option value="">All Actions</option>
+                                    <option value="LOGIN">Login</option>
+                                    <option value="LOGOUT">Logout</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 10px; color: #777;"></i>
+                            </div>
+                        </div>
 
                         <div class="activity-date-filter">
                             <label for="activityStartDate">Start Date</label>

@@ -1,5 +1,0 @@
-balloon
-flower
-graduation_cap
-diploma
-family

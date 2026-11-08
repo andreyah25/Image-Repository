@@ -94,7 +94,7 @@
                     Archives
                 </a>
 
-                <a href="/admin/packages">
+                <a href="/admin/packages" class="active">
                     <i class="fa-solid fa-sliders"></i>
                     Packages
                 </a>
@@ -537,7 +537,7 @@
         async function checkAdminAccess() {
             try {
 
-                const {data,error} = await supabaseClient.auth.getUser();
+                const { data, error } = await supabaseClient.auth.getUser();
                 if (error) {
                     console.error(
                         "Auth error:",
