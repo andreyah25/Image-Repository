@@ -248,13 +248,13 @@ app.get("/booking", (req, res) => {
 
 app.get("/booking-success", (req, res) => {
     res.sendFile(
-        path.join(__dirname, "..", "frontend-customer", "customer_booking_success.html")
+        path.join(__dirname, "..", "frontend-customer", "customer_payment_success.html")
     );
 });
 
 app.get("/booking-cancelled", (req, res) => {
     res.sendFile(
-        path.join(__dirname, "..", "frontend-customer", "customer_booking_cancel.html")
+        path.join(__dirname, "..", "frontend-customer", "customer_payment_cancelled.html")
     );
 });
 
@@ -3312,12 +3312,14 @@ console.log(
                         pending_checkout_id: String(pendingCheckout.id),
                         booking_reference: bookingReference
                     },
+                   
                     send_email_receipt: true,
                     show_description: true,
                     success_url:
-                        `${process.env.FRONTEND_URL}/frontend-customer/customer_booking.html?reference=${encodeURIComponent(bookingReference)}`,
+                        `${process.env.FRONTEND_URL}/booking-success?reference=${encodeURIComponent(bookingReference)}`,
                     cancel_url:
-                        `${process.env.FRONTEND_URL}/frontend-customer/customer_payment_cancelled.html?reference=${encodeURIComponent(bookingReference)}`
+                        `${process.env.FRONTEND_URL}/booking-cancelled?reference=${encodeURIComponent(bookingReference)}`
+
                 }
             }
         })
@@ -8572,7 +8574,8 @@ if (
 
             const scheduleUpdate = {
                 booking_date: newDate,
-                booking_time: newTime
+                booking_time: newTime,
+                reschedule_status: "Rescheduled"
             };
 
             if (isRental) {
