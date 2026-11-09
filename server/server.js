@@ -3273,7 +3273,7 @@ if (pendingCheckoutError) {
 
 console.log(
     "Temporary checkout created:",
-    pendingCheckout.id
+    pendingCheckoutId
 );
    const response = await fetch(
     "https://api.paymongo.com/v1/checkout_sessions",
@@ -3308,10 +3308,10 @@ console.log(
                         ? `Studio Rental - ${booking_date} ${booking_time} - ${duration} minutes`
                         : `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
                     reference_number: bookingReference,
-                    metadata: {
-                        pending_checkout_id: String(pendingCheckout.id),
-                        booking_reference: bookingReference
-                    },
+                  metadata: {
+    pending_checkout_id: String(pendingCheckoutId),
+    booking_reference: bookingReference
+},
                    
                     send_email_receipt: true,
                     show_description: true,
@@ -3383,6 +3383,7 @@ if (!checkoutUrl || !checkoutSession?.id) {
     });
 }
 
+
 const {
     error: updatePendingError
 } = await supabase
@@ -3390,7 +3391,8 @@ const {
     .update({
         checkout_session_id: checkoutSession.id
     })
-    .eq("id", pendingCheckout.id);
+    .eq("id", pendingCheckoutId);
+
 
 if (updatePendingError) {
     console.error(
@@ -3409,7 +3411,7 @@ console.log("PayMongo checkout successfully created.");
 
 return res.json({
     success: true,
-    pending_checkout_id: pendingCheckout.id,
+    pending_checkout_id: pendingCheckoutId,
     checkout_url: checkoutUrl,
     checkout_session_id: checkoutSession.id,
     reference: bookingReference
@@ -3698,7 +3700,7 @@ const webhookSecret =
                 .update({
                     payment_status: "Payment Failed"
                 })
-                .eq("id", pendingCheckout.id)
+                .eq("id", pendingCheckoutId)
                 .neq("payment_status", "Paid");
 
             if (error) {
@@ -3853,14 +3855,14 @@ const paymentId = payment.id;
                         checkoutSessionId ||
                         pendingCheckout.checkout_session_id
                 })
-                .eq("id", pendingCheckout.id)
+                .eq("id", pendingCheckoutId)
                 .select()
                 .single();
 
         if (updateError || !updatedCheckout) {
             console.error("Could not save verified PayMongo payment:", {
                 reference: pendingCheckout.booking_reference,
-                checkoutId: pendingCheckout.id,
+                checkoutId: pendingCheckoutId,
                 error: updateError
             });
 
