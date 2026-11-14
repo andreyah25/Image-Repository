@@ -2235,7 +2235,7 @@ body:has(#paidBookingPanel[style*="display: block"])
     width: 100% !important;
     max-width: 1000px !important;
     /* Align to the left instead of centering */
-    margin: 28px 0 24px 0 !important;
+    margin: 28px 0 24px !important;
     padding: 28px !important;
     background: #F8F3F8 !important;
     border: 1px solid #E5D9E7 !important;
@@ -2390,14 +2390,12 @@ body:has(#paidBookingPanel[style*="display: block"])
     max-width: 100% !important;
     flex: 1 1 100% !important;
 }
-/* =========================================
-   PAID BOOKING - CENTER CONFIRM BUTTON
-========================================= */
+/* PAID BOOKING - MATCH BUTTON WIDTH WITH INFO PANEL */
 
 body:has(#paidBookingPanel[style*="display: block"])
 #bookingForm .form-actions {
     display: flex !important;
-    justify-content: center !important;
+    justify-content: stretch !important;
     align-items: center !important;
     width: 100% !important;
     max-width: 1000px !important;
@@ -2411,20 +2409,19 @@ body:has(#paidBookingPanel[style*="display: block"])
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    width: auto !important;
-    min-width: 250px !important;
-    max-width: 350px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
     min-height: 48px !important;
-    margin: 0 auto !important;
-    padding: 13px 30px !important;
+    margin: 0 !important;
+    padding: 13px 20px !important;
     background: #B39EB5 !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 50px !important;
-    font-size: 15px !important;
-    font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
     text-align: center !important;
-    cursor: pointer;
+    box-sizing: border-box !important;
 }
 
 body:has(#paidBookingPanel[style*="display: block"])
@@ -2461,28 +2458,4 @@ body:has(#paidBookingPanel[style*="display: block"])
 body:has(#paidBookingPanel[style*="display: block"])
 #bookingForm #proceedToPaymentBtn:hover {
     background: #9F879F !important;
-}
-/* Keep Confirm Booking button centered inside the paid panel */
-#paidBookingPanel .form-actions {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    width: 100% !important;
-    margin: 24px auto 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-}
-
-#paidBookingPanel #proceedToPaymentBtn {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    margin: 0 auto !important;
-    width: 280px !important;
-    max-width: 100% !important;
-    background: #B39EB5 !important;
-    background-color: #B39EB5 !important;
-    color: #fff !important;
-    border: none !important;
-    box-shadow: none !important;
 }
