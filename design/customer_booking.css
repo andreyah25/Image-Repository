@@ -2390,3 +2390,14 @@ body:has(#paidBookingPanel[style*="display: block"])
     max-width: 100% !important;
     flex: 1 1 100% !important;
 }
+/* Move Booking Submitted button to the left */
+body:has(#paidBookingPanel[style*="display: block"])
+#bookingForm .form-actions {
+    justify-content: flex-start !important;
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+#proceedToPaymentBtn {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
