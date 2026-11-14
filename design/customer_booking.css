@@ -2225,3 +2225,209 @@ body:has(#paidBookingPanel[style*="display: block"])
         padding: 12px 14px;
     }
 }
+
+/* ==========================================
+   PAID BOOKING RECEIPT
+   CAPTURED STUDIO - MUTED MAUVE THEME
+========================================== */
+
+#paidBookingPanel {
+    background: #F8F3F8 !important;
+    border: 1px solid rgba(179, 158, 181, 0.4) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 5px 20px rgba(80, 60, 85, 0.06);
+    max-width: 1050px;
+    margin: 30px auto 24px !important;
+    padding: 32px !important;
+}
+
+/* Receipt heading */
+
+#paidBookingHeading {
+    color: #705B73 !important;
+    font-family: "DM Sans", sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Receipt description */
+
+#paidBookingMessage {
+    color: #777078 !important;
+    font-size: 14px;
+    line-height: 1.7;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 28px;
+}
+
+/* Booking details grid */
+
+#paidBookingDetails {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    width: 100%;
+    margin-top: 22px;
+}
+
+/* Individual detail cards */
+
+#paidBookingDetails .paid-detail-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 17px 19px;
+    background: #FFFFFF;
+    border: 1px solid #E9DFEA;
+    border-radius: 10px;
+    box-shadow: 0 2px 7px rgba(80, 60, 85, 0.035);
+    transition: border-color 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+#paidBookingDetails .paid-detail-item:hover {
+    border-color: #B39EB5;
+    box-shadow: 0 3px 10px rgba(179, 158, 181, 0.12);
+}
+
+/* Labels */
+
+#paidBookingDetails .paid-detail-label {
+    color: #8B7C8D !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+/* Values */
+
+#paidBookingDetails .paid-detail-value {
+    color: #353535 !important;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+/* Payment success */
+
+#paidBookingDetails .paid-detail-success {
+    color: #806589 !important;
+    font-weight: 700;
+}
+
+/* Remaining balance */
+
+#paidBookingDetails .paid-detail-balance {
+    color: #9F718C !important;
+    font-weight: 700;
+}
+
+/* Confirm Booking button */
+
+body:has(#paidBookingPanel[style*="display: block"])
+#bookingForm .form-actions {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100%;
+    max-width: 1050px;
+    margin: 22px auto 30px !important;
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+#proceedToPaymentBtn {
+    width: 100% !important;
+    max-width: 1050px;
+    min-height: 52px;
+    padding: 14px 24px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    background: #B39EB5 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 9px !important;
+
+    font-family: "DM Sans", sans-serif !important;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+
+    box-shadow: 0 4px 10px rgba(179, 158, 181, 0.2);
+    transition: background 0.2s ease,
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+#proceedToPaymentBtn:hover {
+    background: #9F879F !important;
+    box-shadow: 0 5px 13px rgba(159, 135, 159, 0.25);
+    transform: translateY(-1px);
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+#proceedToPaymentBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+    #paidBookingPanel {
+        padding: 24px !important;
+    }
+
+    #paidBookingDetails {
+        gap: 12px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+    #paidBookingPanel {
+        padding: 19px 14px !important;
+        margin: 18px auto !important;
+        border-radius: 12px !important;
+    }
+
+    #paidBookingHeading {
+        font-size: 21px;
+    }
+
+    #paidBookingMessage {
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    #paidBookingDetails {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    #paidBookingDetails .paid-detail-item {
+        padding: 14px;
+    }
+
+    #paidBookingDetails .paid-detail-value {
+        font-size: 13px;
+    }
+
+    body:has(#paidBookingPanel[style*="display: block"])
+    #proceedToPaymentBtn {
+        min-height: 48px;
+        font-size: 14px;
+    }
+}
