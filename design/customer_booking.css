@@ -2370,3 +2370,23 @@ body:has(#paidBookingPanel[style*="display: block"])
         padding: 8px !important;
     }
 }
+
+/* HIDE STUDIO SERVICES AFTER BOOKING SUBMISSION */
+
+body:has(#paidBookingPanel[style*="display: block"])
+.studio-services-panel {
+    display: none !important;
+}
+
+/* Let the booking section use the full available width */
+body:has(#paidBookingPanel[style*="display: block"])
+.booking-layout-wrapper {
+    justify-content: flex-start !important;
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+.sessions-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+}
