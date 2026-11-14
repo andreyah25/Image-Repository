@@ -3535,17 +3535,20 @@
                         "Please wait for the admin to confirm your booking."
                     );
 
-                    // Reload only after successful confirmation.
-                    window.location.replace(window.location.pathname);
-                    return;
-
+                    // Keep the receipt visible after successful submission.
+                    // Do not remove the payment reference from the URL.
+                    document.getElementById("paidBookingHeading").textContent =
+                        "Booking Submitted Successfully";
 
                     document.getElementById("paidBookingMessage").textContent =
-                        "Your downpayment is paid. Your booking has been submitted to Captured Photography Studio and is awaiting admin confirmation.";
+                        "Your payment has been verified and your booking has been submitted. " +
+                        "Your booking is now awaiting admin confirmation. Please keep this receipt for your reference.";
 
                     submitButton.disabled = true;
                     submitButton.innerHTML =
                         '<i class="fa-solid fa-check"></i> Booking Submitted';
+
+                    return;
 
                 } catch (error) {
                     console.error("Booking confirmation error:", error);

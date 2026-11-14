@@ -3315,11 +3315,11 @@ console.log(
                    
                     send_email_receipt: true,
                     show_description: true,
-                    success_url:
-                        `${process.env.FRONTEND_URL}/booking-success?reference=${encodeURIComponent(bookingReference)}`,
-                    cancel_url:
-                        `${process.env.FRONTEND_URL}/booking-cancelled?reference=${encodeURIComponent(bookingReference)}`
+                   success_url:
+    `${frontendUrl}/booking-success?reference=${encodeURIComponent(bookingReference)}`,
 
+cancel_url:
+    `${frontendUrl}/booking-cancelled?reference=${encodeURIComponent(bookingReference)}`
                 }
             }
         })
@@ -3700,7 +3700,7 @@ const webhookSecret =
                 .update({
                     payment_status: "Payment Failed"
                 })
-                .eq("id", pendingCheckoutId)
+                .eq("id", pendingCheckout.id)
                 .neq("payment_status", "Paid");
 
             if (error) {
@@ -3836,33 +3836,40 @@ const paymentId = payment.id;
         }
 
        
-        // Save the payment only after PayMongo verification succeeds.
-        const paidAt =
-            payment?.attributes?.paid_at
-                ? new Date(
-                    payment.attributes.paid_at * 1000
-                ).toISOString()
-                : new Date().toISOString();
+        const rawPaidAt = payment?.attributes?.paid_at;
 
-        const { data: updatedCheckout, error: updateError } =
-            await supabase
-                .from("pending_booking_checkouts")
-                .update({
-                    payment_status: "Paid",
-                    paid_at: paidAt,
-                    paymongo_payment_id: paymentId,
-                    checkout_session_id:
-                        checkoutSessionId ||
-                        pendingCheckout.checkout_session_id
-                })
-                .eq("id", pendingCheckoutId)
-                .select()
-                .single();
+const paidAt = rawPaidAt
+    ? (
+        typeof rawPaidAt === "number" ||
+        /^\d+$/.test(String(rawPaidAt))
+    )
+        ? new Date(Number(rawPaidAt) * 1000).toISOString()
+        : new Date(rawPaidAt).toISOString()
+    : new Date().toISOString();
+
+if (!Number.isFinite(Date.parse(paidAt))) {
+    throw new Error("Invalid PayMongo payment timestamp.");
+}
+
+   const { data: updatedCheckout, error: updateError } =
+    await supabase
+        .from("pending_booking_checkouts")
+        .update({
+            payment_status: "Paid",
+            paid_at: paidAt,
+            paymongo_payment_id: paymentId,
+            checkout_session_id:
+                checkoutSessionId ||
+                pendingCheckout.checkout_session_id
+        })
+        .eq("id", pendingCheckout.id)
+        .select()
+        .single();
 
         if (updateError || !updatedCheckout) {
             console.error("Could not save verified PayMongo payment:", {
                 reference: pendingCheckout.booking_reference,
-                checkoutId: pendingCheckoutId,
+                checkoutId: pendingCheckout.id,
                 error: updateError
             });
 
@@ -4303,22 +4310,47 @@ if (!booking) {
                     .select()
                     .single();
 
-            if (createError) {
-                console.error("Failed to create final booking:", {
-                    message: createError.message,
-                    code: createError.code,
-                    details: createError.details,
-                    hint: createError.hint
-                });
+          if (createError) {
+    // Another request may have created this booking first.
+    if (createError.code === "23505") {
+        const { data: existingBooking, error: recoveryError } =
+            await supabase
+                .from("bookings")
+                .select("*")
+                .eq("paymongo_reference", reference)
+                .maybeSingle();
 
-                return res.status(500).json({
-                    success: false,
-                    error: "Unable to save the booking. Please check the server logs."
-                });
-            }
+        if (recoveryError) throw recoveryError;
 
-            booking = createdBooking;
-            bookingCreatedNow = true;
+        if (existingBooking) {
+            booking = existingBooking;
+            bookingRecovered = true;
+
+            const { error: relinkError } = await supabase
+                .from("pending_booking_checkouts")
+                .update({ final_booking_id: booking.id })
+                .eq("id", checkout.id);
+
+            if (relinkError) throw relinkError;
+        } else {
+            throw createError;
+        }
+    } else {
+        console.error("Failed to create final booking:", {
+            message: createError.message,
+            code: createError.code,
+            details: createError.details,
+            hint: createError.hint
+        });
+
+        throw createError;
+    }
+}
+
+if (!booking) {
+    booking = createdBooking;
+    bookingCreatedNow = true;
+
 
             // Link the checkout to the newly created booking.
             const { data: linkedCheckout, error: checkoutUpdateError } =
@@ -4345,7 +4377,7 @@ if (!booking) {
                 });
             }
         }
-
+    }
         // Record the payment once.
         const { data: existingPayment, error: paymentLookupError } =
             await supabase
@@ -4405,29 +4437,42 @@ const bookingDurationLabel =
 
         // Notify admin only for a newly created booking.
         if (bookingCreatedNow) {
-            const { error: notificationError } = await supabase
-                .from("notifications")
-                .insert({
-                    recipient: "admin",
-                    title: "New Paid Booking — Awaiting Admin Confirmation",
-                    message:
-                        `${booking.full_name} submitted a booking and paid the downpayment.\n\n` +
-                        `Date: ${booking.booking_date}\n` +
-                        `Time: ${booking.booking_time}\n` +
-                       `Session: ${bookingTypeLabel}\n` +
-                        `Duration: ${bookingDurationLabel}\n` +
-                        `Total: ₱${peso(booking.total_price)}\n` +
-                        `Downpayment Paid: ₱${peso(booking.downpayment_amount)}\n` +
-                        `Remaining Balance: ₱${peso(booking.remaining_balance)}\n` +
-                        `Payment Status: Paid\n` +
-                        `Booking Status: Pending Admin Confirmation`,
-                    is_read: false
-                });
+         // Check whether this booking already has an admin notification.
+const { data: existingNotification, error: notificationLookupError } =
+    await supabase
+        .from("notifications")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .eq("title", "New Paid Booking — Awaiting Admin Confirmation")
+        .maybeSingle();
 
-            if (notificationError) {
-                console.error("Admin dashboard notification error:", notificationError);
-            }
-        }
+if (notificationLookupError) throw notificationLookupError;
+
+if (!existingNotification) {
+    const { error: notificationError } = await supabase
+        .from("notifications")
+        .insert({
+            recipient: "admin",
+            booking_id: booking.id,
+            title: "New Paid Booking — Awaiting Admin Confirmation",
+            message:
+                `${booking.full_name} submitted a booking and paid the downpayment.\n\n` +
+                `Date: ${booking.booking_date}\n` +
+                `Time: ${booking.booking_time}\n` +
+                `Session: ${bookingTypeLabel}\n` +
+                `Duration: ${bookingDurationLabel}\n` +
+                `Total: ₱${peso(booking.total_price)}\n` +
+                `Downpayment Paid: ₱${peso(booking.downpayment_amount)}\n` +
+                `Remaining Balance: ₱${peso(booking.remaining_balance)}\n` +
+                `Payment Status: Paid\n` +
+                `Booking Status: Pending Admin Confirmation`,
+            is_read: false
+        });
+
+    if (notificationError) {
+        console.error("Admin dashboard notification error:", notificationError);
+    }
+}
 
         // Send the admin email only if it has not already been sent.
        if (booking && !checkout.admin_email_sent) {
@@ -4489,7 +4534,8 @@ const bookingDurationLabel =
             message:
                 "Your booking has been submitted successfully. Please wait for admin confirmation."
         });
-    } catch (error) {
+    } 
+}catch (error) {
         console.error("Customer booking confirmation error:", {
             message: error.message,
             code: error.code,

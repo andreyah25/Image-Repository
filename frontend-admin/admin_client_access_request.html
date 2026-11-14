@@ -431,49 +431,6 @@
                 }
             }
 
-            async function autoArchiveAccessRequests() {
-                //  console.log("Checking expired gallery access requests...");
-
-                const now = new Date().toISOString();
-
-                const { data: requests, error } = await supabaseClient
-                    .from("gallery_access_requests")
-                    .select("id, status, access_expires_at")
-                    .eq("status", "approved")
-                    .not("access_expires_at", "is", null)
-                    .lte("access_expires_at", now);
-
-                if (error) {
-                    console.error("Error checking expired requests:", error);
-                    return;
-                }
-
-                if (!requests || requests.length === 0) {
-                    //   console.log("No expired requests found.");
-                    return;
-                }
-
-                for (const request of requests) {
-                    const { error: updateError } = await supabaseClient
-                        .from("gallery_access_requests")
-                        .update({
-                            status: "expired",
-                            is_expired: true
-                        })
-                        .eq("id", request.id)
-                        .eq("status", "approved");
-
-                    if (updateError) {
-                        console.error(
-                            "Failed to expire request:",
-                            request.id,
-                            updateError
-                        );
-                    } else {
-                        //  console.log("Request expired:", request.id);
-                    }
-                }
-            }
 
             async function createClientRepository(
                 booking
@@ -584,61 +541,39 @@
             }
 
             async function autoArchiveAccessRequests() {
-
-                // console.log("Checking access requests for archive...");
-
                 const now = new Date().toISOString();
 
-                const { data: requests, error } =
-                    await supabaseClient
-                        .from("gallery_access_requests")
-                        .select("id, status, archive_at")
-                        .eq("status", "approved")
-                        .not("archive_at", "is", null)
-                        .lte("archive_at", now);
+                const { data: requests, error } = await supabaseClient
+                    .from("gallery_access_requests")
+                    .select("id, status, access_expires_at")
+                    .eq("status", "approved")
+                    .not("access_expires_at", "is", null)
+                    .lte("access_expires_at", now);
 
                 if (error) {
-
-                    console.error(
-                        "Error checking archive requests:",
-                        error
-                    );
-
+                    console.error("Error checking expired requests:", error);
                     return;
                 }
 
-                if (!requests || requests.length === 0) {
-
-                    // console.log("No access requests need to be archived.");
-
-                    return;
-                }
+                if (!requests || requests.length === 0) return;
 
                 for (const request of requests) {
-
-                    const { error: updateError } =
-                        await supabaseClient
-                            .from("gallery_access_requests")
-                            .update({
-                                status: "expired"
-                            })
-                            .eq("id", request.id)
-                            .eq("status", "approved");
+                    const { error: updateError } = await supabaseClient
+                        .from("gallery_access_requests")
+                        .update({
+                            status: "expired",
+                            is_expired: true
+                        })
+                        .eq("id", request.id)
+                        .eq("status", "approved");
 
                     if (updateError) {
-
-                        console.error(
-                            "Failed to archive request:",
-                            request.id,
-                            updateError
-                        );
-
-                    } else {
-
-                        //console.log("Access request archived:", request.id);
+                        console.error("Failed to expire request:", request.id, updateError);
                     }
                 }
-            } async function loadAccessRequests() {
+            }
+
+            async function loadAccessRequests() {
 
                 //console.log("Loading access requests...");
                 await autoArchiveAccessRequests();
