@@ -2371,3 +2371,21 @@ body:has(#paidBookingPanel[style*="display: block"])
         padding: 8px !important;
     }
 }
+
+/* ALIGN RECEIPT WITH BOOKING SUBMITTED PANEL */
+#paidBookingPanel {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+/* Keep the receipt within the available content width */
+#paidBookingPanel {
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+/* Keep the booking form panel aligned to the left */
+#bookingForm {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
