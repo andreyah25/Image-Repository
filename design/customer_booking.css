@@ -2234,15 +2234,14 @@ body:has(#paidBookingPanel[style*="display: block"])
     box-sizing: border-box !important;
     width: 100% !important;
     max-width: 1000px !important;
-    margin: 28px auto !important;
+    /* Align to the left instead of centering */
+    margin: 28px 0 24px 0 !important;
     padding: 28px !important;
-
     background: #F8F3F8 !important;
     border: 1px solid #E5D9E7 !important;
     border-radius: 16px !important;
     box-shadow: 0 5px 18px rgba(80, 60, 85, 0.06);
 }
-
 #paidBookingHeading {
     color: #705B73 !important;
     text-align: center !important;
@@ -2331,12 +2330,12 @@ body:has(#paidBookingPanel[style*="display: block"])
 /* Mobile */
 @media (max-width: 600px) {
     #paidBookingPanel {
-        width: calc(100% - 24px) !important;
-        max-width: none !important;
-        margin: 18px auto !important;
-        padding: 18px 14px !important;
-        border-radius: 12px !important;
-    }
+    width: 100% !important;
+    max-width: none !important;
+    margin: 18px 0 !important;
+    padding: 18px 14px !important;
+    border-radius: 12px !important;
+}
 
     #paidBookingHeading {
         font-size: 19px !important;
@@ -2370,22 +2369,4 @@ body:has(#paidBookingPanel[style*="display: block"])
     #paidBookingDetails {
         padding: 8px !important;
     }
-}
-
-/* ALIGN RECEIPT WITH BOOKING SUBMITTED PANEL */
-#paidBookingPanel {
-    margin-left: 0 !important;
-    margin-right: auto !important;
-}
-
-/* Keep the receipt within the available content width */
-#paidBookingPanel {
-    box-sizing: border-box !important;
-    width: 100% !important;
-}
-
-/* Keep the booking form panel aligned to the left */
-#bookingForm {
-    margin-left: 0 !important;
-    margin-right: auto !important;
 }
