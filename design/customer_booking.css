@@ -2390,21 +2390,24 @@ body:has(#paidBookingPanel[style*="display: block"])
     max-width: 100% !important;
     flex: 1 1 100% !important;
 }
-/* LEFT ALIGN BOOKING SUBMITTED BUTTON */
-body:has(#paidBookingPanel[style*="display: block"])
-#bookingForm .form-actions {
+/* LEFT ALIGN BUTTON AFTER BOOKING IS SUBMITTED */
+#bookingForm .form-actions:has(#proceedToPaymentBtn:disabled) {
     display: flex !important;
     justify-content: flex-start !important;
     align-items: center !important;
     width: 100% !important;
+    max-width: 100% !important;
     margin: 20px 0 0 !important;
-    padding: 0 !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
 }
 
-body:has(#paidBookingPanel[style*="display: block"])
+/* BUTTON WIDTH AND POSITION */
+#bookingForm .form-actions:has(#proceedToPaymentBtn:disabled)
 #proceedToPaymentBtn {
-    width: auto !important;
-    min-width: 220px;
+    width: 220px !important;
+    max-width: 220px !important;
+    min-width: 220px !important;
     margin: 0 !important;
-    margin-right: auto !important;
+    flex: 0 0 220px !important;
 }
