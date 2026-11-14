@@ -2390,38 +2390,60 @@ body:has(#paidBookingPanel[style*="display: block"])
     max-width: 100% !important;
     flex: 1 1 100% !important;
 }
-/* Move Booking Submitted button to the left */
-body:has(#paidBookingPanel[style*="display: block"])
-#bookingForm .form-actions {
-    justify-content: flex-start !important;
-}
+/* =========================================
+   PAID BOOKING - CENTER CONFIRM BUTTON
+========================================= */
 
-body:has(#paidBookingPanel[style*="display: block"])
-#proceedToPaymentBtn {
-    margin-left: 0 !important;
-    margin-right: auto !important;
-}
-#paidBookingPanel #proceedToPaymentBtn {
-    display: block;
-    margin-left: 0 !important;
-    margin-right: auto !important;
-    align-self: flex-start;
-}
-/* Align the button with the left edge of the paid booking panel */
 body:has(#paidBookingPanel[style*="display: block"])
 #bookingForm .form-actions {
     display: flex !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
+    align-items: center !important;
     width: 100% !important;
     max-width: 1000px !important;
-    margin: 20px 0 0 0 !important;
+    margin: 20px auto 0 !important;
     padding: 0 !important;
     box-sizing: border-box !important;
 }
 
 body:has(#paidBookingPanel[style*="display: block"])
 #bookingForm #proceedToPaymentBtn {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
     width: auto !important;
-    min-width: 250px;
-    margin: 0 !important;
+    min-width: 250px !important;
+    max-width: 350px !important;
+    min-height: 48px !important;
+    margin: 0 auto !important;
+    padding: 13px 30px !important;
+    background: #B39EB5 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 50px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    cursor: pointer;
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+#bookingForm #proceedToPaymentBtn:hover {
+    background: #9F879F !important;
+}
+
+@media (max-width: 600px) {
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm .form-actions {
+        justify-content: center !important;
+        margin: 16px auto 0 !important;
+    }
+
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm #proceedToPaymentBtn {
+        width: 100% !important;
+        max-width: 280px !important;
+        min-width: 0 !important;
+        margin: 0 auto !important;
+    }
 }
