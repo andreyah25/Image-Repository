@@ -3315,6 +3315,36 @@
             }
 
 
+            function formatSessionName(sessionType) {
+                if (!sessionType) {
+                    return "Not specified";
+                }
+
+                const sessionNames = {
+                    basic_1: "Basic 1",
+                    basic_2: "Basic 2",
+                    basic_3: "Basic 3",
+                    classic_1: "Classic 1",
+                    classic_2: "Classic 2",
+                    classic_3: "Classic 3",
+                    group: "Group",
+                    kids: "Kids",
+                    pre_birthday: "Pre-Birthday",
+                    maternity: "Maternity",
+                    theme_holiday: "Theme / Holiday",
+                    studio_rental: "Studio Rental"
+                };
+
+                const normalized = String(sessionType)
+                    .trim()
+                    .toLowerCase();
+
+                return sessionNames[normalized] ||
+                    normalized
+                        .replace(/[_-]+/g, " ")
+                        .replace(/\b\w/g, char => char.toUpperCase());
+            }
+
 
             function displayBookingDetails(booking) {
                 details.replaceChildren();
