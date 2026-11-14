@@ -2390,14 +2390,21 @@ body:has(#paidBookingPanel[style*="display: block"])
     max-width: 100% !important;
     flex: 1 1 100% !important;
 }
-/* Move Booking Submitted button to the left */
+/* LEFT ALIGN BOOKING SUBMITTED BUTTON */
 body:has(#paidBookingPanel[style*="display: block"])
 #bookingForm .form-actions {
+    display: flex !important;
     justify-content: flex-start !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 20px 0 0 !important;
+    padding: 0 !important;
 }
 
 body:has(#paidBookingPanel[style*="display: block"])
 #proceedToPaymentBtn {
-    margin-left: 0 !important;
+    width: auto !important;
+    min-width: 220px;
+    margin: 0 !important;
     margin-right: auto !important;
 }
