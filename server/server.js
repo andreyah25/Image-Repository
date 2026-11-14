@@ -2998,7 +2998,9 @@ app.post("/send-booking-rejection", async (req, res) => {
 app.post("/api/paymongo/create-checkout", async (req, res) => {
 
     try {
-
+const frontendUrl =
+    process.env.CUSTOMER_URL ||
+    "https://captured-photo-studio.onrender.com";
   const {
     customer_id,
     full_name,
