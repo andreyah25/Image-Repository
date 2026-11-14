@@ -2401,3 +2401,27 @@ body:has(#paidBookingPanel[style*="display: block"])
     margin-left: 0 !important;
     margin-right: auto !important;
 }
+#paidBookingPanel #proceedToPaymentBtn {
+    display: block;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    align-self: flex-start;
+}
+/* Align the button with the left edge of the paid booking panel */
+body:has(#paidBookingPanel[style*="display: block"])
+#bookingForm .form-actions {
+    display: flex !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 1000px !important;
+    margin: 20px 0 0 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+body:has(#paidBookingPanel[style*="display: block"])
+#bookingForm #proceedToPaymentBtn {
+    width: auto !important;
+    min-width: 250px;
+    margin: 0 !important;
+}
