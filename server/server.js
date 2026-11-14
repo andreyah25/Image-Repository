@@ -3315,17 +3315,20 @@ console.log(
                         : `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
                     reference_number: bookingReference,
                   metadata: {
-                        pending_checkout_id: String(pendingCheckoutId),
-                        booking_reference: bookingReference
-                    },
+                    pending_checkout_id: String(pendingCheckoutId),
+                    booking_reference: bookingReference
+                },
                    
                     send_email_receipt: true,
                     show_description: true,
-                  success_url:
-    `${process.env.CUSTOMER_BOOKING_URL}?reference=${encodeURIComponent(bookingReference)}`,
+                 
+                
+success_url:
+    `${customerBookingUrl}?reference=${encodeURIComponent(bookingReference)}`,
 
 cancel_url:
-    `${process.env.CUSTOMER_BOOKING_URL}?payment=cancelled&reference=${encodeURIComponent(bookingReference)}`
+    `${customerBookingUrl}?payment=cancelled&reference=${encodeURIComponent(bookingReference)}`
+
                 }
             }
         })
