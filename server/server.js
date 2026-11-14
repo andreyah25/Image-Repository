@@ -2998,9 +2998,13 @@ app.post("/send-booking-rejection", async (req, res) => {
 app.post("/api/paymongo/create-checkout", async (req, res) => {
 
     try {
-const frontendUrl =
+const frontendUrl = (
     process.env.CUSTOMER_URL ||
-    "https://captured-photo-studio.onrender.com";
+    "https://captured-photo-studio.onrender.com"
+).replace(/\/+$/, "");
+
+const customerBookingUrl =
+    `${frontendUrl}/booking`;
   const {
     customer_id,
     full_name,
@@ -3311,17 +3315,17 @@ console.log(
                         : `Reservation down payment - ${session_type} - ${booking_date} ${booking_time}`,
                     reference_number: bookingReference,
                   metadata: {
-    pending_checkout_id: String(pendingCheckoutId),
-    booking_reference: bookingReference
-},
+                        pending_checkout_id: String(pendingCheckoutId),
+                        booking_reference: bookingReference
+                    },
                    
                     send_email_receipt: true,
                     show_description: true,
-                   success_url:
-    `${frontendUrl}/booking-success?reference=${encodeURIComponent(bookingReference)}`,
+                  success_url:
+    `${process.env.CUSTOMER_BOOKING_URL}?reference=${encodeURIComponent(bookingReference)}`,
 
 cancel_url:
-    `${frontendUrl}/booking-cancelled?reference=${encodeURIComponent(bookingReference)}`
+    `${process.env.CUSTOMER_BOOKING_URL}?payment=cancelled&reference=${encodeURIComponent(bookingReference)}`
                 }
             }
         })

@@ -50,8 +50,15 @@
                 <h1>Schedule a Session</h1>
                 <p>Provide your booking details so we can prepare for your session.</p>
             </div>
-            <div id="paidBookingPanel" style="display:none; background:#f6f8f7; border:1px solid #d5e5dd;
-            border-radius:12px; padding:24px; margin-bottom:24px;">
+
+            <div id="paidBookingPanel" style="
+    display:none;
+    background:#f6f8f7;
+    border:1px solid #d5e5dd;
+    border-radius:12px;
+    padding:24px;
+    margin-bottom:24px;
+">
 
                 <h2 id="paidBookingHeading">Verifying Payment</h2>
 
@@ -59,10 +66,18 @@
                     Please wait while we verify your PayMongo payment.
                 </p>
 
-                <div id="paidBookingDetails" style="line-height:1.9; margin-top:16px;">
+                <div id="paidBookingDetails" style="
+        line-height:1.9;
+        margin-top:20px;
+        padding:18px;
+        background:#ffffff;
+        border:1px solid #e1e8e4;
+        border-radius:10px;
+    ">
                 </div>
 
             </div>
+
             <div class="booking-layout-wrapper">
                 <div class="sessions-panel booking-container">
                     <form id="bookingForm" class="booking-form">
@@ -3299,31 +3314,97 @@
                 })}`;
             }
 
+
+
             function displayBookingDetails(booking) {
                 details.replaceChildren();
 
-                addDetail("Customer", booking.full_name);
-                addDetail("Email", booking.email);
-                addDetail("Contact Number", booking.contact_number);
-                addDetail("Session", booking.session_type);
-                addDetail("Date", booking.booking_date);
-                addDetail("Time", booking.booking_time);
-                addDetail("Total Booking Amount", formatPeso(booking.total_price));
+                const packageNames = {
+                    basic_1: "Basic 1",
+                    basic_2: "Basic 2",
+                    basic_3: "Basic 3",
+                    classic_1: "Classic 1",
+                    classic_2: "Classic 2",
+                    classic_3: "Classic 3",
+                    group: "Group",
+                    kids: "Kids",
+                    pre_birthday: "Pre-Birthday",
+                    maternity: "Maternity",
+                    theme_holiday: "Theme / Holiday",
+                    studio_rental: "Studio Rental"
+                };
+
+                const packageName =
+                    booking.package_name ||
+                    booking.package_title ||
+                    packageNames[booking.session_type] ||
+                    booking.session_type ||
+                    "Not specified";
+                addDetail("Customer", booking.full_name || "Not provided");
+                addDetail("Email", booking.email || "Not provided");
+                addDetail("Contact Number", booking.contact_number || "Not provided");
+
+                addDetail("Selected Package", packageName);
                 addDetail(
-                    "Downpayment",
+                    "Booking Type",
+                    formatSessionName(booking.booking_type)
+                );
+
+                addDetail("Booking Date", booking.booking_date || "Not specified");
+                addDetail("Booking Time", booking.booking_time || "Not specified");
+
+                if (booking.booking_duration) {
+                    addDetail("Session Duration", `${booking.booking_duration} minutes`);
+                }
+
+                // Studio rental information
+                if (booking.session_type === "studio_rental") {
+                    if (booking.rental_start_time) {
+                        addDetail("Rental Start", booking.rental_start_time);
+                    }
+
+                    if (booking.rental_end_time) {
+                        addDetail("Rental End", booking.rental_end_time);
+                    }
+
+                    if (booking.rental_duration) {
+                        addDetail("Rental Duration", `${booking.rental_duration} minutes`);
+                    }
+
+                    if (booking.rental_rate !== null && booking.rental_rate !== undefined) {
+                        addDetail("Rental Rate", formatPeso(booking.rental_rate));
+                    }
+
+                    if (Array.isArray(booking.rental_addons) && booking.rental_addons.length) {
+                        addDetail(
+                            "Rental Add-ons",
+                            booking.rental_addons.map(item =>
+                                typeof item === "string"
+                                    ? item
+                                    : item.name || item.addon_name || "Additional item"
+                            ).join(", ")
+                        );
+                    }
+                }
+
+                addDetail(
+                    "Total Booking Amount",
+                    formatPeso(booking.total_price)
+                );
+
+                addDetail(
+                    "Downpayment Paid",
                     `${formatPeso(booking.downpayment_amount)} — PAID`
                 );
 
-                const remainingBalance =
-                    booking.remaining_balance ??
-                    (
-                        Number(booking.total_price || 0) -
-                        Number(booking.downpayment_amount || 0)
-                    );
+                addDetail(
+                    "Remaining Balance",
+                    formatPeso(booking.remaining_balance)
+                );
 
-                addDetail("Remaining Balance", formatPeso(remainingBalance));
                 addDetail("Payment Method", "PayMongo QRPH");
                 addDetail("Payment Reference", paidReturnReference);
+                addDetail("Payment Status", "PAID");
 
                 if (Array.isArray(booking.backdrops) && booking.backdrops.length) {
                     addDetail("Backdrops", booking.backdrops.join(", "));
@@ -3337,7 +3418,7 @@
                                 ? addon
                                 : addon.name ||
                                 addon.addon_name ||
-                                JSON.stringify(addon)
+                                "Additional item"
                         ).join(", ")
                     );
                 } else {
@@ -3348,6 +3429,7 @@
                     addDetail("Notes", booking.notes);
                 }
             }
+
 
             // Allow time for the PayMongo webhook to update the database.
             const maxAttempts = 30;
