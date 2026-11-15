@@ -1026,9 +1026,6 @@
             } catch (error) {
                 console.error("LOAD BOOKINGS ERROR:", error);
 
-                // Do not clear allBookedSessions or change the selected status.
-                // This prevents an authentication error from erasing existing data.
-
                 if (
                     error.message.includes("No active session") ||
                     error.message.includes("Unable to retrieve session")
@@ -1261,23 +1258,14 @@
                         }
                     );
             }
-            filteredBookings.sort(
-                (a, b) => {
 
-                    const dateA =
-                        new Date(
-                            `${a.booking_date || "9999-12-31"}T${a.booking_time || "23:59"}`
-                        );
+            filteredBookings.sort((a, b) => {
+                const dateA = new Date(a.created_at || 0).getTime();
+                const dateB = new Date(b.created_at || 0).getTime();
 
-                    const dateB =
-                        new Date(
-                            `${b.booking_date || "9999-12-31"}T${b.booking_time || "23:59"}`
-                        );
+                return dateB - dateA;
+            });
 
-                    return dateA - dateB;
-
-                }
-            );
             console.log("Selected status:", selectedStatus);
             console.log("Filtered bookings:", filteredBookings.length);
             console.table(filteredBookings.map(booking => ({

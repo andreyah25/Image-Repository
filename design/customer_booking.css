@@ -2459,3 +2459,85 @@ body:has(#paidBookingPanel[style*="display: block"])
 #bookingForm #proceedToPaymentBtn:hover {
     background: #9F879F !important;
 }
+
+.privacy-consent-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.privacy-consent-card {
+    background: #fff;
+    width: 100%;
+    max-width: 650px;
+    max-height: 90vh;
+    padding: 25px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    color: #222;
+}
+
+.privacy-consent-card h2 {
+    margin-top: 0;
+}
+
+.privacy-consent-content {
+    overflow-y: auto;
+    padding-right: 10px;
+    margin-bottom: 15px;
+}
+
+.privacy-consent-content h3 {
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+
+.privacy-consent-content p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-top: 0;
+}
+
+.privacy-consent-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.privacy-consent-checkbox input {
+    margin-top: 3px;
+}
+
+#privacyConsentAgree {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #222;
+    color: white;
+    cursor: pointer;
+}
+
+#privacyConsentAgree:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+body.privacy-consent-locked {
+    overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .privacy-consent-card {
+        padding: 18px;
+        max-height: 95vh;
+    }
+}

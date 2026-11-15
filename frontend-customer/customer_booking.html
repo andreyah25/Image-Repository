@@ -12,6 +12,65 @@
 
 <body>
 
+
+    <div id="privacyConsentModal" class="privacy-consent-overlay">
+        <div class="privacy-consent-card">
+
+            <h2>Privacy Notice &amp; Consent</h2>
+
+            <div class="privacy-consent-content">
+
+                <p>
+                    At <strong>Captured Photography Studio</strong>, we value your
+                    privacy and are committed to protecting your personal information
+                    in accordance with the Data Privacy Act of 2012 (RA 10173).
+                </p>
+
+                <h3>How We Use Your Information</h3>
+                <p>
+                    We collect and process your personal information, booking
+                    details, payment information, and photographs to manage your
+                    reservations, provide our photography services, and maintain
+                    your photo gallery.
+                </p>
+
+                <h3>Protection of Your Information</h3>
+                <p>
+                    Your information and photographs are handled securely and
+                    accessed only by authorized personnel for legitimate studio
+                    purposes. Your photographs will not be used for promotional
+                    purposes without your separate permission.
+                </p>
+
+                <h3>Your Privacy Rights</h3>
+                <p>
+                    You may request access to or correction of your personal
+                    information and exercise other applicable rights under the
+                    Data Privacy Act.
+                </p>
+
+                <p>
+                    By proceeding, you acknowledge that you have read and
+                    understood this Privacy Notice and consent to the collection
+                    and processing of your information for the purposes stated.
+                </p>
+
+            </div>
+
+            <label class="privacy-consent-checkbox">
+                <input type="checkbox" id="privacyConsentCheckbox">
+                <span>
+                    I have read and agree to the Privacy Notice.
+                </span>
+            </label>
+
+            <button type="button" id="privacyConsentAgree" disabled>
+                I Agree and Continue
+            </button>
+
+        </div>
+    </div>
+
     <header class="top-navbar">
         <div class="logo-section">
             <img src="/images/captured.png" alt="Logo" class="logo-img">
@@ -3818,7 +3877,6 @@
 
                         return;
                     }
-
                     //console.log("Package availability confirmed:", currentPackage);
                 }
                 if (
@@ -4437,6 +4495,34 @@
                 }
             }
 
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById("privacyConsentModal");
+            const checkbox = document.getElementById("privacyConsentCheckbox");
+            const agreeButton = document.getElementById("privacyConsentAgree");
+            const bookingForm = document.getElementById("bookingForm");
+
+            if (!modal || !checkbox || !agreeButton) return;
+
+            document.body.classList.add("privacy-consent-locked");
+
+            checkbox.addEventListener("change", function () {
+                agreeButton.disabled = !checkbox.checked;
+            });
+
+            agreeButton.addEventListener("click", function () {
+                if (!checkbox.checked) return;
+
+                modal.style.display = "none";
+                document.body.classList.remove("privacy-consent-locked");
+
+                if (bookingForm) {
+                    bookingForm.dataset.privacyConsentAccepted = "true";
+                    bookingForm.dataset.privacyConsentTimestamp =
+                        new Date().toISOString();
+                }
+            });
         });
 
     </script>

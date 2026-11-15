@@ -148,7 +148,25 @@
 
         </main>
     </div>
+    <div id="archivePhotoModal" class="archive-photo-modal">
+        <div class="archive-photo-modal-content">
 
+            <div class="archive-photo-modal-header">
+                <div>
+                    <h2 id="archivePhotoModalTitle">Archived Photos</h2>
+                    <p id="archivePhotoModalCount">0 photos</p>
+                </div>
+
+                <button type="button" id="archivePhotoModalClose" class="archive-photo-modal-close"
+                    aria-label="Close gallery">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="archivePhotoGallery" class="archive-photo-gallery"></div>
+
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://rprcbeabdvxdenmngxxc.supabase.co";
@@ -252,36 +270,7 @@
                     ? "Folder"
                     : "Customer";
 
-                const folderPhotos = item.category === "folder"
-                    ? (item.photos || []).map(photo => {
-                        const imageUrl = photo.archive_image_url || "";
-
-                        return `
-            <div class="archived-photo-item">
-                ${imageUrl ? `
-                    <img
-                        src="${escapeHtml(imageUrl)}"
-                        alt="${escapeHtml(photo.original_name || "Archived photo")}"
-                        loading="lazy"
-                        onerror="this.style.display='none';"
-                    >
-                ` : `
-                    <div class="archive-image-placeholder">
-                        Photo unavailable
-                    </div>
-                `}
-
-                <span title="${escapeHtml(photo.original_name || "Photo")}">
-                    ${escapeHtml(photo.original_name || "Photo")}
-                </span>
-
-                <small>
-                    ${photo.archive_image_is_compressed ? "WebP" : "Original"}
-                </small>
-            </div>
-        `;
-                    }).join("")
-                    : "";
+                const photoCount = (item.photos || []).length;
 
 
                 tr.innerHTML = `
@@ -297,12 +286,21 @@
 
                     ${item.category === "folder"
                         ? `
-                                <div class="archived-folder-photos">
-                                    ${folderPhotos ||
-                        '<p class="no-archived-photos">No photos found in this folder.</p>'
-                        }
-                                </div>
-                            `
+                            <div class="archive-folder-summary">
+                                <span class="archive-photo-count">
+                                    <i class="fa-regular fa-images"></i>
+                                    ${photoCount} photos
+                                </span>
+
+                                <button
+                                    type="button"
+                                    class="archive-view-photos-btn"
+                                    ${photoCount === 0 ? "disabled" : ""}
+                                >
+                                    View Photos
+                                </button>
+                            </div>
+                        `
                         : ""
                     }
                 </div>
@@ -325,7 +323,15 @@
         `;
 
                 tbody.appendChild(tr);
+                const viewPhotosButton = tr.querySelector(
+                    ".archive-view-photos-btn"
+                );
 
+                if (viewPhotosButton) {
+                    viewPhotosButton.addEventListener("click", () => {
+                        openArchivePhotoGallery(item);
+                    });
+                }
                 const actionSelect = tr.querySelector(".archive-actions-select");
 
                 actionSelect.addEventListener("change", async function () {
@@ -375,6 +381,90 @@
             });
         }
 
+
+        function openArchivePhotoGallery(item) {
+            const modal = document.getElementById("archivePhotoModal");
+            const gallery = document.getElementById("archivePhotoGallery");
+            const title = document.getElementById("archivePhotoModalTitle");
+            const count = document.getElementById("archivePhotoModalCount");
+
+            const photos = item.photos || [];
+
+            title.textContent = item.title || "Archived Photos";
+            count.textContent = `${photos.length} photos`;
+
+            gallery.innerHTML = "";
+
+            if (!photos.length) {
+                gallery.innerHTML = `
+            <div class="archive-gallery-empty">
+                No archived photos found.
+            </div>
+        `;
+            } else {
+                photos.forEach(photo => {
+                    const imageUrl = photo.archive_image_url || "";
+
+                    const photoElement = document.createElement("div");
+                    photoElement.className = "archive-gallery-photo";
+
+                    if (imageUrl) {
+                        const image = document.createElement("img");
+
+                        image.src = imageUrl;
+                        image.alt = photo.original_name || "Archived photo";
+                        image.loading = "lazy";
+                        image.decoding = "async";
+
+                        image.onerror = function () {
+                            this.style.display = "none";
+                        };
+
+                        photoElement.appendChild(image);
+                    } else {
+                        photoElement.innerHTML = `
+                    <div class="archive-image-placeholder">
+                        Photo unavailable
+                    </div>
+                `;
+                    }
+
+                    const filename = document.createElement("span");
+                    filename.className = "archive-gallery-photo-name";
+                    filename.textContent = photo.original_name || "Photo";
+                    filename.title = photo.original_name || "Photo";
+
+                    photoElement.appendChild(filename);
+                    gallery.appendChild(photoElement);
+                });
+            }
+
+            modal.classList.add("show");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeArchivePhotoGallery() {
+            document.getElementById("archivePhotoModal")
+                .classList.remove("show");
+
+            document.body.style.overflow = "";
+        }
+
+        document.getElementById("archivePhotoModalClose")
+            .addEventListener("click", closeArchivePhotoGallery);
+
+        document.getElementById("archivePhotoModal")
+            .addEventListener("click", function (event) {
+                if (event.target === this) {
+                    closeArchivePhotoGallery();
+                }
+            });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeArchivePhotoGallery();
+            }
+        });
 
         // Initialize display on load
         let currentUser = null;

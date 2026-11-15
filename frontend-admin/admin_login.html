@@ -305,56 +305,43 @@
           return;
         }
 
-        try {
-          const { error: activityError } = await supabaseClient
-            .from("staff_activity_logs")
-            .insert({
-              staff_id: user.id,
-              staff_name: finalProfile.full_name || user.email,
-              staff_email: user.email,
-              role: finalProfile.role || "staff",
-              action: "LOGIN"
-            });
 
-          if (activityError) {
-            console.error("LOGIN ACTIVITY LOG ERROR:", activityError);
-          } else {
-            console.log("LOGIN ACTIVITY RECORDED");
-          }
-        } catch (activityError) {
-          console.error("LOGIN ACTIVITY LOG FAILED:", activityError);
-        }
-
-        try {
-          const { data: { session } } =
-            await supabaseClient.auth.getSession();
-
-          if (session?.access_token) {
-            const presenceResponse = await fetch(
-              `${SERVER_URL}/api/admin/staff/presence`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({ page: "/admin/login" })
-              }
-            );
-
-            if (!presenceResponse.ok) {
-              console.error("PRESENCE UPDATE ERROR");
-            }
-          }
-        } catch (presenceError) {
-          console.error("STAFF PRESENCE REQUEST FAILED:", presenceError);
-        }
+        const session = result.session;
 
         localStorage.setItem("loggedInUserId", user.id);
         localStorage.setItem("loggedInUserEmail", user.email);
         localStorage.setItem("staffProfile", JSON.stringify(finalProfile));
 
-        window.location.href = "/admin/dashboard";
+        supabaseClient
+          .from("staff_activity_logs")
+          .insert({
+            staff_id: user.id,
+            staff_name: finalProfile.full_name || user.email,
+            staff_email: user.email,
+            role: finalProfile.role || "staff",
+            action: "LOGIN"
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.error("LOGIN ACTIVITY LOG ERROR:", error);
+            }
+          })
+          .catch(error => {
+            console.error("LOGIN ACTIVITY LOG FAILED:", error);
+          });
+
+        fetch(`${SERVER_URL}/api/admin/staff/presence`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ page: "/admin/login" })
+        }).catch(error => {
+          console.error("STAFF PRESENCE REQUEST FAILED:", error);
+        });
+
+        window.location.replace("/admin/dashboard");
 
       } catch (err) {
         console.error("LOGIN ERROR:", err);
