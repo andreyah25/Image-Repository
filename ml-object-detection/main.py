@@ -3,7 +3,7 @@ from pathlib import Path
 from io import BytesIO
 import logging
 import time
-
+import threading
 import requests
 from PIL import Image, ImageOps
 from fastapi import FastAPI, HTTPException
@@ -24,6 +24,7 @@ logger = logging.getLogger("captured-ml")
 # APP CONFIGURATION
 # --------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
+
 MODEL_PATH = (
     BASE_DIR
     / "runs"
@@ -35,12 +36,17 @@ MODEL_PATH = (
     / "best.pt"
 )
 
-if not MODEL_PATH.exists():
-    raise FileNotFoundError(
-        f"Model not found: {MODEL_PATH}"
-    )
+logger.info("Loading YOLO model: %s", MODEL_PATH)
+
+if not MODEL_PATH.is_file():
+    raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
 model = YOLO(str(MODEL_PATH))
+
+logger.info("YOLO model loaded. Classes: %s", model.names)
+
+inference_lock = threading.Lock()
+
 app = FastAPI(title="Captured Object Detection API")
 
 app.add_middleware(
@@ -58,17 +64,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
-
-if not MODEL_PATH.exists():
-    raise FileNotFoundError(
-        f"Model not found: {MODEL_PATH}"
-    )
-
-logger.info("Loading YOLO model: %s", MODEL_PATH)
-
-model = YOLO(str(MODEL_PATH))
-
-logger.info("YOLO model loaded. Classes: %s", model.names)
 
 
 class AnalyzeRequest(BaseModel):
@@ -111,7 +106,7 @@ def analyze_image(request: AnalyzeRequest):
         try:
             with requests.get(
                 image_url,
-                timeout=(10, 25),
+                timeout=(15, 90),
                 stream=True,
                 allow_redirects=True,
             ) as response:
@@ -185,29 +180,30 @@ def analyze_image(request: AnalyzeRequest):
         inference_started = time.perf_counter()
 
         logger.info(
-            "YOLO INFERENCE STARTED; image_size=%s; imgsz=416",
+            "YOLO INFERENCE QUEUED; image_size=%s; imgsz=416",
             image.size,
         )
 
         try:
-            prediction = model.predict(
-                source=image,
-                conf=0.20,
-                imgsz=416,
-                verbose=False,
-                device="cpu",
-            )[0]
+            with inference_lock:
+                logger.info("YOLO INFERENCE STARTED")
 
-            logger.info(
-                "YOLO INFERENCE FINISHED in %.2f seconds",
-                time.perf_counter() - inference_started,
-            )
+                prediction = model.predict(
+                    source=image,
+                    conf=0.20,
+                    imgsz=416,
+                    verbose=False,
+                    device="cpu",
+                )[0]
+
+                logger.info(
+                    "YOLO INFERENCE FINISHED in %.2f seconds",
+                    time.perf_counter() - inference_started,
+                )
 
         except Exception:
             logger.exception("YOLO INFERENCE FAILED")
             raise
-
-
         objects = []
 
         if prediction.boxes is not None:
