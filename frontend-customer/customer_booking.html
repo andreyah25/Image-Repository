@@ -11,63 +11,60 @@
 </head>
 
 <body>
+    <div id="privacyConsentModal" class="modal-overlay" style="opacity: 1; visibility: visible;">
+        <div class="modal-card" style="max-width: 800px;">
+            <div class="modal-table-container">
+                <h2
+                    style="font-size: 1.1rem; font-weight: 700; color: #353535; margin-bottom: 18px; border-bottom: 2px solid #B39EB5; padding-bottom: 8px;">
+                    Privacy Notice &amp; Consent
+                </h2>
 
+                <div class="pet-reminders-section" style="margin-top: 0; padding-top: 0;">
+                    <ul class="pet-reminders-list"
+                        style="list-style-type: disc; padding-left: 22px; margin-bottom: 20px;">
+                        <li style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; color: #222222;">
+                            At <strong>Captured Photography Studio</strong>, we value your privacy and are committed to
+                            protecting your personal information in accordance with the Data Privacy Act of 2012 (RA
+                            10173).
+                        </li>
+                        <li style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; color: #222222;">
+                            <strong>How We Use Your Information:</strong> We collect and process your personal
+                            information, booking details, payment information, and photographs to manage your
+                            reservations, provide our photography services, and maintain your photo gallery.
+                        </li>
+                        <li style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; color: #222222;">
+                            <strong>Protection of Your Information:</strong> Your information and photographs are
+                            handled securely and accessed only by authorized personnel for legitimate studio purposes.
+                            Your photographs will not be used for promotional purposes without your separate permission.
+                        </li>
+                        <li style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; color: #222222;">
+                            <strong>Your Privacy Rights:</strong> You may request access to or correction of your
+                            personal information and exercise other applicable rights under the Data Privacy Act.
+                        </li>
+                        <li style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 0; color: #222222;">
+                            By proceeding, you acknowledge that you have read and understood this Privacy Notice and
+                            consent to the collection and processing of your information for the purposes stated.
+                        </li>
+                    </ul>
 
-    <div id="privacyConsentModal" class="privacy-consent-overlay">
-        <div class="privacy-consent-card">
+                    <!-- Agreement Checklist Block -->
+                    <div class="policy-agreement-container"
+                        style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #e0e0e0;">
+                        <label
+                            style="display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: #353535; cursor: pointer; line-height: 1.4;">
+                            <input type="checkbox" id="privacyConsentCheckbox"
+                                style="width: 18px; height: 18px; margin-top: 2px; accent-color: #B39EB5; cursor: pointer; flex-shrink: 0;">
+                            <span>I have read, understood, and agree to the Privacy Notice and its terms.</span>
+                        </label>
 
-            <h2>Privacy Notice &amp; Consent</h2>
-
-            <div class="privacy-consent-content">
-
-                <p>
-                    At <strong>Captured Photography Studio</strong>, we value your
-                    privacy and are committed to protecting your personal information
-                    in accordance with the Data Privacy Act of 2012 (RA 10173).
-                </p>
-
-                <h3>How We Use Your Information</h3>
-                <p>
-                    We collect and process your personal information, booking
-                    details, payment information, and photographs to manage your
-                    reservations, provide our photography services, and maintain
-                    your photo gallery.
-                </p>
-
-                <h3>Protection of Your Information</h3>
-                <p>
-                    Your information and photographs are handled securely and
-                    accessed only by authorized personnel for legitimate studio
-                    purposes. Your photographs will not be used for promotional
-                    purposes without your separate permission.
-                </p>
-
-                <h3>Your Privacy Rights</h3>
-                <p>
-                    You may request access to or correction of your personal
-                    information and exercise other applicable rights under the
-                    Data Privacy Act.
-                </p>
-
-                <p>
-                    By proceeding, you acknowledge that you have read and
-                    understood this Privacy Notice and consent to the collection
-                    and processing of your information for the purposes stated.
-                </p>
-
+                        <button type="button" id="privacyConsentAgree" class="btn-confirm"
+                            style="width: 100%; margin-top: 15px; padding: 10px; opacity: 0.5; cursor: not-allowed;"
+                            disabled>
+                            I Agree and Continue
+                        </button>
+                    </div>
+                </div>
             </div>
-
-            <label class="privacy-consent-checkbox">
-                <input type="checkbox" id="privacyConsentCheckbox">
-                <span>
-                    I have read and agree to the Privacy Notice.
-                </span>
-            </label>
-
-            <button type="button" id="privacyConsentAgree" disabled>
-                I Agree and Continue
-            </button>
-
         </div>
     </div>
 
