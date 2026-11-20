@@ -2054,53 +2054,51 @@
                 return;
             }
 
-            if (uploadPhotos.isUploading) {
-                return;
-            }
+            if (uploadPhotos.isUploading) return;
 
             uploadPhotos.isUploading = true;
-
             uploadFolderPhotosBtn.disabled = true;
 
             uploadFolderPhotosBtn.innerHTML = `
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    Uploading...
-                `;
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Uploading...
+    `;
 
             uploadStatus.classList.add("show");
             uploadStatus.classList.remove("error");
 
-            document.getElementById("uploadProgressBar").style.width = "0%";
+            const progressBar = document.getElementById("uploadProgressBar");
+            progressBar.style.width = "0%";
+
+            const batchId = crypto.randomUUID();
+            const queueItems = [];
 
             let uploaded = 0;
             let failed = 0;
             let compressed = 0;
-            let notSmaller = 0;
-            let compressionFailed = 0;
+            let completedUploads = 0;
+            let nextIndex = 0;
 
-            for (let index = 0; index < files.length; index++) {
-                const file = files[index];
-
+            async function uploadOne(file) {
+                let storagePath = null;
+                let photoRecord = null;
                 let compressedStoragePath = null;
 
-                showUploadProgress(
-                    index + 1,
-                    files.length,
-                    file.name,
-                    "Uploading original photo..."
-                );
                 try {
                     if (!file.type.startsWith("image/")) {
                         throw new Error("File is not an image.");
                     }
 
-                    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+                    const safeName = file.name.replace(
+                        /[^a-zA-Z0-9._-]/g,
+                        "_"
+                    );
 
-                    const storagePath =
+                    storagePath =
                         `${selectedClient.id}/${selectedRepository.id}/` +
                         `${crypto.randomUUID()}-${safeName}`;
 
-                    // 1. Upload the ORIGINAL photo. Never replace it with WebP.
+                    // Upload the original image.
                     const { error: storageError } = await supabaseClient
                         .storage
                         .from("client-photos")
@@ -2112,28 +2110,14 @@
 
                     if (storageError) throw storageError;
 
-                    console.log("Original photo uploaded:", storagePath);
-                    console.log("Original size (bytes):", file.size);
-
-                    const { data: signedUrlData, error: signedUrlError } =
-                        await supabaseClient
-                            .storage
-                            .from("client-photos")
-                            .createSignedUrl(storagePath, 3600);
-
-                    if (signedUrlError) throw signedUrlError;
-
-                    const imageUrl = signedUrlData.signedUrl;
-
-                    // 2. Save the original photo's database record.
-                    const { data: photoRecord, error: databaseError } =
+                    // Save the photo record.
+                    const { data: photo, error: databaseError } =
                         await supabaseClient
                             .from("repository_photos")
                             .insert({
                                 repository_id: selectedRepository.id,
                                 booking_id: selectedClient.id,
                                 storage_path: storagePath,
-                                image_url: imageUrl,
                                 original_name: file.name,
                                 mime_type: file.type,
                                 file_size: file.size,
@@ -2144,125 +2128,80 @@
                             .select()
                             .single();
 
-                    if (databaseError) {
-                        await supabaseClient.storage
-                            .from("client-photos")
-                            .remove([storagePath]);
+                    if (databaseError) throw databaseError;
 
-                        throw databaseError;
-                    }
+                    photoRecord = photo;
 
-                    console.log("Photo record saved:", photoRecord.id);
-
-                    // 3. Create and store a separate WebP copy.
-                    showUploadProgress(
-                        index + 1,
-                        files.length,
-                        file.name,
-                        "Compressing photo..."
-                    );
-
+                    // Preserve your separate WebP copy.
                     try {
-                        console.log("Starting WebP conversion:", file.name);
-
                         const conversion = await createWebPCopy(file);
 
-                        //console.log("WebP conversion result:", conversion.status);
+                        if (
+                            conversion.status === "created" &&
+                            conversion.blob
+                        ) {
+                            const baseName = safeName.replace(
+                                /\.[^.]+$/,
+                                ""
+                            );
 
-                        if (conversion.status === "created" && conversion.blob) {
-                            const baseName = safeName.replace(/\.[^.]+$/, "");
                             compressedStoragePath =
                                 `${selectedClient.id}/${selectedRepository.id}/` +
                                 `${crypto.randomUUID()}-${baseName}.webp`;
 
-                            const { error: webpUploadError } =
-                                await supabaseClient.storage
-                                    .from("client-photos")
-                                    .upload(
-                                        compressedStoragePath,
-                                        conversion.blob,
-                                        {
-                                            cacheControl: "3600",
-                                            upsert: false,
-                                            contentType: "image/webp"
-                                        }
-                                    );
+                            const { error: webpError } = await supabaseClient
+                                .storage
+                                .from("client-photos")
+                                .upload(
+                                    compressedStoragePath,
+                                    conversion.blob,
+                                    {
+                                        cacheControl: "3600",
+                                        upsert: false,
+                                        contentType: "image/webp"
+                                    }
+                                );
 
-                            if (webpUploadError) throw webpUploadError;
+                            if (webpError) throw webpError;
 
-                            const { error: metadataError } = await supabaseClient
-                                .from("repository_photos")
-                                .update({
-                                    original_size_bytes: file.size,
-                                    compressed_size_bytes: conversion.blob.size,
-                                    compression_format: "webp",
-                                    compressed_storage_path: compressedStoragePath,
-                                    compressed_file_size: conversion.blob.size,
-                                    compressed_at: new Date().toISOString(),
-                                    compression_status: "completed"
-                                })
-                                .eq("id", photoRecord.id);
+                            const { error: metadataError } =
+                                await supabaseClient
+                                    .from("repository_photos")
+                                    .update({
+                                        original_size_bytes: file.size,
+                                        compressed_size_bytes: conversion.blob.size,
+                                        compression_format: "webp",
+                                        compressed_storage_path: compressedStoragePath,
+                                        compressed_file_size: conversion.blob.size,
+                                        compressed_at: new Date().toISOString(),
+                                        compression_status: "completed"
+                                    })
+                                    .eq("id", photo.id);
 
                             if (metadataError) throw metadataError;
 
                             compressed++;
 
-                            const savings = (
-                                (1 - conversion.blob.size / file.size) * 100
-                            ).toFixed(1);
-
-                            console.log("WebP compression saved:", {
-                                original: file.name,
-                                originalBytes: file.size,
-                                webpBytes: conversion.blob.size,
-                                savingsPercent: savings,
-                                originalPath: storagePath,
-                                webpPath: compressedStoragePath
-                            });
-
-                        } else if (conversion.status === "not_smaller") {
-                            const { error: metadataError } = await supabaseClient
-                                .from("repository_photos")
-                                .update({
-                                    original_size_bytes: file.size,
-                                    compressed_size_bytes: conversion.blob?.size ?? null,
-                                    compression_format: "webp",
-                                    compressed_storage_path: null,
-                                    compressed_file_size: null,
-                                    compressed_at: null,
-                                    compression_status: "not_smaller"
-                                })
-                                .eq("id", photoRecord.id);
-
-                            if (metadataError) throw metadataError;
-
-                            notSmaller++;
-                            console.log("WebP was not smaller:", {
-                                original: file.size,
-                                webpAttempt: conversion.blob?.size
-                            });
-
                         } else {
-                            const status = conversion.status || "failed";
-
-                            const { error: metadataError } = await supabaseClient
-                                .from("repository_photos")
-                                .update({
-                                    original_size_bytes: file.size,
-                                    compression_status: status
-                                })
-                                .eq("id", photoRecord.id);
+                            const { error: metadataError } =
+                                await supabaseClient
+                                    .from("repository_photos")
+                                    .update({
+                                        compression_status:
+                                            conversion.status || "failed"
+                                    })
+                                    .eq("id", photo.id);
 
                             if (metadataError) throw metadataError;
-
-                            compressionFailed++;
-                            console.warn("WebP copy not created:", file.name, status);
                         }
 
                     } catch (compressionError) {
-                        console.error("WebP compression/storage failed:", compressionError);
+                        console.error(
+                            "WebP compression failed:",
+                            file.name,
+                            compressionError
+                        );
 
-                        // Remove an uploaded WebP if its metadata could not be saved.
                         if (compressedStoragePath) {
                             await supabaseClient.storage
                                 .from("client-photos")
@@ -2271,7 +2210,7 @@
                             compressedStoragePath = null;
                         }
 
-                        const { error: statusError } = await supabaseClient
+                        await supabaseClient
                             .from("repository_photos")
                             .update({
                                 compression_status: "failed",
@@ -2279,65 +2218,158 @@
                                 compressed_file_size: null,
                                 compressed_at: null
                             })
-                            .eq("id", photoRecord.id);
-
-                        if (statusError) {
-                            console.error("Could not save compression failure:", statusError);
-                        }
-
-                        compressionFailed++;
+                            .eq("id", photo.id);
                     }
-                    // 4. Run ML on the ORIGINAL photo, as before.
 
-                    showUploadProgress(
-                        index + 1,
-                        files.length,
-                        file.name,
-                        "Analyzing photo using machine learning..."
-                    );
-
-                    //console.log("Starting ML analysis on original:", photoRecord.id);
-                    const mlResult = await analyzePhoto(photoRecord.id, imageUrl);
-
-                    console.log("ML processing result:", mlResult);
-
-                    if (!mlResult || !mlResult.success) {
-                        console.error("ML analysis failed:", mlResult);
-                    }
+                    // Add the original photo to the background detection queue.
+                    queueItems.push({
+                        batch_id: batchId,
+                        photo_id: photo.id,
+                        storage_path: storagePath,
+                        status: "queued"
+                    });
 
                     uploaded++;
 
                 } catch (error) {
                     failed++;
-                    console.error("Upload failed:", file.name, error);
+
+                    console.error(
+                        "Photo upload failed:",
+                        file.name,
+                        error
+                    );
+
+                    if (photoRecord?.id) {
+                        await supabaseClient
+                            .from("repository_photos")
+                            .update({
+                                processing_status: "failed"
+                            })
+                            .eq("id", photoRecord.id);
+
+                    } else if (storagePath) {
+                        await supabaseClient.storage
+                            .from("client-photos")
+                            .remove([storagePath]);
+                    }
+
+                } finally {
+                    completedUploads++;
+
+                    progressBar.style.width =
+                        `${Math.round(
+                            completedUploads / files.length * 100
+                        )}%`;
+
+                    showUploadProgress(
+                        completedUploads,
+                        files.length,
+                        file.name,
+                        "Uploading photo..."
+                    );
                 }
             }
 
-            await loadPhotos(selectedRepository.id);
+            async function uploadWorker() {
+                while (true) {
+                    const index = nextIndex++;
 
-            //console.log("========== UPLOAD SUMMARY ==========");
-            //console.log({
-            //    uploaded,
-            //    failed,
-            //    compressedWebPCopies: compressed,
-            //    webpNotSmaller: notSmaller,
-            //    compressionFailures: compressionFailed
-            //});
+                    if (index >= files.length) return;
 
-            showUploadStatus(
-                `${uploaded} of ${files.length} photos uploaded successfully. ${failed} failed.`,
-                failed > 0
-            );
+                    await uploadOne(files[index]);
+                }
+            }
 
-            uploadPhotos.isUploading = false;
+            try {
+                // Three simultaneous upload workers.
+                const workerCount = Math.min(3, files.length);
 
-            uploadFolderPhotosBtn.disabled = false;
+                await Promise.all(
+                    Array.from(
+                        { length: workerCount },
+                        () => uploadWorker()
+                    )
+                );
 
-            uploadFolderPhotosBtn.innerHTML = `
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                Upload Photos
-            `;
+                let queued = 0;
+                let queueFailed = false;
+
+                if (queueItems.length > 0) {
+                    showUploadProgress(
+                        files.length,
+                        files.length,
+                        "Detection queue",
+                        "Adding photos to background detection..."
+                    );
+
+                    const { error: queueError } = await supabaseClient
+                        .from("ml_detection_jobs")
+                        .insert(queueItems);
+
+                    if (queueError) {
+                        console.error(
+                            "Detection queue insert failed:",
+                            queueError
+                        );
+
+                        queueFailed = true;
+
+                        await supabaseClient
+                            .from("repository_photos")
+                            .update({
+                                processing_status: "failed"
+                            })
+                            .in(
+                                "id",
+                                queueItems.map(item => item.photo_id)
+                            );
+
+                    } else {
+                        queued = queueItems.length;
+                    }
+                }
+
+                await loadPhotos(selectedRepository.id);
+
+                const message = queueFailed
+                    ? `${uploaded} photos uploaded, but detection could not be queued.`
+                    : `${uploaded} photos uploaded. ${queued} queued for background detection.`;
+
+                showUploadStatus(
+                    `${message} ${failed} upload failures.`,
+                    failed > 0 || queueFailed
+                );
+
+                console.log("UPLOAD BATCH SUMMARY:", {
+                    batchId,
+                    total: files.length,
+                    uploaded,
+                    failed,
+                    queued,
+                    compressedWebPCopies: compressed
+                });
+
+            } catch (error) {
+                console.error("Upload batch error:", error);
+
+                showUploadStatus(
+                    "Upload failed: " + error.message,
+                    true
+                );
+
+            } finally {
+                uploadPhotos.isUploading = false;
+
+                uploadFolderPhotosBtn.disabled = false;
+
+                uploadFolderPhotosBtn.innerHTML = `
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            Upload Photos
+        `;
+            }
         }
+
         uploadFolderPhotosBtn.addEventListener(
             "click",
             () => {
