@@ -1266,15 +1266,15 @@
                 return dateB - dateA;
             });
 
-            console.log("Selected status:", selectedStatus);
-            console.log("Filtered bookings:", filteredBookings.length);
-            console.table(filteredBookings.map(booking => ({
+            //console.log("Selected status:", selectedStatus);
+            //console.log("Filtered bookings:", filteredBookings.length);
+            /*console.table(filteredBookings.map(booking => ({
                 name: booking.full_name,
                 status: booking.status,
                 payment_status: booking.payment_status,
                 booking_date: booking.booking_date,
                 booking_time: booking.booking_time
-            })));
+            })));*/
 
             if (filteredBookings.length === 0) {
                 tbody.innerHTML = `
@@ -2408,7 +2408,7 @@
             // Activate Pending using the page's existing tab handler.
             pendingTab.click();
 
-            console.log("Pending tab activated. Booking ID:", bookingId);
+            //console.log("Pending tab activated. Booking ID:", bookingId);
         }
 
         if (document.readyState === "loading") {
@@ -2574,10 +2574,7 @@
             booking
         ) {
 
-            console.log(
-                "Creating repository for:",
-                booking.full_name
-            );
+           //console.log("Creating repository for:",booking.full_name);
 
             const {
                 data: existingRepository,
@@ -2605,9 +2602,9 @@
             }
             if (existingRepository) {
 
-                console.log(
+                /*console.log(
                     "Repository already exists."
-                );
+                );*/
 
                 return existingRepository;
             }
@@ -2652,10 +2649,10 @@
             }
 
 
-            console.log(
-                "Repository created:",
-                repository
-            );
+            //console.log(
+            //    "Repository created:",
+            //    repository
+            //);
 
 
             return repository;
@@ -2969,15 +2966,15 @@
                     );
                 }
 
-                console.log(
-                    "GALLERY EMAIL HTTP STATUS:",
-                    emailResponse.status
-                );
+                //console.log(
+                //    "GALLERY EMAIL HTTP STATUS:",
+                //    emailResponse.status
+                //);
 
-                console.log(
-                    "GALLERY EMAIL SERVER RESPONSE:",
-                    emailResult
-                );
+                //console.log(
+                    //"GALLERY EMAIL SERVER RESPONSE:",
+                    //emailResult
+                //);
 
                 if (!emailResponse.ok || !emailResult.success) {
                     throw new Error(
@@ -2987,10 +2984,10 @@
                     );
                 }
 
-                console.log(
-                    "GALLERY-READY EMAIL SENT SUCCESSFULLY:",
-                    emailResult
-                );
+                //console.log(
+                //    "GALLERY-READY EMAIL SENT SUCCESSFULLY:",
+                //    emailResult
+                //);
 
 
                 // 5. Create an in-app customer notification.
@@ -3831,11 +3828,11 @@
                         );
                     }
 
-                    console.log("RESCHEDULE RESPONSE:", {
-                        status: response.status,
-                        url: response.url,
-                        result
-                    });
+                    //console.log("RESCHEDULE RESPONSE:", {
+                    //    status: response.status,
+                    //    url: response.url,
+                    //    result
+                    //});
 
                     if (!response.ok || !result.success) {
                         throw new Error(

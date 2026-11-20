@@ -2541,3 +2541,142 @@ body.privacy-consent-locked {
         max-height: 95vh;
     }
 }
+/* =========================================
+   INTERACTIVE BUTTON FEEDBACK
+========================================= */
+
+/* General button interaction */
+button,
+.btn-confirm,
+.service-menu-btn,
+#addAddonBtn,
+.notification-booking-btn,
+.remove-addon,
+#proceedToPaymentBtn,
+#privacyConsentAgree {
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+/* Hover feedback */
+button:hover:not(:disabled),
+.btn-confirm:hover:not(:disabled),
+.service-menu-btn:hover:not(:disabled),
+#addAddonBtn:hover:not(:disabled),
+.notification-booking-btn:hover:not(:disabled),
+#proceedToPaymentBtn:hover:not(:disabled),
+#privacyConsentAgree:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(80, 60, 85, 0.15);
+}
+
+/* Click / pressed feedback */
+button:active:not(:disabled),
+.btn-confirm:active:not(:disabled),
+.service-menu-btn:active:not(:disabled),
+#addAddonBtn:active:not(:disabled),
+.notification-booking-btn:active:not(:disabled),
+.remove-addon:active:not(:disabled),
+#proceedToPaymentBtn:active:not(:disabled),
+#privacyConsentAgree:active:not(:disabled) {
+    transform: scale(0.97);
+    box-shadow: none;
+}
+
+/* Keyboard focus feedback */
+button:focus-visible,
+.btn-confirm:focus-visible,
+.service-menu-btn:focus-visible,
+#addAddonBtn:focus-visible,
+.notification-booking-btn:focus-visible,
+.remove-addon:focus-visible,
+#proceedToPaymentBtn:focus-visible,
+#privacyConsentAgree:focus-visible,
+.sidebar a:focus-visible,
+.mobile-home-btn:focus-visible {
+    outline: 3px solid rgba(179, 158, 181, 0.45);
+    outline-offset: 3px;
+}
+
+/* Disabled button feedback */
+button:disabled,
+.btn-confirm:disabled,
+.service-menu-btn:disabled,
+#addAddonBtn:disabled,
+#proceedToPaymentBtn:disabled,
+#privacyConsentAgree:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.55 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Click feedback for sidebar links */
+.sidebar a {
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.sidebar a:active {
+    transform: scale(0.97);
+}
+
+/* Click feedback for notification button */
+.notification-btn {
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.notification-btn:active {
+    transform: scale(0.90);
+}
+
+/* Click feedback for backdrop selection */
+.backdrop-option .backdrop-card {
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.15s ease;
+}
+
+.backdrop-option:active .backdrop-card {
+    transform: scale(0.97);
+}
+
+/* Click feedback for add-on removal */
+.remove-addon:hover {
+    transform: scale(1.05);
+}
+
+/* Modal close button */
+.modal-close-btn {
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.modal-close-btn:hover {
+    transform: scale(1.1);
+}
+
+.modal-close-btn:active {
+    transform: scale(0.90);
+}
+
+/* Mobile: remove excessive hover movement */
+@media (hover: none) {
+    button:hover:not(:disabled),
+    .btn-confirm:hover:not(:disabled),
+    .service-menu-btn:hover:not(:disabled),
+    #addAddonBtn:hover:not(:disabled),
+    .notification-booking-btn:hover:not(:disabled),
+    #proceedToPaymentBtn:hover:not(:disabled),
+    #privacyConsentAgree:hover:not(:disabled) {
+        transform: none;
+        box-shadow: none;
+    }
+}

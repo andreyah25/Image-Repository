@@ -3337,12 +3337,12 @@ cancel_url:
 
 const paymongoData = await response.json();
 
-console.log("PAYMONGO HTTP STATUS:", response.status);
-console.log("PAYMONGO HTTP OK:", response.ok);
-console.log(
+//console.log("PAYMONGO HTTP STATUS:", response.status);
+//console.log("PAYMONGO HTTP OK:", response.ok);
+/*console.log(
     "PAYMONGO RESPONSE:",
     JSON.stringify(paymongoData, null, 2)
-);
+);*/
 
 
 if (!response.ok) {
@@ -3416,7 +3416,7 @@ if (updatePendingError) {
 }
 
 
-console.log("PayMongo checkout successfully created.");
+//console.log("PayMongo checkout successfully created.");
 
 return res.json({
     success: true,
@@ -3454,14 +3454,14 @@ return res.json({
 
 app.post("/api/paymongo/webhook", async (req, res) => {
     try {
-       console.log("PAYMONGO WEBHOOK RECEIVED:", {
+       /*console.log("PAYMONGO WEBHOOK RECEIVED:", {
     receivedAt: new Date().toISOString(),
     eventType: req.body?.data?.attributes?.type,
     reference:
         req.body?.data?.attributes?.data?.attributes?.reference_number,
     checkoutSessionId:
         req.body?.data?.attributes?.data?.id
-});
+});*/
         const event = req.body;
         const signatureHeader =
             req.headers["paymongo-signature"];
@@ -3555,9 +3555,7 @@ const webhookSecret =
             });
         }
 
-        console.log(
-            "PayMongo webhook signature verified."
-        );
+        //console.log("PayMongo webhook signature verified.");
 
         // =========================================
         // 2. READ EVENT DETAILS
@@ -3601,9 +3599,9 @@ const webhookSecret =
             });
         }
 
-        console.log("Webhook event:", eventType);
-        console.log("Reference:", reference);
-        console.log("Checkout session:", checkoutSessionId);
+        //console.log("Webhook event:", eventType);
+        //console.log("Reference:", reference);
+        //console.log("Checkout session:", checkoutSessionId);
 
         let pendingCheckout = null;
 
@@ -3658,9 +3656,9 @@ const webhookSecret =
         }
 
         if (!pendingCheckout) {
-            console.error(
-                "No matching temporary checkout found."
-            );
+            //console.error(
+            //    "No matching temporary checkout found."
+            //);
 
             return res.status(404).json({
                 success: false,
@@ -3724,9 +3722,9 @@ const webhookSecret =
                 });
             }
 
-            console.log(
-                "Payment failed. No final booking was created."
-            );
+            //console.log(
+            //    "Payment failed. No final booking was created."
+            //);
 
             return res.status(200).json({
                 success: true,

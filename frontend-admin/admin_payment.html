@@ -171,11 +171,7 @@
                         </button>
 
                         <div class="filter-dropdown-menu" id="methodDropdown">
-                            <a href="#" data-filter="card">Credit Card</a>
-                            <a href="#" data-filter="gcash">GCash</a>
-                            <a href="#" data-filter="maya">Maya</a>
-                            <a href="#" data-filter="paypal">PayPal</a>
-                            <a href="#" data-filter="qrph">QR Ph</a>
+                            <a href="#" data-filter="qrph">QRPH</a>
 
                             <div class="dropdown-divider"></div>
 
@@ -586,6 +582,11 @@
                         databasePaymentStatus.includes("declin") ||
                         databasePaymentStatus === "failed";
 
+                    const isNoShow =
+                        normalizedBookingStatus === "no show" ||
+                        normalizedBookingStatus === "no_show" ||
+                        normalizedBookingStatus === "noshow";
+
                     const isCancelled =
                         databasePaymentStatus.includes("cancel") ||
                         databasePaymentStatus.includes("reject") ||
@@ -595,6 +596,8 @@
 
                     if (isFailed) {
                         paymentStatus = "Payment Failed";
+                    } else if (isNoShow) {
+                        paymentStatus = "No Show";
                     } else if (isCancelled) {
                         paymentStatus = "Cancelled";
                     } else if (
@@ -607,12 +610,7 @@
                     }
 
 
-
-                    let paymentMethod = booking.payment_method || "PayMongo";
-
-                    if (String(paymentMethod).trim().toLowerCase() === "paymongo") {
-                        paymentMethod = "QRPH";
-                    }
+                    let paymentMethod = "QRPH";
 
                     const paymentDate =
                         booking.paymongo_paid_at ||
@@ -741,17 +739,7 @@
                             gallery.created_at ||
                             new Date().toISOString();
 
-                        let paymentMethod =
-                            gallery.payment_method ||
-                            "PayMongo";
-
-                        if (
-                            String(paymentMethod)
-                                .toLowerCase()
-                                .trim() === "paymongo"
-                        ) {
-                            paymentMethod = "qrph";
-                        }
+                        let paymentMethod = "QRPH";
 
                         const customerId =
                             gallery.customer_id ||
@@ -938,7 +926,13 @@
                     }
 
                     if (currentStatusFilter === "cancelled") {
-                        return ["cancelled", "canceled"].includes(status);
+                        return [
+                            "cancelled",
+                            "canceled",
+                            "no show",
+                            "no_show",
+                            "noshow"
+                        ].includes(status);
                     }
 
                     if (currentStatusFilter === "payment failed") {
@@ -1197,64 +1191,15 @@
 
         }
         function formatPaymentMethod(method) {
+            if (!method) return "QRPH";
 
-            if (!method) {
+            const normalized = method.toLowerCase().trim();
 
-                return "—";
-
+            if (normalized === "qrph") {
+                return "QRPH";
             }
 
-
-            const value =
-                String(method)
-                    .toLowerCase()
-                    .trim();
-
-
-            if (value === "gcash") {
-
-                return "GCash";
-
-            }
-
-
-            if (value === "maya") {
-
-                return "Maya";
-
-            }
-
-
-            if (
-                value === "card" ||
-                value === "credit_card" ||
-                value === "credit card"
-            ) {
-
-                return "Credit Card";
-
-            }
-
-
-            if (value === "paypal") {
-
-                return "PayPal";
-
-            }
-
-
-            if (
-                value === "qrph" ||
-                value === "qr_ph"
-            ) {
-
-                return "QR Ph";
-
-            }
-
-
-            return method;
-
+            return method.toUpperCase();
         }
 
         function getStatusClass(status) {

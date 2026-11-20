@@ -164,7 +164,18 @@
 
                 </div>
 
-                <div id="uploadStatus" class="upload-status"></div>
+                <div id="uploadStatus" class="upload-status" role="status" aria-live="polite">
+                    <div class="upload-status-content">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <div>
+                            <strong id="uploadStatusTitle">Uploading photos...</strong>
+                            <small id="uploadStatusDetails">Please wait.</small>
+                        </div>
+                    </div>
+                    <div class="upload-progress-track">
+                        <div id="uploadProgressBar" class="upload-progress-bar"></div>
+                    </div>
+                </div>
 
                 <div class="repo-view-container" id="customerFolder">
 
@@ -1791,18 +1802,32 @@
                     : photo.processing_status === "completed"
                         ? `<small>No objects detected.</small>`
                         : `<small>Detection results not available yet.</small>`;
+                const processingStatus = String(
+                    photo.processing_status || "pending"
+                ).toLowerCase();
 
+                const uploadStatusValue = String(
+                    photo.upload_status || ""
+                ).toLowerCase();
+
+                const isStillProcessing =
+                    ["uploading", "pending", "processing"].includes(processingStatus) ||
+                    uploadStatusValue === "uploading";
+
+                const processingBadgeHTML = isStillProcessing
+                    ? `
+                    <div class="photo-processing-badge">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        ${processingStatus === "processing"
+                        ? "Analyzing..."
+                        : processingStatus === "uploading"
+                            ? "Uploading..."
+                            : "Pending..."}
+                    </div>
+                `
+                    : "";
                 card.innerHTML = `
-                  <div class="photo-processing-badge">
-                ${escapeHTML(
-                    photo.upload_status === "uploading"
-                        ? "Uploading..."
-                        : photo.processing_status === "processing"
-                            ? "Processing..."
-                            : photo.processing_status || "Pending"
-                )}
-                </div>
-
+                 ${processingBadgeHTML}
             <img
                 src="${escapeHTML(photo.image_url || "")}"
                 alt="${escapeHTML(photo.original_name || "Customer photo")}"
@@ -2029,6 +2054,24 @@
                 return;
             }
 
+            if (uploadPhotos.isUploading) {
+                return;
+            }
+
+            uploadPhotos.isUploading = true;
+
+            uploadFolderPhotosBtn.disabled = true;
+
+            uploadFolderPhotosBtn.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Uploading...
+                `;
+
+            uploadStatus.classList.add("show");
+            uploadStatus.classList.remove("error");
+
+            document.getElementById("uploadProgressBar").style.width = "0%";
+
             let uploaded = 0;
             let failed = 0;
             let compressed = 0;
@@ -2040,8 +2083,12 @@
 
                 let compressedStoragePath = null;
 
-                uploadStatus.classList.remove("show", "error");
-                uploadStatus.textContent = "";
+                showUploadProgress(
+                    index + 1,
+                    files.length,
+                    file.name,
+                    "Uploading original photo..."
+                );
                 try {
                     if (!file.type.startsWith("image/")) {
                         throw new Error("File is not an image.");
@@ -2108,12 +2155,19 @@
                     console.log("Photo record saved:", photoRecord.id);
 
                     // 3. Create and store a separate WebP copy.
+                    showUploadProgress(
+                        index + 1,
+                        files.length,
+                        file.name,
+                        "Compressing photo..."
+                    );
+
                     try {
                         console.log("Starting WebP conversion:", file.name);
 
                         const conversion = await createWebPCopy(file);
 
-                        console.log("WebP conversion result:", conversion.status);
+                        //console.log("WebP conversion result:", conversion.status);
 
                         if (conversion.status === "created" && conversion.blob) {
                             const baseName = safeName.replace(/\.[^.]+$/, "");
@@ -2233,10 +2287,16 @@
 
                         compressionFailed++;
                     }
-
                     // 4. Run ML on the ORIGINAL photo, as before.
-                    console.log("Starting ML analysis on original:", photoRecord.id);
 
+                    showUploadProgress(
+                        index + 1,
+                        files.length,
+                        file.name,
+                        "Analyzing photo using machine learning..."
+                    );
+
+                    //console.log("Starting ML analysis on original:", photoRecord.id);
                     const mlResult = await analyzePhoto(photoRecord.id, imageUrl);
 
                     console.log("ML processing result:", mlResult);
@@ -2255,24 +2315,29 @@
 
             await loadPhotos(selectedRepository.id);
 
-            console.log("========== UPLOAD SUMMARY ==========");
-            console.log({
-                uploaded,
-                failed,
-                compressedWebPCopies: compressed,
-                webpNotSmaller: notSmaller,
-                compressionFailures: compressionFailed
-            });
+            //console.log("========== UPLOAD SUMMARY ==========");
+            //console.log({
+            //    uploaded,
+            //    failed,
+            //    compressedWebPCopies: compressed,
+            //    webpNotSmaller: notSmaller,
+            //    compressionFailures: compressionFailed
+            //});
 
             showUploadStatus(
-                failed === 0
-                    ? "Photos uploaded successfully."
-                    : `${uploaded} photo(s) uploaded successfully. ${failed} failed.`,
+                `${uploaded} of ${files.length} photos uploaded successfully. ${failed} failed.`,
                 failed > 0
             );
+
+            uploadPhotos.isUploading = false;
+
+            uploadFolderPhotosBtn.disabled = false;
+
+            uploadFolderPhotosBtn.innerHTML = `
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                Upload Photos
+            `;
         }
-
-
         uploadFolderPhotosBtn.addEventListener(
             "click",
             () => {
@@ -2341,16 +2406,59 @@
 
         });
 
-        function showUploadStatus(message, isError) {
+        function showUploadProgress(current, total, fileName, stage) {
+            const title = document.getElementById("uploadStatusTitle");
+            const details = document.getElementById("uploadStatusDetails");
+            const progressBar = document.getElementById("uploadProgressBar");
 
-            uploadStatus.textContent = message;
             uploadStatus.classList.add("show");
-            uploadStatus.classList.toggle(
-                "error",
-                Boolean(isError)
-            );
+            uploadStatus.classList.remove("error");
 
+            const percentage = Math.round((current / total) * 100);
+
+            title.textContent = `Uploading photo ${current} of ${total}`;
+            details.textContent = `${fileName} — ${stage}`;
+
+            progressBar.style.width = `${percentage}%`;
         }
+
+
+        function showUploadStatus(message, isError) {
+            const title = document.getElementById("uploadStatusTitle");
+            const details = document.getElementById("uploadStatusDetails");
+            const progressBar = document.getElementById("uploadProgressBar");
+            const icon = uploadStatus.querySelector(".upload-status-content > i");
+
+            uploadStatus.classList.add("show");
+            uploadStatus.classList.toggle("error", Boolean(isError));
+
+            title.textContent = isError
+                ? "Upload completed with errors"
+                : "Upload complete!";
+
+            details.textContent = message;
+
+            progressBar.style.width = "100%";
+
+            if (icon) {
+                icon.className = isError
+                    ? "fa-solid fa-circle-exclamation"
+                    : "fa-solid fa-circle-check";
+            }
+
+            // Hide the completed upload panel after 2 seconds.
+            setTimeout(() => {
+                uploadStatus.classList.remove("show");
+                uploadStatus.classList.remove("error");
+
+                progressBar.style.width = "0%";
+
+                if (icon) {
+                    icon.className = "fa-solid fa-spinner fa-spin";
+                }
+            }, 2000);
+        }
+
         function showFolderError(message) {
 
             customerFoldersContainer.innerHTML = `

@@ -155,13 +155,33 @@ def analyze_image(request: AnalyzeRequest):
         image_started = time.perf_counter()
 
         try:
-            with Image.open(BytesIO(image_bytes)) as source:
-                image = ImageOps.exif_transpose(source)
-                image.load()
-                image = image.convert("RGB")
+           with Image.open(BytesIO(image_bytes)) as source:
+            logger.info(
+                "ORIGINAL IMAGE DIMENSIONS: %s",
+                source.size
+            )
 
-                # Cap very large images to reduce CPU/RAM use.
-                image.thumbnail((1600, 1600))
+            # Reject extremely large images.
+            if source.width * source.height > 50000000:
+                raise HTTPException(
+                    status_code=413,
+                    detail="Image dimensions exceed the supported limit."
+                )
+
+            # Reduce JPEG decoding resolution before loading.
+            if source.format == "JPEG":
+                source.draft("RGB", (1280, 1280))
+
+            source.load()
+
+            image = ImageOps.exif_transpose(source)
+            image.thumbnail((1280, 1280))
+            image = image.convert("RGB")
+
+            logger.info(
+                "IMAGE PREPARATION COMPLETE: %s",
+                image.size
+            )
 
         except Exception as exc:
             logger.exception("IMAGE DECODE FAILED")

@@ -936,29 +936,167 @@
     color: #888 !important;
 }
 
+
+/* ================================
+   ML DETECTION TAGS
+================================ */
+
 .photo-detection-results {
-    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    margin-top: 10px;
 }
 
 .detection-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: #666;
+    font-family: 'DM Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: #555;
-    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.detection-label i {
+    color: #639A88;
+    font-size: 11px;
 }
 
 .simple-object-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
 }
 
 .simple-object-tag {
-    display: inline-block;
-    padding: 4px 9px;
-    background: #f1f4f2;
-    border: 1px solid #e0e6e2;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    min-height: 25px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    background: #edf5f1;
+    border: 1px solid #d6e7df;
+    border-radius: 20px;
+    color: #416b59;
+    font-family: 'DM Sans', sans-serif;
     font-size: 11px;
-    color: #34483f;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.simple-object-tag:hover {
+    background: #e1efe8;
+    border-color: #bcd8ca;
+}
+
+/* Keep tags contained inside photo cards */
+.customer-photo-card .photo-information,
+#repoSearchGallery .repo-search-photo-info,
+#customerFoldersContainer .photos-grid.repository-search-results .photo-info {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Mobile tag spacing */
+@media (max-width: 520px) {
+    .simple-object-tags {
+        gap: 5px;
+    }
+
+    .simple-object-tag {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+}
+
+/* ================================
+   PHOTO UPLOAD PROGRESS
+================================ */
+
+.upload-status {
+    display: none;
+    width: 100%;
+    margin: 15px 0;
+    padding: 16px 20px;
+    background: #f8f5ff;
+    border: 1px solid #e4d9ff;
+    border-radius: 10px;
+}
+
+.upload-status.show {
+    display: block;
+}
+
+.upload-status-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.upload-status-content > i {
+    font-size: 20px;
+    color: #7950c8;
+}
+
+.upload-status-content strong {
+    display: block;
+    font-size: 14px;
+    color: #493078;
+}
+
+.upload-status-content small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #777;
+    overflow-wrap: anywhere;
+}
+
+.upload-progress-track {
+    width: 100%;
+    height: 7px;
+    background: #e8e0f5;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.upload-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #7950c8;
+    border-radius: 20px;
+    transition: width 0.3s ease;
+}
+
+.upload-status.error {
+    background: #fff3f3;
+    border-color: #f2cccc;
+}
+
+.upload-status.error .upload-status-content > i,
+.upload-status.error strong {
+    color: #c0392b;
+}
+#uploadFolderPhotosBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+/* Hide processing indicator after upload and ML processing */
+.photo-processing-badge.completed,
+.photo-processing-badge.hidden {
+    display: none !important;
 }
