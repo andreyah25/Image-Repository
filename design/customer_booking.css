@@ -1856,36 +1856,6 @@ select[name="package_id"],
 .summary-row.highlight-row strong {
     color: #8B718E;
 }
-
-#paidBookingPanel {
-    width: 100%;
-    max-width: 100%;
-    margin: 20px auto !important;
-    padding: 25px !important;
-    box-sizing: border-box;
-}
-
-#paidBookingHeading,
-#paidBookingMessage {
-    text-align: center;
-}
-
-#paidBookingMessage {
-    margin: 12px auto 25px;
-    line-height: 1.6;
-}
-
-#paidBookingDetails {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
-    width: 100%;
-    margin-top: 20px;
-}
-#paidBookingDetails > p {
-        padding: 12px;
-    }
-
 /* STUDIO RENTAL SUMMARY */
 
 .studio-rental-summary {
@@ -2035,20 +2005,6 @@ select[name="package_id"],
         font-size: 18px;
     }
 }
-
-#paidBookingPanel {
-    display: none;
-    width: 100%;
-    max-width: 1050px;
-    margin: 0 auto 24px;
-    padding: 30px;
-    box-sizing: border-box;
-    background: #f6f8f7;
-    border: 1px solid #d5e5dd;
-    border-radius: 16px;
-    min-width: 0;
-}
-
 #paidBookingHeading {
     font-size: 24px;
     font-weight: 700;
@@ -2145,9 +2101,7 @@ body:has(#paidBookingPanel[style*="display: block"])
     text-align: center;
     box-sizing: border-box;
 }
-
 /* Prevent grid overflow */
-
 .content,
 .booking-layout-wrapper,
 .sessions-panel,
@@ -2155,77 +2109,6 @@ body:has(#paidBookingPanel[style*="display: block"])
 .booking-form {
     min-width: 0;
 }
-
-/* ==========================================
-   TABLET
-========================================== */
-
-@media (max-width: 900px) {
-    #paidBookingPanel {
-        padding: 24px;
-    }
-
-    #paidBookingDetails {
-        gap: 12px;
-    }
-
-    #paidBookingDetails .paid-detail-item {
-        padding: 13px 14px;
-    }
-}
-
-/* ==========================================
-   MOBILE
-========================================== */
-
-@media (max-width: 600px) {
-    #paidBookingPanel {
-        width: 100%;
-        padding: 18px 14px;
-        border-radius: 12px;
-        margin-bottom: 16px;
-    }
-
-    #paidBookingHeading {
-        font-size: 21px;
-    }
-
-    #paidBookingMessage {
-        font-size: 13px;
-        margin-bottom: 20px;
-    }
-
-    #paidBookingDetails {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 10px;
-    }
-
-    #paidBookingDetails .paid-detail-item {
-        padding: 13px 14px;
-        gap: 5px;
-    }
-
-    #paidBookingDetails .paid-detail-label {
-        font-size: 12px;
-    }
-
-    #paidBookingDetails .paid-detail-value {
-        font-size: 13px;
-    }
-
-    body:has(#paidBookingPanel[style*="display: block"])
-    #bookingForm .form-actions {
-        margin-top: 16px;
-    }
-
-    body:has(#paidBookingPanel[style*="display: block"])
-    #proceedToPaymentBtn {
-        min-height: 48px;
-        font-size: 14px;
-        padding: 12px 14px;
-    }
-}
-
 /* =========================================
    PAID BOOKING RECEIPT - ALIGNMENT + RESPONSIVE
 ========================================= */
@@ -2687,7 +2570,6 @@ button:disabled,
 
 @media (min-width: 601px) {
 
-    /* Payment Successful panel */
     #paidBookingPanel {
         width: 100% !important;
         max-width: 1000px !important;
@@ -2696,7 +2578,6 @@ button:disabled,
         box-sizing: border-box !important;
     }
 
-    /* Make the booking area use the same width */
     body:has(#paidBookingPanel[style*="display: block"])
     .sessions-panel {
         width: 100% !important;
@@ -2704,7 +2585,6 @@ button:disabled,
         box-sizing: border-box !important;
     }
 
-    /* Confirm Booking button container */
     body:has(#paidBookingPanel[style*="display: block"])
     #bookingForm .form-actions {
         width: 100% !important;
@@ -2716,12 +2596,133 @@ button:disabled,
         justify-content: stretch !important;
     }
 
-    /* Confirm Booking button itself */
     body:has(#paidBookingPanel[style*="display: block"])
     #bookingForm #proceedToPaymentBtn {
         width: 100% !important;
         max-width: 1000px !important;
         margin: 0 !important;
         box-sizing: border-box !important;
+    }
+}
+@media (min-width: 601px) {
+
+    /*
+     * Both elements belong to different parts of the page,
+     * so we force them to share the same 1000px content width
+     * and the same LEFT alignment.
+     */
+
+    /* Payment Successful */
+    body:has(#paidBookingPanel[style*="display: block"])
+    #paidBookingPanel {
+        width: 100% !important;
+        max-width: 1000px !important;
+
+        margin-top: 28px !important;
+        margin-right: 0 !important;
+        margin-bottom: 24px !important;
+        margin-left: 0 !important;
+
+        box-sizing: border-box !important;
+    }
+
+
+    /* Booking container */
+    body:has(#paidBookingPanel[style*="display: block"])
+    .booking-layout-wrapper {
+        width: 100% !important;
+        max-width: none !important;
+
+        display: flex !important;
+        justify-content: flex-start !important;
+
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+
+    /* Sessions panel */
+    body:has(#paidBookingPanel[style*="display: block"])
+    .sessions-panel {
+        width: 100% !important;
+        max-width: none !important;
+
+        flex: 1 1 auto !important;
+
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+
+    /*
+     * IMPORTANT:
+     * Do NOT use margin:auto here.
+     *
+     * The old rule was:
+     *     margin: 20px auto 0;
+     *
+     * That centers the button independently of the
+     * Payment Successful panel.
+     */
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm .form-actions {
+        width: 100% !important;
+        max-width: 1000px !important;
+
+        margin-top: 20px !important;
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+        margin-left: 0 !important;
+
+        padding: 0 !important;
+
+        display: flex !important;
+        justify-content: stretch !important;
+        align-items: center !important;
+
+        box-sizing: border-box !important;
+    }
+
+
+    /* Confirm Booking button */
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm #proceedToPaymentBtn {
+        display: flex !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        margin: 0 !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        box-sizing: border-box !important;
+    }
+}
+
+
+/* ----------------------------------------------------------
+   MOBILE
+   DO NOT CHANGE YOUR EXISTING MOBILE WIDTH BEHAVIOR
+---------------------------------------------------------- */
+@media (max-width: 600px) {
+
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm .form-actions {
+        width: 100% !important;
+        margin: 16px auto 0 !important;
+
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm #proceedToPaymentBtn {
+        width: 100% !important;
+        max-width: 280px !important;
+
+        margin: 0 auto !important;
     }
 }
