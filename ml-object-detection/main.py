@@ -64,10 +64,12 @@ app.add_middleware(
     allow_origins=[
         "https://captured-admin-studio.onrender.com",
         "https://captured-photo-studio.onrender.com",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
+        "https://capturedstudios.store",
+        "https://www.capturedstudios.store",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],

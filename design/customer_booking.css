@@ -2185,7 +2185,7 @@ body:has(#paidBookingPanel[style*="display: block"])
 #paidBookingDetails > p strong {
     display: block !important;
     width: 100% !important;
-    color: #806B83 !important;
+    color: #836b86 !important;
     font-size: 12px !important;
     font-weight: 700 !important;
 }
