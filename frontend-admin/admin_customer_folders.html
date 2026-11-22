@@ -573,8 +573,8 @@
                         ascending: false
                     });
 
-                console.log("ALL COMPLETED BOOKINGS:", data);
-                console.log("SELECTED PACKAGE:", selectedPackage);
+                //console.log("ALL COMPLETED BOOKINGS:", data);
+                //console.log("SELECTED PACKAGE:", selectedPackage);
 
                 if (error) {
 
@@ -605,10 +605,7 @@
 
                 }
 
-                console.log(
-                    "FILTERED CUSTOMERS:",
-                    filteredClients
-                );
+                //console.log("FILTERED CUSTOMERS:", filteredClients);
                 completedClients = filteredClients;
                 renderCompletedClients(
                     completedClients
@@ -804,7 +801,7 @@
                             event.preventDefault();
                             event.stopPropagation();
 
-                            console.log("OPEN BUTTON CLICKED:", client.id);
+                            //console.log("OPEN BUTTON CLICKED:", client.id);
 
                             await openCustomerFolder(client);
 
@@ -923,7 +920,7 @@
                     })
                 );
 
-                console.log("Global photo search results:", photos);
+               // console.log("Global photo search results:", photos);
 
                 renderGlobalSearchResults(photos, query);
 
@@ -1135,8 +1132,8 @@
         }
         async function openCustomerFolder(client) {
 
-            console.log("OPEN CUSTOMER FOLDER CLICKED");
-            console.log("CLIENT:", client);
+           // console.log("OPEN CUSTOMER FOLDER CLICKED");
+            //console.log("CLIENT:", client);
 
             try {
 
@@ -1149,7 +1146,7 @@
                 selectedRepository =
                     await getOrCreateRepository(client);
 
-                console.log("REPOSITORY:", selectedRepository);
+               // console.log("REPOSITORY:", selectedRepository);
 
                 selectedCustomerName.textContent =
                     client.full_name || "Customer";
@@ -1174,8 +1171,8 @@
                     "important"
                 );
 
-                console.log("FOLDERS HIDDEN:", getComputedStyle(foldersView).display);
-                console.log("PHOTOS VISIBLE:", getComputedStyle(photosView).display);
+               // console.log("FOLDERS HIDDEN:", getComputedStyle(foldersView).display);
+                //console.log("PHOTOS VISIBLE:", getComputedStyle(photosView).display);
 
                 // Load selected customer's photos
                 await loadPhotos(selectedRepository.id);
@@ -1433,7 +1430,7 @@
                 let result;
 
                 try {
-                    console.log("[ML] Sending request...");
+                   // console.log("[ML] Sending request...");
 
                     const requestStartedAt = performance.now();
 
@@ -1448,11 +1445,11 @@
                         signal: controller.signal
                     });
 
-                    console.log(
-                        `[ML] Response received after ${((performance.now() - requestStartedAt) / 1000).toFixed(2)
-                        } seconds. HTTP:`,
-                        response.status
-                    );
+                    //console.log(
+                    //    `[ML] Response received after ${((performance.now() - requestStartedAt) / 1000).toFixed(2)
+                    //    } seconds. HTTP:`,
+                    //    response.status
+                    //);
 
                     const responseText = await response.text();
 
@@ -1485,7 +1482,7 @@
                     clearTimeout(timeout);
                 }
 
-                console.log("[ML] Result:", result);
+               // console.log("[ML] Result:", result);
 
                 if (!result || result.success !== true) {
                     throw new Error(
@@ -1549,11 +1546,11 @@
                     );
                 }
 
-                console.log("========== ML ANALYSIS COMPLETED ==========");
-                console.log("Total time:", (
-                    (performance.now() - startedAt) / 1000
-                ).toFixed(2), "seconds");
-                console.log("Detected objects:", savedPhoto.detected_objects);
+                //console.log("========== ML ANALYSIS COMPLETED ==========");
+                //console.log("Total time:", (
+                //    (performance.now() - startedAt) / 1000
+                //).toFixed(2), "seconds");
+                //console.log("Detected objects:", savedPhoto.detected_objects);
 
                 return {
                     success: true,
@@ -2341,14 +2338,14 @@
                     failed > 0 || queueFailed
                 );
 
-                console.log("UPLOAD BATCH SUMMARY:", {
-                    batchId,
-                    total: files.length,
-                    uploaded,
-                    failed,
-                    queued,
-                    compressedWebPCopies: compressed
-                });
+                //console.log("UPLOAD BATCH SUMMARY:", {
+                //    batchId,
+                //    total: files.length,
+                //    uploaded,
+                //    failed,
+                //    queued,
+                    //    compressedWebPCopies: compressed
+                //});
 
             } catch (error) {
                 console.error("Upload batch error:", error);

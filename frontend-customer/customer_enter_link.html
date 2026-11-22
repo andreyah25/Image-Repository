@@ -17,6 +17,7 @@
             <img id="studioLogo" src="/images/captured.png" alt="Logo" class="logo-img">
 
             <span>Captured Photography Studio</span>
+        
 
         </div>
 
@@ -141,7 +142,7 @@
 
         async function loadCustomerProfile() {
 
-            console.log("Loading customer information...");
+            //console.log("Loading customer information...");
 
             /* =========================================================
                GET LOGGED-IN USER
@@ -173,19 +174,8 @@
                 return;
 
             }
-
-
-            console.log(
-                "Logged-in user:",
-                user.id
-            );
-
-            console.log(
-                "User email:",
-                user.email
-            );
-
-
+            //console.log( "Logged-in user:", user.id);
+            //console.log("User email:", user.email);
             /* =========================================================
                GET CUSTOMER PROFILE
             ========================================================= */
@@ -213,14 +203,7 @@
                 );
 
             }
-
-
-            console.log(
-                "Customer profile:",
-                customer
-            );
-
-
+            //console.log("Customer profile:",customer);
             /* =========================================================
                CUSTOMER NAME
             ========================================================= */
@@ -286,10 +269,10 @@
                     "/images/default-profile.png";
 
 
-                console.log(
-                    "Profile image:",
-                    profileImage
-                );
+                //console.log(
+                //    "Profile image:",
+                //    profileImage
+                //);
 
 
                 profileImageElement.src =
@@ -550,10 +533,10 @@
 
                 }
 
-                console.log(
-                    "Finding approved gallery for:",
-                    user.id
-                );
+                //console.log(
+                //    "Finding approved gallery for:",
+                //    user.id
+                //);
 
                 /*
                  * Find approved gallery access request
@@ -739,11 +722,9 @@
                 return;
 
             }
-
-
-            console.log(
-                "Customer loaded successfully."
-            );
+            //console.log(
+            //    "Customer loaded successfully."
+            //);
             await loadApprovedGallery();
 
         }

@@ -499,9 +499,9 @@
             }
 
 
-            console.log(
-                "Customer profile does not exist. Creating..."
-            );
+            //console.log(
+            //    "Customer profile does not exist. Creating..."
+            //);
 
 
             const fullName =
@@ -556,7 +556,7 @@
 
         async function loadProfile() {
 
-            console.log("Loading customer profile...");
+            //console.log("Loading customer profile...");
 
 
             const {
@@ -585,12 +585,10 @@
 
                 return;
             }
-
-
-            console.log(
-                "Logged in user:",
-                user.id
-            );
+            //console.log(
+            //    "Logged in user:",
+            //    user.id
+            //);
 
 
             /*
@@ -608,10 +606,10 @@
                 return;
             }
 
-            console.log(
-                "Customer profile:",
-                customer
-            );
+            //console.log(
+            //    "Customer profile:",
+            //    customer
+            //);
 
             const fullName =
                 customer.full_name ||
@@ -877,8 +875,6 @@
 
                     return;
                 }
-
-
                 /* =================================================
                    CREATE FULL NAME
                 ================================================= */
@@ -886,13 +882,10 @@
                 const fullName =
                     `${firstName} ${lastName}`.trim();
 
-
-                console.log(
-                    "Full name:",
-                    fullName
-                );
-
-
+                //console.log(
+                //    "Full name:",
+                //    fullName
+                //);
                 /* =================================================
                    DISABLE SAVE BUTTON
                 ================================================= */
@@ -935,12 +928,10 @@
                         return;
 
                     }
-
-
-                    console.log(
-                        "Logged in user:",
-                        user.id
-                    );
+                    //console.log(
+                    //    "Logged in user:",
+                    //    user.id
+                    //);
 
 
                     /* =================================================
@@ -960,12 +951,10 @@
                         );
 
                     }
-
-
-                    console.log(
-                        "Current customer:",
-                        customer
-                    );
+                    //console.log(
+                    //    "Current customer:",
+                    //    customer
+                    //);
 
 
                     /* =================================================
@@ -986,36 +975,34 @@
 
                     if (imageFile) {
 
-                        console.log("==============================");
-                        console.log("IMAGE UPLOAD START");
-                        console.log("==============================");
+                        //console.log("==============================");
+                        //console.log("IMAGE UPLOAD START");
+                        //console.log("==============================");
 
-                        console.log(
-                            "User ID:",
-                            user.id
-                        );
+                        //console.log(
+                        //     "User ID:",
+                        //    user.id
+                        //);
 
-                        console.log(
-                            "User email:",
-                            user.email
-                        );
+                        //console.log(
+                        //    "User email:",
+                        //    user.email
+                        //);
 
-                        console.log(
-                            "File name:",
-                            imageFile.name
-                        );
+                        //console.log(
+                        //     "File name:",
+                        //    imageFile.name
+                        //);
 
-                        console.log(
-                            "File type:",
-                            imageFile.type
-                        );
+                        //console.log(
+                        //    "File type:",
+                        //    imageFile.type
+                        //);
 
-                        console.log(
-                            "File size:",
-                            imageFile.size
-                        );
-
-
+                        //console.log(
+                        //    "File size:",
+                        //    imageFile.size
+                        //);
                         /* ---------------------------------------------
                            GET EXTENSION
                         --------------------------------------------- */
@@ -1025,20 +1012,16 @@
                                 .split(".")
                                 .pop()
                                 .toLowerCase();
-
-
                         /* ---------------------------------------------
                            STORAGE PATH
                         --------------------------------------------- */
 
                         const filePath =
                             `${user.id}/profile.${extension}`;
-
-
-                        console.log(
-                            "Upload path:",
-                            filePath
-                        );
+                        //console.log(
+                        //    "Upload path:",
+                        //    filePath
+                        //);
 
 
                         /* ---------------------------------------------
@@ -1064,10 +1047,10 @@
                                 );
 
 
-                        console.log(
-                            "Upload data:",
-                            uploadData
-                        );
+                        //console.log(
+                        //    "Upload data:",
+                        //    uploadData
+                        //);
 
 
                         if (uploadError) {
@@ -1080,11 +1063,9 @@
                             throw uploadError;
 
                         }
-
-
-                        console.log(
-                            "Image uploaded successfully!"
-                        );
+                        //console.log(
+                        //    "Image uploaded successfully!"
+                        //);
 
 
                         /* ---------------------------------------------
@@ -1106,31 +1087,29 @@
                             publicUrlData.publicUrl;
 
 
-                        console.log(
-                            "New profile image:",
-                            profileImage
-                        );
+                        //console.log(
+                        //    "New profile image:",
+                        //    profileImage
+                        //);
 
                     }
-
-
                     /* =================================================
                        UPDATE CUSTOMERS TABLE
                     ================================================= */
 
-                    console.log(
-                        "Updating customer..."
-                    );
+                    //console.log(
+                    //    "Updating customer..."
+                    //);
 
-                    console.log(
-                        "full_name:",
-                        fullName
-                    );
+                    //console.log(
+                    //    "full_name:",
+                    //    fullName
+                    //);
 
-                    console.log(
-                        "profile_image:",
-                        profileImage
-                    );
+                    //console.log(
+                    //    "profile_image:",
+                    //    profileImage
+                    //);
 
 
                     const {
@@ -1166,12 +1145,10 @@
                         throw updateError;
 
                     }
-
-
-                    console.log(
-                        "Updated customer:",
-                        updatedCustomer
-                    );
+                    //console.log(
+                    //    "Updated customer:",
+                    //    updatedCustomer
+                    //);
 
 
                     /* =================================================

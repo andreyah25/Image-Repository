@@ -333,8 +333,8 @@
 
                 const user = session.user;
 
-                console.log("Logged-in User ID:", user.id);
-                console.log("Logged-in Email:", user.email);
+                //console.log("Logged-in User ID:", user.id);
+                //console.log("Logged-in Email:", user.email);
 
                 const {
                     data: profile,
@@ -350,7 +350,7 @@
                     return;
                 }
 
-                console.log("STAFF PROFILE:", profile);
+                //console.log("STAFF PROFILE:", profile);
 
                 const fullName =
                     profile?.full_name ||
@@ -376,9 +376,9 @@
                     user.user_metadata?.picture ||
                     null;
 
-                console.log("Avatar URL from database:", profile?.avatar_url);
-                console.log("Avatar URL from metadata:", user.user_metadata?.avatar_url);
-                console.log("Final Avatar URL:", avatarUrl);
+                //console.log("Avatar URL from database:", profile?.avatar_url);
+                //console.log("Avatar URL from metadata:", user.user_metadata?.avatar_url);
+                //console.log("Final Avatar URL:", avatarUrl);
 
                 if (avatarUrl && avatarUrl.trim() !== "") {
 

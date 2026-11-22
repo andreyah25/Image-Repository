@@ -971,10 +971,10 @@
                     );
                 }
 
-                console.log(
-                    "Bookings API HTTP status:",
-                    response.status
-                );
+                //console.log(
+                //    "Bookings API HTTP status:",
+                //    response.status
+                //);
 
                 if (!response.ok) {
                     console.error("Bookings API result:", result);
@@ -1008,17 +1008,15 @@
                 // Update the existing data source used by your status filters.
                 allBookedSessions = bookings;
 
-                console.log(
-                    "Bookings loaded successfully:",
-                    allBookedSessions.length
-                );
-
+                // console.log(
+                   // "Bookings loaded successfully:",
+                    //allBookedSessions.length
+                //);
                 updateBookingTabCounts();
-
-                console.log(
-                    "Bookings loaded successfully:",
-                    allBookedSessions.length
-                );
+                //console.log(
+                  //  "Bookings loaded successfully:",
+                    //allBookedSessions.length
+                //);
 
                 // Your existing renderer reads from allBookedSessions.
                 renderBookedSessions();

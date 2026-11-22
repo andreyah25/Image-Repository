@@ -223,13 +223,6 @@ app.get("/admin/access-request", (req, res) => {
         path.join(__dirname, "..", "frontend-admin", "admin_client_access_request.html")
     );
 });
-// CUSTOMER PAGES
-
-app.get("/home", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "..", "frontend-customer", "customer_homepage.html")
-    );
-});
 app.get("/", (req, res) => {
     res.sendFile(
         path.join(
@@ -238,6 +231,11 @@ app.get("/", (req, res) => {
             "frontend-customer",
             "customer_homepage.html"
         )
+    );
+});
+app.get("/home", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "..", "frontend-customer", "customer_homepage.html")
     );
 });
 app.get("/booking", (req, res) => {
@@ -319,7 +317,7 @@ async function runArchiveAndCompression(session) {
         );
     }
 
-    console.log("Archive and compression results:", result);
+    // console.log("Archive and compression results:", result);
 
     if (result.errors?.length) {
         console.error("Some folders could not be processed:", result.errors);
@@ -537,7 +535,7 @@ app.get(
     "/api/admin/bookings",
     requireStaff,
     async (req, res) => {
-        console.log("📋 BOOKINGS ROUTE REACHED");
+        // console.log("📋 BOOKINGS ROUTE REACHED");
         console.log("Authenticated profile:", {
             role: req.profile?.role,
             verified: req.profile?.verified,
@@ -1774,7 +1772,7 @@ app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
 
         const staffUser = authData.user;
 
-        console.log("Created Auth user:", staffUser.id);
+        // console.log("Created Auth user:", staffUser.id);
         const {
             data: autoCreatedProfile,
             error: profileCheckError
@@ -1868,7 +1866,7 @@ app.post("/api/admin/staff/create", requireAdmin, async (req, res) => {
             });
         }
 
-        console.log("Staff account created successfully:", staffUser.id);
+        // console.log("Staff account created successfully:", staffUser.id);
 
         return res.status(201).json({
             success: true,
@@ -2172,11 +2170,11 @@ app.delete(
         try {
             const { staffId } = req.params;
 
-            console.log("====================================");
-            console.log("DELETE STAFF ACCOUNT");
-            console.log("STAFF ID:", staffId);
-            console.log("ADMIN ID:", req.authUser.id);
-            console.log("====================================");
+            // console.log("====================================");
+            // console.log("DELETE STAFF ACCOUNT");
+            // console.log("STAFF ID:", staffId);
+            // console.log("ADMIN ID:", req.authUser.id);
+            // console.log("====================================");
 
             if (!staffId) {
                 return res.status(400).json({
@@ -2220,7 +2218,7 @@ app.delete(
                 });
             }
 
-            console.log("TARGET STAFF:", staff);
+            // console.log("TARGET STAFF:", staff);
 
             if (
                 staff.role &&
@@ -2360,9 +2358,9 @@ app.post(
 
         try {
 
-            console.log("======================================");
-            console.log("ADMIN STAFF SIGN OUT REQUEST");
-            console.log("TARGET STAFF ID:", req.params.staffId);
+            // console.log("======================================");
+            // console.log("ADMIN STAFF SIGN OUT REQUEST");
+            // console.log("TARGET STAFF ID:", req.params.staffId);
 
             const { staffId } = req.params;
             if (!staffId) {
@@ -2467,10 +2465,10 @@ const { error: activityError } = await supabaseAdmin
 if (activityError) {
     console.error("FORCED LOGOUT ACTIVITY ERROR:", activityError);
 } else {
-    console.log("FORCED LOGOUT ACTIVITY RECORDED:", targetStaff.email);
+    // console.log("FORCED LOGOUT ACTIVITY RECORDED:", targetStaff.email);
 }
 
-            console.log("======================================");
+            // console.log("======================================");
 
             return res.json({
                 success: true,
@@ -2521,7 +2519,7 @@ app.post("/send-otp", async (req, res) => {
 
         const otp = generateOTP();
 
-        console.log("Generated OTP:", otp);
+        // console.log("Generated OTP:", otp);
 
         const { error: deleteError } = await supabase
             .from("otp_verifications")
@@ -2854,7 +2852,7 @@ app.post("/send-booking-rejection", async (req, res) => {
             });
         }
 
-        console.log("BOOKING REJECTION RECIPIENT:", recipientEmail);
+        // console.log("BOOKING REJECTION RECIPIENT:", recipientEmail);
         // Validate Resend configuration
         if (!resend) {
             console.error("RESEND ERROR: Resend is not initialized.");
@@ -2894,10 +2892,10 @@ app.post("/send-booking-rejection", async (req, res) => {
             )
             : "-";
 
-        console.log("Sending rejection email...");
-        console.log("To:", recipientEmail);
-        console.log("From:", RESEND_FROM_EMAIL);
-        console.log("Booking ID:", bookingId);
+        // console.log("Sending rejection email...");
+        // console.log("To:", recipientEmail);
+        // console.log("From:", RESEND_FROM_EMAIL);
+        // console.log("Booking ID:", bookingId);
 
         const { data, error } = await resend.emails.send({
             from: RESEND_FROM_EMAIL,
@@ -3057,8 +3055,8 @@ if (!session_type || !String(session_type).trim()) {
 }
 
 if (missingFields.length > 0) {
-    console.log("❌ Missing required fields:", missingFields);
-    console.log("📦 Received request body:", req.body);
+    // console.log("❌ Missing required fields:", missingFields);
+    // console.log("📦 Received request body:", req.body);
 
     return res.status(400).json({
         success: false,
@@ -3262,7 +3260,7 @@ if (!pendingCheckout?.success) {
 
 const pendingCheckoutId = pendingCheckout.checkout_id;
 
-console.log("Reserved checkout:", pendingCheckoutId);
+// console.log("Reserved checkout:", pendingCheckoutId);
 
 
 if (pendingCheckoutError) {
@@ -3925,7 +3923,7 @@ async function reconcilePayMongoCheckout(checkout) {
     }
 
     if (!checkout?.checkout_session_id) {
-        console.log("Reconciliation skipped: no Checkout Session ID.");
+        // console.log("Reconciliation skipped: no Checkout Session ID.");
         return checkout;
     }
 
@@ -4891,9 +4889,9 @@ app.get(
                 userId: req.authUser?.id
             });
 
-            console.log("====================================");
-            console.log("📋 LOADING ALL BOOKINGS FOR ADMIN");
-            console.log("====================================");
+            // console.log("====================================");
+            // console.log("📋 LOADING ALL BOOKINGS FOR ADMIN");
+            // console.log("====================================");
 
             // Keep the rest of your existing route unchanged.
 
@@ -4997,12 +4995,12 @@ app.delete(
                 String(booking.status || "")
                     .trim()
                     .toLowerCase();
-                    console.log(
-                        "DELETE BOOKING STATUS:",
-                        booking.status,
-                        "NORMALIZED:",
-                        status
-                    );
+                    // console.log(
+                    //    "DELETE BOOKING STATUS:",
+                    //    booking.status,
+                    //    "NORMALIZED:",
+                    //    status
+                    // );
           if (
                     status !== "rejected" &&
                     status !== "cancelled"
@@ -5150,9 +5148,9 @@ app.post(
                     .substring(0, 10);
 
 
-            console.log("EMAIL:", normalizedEmail);
-            console.log("FULL NAME:", normalizedName);
-            console.log("BOOKING DATE:", normalizedDate);
+            // console.log("EMAIL:", normalizedEmail);
+            // console.log("FULL NAME:", normalizedName);
+            // console.log("BOOKING DATE:", normalizedDate);
 
 
             /* =====================================================
@@ -5195,12 +5193,7 @@ app.post(
                 });
 
             }
-
-
-            console.log(
-                "COMPLETED BOOKINGS FOUND:",
-                bookings?.length || 0
-            );
+            //console.log("COMPLETED BOOKINGS FOUND:", bookings?.length || 0);
 
 
             const booking =
@@ -5223,13 +5216,7 @@ app.post(
                                 .substring(0, 10);
 
 
-                        console.log(
-                            "COMPARING:",
-                            candidateName,
-                            candidateDate
-                        );
-
-
+                        //console.log( "COMPARING:",candidateName,candidateDate);
                         return (
                             candidateName ===
                             normalizedName
@@ -5244,9 +5231,7 @@ app.post(
 
             if (!booking) {
 
-                console.log(
-                    "NO MATCHING COMPLETED BOOKING"
-                );
+                //console.log("NO MATCHING COMPLETED BOOKING");
 
                 return res.status(404).json({
                     success: false,
@@ -5255,14 +5240,7 @@ app.post(
                 });
 
             }
-
-
-            console.log(
-                "BOOKING VERIFIED:",
-                booking.id
-            );
-
-
+            //console.log( "BOOKING VERIFIED:", booking.id);
             /* =====================================================
                4. FIND REPOSITORY
             ===================================================== */
@@ -5305,12 +5283,7 @@ app.post(
                 });
 
             }
-
-
-            console.log(
-                "REPOSITORY VERIFIED:",
-                repository.id
-            );
+            //console.log("REPOSITORY VERIFIED:", repository.id);
 
             const {
                 data: previousRequests,
@@ -5350,15 +5323,8 @@ app.post(
             }
 
 
-            const allRequests =
-                previousRequests || [];
-
-
-            console.log(
-                "EXISTING REQUESTS:",
-                allRequests
-            );
-
+            const allRequests = previousRequests || [];
+            //console.log("EXISTING REQUESTS:", allRequests);
             const pendingRequest =
                 allRequests.find(
                     request =>
@@ -5410,21 +5376,17 @@ app.post(
             const finalRequestNumber =
                 highestRequestNumber + 1;
 
+            //console.log("PREVIOUS REQUEST NUMBERS:", requestNumbers);
 
-            console.log(
-                "PREVIOUS REQUEST NUMBERS:",
-                requestNumbers
-            );
+            //console.log(
+            //    "HIGHEST REQUEST NUMBER:",
+             //   highestRequestNumber
+            //);
 
-            console.log(
-                "HIGHEST REQUEST NUMBER:",
-                highestRequestNumber
-            );
-
-            console.log(
-                "NEW REQUEST NUMBER:",
-                finalRequestNumber
-            );
+            //console.log(
+            //    "NEW REQUEST NUMBER:",
+            //    finalRequestNumber
+            //);
 
        const MAX_GALLERY_REQUESTS = 3;
 
@@ -5559,10 +5521,7 @@ app.post(
             };
 
 
-            console.log(
-                "INSERTING GALLERY REQUEST:",
-                requestData
-            );
+            //console.log("INSERTING GALLERY REQUEST:", requestData);
 
 
             const {
@@ -5602,10 +5561,10 @@ app.post(
             }
 
 
-            console.log(
-                "GALLERY REQUEST CREATED:",
-                newRequest.id
-            );
+            //console.log(
+            //    "GALLERY REQUEST CREATED:",
+            //    newRequest.id
+            //);
             const {
                 error: notificationError
             } =
@@ -5688,8 +5647,8 @@ app.get("/api/gallery-access/request/:requestId", async (req, res) => {
     try {
         const { requestId } = req.params;
 
-        console.log("========== CHECK GALLERY ACCESS REQUEST ==========");
-        console.log("REQUEST ID:", requestId);
+        // console.log("========== CHECK GALLERY ACCESS REQUEST ==========");
+        // console.log("REQUEST ID:", requestId);
 
         if (!requestId) {
             return res.status(400).json({
@@ -5720,8 +5679,8 @@ app.get("/api/gallery-access/request/:requestId", async (req, res) => {
             });
         }
 
-        console.log("GALLERY REQUEST FOUND:", request);
-        console.log("REQUEST STATUS:", request.status);
+        // console.log("GALLERY REQUEST FOUND:", request);
+        // console.log("REQUEST STATUS:", request.status);
 
         // If approved, get the repository separately.
         let repository = null;
@@ -6402,10 +6361,7 @@ if (repositoryError) {
             });
         }
 
-        console.log(
-            "Gallery PayMongo checkout created:",
-            checkoutSession.id
-        );
+        //console.log( "Gallery PayMongo checkout created:", checkoutSession.id);
 
         return res.json({
 
@@ -6443,9 +6399,9 @@ if (repositoryError) {
 });
 app.post("/api/paymongo/gallery-webhook", async (req, res) => {
     try {
-        console.log("====================================");
-        console.log("PAYMONGO GALLERY WEBHOOK RECEIVED");
-        console.log("====================================");
+        // console.log("====================================");
+        // console.log("PAYMONGO GALLERY WEBHOOK RECEIVED");
+        // console.log("====================================");
 
         const event = req.body?.data;
 
@@ -6468,24 +6424,24 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         const attributes =
             session?.attributes || {};
 
-        console.log(
-            "GALLERY PAYMONGO EVENT:",
-            eventType
-        );
+        //console.log(
+        //    "GALLERY PAYMONGO EVENT:",
+        //    eventType
+        //);
 
-        console.log(
-            "GALLERY CHECKOUT SESSION:",
-            session?.id
-        );
+        //console.log(
+        //    "GALLERY CHECKOUT SESSION:",
+        //    session?.id
+        //);
 
         if (
             eventType !==
             "checkout_session.payment.paid"
         ) {
-            console.log(
-                "Ignoring gallery event:",
-                eventType
-            );
+            //console.log(
+            //    "Ignoring gallery event:",
+            //    eventType
+            //);
 
             return res.status(200).json({
                 received: true
@@ -6495,10 +6451,10 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         const referenceNumber =
             attributes?.reference_number;
 
-        console.log(
-            "GALLERY REFERENCE:",
-            referenceNumber
-        );
+        //console.log(
+        //    "GALLERY REFERENCE:",
+        //    referenceNumber
+        //);
 
         if (!referenceNumber) {
             console.error(
@@ -6513,10 +6469,10 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
         if (
             !referenceNumber.startsWith("GALLERY-")
         ) {
-            console.log(
-                "Ignoring non-gallery payment:",
-                referenceNumber
-            );
+            //console.log(
+            //    "Ignoring non-gallery payment:",
+            //    referenceNumber
+            //);
 
             return res.status(200).json({
                 received: true
@@ -6529,10 +6485,10 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
                 ""
             );
 
-        console.log(
-            "GALLERY REQUEST ID:",
-            requestId
-        );
+        //console.log(
+        //    "GALLERY REQUEST ID:",
+        //    requestId
+        //);
 
         const {
             data: accessRequest,
@@ -6649,22 +6605,22 @@ app.post("/api/paymongo/gallery-webhook", async (req, res) => {
             });
         }
 
-        console.log("====================================");
-        console.log("GALLERY PAYMENT CONFIRMED");
-        console.log("REQUEST:", requestId);
-        console.log(
-            "PAYMONGO SESSION:",
-            session?.id
-        );
-        console.log(
-            "REFERENCE:",
-            referenceNumber
-        );
-        console.log(
-            "PAID AT:",
-            paidAt.toISOString()
-        );
-        console.log("====================================");
+        // console.log("====================================");
+        // console.log("GALLERY PAYMENT CONFIRMED");
+        // console.log("REQUEST:", requestId);
+        // console.log(
+        //     "PAYMONGO SESSION:",
+        //     session?.id
+        // );
+        // console.log(
+        //     "REFERENCE:",
+        //     referenceNumber
+        // );
+        // console.log(
+        //     "PAID AT:",
+        //     paidAt.toISOString()
+        // );
+        // console.log("====================================");
 
         return res.status(200).json({
             received: true
@@ -6687,11 +6643,11 @@ app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
         const { requestId } = req.params;
         const token = String(req.query.token || "").trim();
 
-        console.log("====================================");
-        console.log("CHECK GALLERY PAYMENT STATUS");
-        console.log("REQUEST ID:", requestId);
-        console.log("TOKEN EXISTS:", !!token);
-        console.log("====================================");
+        // console.log("====================================");
+        // console.log("CHECK GALLERY PAYMENT STATUS");
+        // console.log("REQUEST ID:", requestId);
+        // console.log("TOKEN EXISTS:", !!token);
+        // console.log("====================================");
 
         if (!requestId) {
             return res.status(400).json({
@@ -6798,20 +6754,20 @@ app.get("/api/gallery-access/payment-status/:requestId", async (req, res) => {
                 accessRequest.payment_status || ""
             ).toLowerCase() === "paid";
 
-        console.log(
-            "PAYMENT CONFIRMED:",
-            paymentConfirmed
-        );
+        //console.log(
+        //    "PAYMENT CONFIRMED:",
+        //    paymentConfirmed
+        //);
 
-        console.log(
-            "PAYMENT STATUS:",
-            accessRequest.payment_status
-        );
+        //console.log(
+        //    "PAYMENT STATUS:",
+        //    accessRequest.payment_status
+        //);
 
-        console.log(
-            "PAID AT:",
-            accessRequest.paid_at
-        );
+        //console.log(
+        //    "PAID AT:",
+        //    accessRequest.paid_at
+        //);
 
         return res.json({
             success: true,
@@ -7082,25 +7038,25 @@ app.post(
                 });
             }
 
-            console.log(
-                "Gallery email sent:",
-                customerEmail
-            );
+            //console.log(
+            //    "Gallery email sent:",
+            //    customerEmail
+            //);
 
-            console.log(
-                "Gallery link:",
-                galleryLink
-            );
+            //console.log(
+            //    "Gallery link:",
+            //    galleryLink
+            //);
 
-            console.log(
-                "Repository ID:",
-                repository.id
-            );
+            //console.log(
+            //    "Repository ID:",
+            //    repository.id
+            //);
 
-            console.log(
-                "Repository token:",
-                repository.access_token
-            );
+            //console.log(
+            //    "Repository token:",
+            //    repository.access_token
+            //);
 
             return res.json({
                 success: true,
@@ -7134,11 +7090,11 @@ app.get("/api/gallery-access/photos", async (req, res) => {
             ""
         ).trim();
 
-        console.log("====================================");
-        console.log("GALLERY PHOTOS REQUEST");
-        console.log("TOKEN:", token ? "EXISTS" : "MISSING");
-        console.log("REQUEST ID:", requestId);
-        console.log("====================================");
+        // console.log("====================================");
+        // console.log("GALLERY PHOTOS REQUEST");
+        // console.log("TOKEN:", token ? "EXISTS" : "MISSING");
+        // console.log("REQUEST ID:", requestId);
+        // console.log("====================================");
 
         if (!token || !requestId) {
             return res.status(400).json({
@@ -7422,25 +7378,25 @@ app.get("/api/gallery-access/photos", async (req, res) => {
             });
         }
 
-        console.log(
-            "GALLERY PHOTOS FOUND:",
-            processedPhotos.length
-        );
+        //console.log(
+        //    "GALLERY PHOTOS FOUND:",
+        //    processedPhotos.length
+        //);
 
-        console.log(
-            "GALLERY FULL QUALITY:",
-            fullQuality
-        );
+        //console.log(
+        //    "GALLERY FULL QUALITY:",
+         //   fullQuality
+        //);
 
-        console.log(
-            "GALLERY PAYMENT CONFIRMED:",
-            paymentConfirmed
-        );
+        //console.log(
+        //    "GALLERY PAYMENT CONFIRMED:",
+        //    paymentConfirmed
+        //);
 
-        console.log(
-            "GALLERY PAYMENT STATUS:",
-            accessRequest.payment_status
-        );
+        //console.log(
+        //  "GALLERY PAYMENT STATUS:",
+        //    accessRequest.payment_status
+        //);
 
         return res.json({
             success: true,
@@ -7605,11 +7561,11 @@ app.get(
         const bookingId = String(req.query.bookingId || "").trim();
         const selectedDate = String(req.query.date || "").trim();
 
-        console.log("RESCHEDULE DATE RECEIVED:", {
-            bookingId,
-            selectedDate,
-            query: req.query
-        });
+        //console.log("RESCHEDULE DATE RECEIVED:", {
+        //    bookingId,
+        //    selectedDate,
+        //    query: req.query
+        //});
 
         if (!bookingId || !selectedDate) {
             return res.status(400).json({
@@ -7816,13 +7772,13 @@ if (
 // THIS IS THE DURATION USED BY ALL AVAILABLE SLOTS
 const duration = originalDuration;
 
-console.log("ORIGINAL RESCHEDULE DURATION:", {
-    bookingId,
-    bookingType: isRental ? "RENTAL" : "PACKAGE",
-    rental_duration: originalBooking.rental_duration,
-    booking_duration: originalBooking.booking_duration,
-    finalDuration: duration
-});
+//console.log("ORIGINAL RESCHEDULE DURATION:", {
+//    bookingId,
+//    bookingType: isRental ? "RENTAL" : "PACKAGE",
+//    rental_duration: originalBooking.rental_duration,
+//    booking_duration: originalBooking.booking_duration,
+//    finalDuration: duration
+//});
             // =====================================
             // 6. OPERATING HOURS
             // =====================================
@@ -8010,7 +7966,6 @@ if (
                 // =====================================
                 // 8.4 SAVE OCCUPIED SCHEDULE
                 // =====================================
-
                 occupiedSchedules.push({
                     id: item.id,
                     start: occupiedStart,
@@ -8018,20 +7973,19 @@ if (
                     duration: occupiedDuration,
                     isRental: itemIsRental
                 });
-
-                console.log(
-                    "OCCUPIED BOOKING:",
-                    {
-                        id: item.id,
-                        type: itemIsRental
-                            ? "RENTAL"
-                            : "PACKAGE",
-                        booking_time: item.booking_time,
-                        start: formatTime(occupiedStart),
-                        end: formatTime(occupiedEnd),
-                        duration: occupiedDuration
-                    }
-                );
+                //console.log(
+                //    "OCCUPIED BOOKING:",
+                //    {
+                //        id: item.id,
+                //        type: itemIsRental
+                //            ? "RENTAL"
+                //            : "PACKAGE",
+                //        booking_time: item.booking_time,
+                //        start: formatTime(occupiedStart),
+                //        end: formatTime(occupiedEnd),
+                //        duration: occupiedDuration
+                //    }
+                //);
             }
 
             // =====================================
@@ -8557,38 +8511,6 @@ if (
                 const hasConflict =
                     requestedStart < occupiedEnd &&
                     requestedEnd > occupiedStart;
-
-                console.log(
-                    "RESCHEDULE CONFLICT CHECK:",
-                    {
-                        existingBookingId: item.id,
-
-                        bookingDate:
-                            item.booking_date,
-
-                        bookingTime:
-                            item.booking_time,
-
-                        type: itemIsRental
-                            ? "RENTAL"
-                            : "PACKAGE",
-
-                        occupiedStart,
-                        occupiedEnd,
-                        occupiedDuration,
-
-                        requestedDate: newDate,
-                        requestedStart,
-                        requestedEnd,
-
-                        hasConflict
-                    }
-                );
-
-                // =====================================
-                // 7.5 REJECT OVERLAPPING SCHEDULE
-                // =====================================
-
                 if (hasConflict) {
                     return res.status(409).json({
                         success: false,
@@ -8675,10 +8597,10 @@ if (
                 });
             }
 
-            console.log(
-                "BOOKING RESCHEDULED:",
-                {
-                    bookingId,
+            //console.log(
+            //    "BOOKING RESCHEDULED:",
+            //    {
+            /*      bookingId,
                     oldDate,
                     oldTime,
                     newDate,
@@ -8686,7 +8608,7 @@ if (
                     duration,
                     isRental
                 }
-            );
+            );*/
 
           // =====================================
 // 10. CHECK EMAIL CONFIGURATION
@@ -8891,11 +8813,11 @@ if (!customerEmail) {
                     throw emailResult.error;
                 }
 
-                console.log(
+                /*console.log(
                     "RESCHEDULE EMAIL SENT:",
                     customerEmail,
                     bookingId
-                );
+                );*/
 
                 return res.status(200).json({
                     success: true,
@@ -8944,12 +8866,12 @@ app.listen(
     PORT,
     "0.0.0.0",
     () => {
-        console.log("====================================");
-        console.log("CAPTURED SERVER RUNNING");
-        console.log(`Port: ${PORT}`);
-        console.log(`Resend API Key: ${RESEND_API_KEY ? "CONFIGURED" : "NOT CONFIGURED"}`);
-        console.log(`PayMongo Secret Key: ${PAYMONGO_SECRET_KEY ? "CONFIGURED" : "NOT CONFIGURED"}`);
-        console.log(`PayMongo Webhook Secret: ${PAYMONGO_WEBHOOK_SECRET ? "CONFIGURED" : "NOT CONFIGURED"}`);
-        console.log("====================================");
+        // console.log("====================================");
+        // console.log("CAPTURED SERVER RUNNING");
+        // console.log(`Port: ${PORT}`);
+        // console.log(`Resend API Key: ${RESEND_API_KEY ? "CONFIGURED" : "NOT CONFIGURED"}`);
+        // console.log(`PayMongo Secret Key: ${PAYMONGO_SECRET_KEY ? "CONFIGURED" : "NOT CONFIGURED"}`);
+        // console.log(`PayMongo Webhook Secret: ${PAYMONGO_WEBHOOK_SECRET ? "CONFIGURED" : "NOT CONFIGURED"}`);
+        // console.log("====================================");
     }
 );

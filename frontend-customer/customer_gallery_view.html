@@ -269,7 +269,7 @@
 
         async function fetchBooking(bookingId) {
             try {
-                console.log("GALLERY: Loading booking:", bookingId);
+                //console.log("GALLERY: Loading booking:", bookingId);
 
                 const { data: booking, error } = await supabaseClient
                     .from("bookings")
@@ -295,7 +295,7 @@
 
                 displayClientInformation(booking);
 
-                console.log("GALLERY: Booking information loaded:", booking);
+                //console.log("GALLERY: Booking information loaded:", booking);
                 return true;
 
             } catch (error) {
@@ -307,7 +307,7 @@
 
         async function loadRepositoryPhotos() {
 
-            console.log("GALLERY: Loading gallery...");
+            //console.log("GALLERY: Loading gallery...");
 
             try {
                 const params = new URLSearchParams(
@@ -322,15 +322,15 @@
                     params.get("requestId") ||
                     "";
 
-                console.log(
-                    "GALLERY: Token exists:",
-                    !!token
-                );
+                //console.log(
+                //    "GALLERY: Token exists:",
+                //    !!token
+                //);
 
-                console.log(
-                    "GALLERY: Request ID:",
-                    requestId
-                );
+                //console.log(
+                //    "GALLERY: Request ID:",
+                //    requestId
+                //);
 
                 if (!token) {
 

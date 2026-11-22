@@ -1276,7 +1276,7 @@
                 exportPDF.disabled = false;
                 exportCSV.disabled = false;
 
-                console.log("Income report generated:", latestIncomeReport);
+                //console.log("Income report generated:", latestIncomeReport);
 
             } catch (error) {
                 console.error("Income report error:", error);
@@ -1344,7 +1344,7 @@
 
         async function loadTotalPhotos() {
 
-            console.log("Loading ALL repository photos...");
+            //console.log("Loading ALL repository photos...");
 
             const totalPhotosElement =
                 document.getElementById("totalPhotos");
@@ -1378,10 +1378,10 @@
             totalPhotosElement.textContent =
                 Number(count || 0).toLocaleString();
 
-            console.log(
-                "📸 TOTAL PHOTOS ACROSS ALL FOLDERS:",
-                count || 0
-            );
+            //console.log(
+            //    "📸 TOTAL PHOTOS ACROSS ALL FOLDERS:",
+            //    count || 0
+            //);
         }
 
 
@@ -1598,14 +1598,14 @@
                 totalIncomeElement.textContent =
                     formatPHP(income.totalIncome);
 
-                console.log("Total income breakdown:", {
-                    bookingIncome: income.bookingIncome,
-                    galleryIncome: income.galleryIncome,
-                    totalIncome: income.totalIncome,
-                    completedBookings: income.bookingCount,
-                    paidGalleryPayments: income.galleryCount,
-                    missingPrices: income.missingPrices
-                });
+                //console.log("Total income breakdown:", {
+                //    bookingIncome: income.bookingIncome,
+                //    galleryIncome: income.galleryIncome,
+                //    totalIncome: income.totalIncome,
+                //    completedBookings: income.bookingCount,
+                //    paidGalleryPayments: income.galleryCount,
+                //    missingPrices: income.missingPrices
+                //});
 
             } catch (error) {
                 console.error("Error loading total income:", error);
@@ -2101,7 +2101,7 @@
         let photoRealtimeChannel = null;
         function setupPhotoRealtime() {
 
-            console.log("Starting photo realtime listener...");
+            //console.log("Starting photo realtime listener...");
 
             if (photoRealtimeChannel) {
                 return;
@@ -2123,23 +2123,16 @@
                         },
                         async function (payload) {
 
-                            console.log(
-                                "PHOTO DATABASE CHANGE:",
-                                payload
-                            );
+                            //console.log( "PHOTO DATABASE CHANGE:",payload);
 
                             await loadDashboardStats();
-
                         }
                     )
-
                     .subscribe(function (status) {
-
                         console.log(
                             "PHOTO REALTIME STATUS:",
                             status
                         );
-
                     });
         }
 
@@ -2288,12 +2281,12 @@
                     : "0%";
             }
 
-            console.log(`Analytics rendered for ${selectedYear}`, {
-                monthlyBookings,
-                yearlyTotal,
-                averageMonthlyBookings: yearlyTotal / 12,
-                activeMonths
-            });
+            //console.log(`Analytics rendered for ${selectedYear}`, {
+             //   monthlyBookings,
+               // yearlyTotal,
+                //averageMonthlyBookings: yearlyTotal / 12,
+                //activeMonths
+            //});
         }
 
         async function loadAnalyticsYears() {
@@ -2484,7 +2477,7 @@
                 return accessExpired || expiresExpired;
             });
 
-            console.log("Expired gallery access found:", expiredAccess.length);
+            //console.log("Expired gallery access found:", expiredAccess.length);
 
             for (const access of expiredAccess) {
                 if (
@@ -2509,13 +2502,12 @@
                     );
                 }
             }
-
-            console.log("FINISHED EXPIRED GALLERY ACCESS CHECK");
+           // console.log("FINISHED EXPIRED GALLERY ACCESS CHECK");
         }
 
 
         async function loadDashboardStats() {
-            console.log("Loading dashboard stats...");
+            //console.log("Loading dashboard stats...");
 
             const { count: customerCount, error: customerError } =
                 await supabaseClient
@@ -2541,10 +2533,7 @@
             await loadTotalIncome();
             await loadGalleryAccessStats();
 
-            console.log("Dashboard stats loaded:", {
-                customers: customerCount || 0,
-                income: "loaded"
-            });
+            //console.log("Dashboard stats loaded:", {customers: customerCount || 0, income: "loaded" });
         }
 
 
@@ -2637,11 +2626,11 @@
                 expiredElement.textContent =
                     expiredCount.toLocaleString("en-PH");
 
-                console.log("Gallery access statistics:", {
-                    totalRequestRecords: records.length,
-                    activeFolders: activeCount,
-                    expiredFolders: expiredCount
-                });
+                //console.log("Gallery access statistics:", {
+                //   totalRequestRecords: records.length,
+                //  activeFolders: activeCount,
+                //    expiredFolders: expiredCount
+                //});
 
             } catch (error) {
                 console.error("Gallery access stats error:", error);
@@ -3915,10 +3904,10 @@
 
         async function openNotificationBooking(notification) {
 
-            console.log(
-                "Opening booking notification:",
-                notification
-            );
+            //console.log(
+            //    "Opening booking notification:",
+            //    notification
+            //);
 
             if (
                 !notification ||
@@ -4806,14 +4795,9 @@
                     "Pending tab not found. Check the Admin Clients tab HTML."
                 );
                 return;
-            }
-
+            }   
             pendingTab.click();
-
-            console.log(
-                "Pending tab opened for booking:",
-                bookingId
-            );
+            //console.log("Pending tab opened for booking:",bookingId);
         }
 
         // Run immediately if the page has already loaded.
@@ -4859,10 +4843,10 @@
 
         function setupNotificationRealtime() {
 
-            console.log("Starting notification realtime listener...");
+            //console.log("Starting notification realtime listener...");
 
             if (notificationChannel) {
-                console.log("Notification realtime channel already exists.");
+                //console.log("Notification realtime channel already exists.");
                 return;
             }
 
@@ -4964,10 +4948,7 @@
 
                 .subscribe(function (status) {
 
-                    console.log(
-                        "SUPABASE NOTIFICATION REALTIME STATUS:",
-                        status
-                    );
+                   // console.log( "SUPABASE NOTIFICATION REALTIME STATUS:",status);
 
                 });
 

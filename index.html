@@ -1,15 +1,106 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Captured Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captured Photography Studio</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #171717;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        .splash {
+            text-align: center;
+        }
+
+        .logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 25px;
+            letter-spacing: 5px;
+            font-weight: 400;
+        }
+
+        p {
+            color: #b99b72;
+            font-size: 11px;
+            letter-spacing: 3px;
+            margin-top: 10px;
+        }
+
+        .loader {
+            width: 150px;
+            height: 2px;
+            background: #51483e;
+            margin: 30px auto 15px;
+            overflow: hidden;
+        }
+
+        .loader::after {
+            content: "";
+            display: block;
+            width: 40%;
+            height: 100%;
+            background: #d9c09a;
+            animation: loading 1s infinite ease-in-out;
+        }
+
+        .loading-text {
+            color: #aaa;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        @keyframes loading {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(250%);
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<script>
-    window.location.href = "/frontend-customer/customer_homepage.html";
-</script>
+    <div class="splash">
+        <img src="./captured.png" alt="Captured Studio Logo" class="logo">
+
+        <h1>CAPTURED</h1>
+        <p>PHOTOGRAPHY STUDIO</p>
+
+        <div class="loader"></div>
+
+        <div class="loading-text">
+            Preparing your experience...
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            window.location.replace("/home");
+        }, 2500);
+    </script>
 
 </body>
 </html>

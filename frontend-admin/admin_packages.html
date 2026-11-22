@@ -1131,7 +1131,7 @@
                     return;
                 }
 
-                console.log("BACKDROPS FROM DATABASE:", data);
+                //console.log("BACKDROPS FROM DATABASE:", data);
 
                 backdrops = data || [];
                 if (backdrops.length === 0) {
@@ -1302,8 +1302,8 @@
                     status: status
                 };
 
-                console.log("BACKDROP SAVE DATA:", backdropData);
-                console.log("BACKDROP ID:", id);
+                //console.log("BACKDROP SAVE DATA:", backdropData);
+                //console.log("BACKDROP ID:", id);
 
                 if (id) {
 
@@ -1343,11 +1343,8 @@
                         console.error("BACKDROP INSERT ERROR:", error);
                         throw error;
                     }
-
-                    console.log("NEW BACKDROP:", data);
-
+                    //console.log("NEW BACKDROP:", data);
                     backdrops.push(data);
-
                     showToast("Backdrop added successfully.");
                 }
 
@@ -1355,9 +1352,7 @@
                 closeBackdropModal();
 
             } catch (error) {
-
                 console.error("SAVE BACKDROP ERROR:", error);
-
                 showToast(
                     "Unable to save backdrop: " + error.message,
                     "error"
@@ -1372,7 +1367,7 @@
             }
         });
         async function toggleBackdrop(id) {
-            console.log("TOGGLE BACKDROP CLICKED:", id);
+            //console.log("TOGGLE BACKDROP CLICKED:", id);
 
             const item = backdrops.find(b => String(b.id) === String(id));
 
@@ -1387,11 +1382,11 @@
                     ? "Not Available"
                     : "Available";
 
-            console.log("Changing backdrop status:", {
-                name: item.name,
-                oldStatus: item.status,
-                newStatus: newStatus
-            });
+            //console.log("Changing backdrop status:", {
+            //    name: item.name,
+             //   oldStatus: item.status,
+              //  newStatus: newStatus
+            //});
 
             try {
                 const { data, error } = await supabaseClient
@@ -1409,7 +1404,7 @@
                     return;
                 }
 
-                console.log("BACKDROP UPDATED:", data);
+                //console.log("BACKDROP UPDATED:", data);
 
                 const index = backdrops.findIndex(
                     b => String(b.id) === String(id)
@@ -1478,7 +1473,7 @@
                     return;
                 }
 
-                console.log("ADDONS FROM DATABASE:", data);
+                //console.log("ADDONS FROM DATABASE:", data);
 
                 addons = data || [];
 
@@ -1782,7 +1777,7 @@
             }
         });
         async function toggleAddon(id) {
-            console.log("TOGGLE ADDON CLICKED:", id);
+            //console.log("TOGGLE ADDON CLICKED:", id);
 
             const item = addons.find(
                 a => String(a.id) === String(id)
@@ -1823,7 +1818,7 @@
                     return;
                 }
 
-                console.log("ADDON UPDATED:", data);
+                //console.log("ADDON UPDATED:", data);
 
                 const index = addons.findIndex(
                     a => String(a.id) === String(id)
@@ -2277,7 +2272,7 @@
 
         }
         async function togglePackage(id) {
-            console.log("TOGGLE PACKAGE CLICKED:", id);
+           // console.log("TOGGLE PACKAGE CLICKED:", id);
 
             const packageItem = packages.find(
                 item => String(item.id) === String(id)
@@ -2294,11 +2289,11 @@
                     ? "Not Available"
                     : "Available";
 
-            console.log("Changing package status:", {
-                name: packageItem.name,
-                oldStatus: packageItem.status,
-                newStatus: newStatus
-            });
+            //console.log("Changing package status:", {
+            //    name: packageItem.name,
+            //    oldStatus: packageItem.status,
+            //    newStatus: newStatus
+            //});
 
             try {
                 const { data, error } = await supabaseClient
@@ -2316,7 +2311,7 @@
                     return;
                 }
 
-                console.log("PACKAGE UPDATED:", data);
+                //console.log("PACKAGE UPDATED:", data);
 
                 const index = packages.findIndex(
                     item => String(item.id) === String(id)
