@@ -2680,3 +2680,48 @@ button:disabled,
         box-shadow: none;
     }
 }
+/* =========================================================
+   FINAL DESKTOP ALIGNMENT
+   Payment Successful panel + Confirm Booking button
+========================================================= */
+
+@media (min-width: 601px) {
+
+    /* Payment Successful panel */
+    #paidBookingPanel {
+        width: 100% !important;
+        max-width: 1000px !important;
+        margin-left: 0 !important;
+        margin-right: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Make the booking area use the same width */
+    body:has(#paidBookingPanel[style*="display: block"])
+    .sessions-panel {
+        width: 100% !important;
+        max-width: 1000px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Confirm Booking button container */
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm .form-actions {
+        width: 100% !important;
+        max-width: 1000px !important;
+        margin: 20px 0 0 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        justify-content: stretch !important;
+    }
+
+    /* Confirm Booking button itself */
+    body:has(#paidBookingPanel[style*="display: block"])
+    #bookingForm #proceedToPaymentBtn {
+        width: 100% !important;
+        max-width: 1000px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+}
