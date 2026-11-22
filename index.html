@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,21 +36,34 @@
             left: 0;
             width: 100%;
             height: 9px;
-            background: linear-gradient(
-                90deg,
-                #E5E9E8,
-                #F8DDBB,
-                #F9F0A5,
-                #DDF5E9
-            );
+            background: linear-gradient(90deg,
+                    #E5E9E8,
+                    #F8DDBB,
+                    #F9F0A5,
+                    #DDF5E9);
         }
+
 
         .logo {
             width: 110px;
             height: 110px;
             object-fit: contain;
             margin-bottom: 22px;
+            animation: logoBlink 3s ease-in-out infinite;
         }
+
+        @keyframes logoBlink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.35;
+            }
+        }
+
 
         h1 {
             font-size: 25px;
@@ -119,24 +132,16 @@
 
     <div class="splash">
 
-        <img
-            src="/images/captured.png"
-            alt="Captured Studio Logo"
-            class="logo"
-        >
+        <img src="/images/captured.png" alt="Captured Studio Logo" class="logo">
 
         <h1>CAPTURED</h1>
 
         <div class="subtitle">
             PHOTOGRAPHY STUDIO
         </div>
-
-        <div class="loader"></div>
-
         <div class="loading-text">
-            Preparing your experience...
+            Welcome to Captured Studio
         </div>
-
     </div>
 
     <script>
@@ -146,4 +151,5 @@
     </script>
 
 </body>
+
 </html>
