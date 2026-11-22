@@ -1982,63 +1982,88 @@
 
             }
         );
-
         async function createWebPCopy(file) {
-            const bitmap = await createImageBitmap(file);
+            let bitmap = null;
 
-            const maxDimension = 1280;
+            try {
+                bitmap = await createImageBitmap(file);
 
-            const scale = Math.min(
-                1,
-                maxDimension / Math.max(bitmap.width, bitmap.height)
-            );
+                const maxDimension = 1280;
 
-            const canvas = document.createElement("canvas");
-
-            canvas.width = Math.max(
-                1,
-                Math.round(bitmap.width * scale)
-            );
-
-            canvas.height = Math.max(
-                1,
-                Math.round(bitmap.height * scale)
-            );
-
-            const context = canvas.getContext("2d");
-
-            if (!context) {
-                bitmap.close();
-                throw new Error("Could not create image canvas.");
-            }
-
-            context.drawImage(
-                bitmap,
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-
-            bitmap.close();
-
-            const webpBlob = await new Promise((resolve, reject) => {
-                canvas.toBlob(
-                    blob => {
-                        if (blob) {
-                            resolve(blob);
-                        } else {
-                            reject(new Error("Could not create WebP blob."));
-                        }
-                    },
-                    "image/webp",
-                    0.85
+                const scale = Math.min(
+                    1,
+                    maxDimension / Math.max(
+                        bitmap.width,
+                        bitmap.height
+                    )
                 );
-            });
 
-            return webpBlob;
+                const outputCanvas =
+                    document.createElement("canvas");
+
+                outputCanvas.width = Math.max(
+                    1,
+                    Math.round(bitmap.width * scale)
+                );
+
+                outputCanvas.height = Math.max(
+                    1,
+                    Math.round(bitmap.height * scale)
+                );
+
+                const context =
+                    outputCanvas.getContext("2d");
+
+                if (!context) {
+                    throw new Error(
+                        "Could not create image canvas."
+                    );
+                }
+
+                context.drawImage(
+                    bitmap,
+                    0,
+                    0,
+                    outputCanvas.width,
+                    outputCanvas.height
+                );
+
+                const blob =
+                    await new Promise((resolve, reject) => {
+
+                        outputCanvas.toBlob(
+                            result => {
+
+                                if (result) {
+                                    resolve(result);
+                                } else {
+                                    reject(
+                                        new Error(
+                                            "Could not create WebP blob."
+                                        )
+                                    );
+                                }
+
+                            },
+                            "image/webp",
+                            0.85
+                        );
+
+                    });
+
+                return {
+                    status: "created",
+                    blob
+                };
+
+            } finally {
+
+                if (bitmap) {
+                    bitmap.close();
+                }
+
+            }
         }
-
         async function uploadPhotos(files) {
 
             if (!selectedClient || !selectedRepository) {
@@ -2374,14 +2399,7 @@
                 } finally {
 
                     completedUploads++;
-
-                    progressBar.style.width =
-                        `${Math.round(
-                            completedUploads /
-                            files.length *
-                            100
-                        )}%`;
-
+                    
                     showUploadProgress(
                         completedUploads,
                         files.length,
