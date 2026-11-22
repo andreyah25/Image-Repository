@@ -2605,13 +2605,6 @@ button:disabled,
     }
 }
 @media (min-width: 601px) {
-
-    /*
-     * Both elements belong to different parts of the page,
-     * so we force them to share the same 1000px content width
-     * and the same LEFT alignment.
-     */
-
     /* Payment Successful */
     body:has(#paidBookingPanel[style*="display: block"])
     #paidBookingPanel {
@@ -2625,45 +2618,28 @@ button:disabled,
 
         box-sizing: border-box !important;
     }
-
-
     /* Booking container */
     body:has(#paidBookingPanel[style*="display: block"])
     .booking-layout-wrapper {
         width: 100% !important;
         max-width: none !important;
-
         display: flex !important;
         justify-content: flex-start !important;
-
         margin-left: 0 !important;
         margin-right: 0 !important;
     }
 
 
     /* Sessions panel */
-    body:has(#paidBookingPanel[style*="display: block"])
-    .sessions-panel {
+        body:has(#paidBookingPanel[style*="display: block"])
+        .sessions-panel {
         width: 100% !important;
-        max-width: none !important;
-
-        flex: 1 1 auto !important;
-
+        max-width: 1000px !important;
+        flex: 0 0 1000px !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-    }
+}
 
-
-    /*
-     * IMPORTANT:
-     * Do NOT use margin:auto here.
-     *
-     * The old rule was:
-     *     margin: 20px auto 0;
-     *
-     * That centers the button independently of the
-     * Payment Successful panel.
-     */
     body:has(#paidBookingPanel[style*="display: block"])
     #bookingForm .form-actions {
         width: 100% !important;
