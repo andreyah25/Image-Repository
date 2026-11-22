@@ -2788,6 +2788,7 @@ app.post("/send-booking-confirmation", async (req, res) => {
         });
     }
 });
+
 app.post("/send-gallery-ready", async (req, res) => {
     try {
         const {
@@ -2805,11 +2806,11 @@ app.post("/send-gallery-ready", async (req, res) => {
             });
         }
 
-        if (!process.env.RESEND_API_KEY ||
-            !process.env.RESEND_FROM_EMAIL) {
-            console.error(
-                "Missing Resend environment configuration."
-            );
+        if (
+            !process.env.RESEND_API_KEY ||
+            !process.env.RESEND_FROM_EMAIL
+        ) {
+            console.error("Missing Resend environment configuration.");
 
             return res.status(500).json({
                 success: false,
@@ -2817,8 +2818,86 @@ app.post("/send-gallery-ready", async (req, res) => {
             });
         }
 
-        // Panatilihin dito ang kasalukuyan mong
-        // Resend email-sending implementation.
+        const escapeHtml = (value = "") =>
+            String(value).replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[char]);
+
+        const safeName = escapeHtml(name || "Valued Customer");
+        const safeSession = escapeHtml(sessionType || "Photography Session");
+        const safeLink = escapeHtml(galleryLink);
+
+        const emailResponse = await fetch(
+            "https://api.resend.com/emails",
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    from: process.env.RESEND_FROM_EMAIL,
+                    to: [email],
+                    subject: "Your Photo Gallery Is Ready!",
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; color: #333;">
+                            <h2 style="text-align: center;">Captured Photography Studio</h2>
+
+                            <p>Hi ${safeName},</p>
+
+                            <p>
+                                Thank you for choosing Captured Photography Studio!
+                                Your photography session has been completed, and
+                                your photo gallery is now ready.
+                            </p>
+
+                            <p><strong>Session:</strong> ${safeSession}</p>
+                            <p><strong>Booking Reference:</strong> ${escapeHtml(bookingId || "")}</p>
+
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="${safeLink}"
+                                   style="background: #333; color: white; padding: 14px 25px; text-decoration: none; border-radius: 5px;">
+                                    View My Photo Gallery
+                                </a>
+                            </div>
+
+                            <p>
+                                Click the button above to access your gallery.
+                            </p>
+
+                            <p>Thank you for trusting Captured Photography Studio!</p>
+
+                            <p>Best regards,<br>Captured Photography Studio</p>
+                        </div>
+                    `
+                })
+                
+            }
+            
+        );
+
+        const emailResult = await emailResponse.json();
+
+        if (!emailResponse.ok) {
+            console.error("RESEND API ERROR:", emailResult);
+
+            return res.status(500).json({
+                success: false,
+                message: emailResult.message || "Resend failed to send the email."
+            });
+        }
+
+        console.log("GALLERY READY EMAIL SENT:", emailResult);
+
+        return res.status(200).json({
+            success: true,
+            message: "Gallery-ready email sent successfully.",
+            emailId: emailResult.id
+        });
 
     } catch (error) {
         console.error("SEND GALLERY READY ERROR:", error);

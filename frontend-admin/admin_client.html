@@ -1009,13 +1009,13 @@
                 allBookedSessions = bookings;
 
                 // console.log(
-                   // "Bookings loaded successfully:",
-                    //allBookedSessions.length
+                // "Bookings loaded successfully:",
+                //allBookedSessions.length
                 //);
                 updateBookingTabCounts();
                 //console.log(
-                  //  "Bookings loaded successfully:",
-                    //allBookedSessions.length
+                //  "Bookings loaded successfully:",
+                //allBookedSessions.length
                 //);
 
                 // Your existing renderer reads from allBookedSessions.
@@ -2572,7 +2572,7 @@
             booking
         ) {
 
-           //console.log("Creating repository for:",booking.full_name);
+            //console.log("Creating repository for:",booking.full_name);
 
             const {
                 data: existingRepository,
@@ -2906,9 +2906,7 @@
                 }
 
                 const repository = await createClientRepository(booking);
-                const galleryLink =
-                    "https://image-repository-1.onrender.com/gallery-requests";
-                const {
+                const galleryLink = `${CUSTOMER_URL}/gallery-requests`; const {
                     data: updatedBooking,
                     error: updateError
                 } = await supabaseClient
@@ -2970,8 +2968,8 @@
                 //);
 
                 //console.log(
-                    //"GALLERY EMAIL SERVER RESPONSE:",
-                    //emailResult
+                //"GALLERY EMAIL SERVER RESPONSE:",
+                //emailResult
                 //);
 
                 if (!emailResponse.ok || !emailResult.success) {
