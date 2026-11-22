@@ -1,9 +1,9 @@
-
 from pathlib import Path
 from io import BytesIO
 from datetime import datetime, timezone
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
+
 import logging
 import os
 import threading
@@ -17,12 +17,22 @@ from pydantic import BaseModel, HttpUrl
 from ultralytics import YOLO
 import torch
 
-torch.set_num_threads(1)
-torch.set_num_interop_threads(1)
 
+# Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("captured-ml")
 
+
+# PyTorch CPU settings
+TORCH_THREADS = max(
+    1,
+    int(os.getenv("ML_TORCH_THREADS", "2"))
+)
+
+torch.set_num_threads(TORCH_THREADS)
+torch.set_num_interop_threads(1)
+
+logger.info("PyTorch threads: %s", TORCH_THREADS)
 BASE_DIR = Path(__file__).resolve().parent
 
 # Preserve your current model path.
@@ -235,16 +245,30 @@ def handle_job_failure(job, error):
             message,
         )
 
-
 def process_job_batch(jobs):
     if not jobs:
         return
 
     logger.info("Processing detection batch: %s jobs", len(jobs))
 
+    # Mark jobs as actively processing
+    for job in jobs:
+        try:
+            update_photo(
+                job["photo_id"],
+                {
+                    "processing_status": "processing"
+                },
+            )
+        except Exception:
+            logger.exception(
+                "Could not mark photo as processing: %s",
+                job["photo_id"],
+            )
+
+    download_started = time.perf_counter()
     valid_jobs = []
     images = []
-
     # Download and prepare photos concurrently.
     with ThreadPoolExecutor(
         max_workers=min(len(jobs), BATCH_SIZE)
@@ -275,9 +299,14 @@ def process_job_batch(jobs):
                 except Exception:
                     logger.exception("Could not update failed job.")
 
+    logger.info(
+        "Image preparation completed: %s images in %.2f seconds",
+        len(images),
+        time.perf_counter() - download_started,
+    )
+
     if not valid_jobs:
         return
-
     # Run one YOLO prediction call for the batch.
     try:
         inference_started = time.perf_counter()

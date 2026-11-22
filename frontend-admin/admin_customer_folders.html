@@ -1997,17 +1997,7 @@
 
                 bitmap = await createImageBitmap(file);
 
-                const canvas = document.createElement("canvas");
-                canvas.width = bitmap.width;
-                canvas.height = bitmap.height;
 
-                const context = canvas.getContext("2d");
-
-                if (!context) {
-                    throw new Error("Could not create image canvas.");
-                }
-
-                context.drawImage(bitmap, 0, 0);
 
                 const webpBlob = await new Promise(resolve => {
                     canvas.toBlob(resolve, "image/webp", 0.82);
@@ -2016,7 +2006,46 @@
                 if (!webpBlob || webpBlob.type !== "image/webp") {
                     throw new Error("WebP conversion failed.");
                 }
+                const maxDimension = 1280;
 
+                const scale = Math.min(
+                    1,
+                    maxDimension /
+                    Math.max(
+                        bitmap.width,
+                        bitmap.height
+                    )
+                );
+
+                const canvas =
+                    document.createElement("canvas");
+
+                canvas.width =
+                    Math.round(
+                        bitmap.width * scale
+                    );
+
+                canvas.height =
+                    Math.round(
+                        bitmap.height * scale
+                    );
+
+                const context =
+                    canvas.getContext("2d");
+
+                if (!context) {
+                    throw new Error(
+                        "Could not create image canvas."
+                    );
+                }
+
+                context.drawImage(
+                    bitmap,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
                 if (webpBlob.size >= file.size) {
                     return {
                         blob: webpBlob,
@@ -2044,8 +2073,8 @@
             }
         }
 
-
         async function uploadPhotos(files) {
+
             if (!selectedClient || !selectedRepository) {
                 alert("Please open a customer folder first.");
                 return;
@@ -2056,65 +2085,63 @@
             uploadPhotos.isUploading = true;
             uploadFolderPhotosBtn.disabled = true;
 
-            uploadFolderPhotosBtn.innerHTML = `
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        Uploading...
-    `;
-
-            uploadStatus.classList.add("show");
-            uploadStatus.classList.remove("error");
-
-            const progressBar = document.getElementById("uploadProgressBar");
-            progressBar.style.width = "0%";
-
             const batchId = crypto.randomUUID();
-            const queueItems = [];
 
             let uploaded = 0;
+            let queued = 0;
             let failed = 0;
             let compressed = 0;
             let completedUploads = 0;
             let nextIndex = 0;
 
             async function uploadOne(file) {
+
                 let storagePath = null;
                 let photoRecord = null;
                 let compressedStoragePath = null;
 
                 try {
+
                     if (!file.type.startsWith("image/")) {
                         throw new Error("File is not an image.");
                     }
 
-                    const safeName = file.name.replace(
-                        /[^a-zA-Z0-9._-]/g,
-                        "_"
-                    );
+                    const safeName =
+                        file.name.replace(
+                            /[^a-zA-Z0-9._-]/g,
+                            "_"
+                        );
 
                     storagePath =
-                        `${selectedClient.id}/${selectedRepository.id}/` +
+                        `${selectedClient.id}/` +
+                        `${selectedRepository.id}/` +
                         `${crypto.randomUUID()}-${safeName}`;
 
-                    // --------------------------------------------------
-                    // 1. Upload original image to Supabase Storage
-                    // --------------------------------------------------
+                    // ----------------------------------------
+                    // 1. UPLOAD ORIGINAL
+                    // ----------------------------------------
 
-                    const { error: storageError } = await supabaseClient
-                        .storage
-                        .from("client-photos")
-                        .upload(storagePath, file, {
-                            cacheControl: "3600",
-                            upsert: false,
-                            contentType: file.type
-                        });
+                    const { error: storageError } =
+                        await supabaseClient
+                            .storage
+                            .from("client-photos")
+                            .upload(
+                                storagePath,
+                                file,
+                                {
+                                    cacheControl: "3600",
+                                    upsert: false,
+                                    contentType: file.type
+                                }
+                            );
 
                     if (storageError) {
                         throw storageError;
                     }
 
-                    // --------------------------------------------------
-                    // 2. Create signed image URL
-                    // --------------------------------------------------
+                    // ----------------------------------------
+                    // 2. CREATE SIGNED URL
+                    // ----------------------------------------
 
                     const {
                         data: signedUrlData,
@@ -2143,9 +2170,9 @@
                         );
                     }
 
-                    // --------------------------------------------------
-                    // 3. Save repository photo record
-                    // --------------------------------------------------
+                    // ----------------------------------------
+                    // 3. CREATE PHOTO RECORD
+                    // ----------------------------------------
 
                     const {
                         data: photo,
@@ -2159,11 +2186,9 @@
                             booking_id:
                                 selectedClient.id,
 
-                            // REQUIRED
                             image_url:
                                 imageUrl,
 
-                            // Permanent storage reference
                             storage_path:
                                 storagePath,
 
@@ -2194,11 +2219,43 @@
 
                     photoRecord = photo;
 
-                    // --------------------------------------------------
-                    // 4. Create WebP copy
-                    // --------------------------------------------------
+                    // ----------------------------------------
+                    // 4. QUEUE ML IMMEDIATELY
+                    // ----------------------------------------
+
+                    const {
+                        error: queueError
+                    } = await supabaseClient
+                        .from("ml_detection_jobs")
+                        .insert({
+                            batch_id:
+                                batchId,
+
+                            photo_id:
+                                photo.id,
+
+                            storage_path:
+                                storagePath,
+
+                            status:
+                                "queued"
+                        });
+
+                    if (queueError) {
+                        throw new Error(
+                            "Could not queue photo for ML: " +
+                            queueError.message
+                        );
+                    }
+
+                    queued++;
+
+                    // ----------------------------------------
+                    // 5. CREATE WEBP COPY
+                    // ----------------------------------------
 
                     try {
+
                         const conversion =
                             await createWebPCopy(file);
 
@@ -2214,7 +2271,8 @@
                                 );
 
                             compressedStoragePath =
-                                `${selectedClient.id}/${selectedRepository.id}/` +
+                                `${selectedClient.id}/` +
+                                `${selectedRepository.id}/` +
                                 `${crypto.randomUUID()}-${baseName}.webp`;
 
                             const {
@@ -2228,7 +2286,8 @@
                                     {
                                         cacheControl: "3600",
                                         upsert: false,
-                                        contentType: "image/webp"
+                                        contentType:
+                                            "image/webp"
                                     }
                                 );
 
@@ -2241,9 +2300,6 @@
                             } = await supabaseClient
                                 .from("repository_photos")
                                 .update({
-                                    original_size_bytes:
-                                        file.size,
-
                                     compressed_size_bytes:
                                         conversion.blob.size,
 
@@ -2273,25 +2329,6 @@
 
                             compressed++;
 
-                        } else {
-
-                            const {
-                                error: metadataError
-                            } = await supabaseClient
-                                .from("repository_photos")
-                                .update({
-                                    compression_status:
-                                        conversion.status ||
-                                        "failed"
-                                })
-                                .eq(
-                                    "id",
-                                    photo.id
-                                );
-
-                            if (metadataError) {
-                                throw metadataError;
-                            }
                         }
 
                     } catch (compressionError) {
@@ -2303,14 +2340,13 @@
                         );
 
                         if (compressedStoragePath) {
+
                             await supabaseClient
                                 .storage
                                 .from("client-photos")
                                 .remove([
                                     compressedStoragePath
                                 ]);
-
-                            compressedStoragePath = null;
                         }
 
                         await supabaseClient
@@ -2333,24 +2369,6 @@
                                 photo.id
                             );
                     }
-
-                    // --------------------------------------------------
-                    // 5. Add original photo to ML queue
-                    // --------------------------------------------------
-
-                    queueItems.push({
-                        batch_id:
-                            batchId,
-
-                        photo_id:
-                            photo.id,
-
-                        storage_path:
-                            storagePath,
-
-                        status:
-                            "queued"
-                    });
 
                     uploaded++;
 
@@ -2408,93 +2426,69 @@
             }
 
             async function uploadWorker() {
+
                 while (true) {
-                    const index = nextIndex++;
 
-                    if (index >= files.length) return;
+                    const index =
+                        nextIndex++;
 
-                    await uploadOne(files[index]);
+                    if (
+                        index >= files.length
+                    ) {
+                        return;
+                    }
+
+                    await uploadOne(
+                        files[index]
+                    );
                 }
             }
 
             try {
-                // Three simultaneous upload workers.
-                const workerCount = Math.min(3, files.length);
+
+                const workerCount =
+                    Math.min(
+                        3,
+                        files.length
+                    );
 
                 await Promise.all(
                     Array.from(
-                        { length: workerCount },
-                        () => uploadWorker()
+                        {
+                            length:
+                                workerCount
+                        },
+                        () =>
+                            uploadWorker()
                     )
                 );
 
-                let queued = 0;
-                let queueFailed = false;
-
-                if (queueItems.length > 0) {
-                    showUploadProgress(
-                        files.length,
-                        files.length,
-                        "Detection queue",
-                        "Adding photos to background detection..."
-                    );
-
-                    const { error: queueError } = await supabaseClient
-                        .from("ml_detection_jobs")
-                        .insert(queueItems);
-
-                    if (queueError) {
-                        console.error(
-                            "Detection queue insert failed:",
-                            queueError
-                        );
-
-                        queueFailed = true;
-
-                        await supabaseClient
-                            .from("repository_photos")
-                            .update({
-                                processing_status: "failed"
-                            })
-                            .in(
-                                "id",
-                                queueItems.map(item => item.photo_id)
-                            );
-
-                    } else {
-                        queued = queueItems.length;
-                    }
-                }
-
-                await loadPhotos(selectedRepository.id);
-
-                const message = queueFailed
-                    ? `${uploaded} photos uploaded, but detection could not be queued.`
-                    : `${uploaded} photos uploaded. ${queued} queued for background detection.`;
-
-                showUploadStatus(
-                    `${message} ${failed} upload failures.`,
-                    failed > 0 || queueFailed
+                await loadPhotos(
+                    selectedRepository.id
                 );
 
-                //console.log("UPLOAD BATCH SUMMARY:", {
-                //    batchId,
-                //    total: files.length,
-                //    uploaded,
-                //    failed,
-                //    queued,
-                //    compressedWebPCopies: compressed
-                //});
+                showUploadStatus(
+                    `${uploaded} photos uploaded. ` +
+                    `${queued} queued for background detection. ` +
+                    `${failed} upload failures.`,
+                    failed > 0
+                );
 
             } catch (error) {
-                console.error("Upload batch error:", error);
+
+                console.error(
+                    "Upload batch error:",
+                    error
+                );
 
                 showUploadStatus(
-                    "Upload failed: " + error.message,
+                    "Upload failed: " +
+                    error.message,
                     true
                 );
 
             } finally {
+
                 uploadPhotos.isUploading = false;
 
                 uploadFolderPhotosBtn.disabled = false;
@@ -2505,7 +2499,6 @@
         `;
             }
         }
-
         uploadFolderPhotosBtn.addEventListener(
             "click",
             () => {
