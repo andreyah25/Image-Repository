@@ -18,41 +18,60 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #171717;
+            background: #F8F6F3;
             font-family: Arial, sans-serif;
-            color: white;
+            color: #292E2D;
+            overflow: hidden;
         }
 
         .splash {
             text-align: center;
+            width: 100%;
+            padding: 30px;
+        }
+
+        .top-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 9px;
+            background: linear-gradient(
+                90deg,
+                #E5E9E8,
+                #F8DDBB,
+                #F9F0A5,
+                #DDF5E9
+            );
         }
 
         .logo {
             width: 110px;
             height: 110px;
             object-fit: contain;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         h1 {
             font-size: 25px;
-            letter-spacing: 5px;
-            font-weight: 400;
+            font-weight: 600;
+            letter-spacing: 4px;
         }
 
-        p {
-            color: #b99b72;
+        .subtitle {
+            margin-top: 10px;
+            color: #737B77;
             font-size: 11px;
             letter-spacing: 3px;
-            margin-top: 10px;
         }
 
         .loader {
             width: 150px;
-            height: 2px;
-            background: #51483e;
-            margin: 30px auto 15px;
+            height: 3px;
+            background: #E8DFE7;
+            margin: 35px auto 18px;
             overflow: hidden;
+            border-radius: 10px;
         }
 
         .loader::after {
@@ -60,13 +79,14 @@
             display: block;
             width: 40%;
             height: 100%;
-            background: #d9c09a;
-            animation: loading 1s infinite ease-in-out;
+            background: #B49DB7;
+            animation: loading 1.2s infinite ease-in-out;
+            border-radius: 10px;
         }
 
         .loading-text {
-            color: #aaa;
-            font-size: 11px;
+            color: #737B77;
+            font-size: 12px;
             letter-spacing: 1px;
         }
 
@@ -74,8 +94,20 @@
             from {
                 transform: translateX(-100%);
             }
+
             to {
                 transform: translateX(250%);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .logo {
+                width: 95px;
+                height: 95px;
+            }
+
+            h1 {
+                font-size: 21px;
             }
         }
     </style>
@@ -83,17 +115,28 @@
 
 <body>
 
+    <div class="top-gradient"></div>
+
     <div class="splash">
-        <img src="./captured.png" alt="Captured Studio Logo" class="logo">
+
+        <img
+            src="/images/captured.png"
+            alt="Captured Studio Logo"
+            class="logo"
+        >
 
         <h1>CAPTURED</h1>
-        <p>PHOTOGRAPHY STUDIO</p>
+
+        <div class="subtitle">
+            PHOTOGRAPHY STUDIO
+        </div>
 
         <div class="loader"></div>
 
         <div class="loading-text">
             Preparing your experience...
         </div>
+
     </div>
 
     <script>
