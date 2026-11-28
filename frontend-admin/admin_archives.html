@@ -142,6 +142,87 @@
                         </tr>
                     </thead>
                     <tbody id="archiveTableBody">
+
+                        <tr class="archive-loading-row">
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-title"></div>
+                                <div class="archive-skeleton archive-skeleton-subtext"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-type"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-date"></div>
+                                <div class="archive-skeleton archive-skeleton-time"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-action"></div>
+                            </td>
+                        </tr>
+
+                        <tr class="archive-loading-row">
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-title"></div>
+                                <div class="archive-skeleton archive-skeleton-subtext"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-type"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-date"></div>
+                                <div class="archive-skeleton archive-skeleton-time"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-action"></div>
+                            </td>
+                        </tr>
+
+                        <tr class="archive-loading-row">
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-title"></div>
+                                <div class="archive-skeleton archive-skeleton-subtext"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-type"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-date"></div>
+                                <div class="archive-skeleton archive-skeleton-time"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-action"></div>
+                            </td>
+                        </tr>
+
+                        <tr class="archive-loading-row">
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-title"></div>
+                                <div class="archive-skeleton archive-skeleton-subtext"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-type"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-date"></div>
+                                <div class="archive-skeleton archive-skeleton-time"></div>
+                            </td>
+
+                            <td>
+                                <div class="archive-skeleton archive-skeleton-action"></div>
+                            </td>
+                        </tr>
+
                     </tbody>
                 </table>
             </div>
@@ -181,6 +262,52 @@
         let archiveItems = [];
 
         let currentFilter = "all";
+        function showArchiveSkeleton() {
+            const tbody = document.getElementById("archiveTableBody");
+
+            if (!tbody) {
+                return;
+            }
+
+            tbody.classList.add("is-loading");
+
+            tbody.innerHTML = `
+        ${Array.from({ length: 5 }).map(() => `
+            <tr class="archive-loading-row">
+
+                <td>
+                    <div class="archive-skeleton archive-skeleton-title"></div>
+                    <div class="archive-skeleton archive-skeleton-subtext"></div>
+                </td>
+
+                <td>
+                    <div class="archive-skeleton archive-skeleton-type"></div>
+                </td>
+
+                <td>
+                    <div class="archive-skeleton archive-skeleton-date"></div>
+                    <div class="archive-skeleton archive-skeleton-time"></div>
+                </td>
+
+                <td>
+                    <div class="archive-skeleton archive-skeleton-action"></div>
+                </td>
+
+            </tr>
+        `).join("")}
+    `;
+        }
+
+
+        function hideArchiveSkeleton() {
+            const tbody = document.getElementById("archiveTableBody");
+
+            if (!tbody) {
+                return;
+            }
+
+            tbody.classList.remove("is-loading");
+        }
         function escapeHtml(value) {
             if (value === null || value === undefined) {
                 return "";
@@ -469,7 +596,9 @@
         // Initialize display on load
         let currentUser = null;
 
-        window.addEventListener("load", async () => {
+        document.addEventListener("DOMContentLoaded", async () => {
+
+            showArchiveSkeleton();
 
             try {
 
@@ -515,28 +644,66 @@
                     }
 
                 }
+
                 try {
+
                     await runArchiveAndCompression(session);
+
                 } catch (archiveError) {
+
                     console.error(
                         "Automatic archive/compression check failed:",
                         archiveError
                     );
+
                 }
 
-                // Always load existing archives even if processing fails.
                 await loadArchivedItems();
+
                 populatePackageFilter();
 
                 initializeArchiveTabs();
 
                 renderArchiveTable();
+
+                hideArchiveSkeleton();
+
             } catch (err) {
 
                 console.error(
                     "Init error:",
                     err
                 );
+
+                hideArchiveSkeleton();
+
+                const tbody =
+                    document.getElementById("archiveTableBody");
+
+                if (tbody) {
+                    tbody.innerHTML = `
+                <tr>
+                    <td colspan="4"
+                        style="
+                            text-align:center;
+                            color:#888;
+                            padding:40px;
+                        ">
+
+                        <i class="fa-solid fa-triangle-exclamation"
+                           style="
+                               font-size:28px;
+                               margin-bottom:10px;
+                               display:block;
+                           ">
+                        </i>
+
+                        Failed to load archived items.
+
+                    </td>
+                </tr>
+            `;
+                }
 
             }
 
@@ -608,13 +775,13 @@
 
                 //console.log("Folder restored:", {
                 //   folderId,
-                 //   restoredAt,
-                   // nextArchiveAt: new Date(
-                     //   Date.parse(restoredAt) +
-                       // 14 * 24 * 60 * 60 * 1000
-                   // ).toISOString()
+                //   restoredAt,
+                // nextArchiveAt: new Date(
+                //   Date.parse(restoredAt) +
+                // 14 * 24 * 60 * 60 * 1000
+                // ).toISOString()
                 //});
-        };
+            };
 
             if (item.category === "folder") {
                 await restoreFolder(item.id);
@@ -875,7 +1042,7 @@
             if (photoError) throw photoError;
 
             for (const photo of expiredPhotos || []) {
-               //console.log("Permanently deleting expired photo:", photo.id);
+                //console.log("Permanently deleting expired photo:", photo.id);
 
                 await permanentlyDeleteArchiveItem({
                     id: photo.id,
@@ -975,12 +1142,12 @@
 
                     if (updatedFolders?.length) {
                         //console.log("Folder archived:", {
-                         //   customer: booking.full_name,
-                           // folderId: folder.id,
-                            //archiveType: isRestored
-                              //  ? "Re-archive after 14 days"
-                                //: "First archive after 12 days",
-                            //archivedAt: archiveTime
+                        //   customer: booking.full_name,
+                        // folderId: folder.id,
+                        //archiveType: isRestored
+                        //  ? "Re-archive after 14 days"
+                        //: "First archive after 12 days",
+                        //archivedAt: archiveTime
                         //});
                     }
                 }

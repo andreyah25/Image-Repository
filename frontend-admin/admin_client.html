@@ -60,55 +60,60 @@
         </button>
 
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="adminSidebar">
             <nav>
-                <a href="/admin/dashboard">
+
+                <a href="/admin/dashboard" class="sidebar-link">
                     <i class="fa-solid fa-table-cells-large"></i>
-                    Dashboard
+                    <span>Dashboard</span>
                 </a>
 
-                <a href="/admin/clients" class="active">
+                <a href="/admin/clients" class="sidebar-link active">
                     <i class="fa-solid fa-users"></i>
-                    Clients
+                    <span>Clients</span>
                 </a>
 
-                <a href="/admin/repository">
+                <a href="/admin/repository" class="sidebar-link">
                     <i class="fa-solid fa-book"></i>
-                    Repository
+                    <span>Repository</span>
                 </a>
 
-                <a href="/admin/payments">
+                <a href="/admin/payments" class="sidebar-link">
                     <i class="fa-solid fa-credit-card"></i>
-                    Payments
+                    <span>Payments</span>
                 </a>
 
-                <a href="/admin/archives">
+                <a href="/admin/archives" class="sidebar-link">
                     <i class="fa-solid fa-box-archive"></i>
-                    Archives
+                    <span>Archives</span>
                 </a>
 
-                <a href="/admin/packages">
+                <a href="/admin/packages" class="sidebar-link">
                     <i class="fa-solid fa-sliders"></i>
-                    Packages
+                    <span>Packages</span>
                 </a>
 
-                <a href="/admin/profile">
+                <a href="/admin/profile" class="sidebar-link">
                     <i class="fa-solid fa-user"></i>
-                    Profile
+                    <span>Profile</span>
                 </a>
 
-                <a href="/admin/settings">
+                <a href="/admin/settings" class="sidebar-link">
                     <i class="fa-solid fa-gear"></i>
-                    Settings
+                    <span>Settings</span>
                 </a>
+
             </nav>
 
+
             <a href="/admin/login" class="logout-btn" id="logoutBtn">
+
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
-            </a>
-        </aside>
 
+            </a>
+
+        </aside>
         <main class="content">
             <div class="client-header-container">
                 <div class="page-header">

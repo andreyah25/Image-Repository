@@ -1100,3 +1100,32 @@
 .photo-processing-badge.hidden {
     display: none !important;
 }
+.photo-processing-badge {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.photo-processing-badge .processing-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.photo-processing-badge .processing-text strong {
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.photo-processing-badge .processing-text small {
+    font-size: 11px;
+    line-height: 1.4;
+    opacity: 0.85;
+}
+
+.detection-analyzing-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}

@@ -80,55 +80,61 @@
             <i class="fa-solid fa-bars"></i>
         </button>
 
-        <aside class="sidebar">
+        <aside class="sidebar" id="adminSidebar">
+
             <nav>
 
-                <a href="/admin/dashboard" class="active">
+                <a href="/admin/dashboard" class="sidebar-link active">
                     <i class="fa-solid fa-table-cells-large"></i>
-                    Dashboard
+                    <span>Dashboard</span>
                 </a>
 
-                <a href="/admin/clients">
+                <a href="/admin/clients" class="sidebar-link">
                     <i class="fa-solid fa-users"></i>
-                    Clients
+                    <span>Clients</span>
                 </a>
 
-                <a href="/admin/repository">
+                <a href="/admin/repository" class="sidebar-link">
                     <i class="fa-solid fa-book"></i>
-                    Repository
+                    <span>Repository</span>
                 </a>
 
-                <a href="/admin/payments">
+                <a href="/admin/payments" class="sidebar-link">
                     <i class="fa-solid fa-credit-card"></i>
-                    Payments
+                    <span>Payments</span>
                 </a>
 
-                <a href="/admin/archives">
+                <a href="/admin/archives" class="sidebar-link">
                     <i class="fa-solid fa-box-archive"></i>
-                    Archives
+                    <span>Archives</span>
                 </a>
 
-                <a href="/admin/packages">
+                <a href="/admin/packages" class="sidebar-link">
                     <i class="fa-solid fa-sliders"></i>
-                    Packages
+                    <span>Packages</span>
                 </a>
 
-                <a href="/admin/profile">
+                <a href="/admin/profile" class="sidebar-link">
                     <i class="fa-solid fa-user"></i>
-                    Profile
+                    <span>Profile</span>
                 </a>
 
-                <a href="/admin/settings">
+                <a href="/admin/settings" class="sidebar-link">
                     <i class="fa-solid fa-gear"></i>
-                    Settings
+                    <span>Settings</span>
                 </a>
 
             </nav>
 
+
             <a href="/admin/login" class="logout-btn" id="logoutBtn">
+
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
+
             </a>
+
+
         </aside>
         <main class="content">
 
@@ -2282,10 +2288,10 @@
             }
 
             //console.log(`Analytics rendered for ${selectedYear}`, {
-             //   monthlyBookings,
-               // yearlyTotal,
-                //averageMonthlyBookings: yearlyTotal / 12,
-                //activeMonths
+            //   monthlyBookings,
+            // yearlyTotal,
+            //averageMonthlyBookings: yearlyTotal / 12,
+            //activeMonths
             //});
         }
 
@@ -2502,7 +2508,7 @@
                     );
                 }
             }
-           // console.log("FINISHED EXPIRED GALLERY ACCESS CHECK");
+            // console.log("FINISHED EXPIRED GALLERY ACCESS CHECK");
         }
 
 
@@ -4795,7 +4801,7 @@
                     "Pending tab not found. Check the Admin Clients tab HTML."
                 );
                 return;
-            }   
+            }
             pendingTab.click();
             //console.log("Pending tab opened for booking:",bookingId);
         }
@@ -4948,7 +4954,7 @@
 
                 .subscribe(function (status) {
 
-                   // console.log( "SUPABASE NOTIFICATION REALTIME STATUS:",status);
+                    // console.log( "SUPABASE NOTIFICATION REALTIME STATUS:",status);
 
                 });
 

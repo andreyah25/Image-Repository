@@ -374,6 +374,32 @@
         </div>
 
     </div>
+    <!-- ================================
+     NOTIFICATION MODAL
+================================= -->
+    <div class="modal-overlay" id="notificationModal">
+
+        <div class="notification-modal-card" id="notificationModalCard">
+
+            <div class="notification-icon-wrapper" id="notificationIconWrapper">
+                <i id="notificationIcon" class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <h2 id="notificationTitle">
+                Success
+            </h2>
+
+            <p id="notificationMessage">
+                Your changes have been saved successfully.
+            </p>
+
+            <button type="button" id="notificationCloseBtn" class="notification-close-btn">
+                OK
+            </button>
+
+        </div>
+
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -407,7 +433,119 @@
         const userAvatar =
             document.getElementById("userAvatar");
 
+        /* =========================================================
+           NOTIFICATION MODAL
+        ========================================================= */
 
+        const notificationModal =
+            document.getElementById("notificationModal");
+
+        const notificationModalCard =
+            document.getElementById("notificationModalCard");
+
+        const notificationIconWrapper =
+            document.getElementById("notificationIconWrapper");
+
+        const notificationIcon =
+            document.getElementById("notificationIcon");
+
+        const notificationTitle =
+            document.getElementById("notificationTitle");
+
+        const notificationMessage =
+            document.getElementById("notificationMessage");
+
+        const notificationCloseBtn =
+            document.getElementById("notificationCloseBtn");
+
+
+        function showNotificationModal({
+            type = "success",
+            title = "Success",
+            message = "",
+            showButton = true
+        } = {}) {
+
+            notificationModalCard.className =
+                `notification-modal-card ${type}`;
+
+            notificationIcon.className =
+                "fa-solid";
+
+            if (type === "success") {
+
+                notificationIcon.classList.add(
+                    "fa-circle-check"
+                );
+
+            } else if (type === "error") {
+
+                notificationIcon.classList.add(
+                    "fa-circle-xmark"
+                );
+
+            } else if (type === "warning") {
+
+                notificationIcon.classList.add(
+                    "fa-triangle-exclamation"
+                );
+
+            } else if (type === "loading") {
+
+                notificationIcon.classList.add(
+                    "fa-spinner",
+                    "notification-spinner"
+                );
+
+            }
+
+            notificationTitle.textContent =
+                title;
+
+            notificationMessage.textContent =
+                message;
+
+            notificationCloseBtn.style.display =
+                showButton ? "inline-flex" : "none";
+
+            notificationModal.classList.add("show");
+        }
+
+
+        function closeNotificationModal() {
+
+            notificationModal.classList.remove("show");
+
+        }
+
+
+        notificationCloseBtn.addEventListener(
+            "click",
+            closeNotificationModal
+        );
+
+
+        notificationModal.addEventListener(
+            "click",
+            (e) => {
+
+                if (e.target === notificationModal) {
+
+                    const isLoading =
+                        notificationModalCard.classList.contains(
+                            "loading"
+                        );
+
+                    if (!isLoading) {
+
+                        closeNotificationModal();
+
+                    }
+
+                }
+
+            }
+        );
         openEditModalBtn.addEventListener("click", () => {
 
             editProfileModal.classList.add("show");
@@ -428,15 +566,24 @@
         async function loadProfile() {
 
             try {
-               // console.log("========== LOAD PROFILE ==========");
+                // console.log("========== LOAD PROFILE ==========");
                 const {
                     data: { session },
                     error: sessionError
                 } = await supabaseClient.auth.getSession();
 
                 if (sessionError) {
+
                     console.error("Session error:", sessionError);
+
+                    showNotificationModal({
+                        type: "error",
+                        title: "Session Error",
+                        message: "We couldn't verify your session. Please try logging in again."
+                    });
+
                     return;
+
                 }
 
                 if (!session) {
@@ -466,7 +613,14 @@
                         profileError
                     );
 
+                    showNotificationModal({
+                        type: "error",
+                        title: "Unable to Load Profile",
+                        message: "We couldn't load your profile information. Please try again."
+                    });
+
                     return;
+
                 }
 
                 //console.log("STAFF PROFILE:", profile);
@@ -577,10 +731,14 @@
                     error
                 );
 
+                showNotificationModal({
+                    type: "error",
+                    title: "Profile Error",
+                    message: "Something went wrong while loading your profile."
+                });
+
             }
-
         }
-
         async function uploadProfileImage(userId, file) {
 
             if (!file) {
@@ -641,59 +799,54 @@
 
             return publicUrl;
         }
-
         editProfileForm.addEventListener(
             "submit",
             async (e) => {
 
                 e.preventDefault();
 
-
                 const first =
                     document
-                        .getElementById(
-                            "inputFirstName"
-                        )
+                        .getElementById("inputFirstName")
                         .value
                         .trim();
-
 
                 const last =
                     document
-                        .getElementById(
-                            "inputLastName"
-                        )
+                        .getElementById("inputLastName")
                         .value
                         .trim();
-
 
                 const email =
                     document
-                        .getElementById(
-                            "inputEmail"
-                        )
+                        .getElementById("inputEmail")
                         .value
                         .trim();
-
 
                 const fullName =
                     `${first} ${last}`.trim();
 
 
-                if (
-                    !first ||
-                    !last ||
-                    !email
-                ) {
+                /* =================================================
+                   VALIDATION
+                ================================================= */
 
-                    alert(
-                        "Please complete all required fields."
-                    );
+                if (!first || !last || !email) {
+
+                    showNotificationModal({
+                        type: "warning",
+                        title: "Incomplete Information",
+                        message: "Please complete all required fields."
+                    });
 
                     return;
 
                 }
 
+
+                /* =================================================
+                   GET SESSION
+                ================================================= */
 
                 const {
                     data: {
@@ -708,7 +861,7 @@
                 if (!session) {
 
                     window.location.href =
-                        "admin_login.html";
+                        "/admin/login";
 
                     return;
 
@@ -723,6 +876,18 @@
                     document.getElementById(
                         "saveProfileBtn"
                     );
+
+
+                /* =================================================
+                   SHOW SAVING MODAL
+                ================================================= */
+
+                showNotificationModal({
+                    type: "loading",
+                    title: "Saving Profile",
+                    message: "Please wait while we update your profile information.",
+                    showButton: false
+                });
 
 
                 saveButton.disabled = true;
@@ -746,6 +911,13 @@
 
                     if (imageFile) {
 
+                        showNotificationModal({
+                            type: "loading",
+                            title: "Uploading Photo",
+                            message: "Please wait while your profile photo is being uploaded.",
+                            showButton: false
+                        });
+
                         avatarURL =
                             await uploadProfileImage(
                                 user.id,
@@ -754,11 +926,26 @@
 
                     }
 
+
+                    /* =================================================
+                       UPDATE PROFILE
+                    ================================================= */
+
+                    showNotificationModal({
+                        type: "loading",
+                        title: "Updating Profile",
+                        message: "Saving your updated profile information.",
+                        showButton: false
+                    });
+
+
                     const updateData = {
 
-                        full_name: fullName,
+                        full_name:
+                            fullName,
 
-                        email: email,
+                        email:
+                            email,
 
                         updated_at:
                             new Date().toISOString()
@@ -777,29 +964,53 @@
                     const {
                         data: updatedProfile,
                         error: updateError
-                    } = await supabaseClient
-                        .from("staff_profiles")
-                        .update(updateData)
-                        .eq("id", user.id)
-                        .select()
-                        .single();
+                    } =
+                        await supabaseClient
+                            .from("staff_profiles")
+                            .update(updateData)
+                            .eq("id", user.id)
+                            .select()
+                            .single();
+
 
                     if (updateError) {
-                        console.error("Profile update error:", updateError);
+
+                        console.error(
+                            "Profile update error:",
+                            updateError
+                        );
+
                         throw updateError;
+
                     }
 
-                   // console.log("Updated profile:", updatedProfile);
+
+                    /* =================================================
+                       REFRESH PROFILE DATA
+                    ================================================= */
+
                     await loadProfile();
-                    profileImageInput.value = "";
+
+
+                    profileImageInput.value =
+                        "";
+
                     editProfileModal.classList.remove(
                         "show"
                     );
 
 
-                    alert(
-                        "Profile updated successfully!"
-                    );
+                    /* =================================================
+                       SUCCESS
+                    ================================================= */
+
+                    showNotificationModal({
+                        type: "success",
+                        title: "Profile Updated",
+                        message: "Your profile information has been updated successfully.",
+                        showButton: true
+                    });
+
 
                 }
                 catch (error) {
@@ -810,10 +1021,18 @@
                     );
 
 
-                    alert(
-                        "Failed to update profile.\n\n" +
-                        error.message
-                    );
+                    /* =================================================
+                       ERROR
+                    ================================================= */
+
+                    showNotificationModal({
+                        type: "error",
+                        title: "Update Failed",
+                        message:
+                            error.message ||
+                            "We couldn't update your profile. Please try again.",
+                        showButton: true
+                    });
 
                 }
                 finally {

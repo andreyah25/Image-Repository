@@ -58,10 +58,12 @@
                     <i class="fa-solid fa-table-cells-large"></i>
                     Dashboard
                 </a>
+
                 <a href="/admin/clients">
                     <i class="fa-solid fa-users"></i>
                     Clients
                 </a>
+
                 <a href="/admin/repository" class="active">
                     <i class="fa-solid fa-book"></i>
                     Repository
@@ -71,23 +73,28 @@
                     <i class="fa-solid fa-credit-card"></i>
                     Payments
                 </a>
+
                 <a href="/admin/archives">
                     <i class="fa-solid fa-box-archive"></i>
                     Archives
                 </a>
+
                 <a href="/admin/packages">
                     <i class="fa-solid fa-sliders"></i>
                     Packages
                 </a>
+
                 <a href="/admin/profile">
                     <i class="fa-solid fa-user"></i>
                     Profile
                 </a>
+
                 <a href="/admin/settings">
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
             </nav>
+
             <a href="/admin/login" class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-arrow-right-from-bracket logout-icon"></i>
                 <span>Log out</span>
@@ -227,7 +234,51 @@
         </div>
 
     </div>
+    <!-- ==========================================
+     DELETE PHOTO CONFIRMATION MODAL
+========================================== -->
 
+    <div id="deletePhotoModal" class="delete-photo-modal">
+
+        <div class="delete-photo-modal-overlay" id="deletePhotoModalOverlay">
+        </div>
+
+        <div class="delete-photo-modal-content" role="dialog" aria-modal="true" aria-labelledby="deletePhotoModalTitle">
+
+            <button type="button" class="delete-photo-modal-close" id="deletePhotoModalClose" aria-label="Close">
+                &times;
+            </button>
+
+            <div class="delete-photo-modal-icon">
+                <i class="fa-solid fa-trash"></i>
+            </div>
+
+            <h2 id="deletePhotoModalTitle">
+                Delete Photo?
+            </h2>
+
+            <p id="deletePhotoModalMessage">
+                Are you sure you want to permanently delete this photo?
+            </p>
+
+            <div class="delete-photo-modal-actions">
+
+                <button type="button" class="delete-photo-cancel-btn" id="deletePhotoCancelBtn">
+                    Cancel
+                </button>
+
+                <button type="button" class="delete-photo-confirm-btn" id="deletePhotoConfirmBtn">
+
+                    <i class="fa-solid fa-trash"></i>
+                    Delete Photo
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
@@ -1130,35 +1181,76 @@
                 grid
             );
         }
-        async function openCustomerFolder(client) {
+        function setCustomerFolderURL(bookingId) {
 
-            // console.log("OPEN CUSTOMER FOLDER CLICKED");
-            //console.log("CLIENT:", client);
+            const url =
+                new URL(window.location.href);
+
+            if (bookingId) {
+
+                url.searchParams.set(
+                    "booking",
+                    bookingId
+                );
+
+            } else {
+
+                url.searchParams.delete(
+                    "booking"
+                );
+
+            }
+
+            window.history.replaceState(
+                {
+                    booking:
+                        bookingId || null
+                },
+                "",
+                url.toString()
+            );
+
+        }
+        async function openCustomerFolder(client) {
 
             try {
 
                 if (!client || !client.id) {
-                    throw new Error("Invalid customer booking.");
+                    throw new Error(
+                        "Invalid customer booking."
+                    );
                 }
 
-                selectedClient = client;
+                selectedClient =
+                    client;
 
                 selectedRepository =
-                    await getOrCreateRepository(client);
+                    await getOrCreateRepository(
+                        client
+                    );
 
-                // console.log("REPOSITORY:", selectedRepository);
+                setCustomerFolderURL(
+                    client.id
+                );
 
                 selectedCustomerName.textContent =
-                    client.full_name || "Customer";
+                    client.full_name ||
+                    "Customer";
 
                 selectedCustomerDetails.textContent =
-                    "Booking ID: " + client.id +
-                    " • " + (client.session_type || "Session");
+                    "Booking ID: " +
+                    client.id +
+                    " • " +
+                    (
+                        client.session_type ||
+                        "Session"
+                    );
 
                 clientLinkInput.value =
-                    makeClientLink(selectedRepository.access_token);
+                    makeClientLink(
+                        selectedRepository.access_token
+                    );
 
-                // FORCE VIEW SWITCH
                 foldersView.style.setProperty(
                     "display",
                     "none",
@@ -1171,15 +1263,16 @@
                     "important"
                 );
 
-                // console.log("FOLDERS HIDDEN:", getComputedStyle(foldersView).display);
-                //console.log("PHOTOS VISIBLE:", getComputedStyle(photosView).display);
-
-                // Load selected customer's photos
-                await loadPhotos(selectedRepository.id);
+                await loadPhotos(
+                    selectedRepository.id
+                );
 
             } catch (error) {
 
-                console.error("OPEN CUSTOMER FOLDER ERROR:", error);
+                console.error(
+                    "OPEN CUSTOMER FOLDER ERROR:",
+                    error
+                );
 
                 alert(
                     "Failed to open customer folder:\n" +
@@ -1391,199 +1484,672 @@
                 `${count || 0} photo${count === 1 ? "" : "s"}`;
 
         }
-
         async function analyzePhoto(photoId, imageUrl) {
-            const ML_SERVICE_URL = "https://captured-ml-api.onrender.com";
-            //const ML_SERVICE_URL = "http://localhost:8000";
-            const ML_TIMEOUT = 300000; // 5 minutes
 
-            const startedAt = performance.now();
-            let timeout;
+            // ==========================================
+            // LOCAL TESTING
+            // ==========================================
+            // Keep this while testing locally.
+            //
+            // When the frontend is deployed later,
+            // change this to your Render ML URL.
+            // ==========================================
+
+            const ML_SERVICE_URL =
+                "http://localhost:8000";
+
+
+            const ML_TIMEOUT =
+                300000; // 5 minutes
+
+
+            const MIN_ANALYSIS_TIME =
+                10000; // 10 seconds minimum
+
+
+            const startedAt =
+                performance.now();
+
+
+            let timeout = null;
             let timedOut = false;
 
-            /*    console.log("========== ML ANALYSIS STARTED ==========");
-                console.log("Photo ID:", photoId);
-                console.log("ML service:", ML_SERVICE_URL);
-            */
+
+            console.log(
+                "===================================="
+            );
+
+            console.log(
+                "ML ANALYSIS STARTED"
+            );
+
+            console.log(
+                "Photo ID:",
+                photoId
+            );
+
+            console.log(
+                "ML Service:",
+                ML_SERVICE_URL
+            );
+
+            console.log(
+                "====================================");
+
+
             try {
-                // 1. Mark the existing photo as processing.
-                const { error: processingError } = await supabaseClient
+
+                // ==========================================
+                // 1. MARK PHOTO AS PROCESSING
+                // ==========================================
+
+                const {
+                    error: processingError
+                } = await supabaseClient
                     .from("repository_photos")
                     .update({
-                        processing_status: "processing"
+                        processing_status:
+                            "processing"
                     })
-                    .eq("id", photoId);
+                    .eq(
+                        "id",
+                        photoId
+                    );
+
 
                 if (processingError) {
-                    throw processingError;
+
+                    throw new Error(
+                        "Could not mark photo as processing: " +
+                        processingError.message
+                    );
+
                 }
 
-                // 2. Send the original image URL to the deployed ML API.
-                const controller = new AbortController();
 
-                timeout = setTimeout(() => {
-                    timedOut = true;
-                    console.error("ML REQUEST TIMED OUT after 5 minutes.");
-                    controller.abort();
-                }, ML_TIMEOUT);
+                // ==========================================
+                // 2. CREATE REQUEST TIMEOUT
+                // ==========================================
+
+                const controller =
+                    new AbortController();
+
+
+                timeout =
+                    setTimeout(() => {
+
+                        timedOut =
+                            true;
+
+                        console.error(
+                            "ML request timed out after 5 minutes."
+                        );
+
+                        controller.abort();
+
+                    }, ML_TIMEOUT);
+
 
                 let result;
 
+
+                // ==========================================
+                // 3. CALL LOCAL ML API DIRECTLY
+                // ==========================================
+
                 try {
-                    // console.log("[ML] Sending request...");
 
-                    const requestStartedAt = performance.now();
+                    const requestStartedAt =
+                        performance.now();
 
-                    const response = await fetch(`${ML_SERVICE_URL}/analyze`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            image_url: imageUrl
-                        }),
-                        signal: controller.signal
-                    });
 
-                    //console.log(
-                    //    `[ML] Response received after ${((performance.now() - requestStartedAt) / 1000).toFixed(2)
-                    //    } seconds. HTTP:`,
-                    //    response.status
-                    //);
+                    console.log(
+                        "[ML] Sending image to:",
+                        `${ML_SERVICE_URL}/analyze`
+                    );
 
-                    const responseText = await response.text();
+
+                    const response =
+                        await fetch(
+                            `${ML_SERVICE_URL}/analyze`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body: JSON.stringify({
+                                    image_url:
+                                        imageUrl
+                                }),
+
+                                signal:
+                                    controller.signal
+                            }
+                        );
+
+
+                    const responseText =
+                        await response.text();
+
+
+                    const requestDuration =
+                        (
+                            performance.now() -
+                            requestStartedAt
+                        ) / 1000;
+
+
+                    console.log(
+                        `[ML] Response received after ${requestDuration.toFixed(2)} seconds.`
+                    );
+
+
+                    console.log(
+                        "[ML] HTTP status:",
+                        response.status
+                    );
+
 
                     if (!response.ok) {
+
                         throw new Error(
                             `ML API returned HTTP ${response.status}: ` +
                             responseText.slice(0, 500)
                         );
+
                     }
 
+
                     try {
-                        result = JSON.parse(responseText);
+
+                        result =
+                            JSON.parse(
+                                responseText
+                            );
+
                     } catch {
-                        throw new Error("ML API returned an invalid JSON response.");
+
+                        throw new Error(
+                            "ML API returned invalid JSON."
+                        );
+
                     }
 
                 } catch (fetchError) {
-                    if (timedOut || fetchError.name === "AbortError") {
+
+                    if (
+                        timedOut ||
+                        fetchError.name ===
+                        "AbortError"
+                    ) {
+
                         throw new Error(
-                            "ML analysis timed out. The original photo is saved; " +
-                            "you can retry analysis without uploading it again."
+                            "ML analysis timed out after 5 minutes. " +
+                            "The original photo is still saved."
                         );
+
                     }
 
+
                     throw new Error(
-                        "ML API request failed: " + fetchError.message
+                        "ML API request failed: " +
+                        fetchError.message
                     );
 
                 } finally {
-                    clearTimeout(timeout);
+
+                    if (timeout) {
+
+                        clearTimeout(
+                            timeout
+                        );
+
+                        timeout = null;
+
+                    }
+
                 }
 
-                // console.log("[ML] Result:", result);
 
-                if (!result || result.success !== true) {
+                // ==========================================
+                // 4. VALIDATE ML RESPONSE
+                // ==========================================
+
+                if (
+                    !result ||
+                    result.success !== true
+                ) {
+
                     throw new Error(
-                        result?.error || "ML analysis did not succeed."
+                        result?.error ||
+                        "ML analysis did not succeed."
                     );
+
                 }
 
-                // 3. Save detected objects and any face data returned by the API.
-                const detectedObjects = Array.isArray(result.objects)
-                    ? result.objects
-                    : [];
+
+                const detectedObjects =
+                    Array.isArray(
+                        result.objects
+                    )
+                        ? result.objects
+                        : [];
+
+
+                console.log(
+                    "[ML] Detected objects:",
+                    detectedObjects
+                );
+
+
+                // ==========================================
+                // 5. KEEP PROCESSING STATE FOR
+                //    AT LEAST 10 SECONDS TOTAL
+                // ==========================================
+
+                const elapsedAnalysisTime =
+                    performance.now() -
+                    startedAt;
+
+
+                const remainingAnalysisTime =
+                    MIN_ANALYSIS_TIME -
+                    elapsedAnalysisTime;
+
+
+                if (
+                    remainingAnalysisTime > 0
+                ) {
+
+                    console.log(
+                        `[ML] Waiting ${(
+                            remainingAnalysisTime /
+                            1000
+                        ).toFixed(2)} seconds before completing.`
+                    );
+
+
+                    await new Promise(
+                        resolve => {
+
+                            setTimeout(
+                                resolve,
+                                remainingAnalysisTime
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                // ==========================================
+                // 6. PREPARE DATABASE UPDATE
+                // ==========================================
 
                 const updateData = {
-                    processing_status: "completed",
-                    detected_objects: detectedObjects,
-                    ml_processed_at: new Date().toISOString()
+
+                    processing_status:
+                        "completed",
+
+                    detected_objects:
+                        detectedObjects,
+
+                    ml_processed_at:
+                        new Date().toISOString()
+
                 };
 
-                if (Array.isArray(result.faces)) {
-                    updateData.detected_faces = result.faces;
-                    updateData.face_count = Number(
-                        result.face_count ?? result.faces.length
-                    );
+
+                // ==========================================
+                // 7. SAVE FACE DATA IF API RETURNS IT
+                // ==========================================
+
+                if (
+                    Array.isArray(
+                        result.faces
+                    )
+                ) {
+
+                    updateData.detected_faces =
+                        result.faces;
+
+
+                    updateData.face_count =
+                        Number(
+                            result.face_count ??
+                            result.faces.length
+                        );
+
                 }
 
-                const { error: updateError } = await supabaseClient
+
+                // ==========================================
+                // 8. SAVE ML RESULTS
+                // ==========================================
+
+                const {
+                    error: updateError
+                } = await supabaseClient
                     .from("repository_photos")
                     .update(updateData)
-                    .eq("id", photoId);
+                    .eq(
+                        "id",
+                        photoId
+                    );
+
 
                 if (updateError) {
+
                     throw new Error(
                         "ML succeeded, but saving the results failed: " +
                         updateError.message
                     );
+
                 }
 
-                // 4. Verify that the photo record was updated.
-                const { data: savedPhoto, error: verifyError } =
-                    await supabaseClient
-                        .from("repository_photos")
-                        .select(`
-                    id,
-                    processing_status,
-                    face_count,
-                    detected_objects,
-                    detected_faces,
-                    ml_processed_at
-                `)
-                        .eq("id", photoId)
-                        .maybeSingle();
+
+                // ==========================================
+                // 9. VERIFY SAVED RESULT
+                // ==========================================
+
+                const {
+                    data: savedPhoto,
+                    error: verifyError
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .select(`
+                id,
+                processing_status,
+                face_count,
+                detected_objects,
+                detected_faces,
+                ml_processed_at
+            `)
+                    .eq(
+                        "id",
+                        photoId
+                    )
+                    .maybeSingle();
+
 
                 if (verifyError) {
                     throw verifyError;
                 }
 
-                if (!savedPhoto || savedPhoto.processing_status !== "completed") {
+
+                if (
+                    !savedPhoto
+                ) {
+
                     throw new Error(
-                        "Could not verify the saved ML results. " +
-                        "Check the repository_photos permissions and policies."
+                        "Could not find the photo after saving ML results."
                     );
+
                 }
 
-                //console.log("========== ML ANALYSIS COMPLETED ==========");
-                //console.log("Total time:", (
-                //    (performance.now() - startedAt) / 1000
-                //).toFixed(2), "seconds");
-                //console.log("Detected objects:", savedPhoto.detected_objects);
+
+                if (
+                    savedPhoto.processing_status !==
+                    "completed"
+                ) {
+
+                    throw new Error(
+                        "Could not verify the saved ML results."
+                    );
+
+                }
+
+
+                const totalAnalysisTime =
+                    (
+                        performance.now() -
+                        startedAt
+                    ) / 1000;
+
+
+                console.log(
+                    "===================================="
+                );
+
+                console.log(
+                    "ML ANALYSIS COMPLETED"
+                );
+
+                console.log(
+                    "Photo ID:",
+                    photoId
+                );
+
+                console.log(
+                    `Total time: ${totalAnalysisTime.toFixed(2)} seconds`
+                );
+
+                console.log(
+                    "Detected objects:",
+                    savedPhoto.detected_objects
+                );
+
+                console.log(
+                    "===================================="
+                );
+
 
                 return {
-                    success: true,
-                    result,
-                    database: savedPhoto
+
+                    success:
+                        true,
+
+                    result:
+                        result,
+
+                    database:
+                        savedPhoto
+
                 };
 
-            } catch (error) {
-                console.error("========== ML ANALYSIS FAILED ==========");
-                console.error("Photo ID:", photoId);
-                console.error("Reason:", error);
 
-                // Do not delete the uploaded photo or its WebP copy.
-                const { error: failedError } = await supabaseClient
+            } catch (error) {
+
+                console.error(
+                    "===================================="
+                );
+
+                console.error(
+                    "ML ANALYSIS FAILED"
+                );
+
+                console.error(
+                    "Photo ID:",
+                    photoId
+                );
+
+                console.error(
+                    "Reason:",
+                    error
+                );
+
+                console.error(
+                    "===================================="
+                );
+
+
+                // ==========================================
+                // MARK PHOTO AS FAILED
+                // ==========================================
+
+                const {
+                    error: failedError
+                } = await supabaseClient
                     .from("repository_photos")
                     .update({
-                        processing_status: "failed"
+                        processing_status:
+                            "failed"
                     })
-                    .eq("id", photoId);
+                    .eq(
+                        "id",
+                        photoId
+                    );
+
 
                 if (failedError) {
+
                     console.error(
                         "Could not update processing status:",
                         failedError
                     );
-                }
 
+                }
                 return {
-                    success: false,
-                    error: error.message || "ML analysis failed."
+
+                    success:
+                        false,
+
+                    error:
+                        error.message ||
+                        "ML analysis failed."
+
                 };
+
             }
         }
+        let photoProcessingPoller = null;
+
+
+        async function refreshPhotoProcessingStatus() {
+
+            if (!selectedRepository?.id) {
+                return;
+            }
+
+            try {
+
+                const {
+                    data: photos,
+                    error
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .select(`
+                id,
+                repository_id,
+                booking_id,
+                storage_path,
+                original_name,
+                image_url,
+                processing_status,
+                upload_status,
+                detected_objects,
+                detected_faces,
+                face_count,
+                ml_processed_at,
+                created_at,
+                is_archived
+            `)
+                    .eq(
+                        "repository_id",
+                        selectedRepository.id
+                    )
+                    .eq(
+                        "is_archived",
+                        false
+                    )
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    );
+
+                if (error) {
+                    console.error(
+                        "Photo processing refresh error:",
+                        error
+                    );
+                    return;
+                }
+
+                const hasProcessingPhotos =
+                    (photos || []).some(photo => {
+
+                        const status =
+                            String(
+                                photo.processing_status || ""
+                            ).toLowerCase();
+
+                        return [
+                            "pending",
+                            "processing"
+                        ].includes(status);
+
+                    });
+
+                /*
+                 * Use the image_url already stored in the database.
+                 * No new signed URL is generated every 3 seconds.
+                 */
+                const photoResults =
+                    (photos || []).map(photo => ({
+                        ...photo,
+                        image_url:
+                            photo.image_url || ""
+                    }));
+
+                renderPhotos(photoResults);
+
+                /*
+                 * Stop polling once every photo has reached
+                 * a final state.
+                 */
+                if (!hasProcessingPhotos) {
+                    stopPhotoProcessingPolling();
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Photo processing refresh failed:",
+                    error
+                );
+
+            }
+        }
+
+
+        function startPhotoProcessingPolling() {
+
+            stopPhotoProcessingPolling();
+
+            /*
+             * Check immediately instead of waiting 3 seconds
+             * for the first update.
+             */
+            refreshPhotoProcessingStatus();
+
+            photoProcessingPoller =
+                setInterval(
+                    refreshPhotoProcessingStatus,
+                    3000
+                );
+        }
+
+
+        function stopPhotoProcessingPolling() {
+
+            if (photoProcessingPoller) {
+
+                clearInterval(
+                    photoProcessingPoller
+                );
+
+                photoProcessingPoller = null;
+
+            }
+
+        }
+
 
         async function loadPhotos(repositoryId, searchQuery = "") {
 
@@ -1754,184 +2320,809 @@
 
 
         function renderPhotos(photos) {
+
             photoGrid.innerHTML = "";
 
-            if (!photos || photos.length === 0) {
+
+            if (
+                !photos ||
+                photos.length === 0
+            ) {
+
                 photoGrid.innerHTML = `
+
             <div class="customer-folder-empty">
+
                 <i class="fa-regular fa-images"></i>
-                <div>No photos yet.</div>
-                <small>Click "Upload Photos" to add photos.</small>
+
+                <div>
+                    No photos yet.
+                </div>
+
+                <small>
+                    Click "Upload Photos" to add photos.
+                </small>
+
             </div>
+
         `;
+
+                return;
+
+            }
+
+
+            photos.forEach(
+                (photo, index) => {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "customer-photo-card";
+
+
+                    card.dataset.photoIndex =
+                        index;
+
+
+                    // =================================================
+                    // DETECTED OBJECTS
+                    // =================================================
+
+                    const detectedObjects =
+                        Array.isArray(
+                            photo.detected_objects
+                        )
+                            ? photo.detected_objects
+                            : [];
+
+
+                    const uniqueObjects = [
+                        ...new Map(
+
+                            detectedObjects
+                                .map(object => {
+
+                                    const name = (
+                                        typeof object ===
+                                            "string"
+
+                                            ? object
+
+                                            : object?.name ||
+                                            "Unknown object"
+
+                                    ).trim();
+
+
+                                    return [
+                                        name.toLowerCase(),
+                                        name
+                                    ];
+
+                                })
+
+                        ).values()
+
+                    ];
+
+
+                    // =================================================
+                    // DETECTION HTML
+                    // =================================================
+
+                    let detectionHTML;
+
+
+                    if (
+                        photo.processing_status ===
+                        "completed"
+                    ) {
+
+                        if (
+                            uniqueObjects.length
+                        ) {
+
+                            detectionHTML =
+                                uniqueObjects
+                                    .map(
+                                        name => `
+                                    <span class="simple-object-tag">
+                                        ${escapeHTML(name)}
+                                    </span>
+                                `
+                                    )
+                                    .join("");
+
+                        } else {
+
+                            detectionHTML = `
+                        <small>
+                            No objects detected.
+                        </small>
+                    `;
+
+                        }
+
+                    }
+
+                    else if (
+                        photo.processing_status ===
+                        "failed"
+                    ) {
+
+                        detectionHTML = `
+                    <small class="detection-failed-text">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        Object detection failed.
+                    </small>
+                `;
+
+                    }
+
+                    else {
+
+                        detectionHTML = `
+                    <small class="detection-analyzing-text">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Detecting objects...
+                    </small>
+                `;
+
+                    }
+
+
+                    // =================================================
+                    // PROCESSING STATUS
+                    // =================================================
+
+                    const processingStatus =
+                        String(
+                            photo.processing_status ||
+                            "processing"
+                        ).toLowerCase();
+
+
+                    const uploadStatusValue =
+                        String(
+                            photo.upload_status ||
+                            ""
+                        ).toLowerCase();
+
+
+                    const isStillProcessing =
+                        [
+                            "uploading",
+                            "pending",
+                            "processing"
+                        ].includes(
+                            processingStatus
+                        ) ||
+                        uploadStatusValue ===
+                        "uploading";
+
+
+                    // =================================================
+                    // PROCESSING BADGE
+                    // =================================================
+
+                    let processingBadgeHTML =
+                        "";
+
+
+                    if (
+                        isStillProcessing
+                    ) {
+
+                        let badgeTitle =
+                            "Preparing analysis...";
+
+
+                        if (
+                            processingStatus ===
+                            "processing"
+                        ) {
+
+                            badgeTitle =
+                                "Analyzing & Detecting Objects...";
+
+                        }
+
+                        else if (
+                            processingStatus ===
+                            "uploading"
+                        ) {
+
+                            badgeTitle =
+                                "Uploading...";
+
+                        }
+
+
+                        processingBadgeHTML = `
+
+                    <div class="photo-processing-badge">
+
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                        <div class="processing-text">
+
+                            <strong>
+                                ${badgeTitle}
+                            </strong>
+
+
+                            ${processingStatus ===
+                                "processing"
+
+                                ? `
+                                        <small>
+                                            Please wait while we analyze this photo and detect objects.
+                                        </small>
+                                    `
+
+                                : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                `;
+
+                    }
+
+
+                    // =================================================
+                    // PHOTO STATUS
+                    // =================================================
+
+                    let photoStatusText;
+
+
+                    if (
+                        processingStatus ===
+                        "processing"
+                    ) {
+
+                        photoStatusText =
+                            "Analyzing & Detecting Objects...";
+
+                    }
+
+                    else if (
+                        processingStatus ===
+                        "completed"
+                    ) {
+
+                        photoStatusText =
+                            "Analysis completed";
+
+                    }
+
+                    else if (
+                        processingStatus ===
+                        "failed"
+                    ) {
+
+                        photoStatusText =
+                            "Analysis failed";
+
+                    }
+
+                    else if (
+                        processingStatus ===
+                        "uploading"
+                    ) {
+
+                        photoStatusText =
+                            "Uploading...";
+
+                    }
+
+                    else {
+
+                        photoStatusText =
+                            "Preparing analysis...";
+
+                    }
+
+
+                    // =================================================
+                    // CARD
+                    // =================================================
+
+                    card.innerHTML = `
+
+                ${processingBadgeHTML}
+
+
+                <img
+                    src="${escapeHTML(
+                        photo.image_url ||
+                        ""
+                    )}"
+
+                    alt="${escapeHTML(
+                        photo.original_name ||
+                        "Customer photo"
+                    )}"
+                >
+
+
+                <div class="photo-information">
+
+
+                    <div class="photo-name">
+
+                        ${escapeHTML(
+                        photo.original_name ||
+                        "Photo"
+                    )}
+
+                    </div>
+
+
+                    <div class="photo-status">
+
+                        ${escapeHTML(
+                        photoStatusText
+                    )}
+
+                    </div>
+
+
+                    <div class="photo-detection-results">
+
+                        <div class="detection-label">
+                            Detected Objects
+                        </div>
+
+
+                        <div class="simple-object-tags">
+
+                            ${detectionHTML}
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="delete-photo-btn"
+                        title="Delete photo"
+                        aria-label="Delete photo"
+                    >
+
+                        <i class="fa-solid fa-trash"></i>
+
+                    </button>
+
+
+                </div>
+
+            `;
+
+
+                    // =================================================
+                    // DELETE BUTTON
+                    // =================================================
+
+                    const deleteButton =
+                        card.querySelector(
+                            ".delete-photo-btn"
+                        );
+
+
+                    if (
+                        deleteButton
+                    ) {
+
+                        deleteButton.addEventListener(
+                            "click",
+                            async event => {
+
+                                event.stopPropagation();
+
+                                await deletePhoto(
+                                    photo
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    photoGrid.appendChild(
+                        card
+                    );
+
+                }
+            );
+
+        }
+        // =====================================================
+        // DELETE PHOTO MODAL
+        // =====================================================
+
+        const deletePhotoModal =
+            document.getElementById("deletePhotoModal");
+
+        const deletePhotoModalMessage =
+            document.getElementById("deletePhotoModalMessage");
+
+        const deletePhotoModalClose =
+            document.getElementById("deletePhotoModalClose");
+
+        const deletePhotoCancelBtn =
+            document.getElementById("deletePhotoCancelBtn");
+
+        const deletePhotoConfirmBtn =
+            document.getElementById("deletePhotoConfirmBtn");
+
+        const deletePhotoModalOverlay =
+            document.getElementById("deletePhotoModalOverlay");
+
+
+        let pendingDeletePhoto = null;
+
+
+        // =====================================================
+        // OPEN MODAL
+        // =====================================================
+
+        function openDeletePhotoModal(photo) {
+
+            if (!photo?.id) {
                 return;
             }
 
-            photos.forEach((photo, index) => {
-                const card = document.createElement("div");
-                card.className = "customer-photo-card";
-                card.dataset.photoIndex = index;
+            pendingDeletePhoto = photo;
 
-                const detectedObjects = Array.isArray(photo.detected_objects)
-                    ? photo.detected_objects
-                    : [];
+            const photoName =
+                photo.original_name ||
+                "this photo";
 
-                const uniqueObjects = [
-                    ...new Map(
-                        detectedObjects.map(object => {
-                            const name = (
-                                typeof object === "string"
-                                    ? object
-                                    : object?.name || "Unknown object"
-                            ).trim();
+            deletePhotoModalMessage.textContent =
+                `Are you sure you want to permanently delete "${photoName}"?`;
 
-                            return [name.toLowerCase(), name];
-                        })
-                    ).values()
-                ];
+            deletePhotoConfirmBtn.disabled = false;
 
-                const detectionHTML = uniqueObjects.length
-                    ? uniqueObjects.map(name => `
-                <span class="simple-object-tag">
-                    ${escapeHTML(name)}
-                </span>
-            `).join("")
-                    : photo.processing_status === "completed"
-                        ? `<small>No objects detected.</small>`
-                        : `<small>Detection results not available yet.</small>`;
-                const processingStatus = String(
-                    photo.processing_status || "pending"
-                ).toLowerCase();
+            deletePhotoConfirmBtn.innerHTML = `
+        <i class="fa-solid fa-trash"></i>
+        Delete Photo
+    `;
 
-                const uploadStatusValue = String(
-                    photo.upload_status || ""
-                ).toLowerCase();
+            deletePhotoModal.classList.add("show");
 
-                const isStillProcessing =
-                    ["uploading", "pending", "processing"].includes(processingStatus) ||
-                    uploadStatusValue === "uploading";
-
-                const processingBadgeHTML = isStillProcessing
-                    ? `
-                    <div class="photo-processing-badge">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        ${processingStatus === "processing"
-                        ? "Analyzing..."
-                        : processingStatus === "uploading"
-                            ? "Uploading..."
-                            : "Pending..."}
-                    </div>
-                `
-                    : "";
-                card.innerHTML = `
-                 ${processingBadgeHTML}
-            <img
-                src="${escapeHTML(photo.image_url || "")}"
-                alt="${escapeHTML(photo.original_name || "Customer photo")}"
-            >
-
-            <div class="photo-information">
-                <div class="photo-name">
-                    ${escapeHTML(photo.original_name || "Photo")}
-                </div>
-
-                <div class="photo-status">
-                    ${escapeHTML(photo.processing_status || "Pending processing")}
-                </div>
-
-                <div class="photo-detection-results">
-                    <div class="detection-label">
-                        Detected Objects
-                    </div>
-
-                    <div class="simple-object-tags">
-                        ${detectionHTML}
-                    </div>
-                </div>
-
-                <button type="button" class="delete-photo-btn"
-                    title="Delete photo" aria-label="Delete photo">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        `;
-
-                card.querySelector(".delete-photo-btn").addEventListener(
-                    "click",
-                    async event => {
-                        event.stopPropagation();
-                        await deletePhoto(photo);
-                    }
-                );
-
-                photoGrid.appendChild(card);
-            });
+            document.body.style.overflow = "hidden";
         }
 
 
-        async function deletePhoto(photo) {
-            if (!photo?.id || !selectedRepository?.id) {
-                alert("Unable to identify this photo.");
-                return;
+        // =====================================================
+        // CLOSE MODAL
+        // =====================================================
+
+        function closeDeletePhotoModal() {
+
+            deletePhotoModal.classList.remove("show");
+
+            pendingDeletePhoto = null;
+
+            document.body.style.overflow = "";
+
+        }
+        function showDeleteSuccessMessage(message) {
+
+            deletePhotoModalMessage.textContent =
+                message;
+
+            deletePhotoConfirmBtn.disabled =
+                true;
+
+            deletePhotoCancelBtn.disabled =
+                true;
+
+            deletePhotoConfirmBtn.innerHTML = `
+        <i class="fa-solid fa-check"></i>
+        Deleted
+    `;
+
+            setTimeout(() => {
+
+                closeDeletePhotoModal();
+
+                deletePhotoConfirmBtn.innerHTML = `
+            <i class="fa-solid fa-trash"></i>
+            Delete Photo
+        `;
+
+                deletePhotoConfirmBtn.disabled =
+                    false;
+
+                deletePhotoCancelBtn.disabled =
+                    false;
+
+            }, 900);
+
+        }
+        // =====================================================
+        // CANCEL / CLOSE
+        // =====================================================
+
+        deletePhotoModalClose.addEventListener(
+            "click",
+            closeDeletePhotoModal
+        );
+
+        deletePhotoCancelBtn.addEventListener(
+            "click",
+            closeDeletePhotoModal
+        );
+
+        deletePhotoModalOverlay.addEventListener(
+            "click",
+            closeDeletePhotoModal
+        );
+
+
+        // =====================================================
+        // ESC KEY
+        // =====================================================
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key === "Escape" &&
+                    deletePhotoModal.classList.contains("show")
+                ) {
+
+                    closeDeletePhotoModal();
+
+                }
+
             }
+        );
 
-            const confirmed = confirm(
-                `Permanently delete "${photo.original_name || "this photo"}"?`
-            );
 
-            if (!confirmed) return;
+        // =====================================================
+        // CONFIRM DELETE
+        // =====================================================
 
-            try {
-                const storagePaths = [
-                    photo.storage_path,
-                    photo.compressed_storage_path
-                ].filter(Boolean);
+        deletePhotoConfirmBtn.addEventListener(
+            "click",
+            async () => {
 
-                let storageWarning = false;
-
-                if (storagePaths.length > 0) {
-                    const { error: storageError } = await supabaseClient
-                        .storage
-                        .from("client-photos")
-                        .remove(storagePaths);
-
-                    if (storageError) {
-                        console.error("Storage cleanup warning:", storageError);
-                        storageWarning = true;
-                    }
+                if (!pendingDeletePhoto) {
+                    return;
                 }
 
-                const { data: deletedRows, error: databaseError } =
-                    await supabaseClient
-                        .from("repository_photos")
-                        .delete()
-                        .eq("id", photo.id)
-                        .eq("repository_id", selectedRepository.id)
-                        .select("id");
+                const photoToDelete =
+                    pendingDeletePhoto;
 
-                if (databaseError) {
-                    throw databaseError;
-                }
+                deletePhotoConfirmBtn.disabled =
+                    true;
 
-                if (!deletedRows || deletedRows.length === 0) {
-                    throw new Error(
-                        "The photo record was not deleted. Check your Supabase DELETE and SELECT policies."
+                deletePhotoCancelBtn.disabled =
+                    true;
+
+                deletePhotoConfirmBtn.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Deleting...
+        `;
+
+                try {
+
+                    await deletePhoto(
+                        photoToDelete,
+                        true
                     );
+
+                } finally {
+
+                    deletePhotoConfirmBtn.disabled =
+                        false;
+
+                    deletePhotoCancelBtn.disabled =
+                        false;
+
                 }
 
-                await loadPhotos(selectedRepository.id);
+            }
+        );
+        async function deletePhoto(
+            photo,
+            confirmed = false
+        ) {
 
-                showUploadStatus(
-                    storageWarning
-                        ? "Photo record deleted, but a storage file may remain."
-                        : "Photo deleted successfully.",
-                    storageWarning
+            if (
+                !photo?.id ||
+                !selectedRepository?.id
+            ) {
+
+                alert(
+                    "Unable to identify this photo."
                 );
 
-            } catch (error) {
-                console.error("Delete photo error:", error);
-                alert(error.message || "Failed to delete photo.");
+                return;
+
             }
+            // =====================================================
+            // SHOW CUSTOM MODAL
+            // =====================================================
+
+            if (!confirmed) {
+
+                openDeletePhotoModal(
+                    photo
+                );
+
+                return;
+
+            }
+            // =====================================================
+            // ACTUAL DELETE OPERATION
+            // SAME FUNCTIONALITY AS BEFORE
+            // =====================================================
+
+            try {
+
+                const storagePaths = [
+
+                    photo.storage_path,
+
+                    photo.compressed_storage_path
+
+                ].filter(Boolean);
+
+
+                let storageWarning =
+                    false;
+
+
+                // =================================================
+                // 1. DELETE STORAGE FILES
+                // =================================================
+
+                if (
+                    storagePaths.length > 0
+                ) {
+
+                    const {
+                        error:
+                        storageError
+
+                    } = await supabaseClient
+                        .storage
+                        .from("client-photos")
+                        .remove(
+                            storagePaths
+                        );
+
+
+                    if (
+                        storageError
+                    ) {
+
+                        console.error(
+                            "Storage cleanup warning:",
+                            storageError
+                        );
+
+                        storageWarning =
+                            true;
+
+                    }
+
+                }
+
+
+                // =================================================
+                // 2. DELETE DATABASE RECORD
+                // =================================================
+
+                const {
+                    data:
+                    deletedRows,
+
+                    error:
+                    databaseError
+
+                } = await supabaseClient
+                    .from("repository_photos")
+                    .delete()
+                    .eq(
+                        "id",
+                        photo.id
+                    )
+                    .eq(
+                        "repository_id",
+                        selectedRepository.id
+                    )
+                    .select("id");
+
+
+                if (
+                    databaseError
+                ) {
+
+                    throw databaseError;
+
+                }
+
+
+                // =================================================
+                // 3. VERIFY DELETE
+                // =================================================
+
+                if (
+                    !deletedRows ||
+                    deletedRows.length === 0
+                ) {
+
+                    throw new Error(
+                        "The photo record was not deleted. " +
+                        "Check your Supabase DELETE and SELECT policies."
+                    );
+
+                }
+                // =================================================
+                // 4. CLOSE MODAL
+                // =================================================
+
+                closeDeletePhotoModal();
+                // =================================================
+                // 5. REFRESH PHOTO GRID
+                // =================================================
+
+                await loadPhotos(
+                    selectedRepository.id
+                );
+                if (storageWarning) {
+
+                    showDeleteSuccessMessage(
+                        "Photo deleted, but a storage file may remain."
+                    );
+
+                } else {
+
+                    showDeleteSuccessMessage(
+                        "Photo deleted successfully."
+                    );
+
+                }
+                // =================================================
+                // 6. SHOW SUCCESS MESSAGE
+                closeDeletePhotoModal();
+            } catch (error) {
+
+                console.error(
+                    "Delete photo error:",
+                    error
+                );
+
+
+                // Close the modal so the user
+                // can try again if needed.
+
+                closeDeletePhotoModal();
+
+
+                alert(
+                    error.message ||
+                    "Failed to delete photo."
+                );
+
+            }
+
         }
         function startPhotoUpload() {
 
@@ -2066,36 +3257,88 @@
         }
         async function uploadPhotos(files) {
 
-            if (!selectedClient || !selectedRepository) {
-                alert("Please open a customer folder first.");
+            if (
+                !selectedClient ||
+                !selectedRepository
+            ) {
+
+                alert(
+                    "Please open a customer folder first."
+                );
+
                 return;
+
             }
 
-            if (uploadPhotos.isUploading) return;
 
-            uploadPhotos.isUploading = true;
-            uploadFolderPhotosBtn.disabled = true;
+            if (
+                uploadPhotos.isUploading
+            ) {
 
-            const batchId = crypto.randomUUID();
+                return;
 
-            let uploaded = 0;
-            let queued = 0;
-            let failed = 0;
-            let compressed = 0;
-            let completedUploads = 0;
-            let nextIndex = 0;
+            }
+
+
+            uploadPhotos.isUploading =
+                true;
+
+
+            uploadFolderPhotosBtn.disabled =
+                true;
+
+
+            let uploaded =
+                0;
+
+            let failed =
+                0;
+
+            let compressed =
+                0;
+
+            let completedUploads =
+                0;
+
+            let nextIndex =
+                0;
+
+
+            // =====================================================
+            // UPLOAD ONE PHOTO
+            // =====================================================
 
             async function uploadOne(file) {
 
-                let storagePath = null;
-                let photoRecord = null;
-                let compressedStoragePath = null;
+                let storagePath =
+                    null;
+
+                let photoRecord =
+                    null;
+
+                let compressedStoragePath =
+                    null;
+
 
                 try {
 
-                    if (!file.type.startsWith("image/")) {
-                        throw new Error("File is not an image.");
+                    // =================================================
+                    // 0. VALIDATE IMAGE
+                    // =================================================
+
+                    if (
+                        !file.type ||
+                        !file.type.startsWith(
+                            "image/"
+                        )
+                    ) {
+
+                        throw new Error(
+                            "File is not an image."
+                        );
+
                     }
+
 
                     const safeName =
                         file.name.replace(
@@ -2103,40 +3346,64 @@
                             "_"
                         );
 
+
                     storagePath =
                         `${selectedClient.id}/` +
                         `${selectedRepository.id}/` +
                         `${crypto.randomUUID()}-${safeName}`;
 
-                    // ----------------------------------------
+
+                    // =================================================
                     // 1. UPLOAD ORIGINAL
-                    // ----------------------------------------
+                    // =================================================
 
-                    const { error: storageError } =
-                        await supabaseClient
-                            .storage
-                            .from("client-photos")
-                            .upload(
-                                storagePath,
-                                file,
-                                {
-                                    cacheControl: "3600",
-                                    upsert: false,
-                                    contentType: file.type
-                                }
-                            );
+                    showUploadProgress(
+                        completedUploads,
+                        files.length,
+                        file.name,
+                        "Uploading original photo..."
+                    );
 
-                    if (storageError) {
-                        throw storageError;
-                    }
-
-                    // ----------------------------------------
-                    // 2. CREATE SIGNED URL
-                    // ----------------------------------------
 
                     const {
-                        data: signedUrlData,
-                        error: signedUrlError
+                        error: storageError
+                    } = await supabaseClient
+                        .storage
+                        .from("client-photos")
+                        .upload(
+                            storagePath,
+                            file,
+                            {
+                                cacheControl:
+                                    "3600",
+
+                                upsert:
+                                    false,
+
+                                contentType:
+                                    file.type
+                            }
+                        );
+
+
+                    if (storageError) {
+
+                        throw storageError;
+
+                    }
+
+
+                    // =================================================
+                    // 2. CREATE SIGNED URL
+                    // =================================================
+
+                    const {
+                        data:
+                        signedUrlData,
+
+                        error:
+                        signedUrlError
+
                     } = await supabaseClient
                         .storage
                         .from("client-photos")
@@ -2145,32 +3412,52 @@
                             3600
                         );
 
+
                     if (signedUrlError) {
+
                         throw new Error(
                             "Could not create image URL: " +
                             signedUrlError.message
                         );
+
                     }
+
 
                     const imageUrl =
                         signedUrlData?.signedUrl;
 
+
                     if (!imageUrl) {
+
                         throw new Error(
                             "Supabase did not return an image URL."
                         );
+
                     }
 
-                    // ----------------------------------------
+
+                    // =================================================
                     // 3. CREATE PHOTO RECORD
-                    // ----------------------------------------
+                    // =================================================
+                    //
+                    // IMPORTANT:
+                    //
+                    // NO "queued"
+                    //
+                    // We immediately mark it as processing.
+                    // =================================================
 
                     const {
-                        data: photo,
-                        error: databaseError
+                        data:
+                        photo,
+
+                        error:
+                        databaseError
+
                     } = await supabaseClient
                         .from("repository_photos")
                         .insert({
+
                             repository_id:
                                 selectedRepository.id,
 
@@ -2196,62 +3483,68 @@
                                 file.size,
 
                             processing_status:
-                                "queued",
+                                "processing",
 
                             compression_status:
                                 "processing"
+
                         })
                         .select()
                         .single();
 
+
                     if (databaseError) {
+
                         throw databaseError;
+
                     }
 
-                    photoRecord = photo;
 
-                    // ----------------------------------------
-                    // 4. QUEUE ML IMMEDIATELY
-                    // ----------------------------------------
+                    photoRecord =
+                        photo;
 
-                    const {
-                        error: queueError
-                    } = await supabaseClient
-                        .from("ml_detection_jobs")
-                        .insert({
-                            batch_id:
-                                batchId,
 
-                            photo_id:
-                                photo.id,
+                    // =================================================
+                    // 4. START ML IMMEDIATELY
+                    // =================================================
+                    //
+                    // IMPORTANT:
+                    //
+                    // We DO NOT await this yet.
+                    //
+                    // YOLO can run while WebP is being created.
+                    // =================================================
 
-                            storage_path:
-                                storagePath,
-
-                            status:
-                                "queued"
-                        });
-
-                    if (queueError) {
-                        throw new Error(
-                            "Could not queue photo for ML: " +
-                            queueError.message
+                    const analysisPromise =
+                        analyzePhoto(
+                            photo.id,
+                            imageUrl
                         );
-                    }
 
-                    queued++;
 
-                    // ----------------------------------------
+                    // =================================================
                     // 5. CREATE WEBP COPY
-                    // ----------------------------------------
+                    // =================================================
 
                     try {
 
+                        showUploadProgress(
+                            completedUploads,
+                            files.length,
+                            file.name,
+                            "Analyzing & detecting objects..."
+                        );
+
+
                         const conversion =
-                            await createWebPCopy(file);
+                            await createWebPCopy(
+                                file
+                            );
+
 
                         if (
-                            conversion.status === "created" &&
+                            conversion.status ===
+                            "created" &&
                             conversion.blob
                         ) {
 
@@ -2261,13 +3554,17 @@
                                     ""
                                 );
 
+
                             compressedStoragePath =
                                 `${selectedClient.id}/` +
                                 `${selectedRepository.id}/` +
                                 `${crypto.randomUUID()}-${baseName}.webp`;
 
+
                             const {
-                                error: webpError
+                                error:
+                                webpError
+
                             } = await supabaseClient
                                 .storage
                                 .from("client-photos")
@@ -2275,22 +3572,33 @@
                                     compressedStoragePath,
                                     conversion.blob,
                                     {
-                                        cacheControl: "3600",
-                                        upsert: false,
+                                        cacheControl:
+                                            "3600",
+
+                                        upsert:
+                                            false,
+
                                         contentType:
                                             "image/webp"
                                     }
                                 );
 
+
                             if (webpError) {
+
                                 throw webpError;
+
                             }
 
+
                             const {
-                                error: metadataError
+                                error:
+                                metadataError
+
                             } = await supabaseClient
                                 .from("repository_photos")
                                 .update({
+
                                     compressed_size_bytes:
                                         conversion.blob.size,
 
@@ -2308,21 +3616,28 @@
 
                                     compression_status:
                                         "completed"
+
                                 })
                                 .eq(
                                     "id",
                                     photo.id
                                 );
 
+
                             if (metadataError) {
+
                                 throw metadataError;
+
                             }
+
 
                             compressed++;
 
                         }
 
-                    } catch (compressionError) {
+                    } catch (
+                    compressionError
+                    ) {
 
                         console.error(
                             "WebP compression failed:",
@@ -2330,7 +3645,10 @@
                             compressionError
                         );
 
-                        if (compressedStoragePath) {
+
+                        if (
+                            compressedStoragePath
+                        ) {
 
                             await supabaseClient
                                 .storage
@@ -2338,11 +3656,14 @@
                                 .remove([
                                     compressedStoragePath
                                 ]);
+
                         }
+
 
                         await supabaseClient
                             .from("repository_photos")
                             .update({
+
                                 compression_status:
                                     "failed",
 
@@ -2354,18 +3675,62 @@
 
                                 compressed_at:
                                     null
+
                             })
                             .eq(
                                 "id",
                                 photo.id
                             );
+
                     }
 
+
+                    // =================================================
+                    // 6. WAIT FOR ML ANALYSIS
+                    // =================================================
+
+                    showUploadProgress(
+                        completedUploads,
+                        files.length,
+                        file.name,
+                        "Finalizing object detection..."
+                    );
+
+
+                    const analysisResult =
+                        await analysisPromise;
+
+
+                    // =================================================
+                    // 7. CHECK ML RESULT
+                    // =================================================
+
+                    if (
+                        !analysisResult.success
+                    ) {
+
+                        console.error(
+                            "Photo analysis failed:",
+                            file.name,
+                            analysisResult.error
+                        );
+
+                        // The original photo remains saved.
+                        // The repository_photos row is marked "failed".
+                        //
+                        // We do NOT treat this as an upload failure.
+                        // The upload itself succeeded.
+
+                    }
+
+
                     uploaded++;
+
 
                 } catch (error) {
 
                     failed++;
+
 
                     console.error(
                         "Photo upload failed:",
@@ -2373,20 +3738,39 @@
                         error
                     );
 
-                    if (photoRecord?.id) {
+
+                    // =================================================
+                    // IF PHOTO RECORD EXISTS
+                    // =================================================
+
+                    if (
+                        photoRecord?.id
+                    ) {
 
                         await supabaseClient
                             .from("repository_photos")
                             .update({
+
                                 processing_status:
                                     "failed"
+
                             })
                             .eq(
                                 "id",
                                 photoRecord.id
                             );
 
-                    } else if (storagePath) {
+                    }
+
+
+                    // =================================================
+                    // IF PHOTO RECORD DOES NOT EXIST
+                    // REMOVE ORIGINAL STORAGE FILE
+                    // =================================================
+
+                    else if (
+                        storagePath
+                    ) {
 
                         await supabaseClient
                             .storage
@@ -2394,20 +3778,29 @@
                             .remove([
                                 storagePath
                             ]);
+
                     }
 
                 } finally {
 
                     completedUploads++;
-                    
+
+
                     showUploadProgress(
                         completedUploads,
                         files.length,
                         file.name,
-                        "Uploading photo..."
+                        "Photo processing complete."
                     );
+
                 }
+
             }
+
+
+            // =====================================================
+            // WORKER
+            // =====================================================
 
             async function uploadWorker() {
 
@@ -2416,27 +3809,45 @@
                     const index =
                         nextIndex++;
 
+
                     if (
                         index >= files.length
                     ) {
+
                         return;
+
                     }
+
 
                     await uploadOne(
                         files[index]
                     );
+
                 }
+
             }
+
 
             try {
 
+                // =================================================
+                // IMPORTANT
+                // =================================================
+                //
+                // Keep this at 3.
+                //
+                // This gives you up to 3 upload/analyze operations
+                // at the same time.
+                //
+                // Do not increase this yet because your Python
+                // backend uses an inference lock.
+                // =================================================
+
                 const workerCount =
-                    Math.min(
-                        3,
-                        files.length
-                    );
+                    Math.min(1, files.length);
 
                 await Promise.all(
+
                     Array.from(
                         {
                             length:
@@ -2445,18 +3856,27 @@
                         () =>
                             uploadWorker()
                     )
+
                 );
+
+
+                // =================================================
+                // 8. LOAD FINAL RESULTS
+                // =================================================
 
                 await loadPhotos(
                     selectedRepository.id
                 );
 
                 showUploadStatus(
+
                     `${uploaded} photos uploaded. ` +
-                    `${queued} queued for background detection. ` +
                     `${failed} upload failures.`,
+
                     failed > 0
+
                 );
+
 
             } catch (error) {
 
@@ -2465,23 +3885,31 @@
                     error
                 );
 
+
                 showUploadStatus(
                     "Upload failed: " +
                     error.message,
                     true
                 );
 
+
             } finally {
 
-                uploadPhotos.isUploading = false;
+                uploadPhotos.isUploading =
+                    false;
 
-                uploadFolderPhotosBtn.disabled = false;
+
+                uploadFolderPhotosBtn.disabled =
+                    false;
+
 
                 uploadFolderPhotosBtn.innerHTML = `
             <i class="fa-solid fa-cloud-arrow-up"></i>
             Upload Photos
         `;
+
             }
+
         }
         uploadFolderPhotosBtn.addEventListener(
             "click",
@@ -2531,10 +3959,10 @@
         );
 
         backToFoldersBtn.addEventListener("click", async () => {
-
+            stopPhotoProcessingPolling();
             selectedClient = null;
             selectedRepository = null;
-
+            setCustomerFolderURL(null);
             photosView.style.setProperty(
                 "display",
                 "none",

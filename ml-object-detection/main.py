@@ -62,7 +62,7 @@ BATCH_SIZE = max(1, min(int(os.getenv("ML_BATCH_SIZE", "4")), 8))
 QUEUE_POLL_SECONDS = 2
 MAX_ATTEMPTS = 3
 MAX_IMAGE_BYTES = 15 * 1024 * 1024
-
+MIN_ANALYSIS_SECONDS = 10
 inference_lock = threading.Lock()
 stop_worker = threading.Event()
 worker_started = threading.Event()
@@ -244,14 +244,19 @@ def handle_job_failure(job, error):
             job["id"],
             message,
         )
-
 def process_job_batch(jobs):
     if not jobs:
         return
 
-    logger.info("Processing detection batch: %s jobs", len(jobs))
+    logger.info(
+        "Processing detection batch: %s jobs",
+        len(jobs),
+    )
 
-    # Mark jobs as actively processing
+    # =====================================================
+    # 1. MARK ALL JOBS AS PROCESSING
+    # =====================================================
+
     for job in jobs:
         try:
             update_photo(
@@ -260,16 +265,24 @@ def process_job_batch(jobs):
                     "processing_status": "processing"
                 },
             )
+
+            job["_processing_started_at"] = time.perf_counter()
+
         except Exception:
             logger.exception(
                 "Could not mark photo as processing: %s",
                 job["photo_id"],
             )
 
+    # =====================================================
+    # 2. DOWNLOAD AND PREPARE IMAGES CONCURRENTLY
+    # =====================================================
+
     download_started = time.perf_counter()
+
     valid_jobs = []
     images = []
-    # Download and prepare photos concurrently.
+
     with ThreadPoolExecutor(
         max_workers=min(len(jobs), BATCH_SIZE)
     ) as executor:
@@ -285,6 +298,7 @@ def process_job_batch(jobs):
         for job, future in zip(jobs, futures):
             try:
                 image = future.result()
+
                 valid_jobs.append(job)
                 images.append(image)
 
@@ -297,7 +311,9 @@ def process_job_batch(jobs):
                 try:
                     handle_job_failure(job, exc)
                 except Exception:
-                    logger.exception("Could not update failed job.")
+                    logger.exception(
+                        "Could not update failed job."
+                    )
 
     logger.info(
         "Image preparation completed: %s images in %.2f seconds",
@@ -307,7 +323,11 @@ def process_job_batch(jobs):
 
     if not valid_jobs:
         return
-    # Run one YOLO prediction call for the batch.
+
+    # =====================================================
+    # 3. RUN YOLO ON THE ENTIRE BATCH
+    # =====================================================
+
     try:
         inference_started = time.perf_counter()
 
@@ -333,20 +353,61 @@ def process_job_batch(jobs):
         )
 
     except Exception as exc:
-        logger.exception("YOLO batch inference failed.")
+        logger.exception(
+            "YOLO batch inference failed."
+        )
 
         for job in valid_jobs:
             try:
                 handle_job_failure(job, exc)
             except Exception:
-                logger.exception("Could not update failed job.")
+                logger.exception(
+                    "Could not update failed job."
+                )
 
         return
 
-    # Save each image's result separately.
+    # =====================================================
+    # 4. SAVE EACH PHOTO RESULT
+    # =====================================================
+
     for job, prediction in zip(valid_jobs, predictions):
+
         try:
             objects = extract_objects(prediction)
+
+            # -------------------------------------------------
+            # Keep photo in "processing" for minimum 10 seconds
+            # -------------------------------------------------
+
+            processing_started_at = job.get(
+                "_processing_started_at",
+                time.perf_counter(),
+            )
+
+            elapsed = (
+                time.perf_counter()
+                - processing_started_at
+            )
+
+            remaining = (
+                MIN_ANALYSIS_SECONDS
+                - elapsed
+            )
+
+            if remaining > 0:
+                logger.info(
+                    "Waiting %.2f more seconds before "
+                    "completing photo: %s",
+                    remaining,
+                    job["photo_id"],
+                )
+
+                time.sleep(remaining)
+
+            # -------------------------------------------------
+            # Mark photo completed
+            # -------------------------------------------------
 
             update_photo(
                 job["photo_id"],
@@ -381,9 +442,9 @@ def process_job_batch(jobs):
             try:
                 handle_job_failure(job, exc)
             except Exception:
-                logger.exception("Could not update failed job.")
-
-
+                logger.exception(
+                    "Could not update failed job."
+                )
 def queue_worker():
     logger.info(
         "Detection queue worker started. Batch size: %s",
@@ -404,43 +465,6 @@ def queue_worker():
         except Exception:
             logger.exception("Queue worker error.")
             stop_worker.wait(5)
-
-
-@app.on_event("startup")
-def start_worker():
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        logger.warning(
-            "Queue worker disabled. Configure SUPABASE_URL and "
-            "SUPABASE_SERVICE_ROLE_KEY in Render."
-        )
-        return
-
-    # Warm up YOLO before processing the first job.
-    try:
-        model.predict(
-            source=Image.new("RGB", (416, 416)),
-            imgsz=416,
-            conf=0.20,
-            verbose=False,
-            device="cpu",
-        )
-        logger.info("YOLO warm-up completed.")
-
-    except Exception:
-        logger.exception("YOLO warm-up failed.")
-
-    thread = threading.Thread(
-        target=queue_worker,
-        daemon=True,
-        name="captured-detection-worker",
-    )
-    thread.start()
-
-
-@app.on_event("shutdown")
-def stop_worker_on_shutdown():
-    stop_worker.set()
-
 
 @app.get("/")
 def health_check():
@@ -476,6 +500,10 @@ def analyze_image(request: AnalyzeRequest):
                 detail="A valid HTTPS image URL is required.",
             )
 
+        # =====================================================
+        # 1. DOWNLOAD IMAGE
+        # =====================================================
+
         with requests.get(
             image_url,
             timeout=(15, 90),
@@ -495,33 +523,55 @@ def analyze_image(request: AnalyzeRequest):
 
             image_bytes = bytearray()
 
-            for chunk in response.iter_content(chunk_size=65536):
-                if chunk:
-                    image_bytes.extend(chunk)
+            for chunk in response.iter_content(
+                chunk_size=65536
+            ):
+                if not chunk:
+                    continue
 
-                    if len(image_bytes) > MAX_IMAGE_BYTES:
-                        raise HTTPException(
-                            status_code=413,
-                            detail="Image exceeds the 15 MB limit.",
-                        )
+                image_bytes.extend(chunk)
+
+                if len(image_bytes) > MAX_IMAGE_BYTES:
+                    raise HTTPException(
+                        status_code=413,
+                        detail="Image exceeds the 15 MB limit.",
+                    )
+
+        # =====================================================
+        # 2. PREPARE IMAGE
+        # =====================================================
 
         with Image.open(BytesIO(image_bytes)) as source:
+
             if source.width * source.height > 50_000_000:
                 raise HTTPException(
                     status_code=413,
-                    detail="Image dimensions exceed the supported limit.",
+                    detail=(
+                        "Image dimensions exceed "
+                        "the supported limit."
+                    ),
                 )
 
             if source.format == "JPEG":
-                source.draft("RGB", (1280, 1280))
+                source.draft(
+                    "RGB",
+                    (1280, 1280)
+                )
 
             source.load()
 
             image = ImageOps.exif_transpose(source)
             image.thumbnail((1280, 1280))
-            image = image.convert("RGB")
+            image = image.convert("RGB").copy()
+
+        # =====================================================
+        # 3. DIRECT YOLO INFERENCE
+        # =====================================================
+
+        inference_started = time.perf_counter()
 
         with inference_lock:
+
             prediction = model.predict(
                 source=image,
                 conf=0.20,
@@ -530,14 +580,57 @@ def analyze_image(request: AnalyzeRequest):
                 device="cpu",
             )[0]
 
+        inference_seconds = (
+            time.perf_counter()
+            - inference_started
+        )
+
         objects = extract_objects(prediction)
+
+        # =====================================================
+        # 4. MINIMUM 10-SECOND ANALYSIS TIME
+        # =====================================================
+
+        elapsed = (
+            time.perf_counter()
+            - started
+        )
+
+        remaining = (
+            MIN_ANALYSIS_SECONDS
+            - elapsed
+        )
+
+        if remaining > 0:
+
+            logger.info(
+                "Direct analysis completed in %.2f sec. "
+                "Waiting %.2f sec to satisfy minimum analysis time.",
+                elapsed,
+                remaining,
+            )
+
+            time.sleep(remaining)
+
+        total_seconds = (
+            time.perf_counter()
+            - started
+        )
+
+        # =====================================================
+        # 5. RETURN RESULT
+        # =====================================================
 
         return {
             "success": True,
             "objects": objects,
             "object_count": len(objects),
             "processing_seconds": round(
-                time.perf_counter() - started,
+                total_seconds,
+                2,
+            ),
+            "inference_seconds": round(
+                inference_seconds,
                 2,
             ),
         }
@@ -546,17 +639,28 @@ def analyze_image(request: AnalyzeRequest):
         raise
 
     except requests.RequestException as exc:
-        logger.exception("Image download failed.")
+
+        logger.exception(
+            "Image download failed."
+        )
 
         raise HTTPException(
             status_code=502,
-            detail=f"Could not download image: {exc}",
+            detail=(
+                f"Could not download image: {exc}"
+            ),
         ) from exc
 
     except Exception as exc:
-        logger.exception("Unexpected ML analysis error.")
+
+        logger.exception(
+            "Unexpected ML analysis error."
+        )
 
         raise HTTPException(
             status_code=500,
-            detail=f"Image analysis failed: {type(exc).__name__}: {exc}",
+            detail=(
+                f"Image analysis failed: "
+                f"{type(exc).__name__}: {exc}"
+            ),
         ) from exc

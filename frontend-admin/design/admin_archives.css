@@ -530,3 +530,95 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+ .archive-loading-row td {
+        padding: 22px 18px;
+    }
+
+    .archive-skeleton {
+        position: relative;
+        overflow: hidden;
+        background: #eeeeee;
+        border-radius: 6px;
+    }
+
+    .archive-skeleton::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -150%;
+        width: 150%;
+        height: 100%;
+
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.65) 50%,
+            transparent 100%
+        );
+
+        animation: archiveSkeletonShimmer 1.4s infinite;
+    }
+
+    @keyframes archiveSkeletonShimmer {
+        100% {
+            left: 150%;
+        }
+    }
+
+    .archive-skeleton-title {
+        width: 180px;
+        height: 17px;
+        margin-bottom: 9px;
+    }
+
+    .archive-skeleton-subtext {
+        width: 120px;
+        height: 12px;
+    }
+
+    .archive-skeleton-type {
+        width: 70px;
+        height: 15px;
+    }
+
+    .archive-skeleton-date {
+        width: 145px;
+        height: 15px;
+        margin-bottom: 8px;
+    }
+
+    .archive-skeleton-time {
+        width: 80px;
+        height: 11px;
+    }
+
+    .archive-skeleton-action {
+        width: 145px;
+        height: 36px;
+        margin-left: auto;
+        border-radius: 6px;
+    }
+
+    .archive-loading-row {
+        opacity: 1;
+    }
+
+    /* Prevent table from looking empty while loading */
+    #archiveTableBody.is-loading {
+        pointer-events: none;
+    }
+
+    .archive-page-loading {
+        display: none;
+    }
+
+    .archive-page-loading.show {
+        display: block;
+    }
+
+    .archive-loading-message {
+        margin-top: 12px;
+        font-size: 13px;
+        color: #777;
+        text-align: center;
+    }

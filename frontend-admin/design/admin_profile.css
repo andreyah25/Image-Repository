@@ -358,13 +358,242 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+/* =========================================================
+   PROFILE NOTIFICATION MODAL
+   Used for success, error, warning, and loading messages
+========================================================= */
+
+#notificationModal {
+    z-index: 3000;
+}
+
+/* Notification Card */
+.notification-modal-card {
+    width: 420px;
+    max-width: calc(100vw - 40px);
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 34px 34px 30px;
+    text-align: center;
+    box-sizing: border-box;
+
+    box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.18);
+
+    animation: profileNotificationIn 0.2s ease;
+}
+
+/* Icon Circle */
+.notification-icon-wrapper {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+
+    margin: 0 auto 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-icon-wrapper i {
+    font-size: 30px;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.notification-modal-card h2 {
+    margin: 0 0 10px;
+
+    color: #222222;
+
+    font-size: 22px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.notification-modal-card p {
+    margin: 0 auto;
+
+    max-width: 340px;
+
+    color: #777777;
+
+    font-size: 14px;
+    font-weight: 300;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   BUTTON
+========================================================= */
+.notification-close-btn {
+    margin-top: 25px;
+
+    min-width: 105px;
+    height: 40px;
+
+    padding: 0 22px;
+
+    border: none;
+    border-radius: 5px;
+
+    background-color: #639A88;
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+    line-height: 1;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.notification-close-btn:hover {
+    background-color: #528373;
+}
+
+.notification-close-btn:active {
+    transform: scale(0.98);
+}
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.notification-modal-card.success
+.notification-icon-wrapper {
+    background-color: #e5f3eb;
+}
+
+.notification-modal-card.success
+.notification-icon-wrapper i {
+    color: #639A88;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.notification-modal-card.error
+.notification-icon-wrapper {
+    background-color: #fbeaea;
+}
+
+.notification-modal-card.error
+.notification-icon-wrapper i {
+    color: #d9534f;
+}
+
+
+/* =========================================================
+   WARNING
+========================================================= */
+
+.notification-modal-card.warning
+.notification-icon-wrapper {
+    background-color: #fff4df;
+}
+
+.notification-modal-card.warning
+.notification-icon-wrapper i {
+    color: #d89520;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.notification-modal-card.loading
+.notification-icon-wrapper {
+    background-color: #edf3f1;
+}
+
+.notification-modal-card.loading
+.notification-icon-wrapper i {
+    color: #639A88;
+}
+
+.notification-spinner {
+    animation: profileNotificationSpin 0.9s linear infinite;
+}
+
+
+/* =========================================================
+   MODAL ANIMATION
+========================================================= */
+
+@keyframes profileNotificationIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   SPINNER ANIMATION
+========================================================= */
+
+@keyframes profileNotificationSpin {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
 @media (max-width: 480px) {
-    .info-details-grid {
-        grid-template-columns: 1fr;
+
+    .notification-modal-card {
+        width: calc(100% - 30px);
+        padding: 28px 24px 25px;
     }
 
-    .edit-profile-modal-card {
-        width: 90%;
+    .notification-modal-card h2 {
+        font-size: 20px;
     }
+
+    .notification-modal-card p {
+        font-size: 13px;
+    }
+
 }
